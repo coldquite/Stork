@@ -1,0 +1,9 @@
+# Generated output
+.nuxt
+.output
+.nitro
+dist
+
+# Package manager artifacts
+node_modules
+pnpm-lock.yaml
