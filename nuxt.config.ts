@@ -11,8 +11,20 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/main.css'],
 
-  routeRules: {
-    '/': { prerender: true }
+  runtimeConfig: {
+    fitAuthClientId: '',
+    fitAuthClientSecret: '',
+    fitAuthTokenUrl: 'https://auth.fit.cvut.cz/oauth/token',
+    fitAuthCheckTokenUrl: 'https://auth.fit.cvut.cz/oauth/check_token',
+    fitAuthAllowedUsers: '',
+    authSessionSecret: '',
+    authSessionMaxAgeSeconds: 43200, // 12h
+    authSessionAbsoluteMaxAgeSeconds: 604800, // 7d
+    public: {
+      fitAuthRedirectUri: 'https://cap.ksi.in.fit.cvut.cz/api/auth/callback',
+      fitAuthAuthorizeUrl: 'https://auth.fit.cvut.cz/oauth/authorize',
+      fitAuthScope: 'cvut:umapi:read' // Minimal required scope; recommended by ICT CVUT for this application
+    }
   },
 
   compatibilityDate: '2025-01-15',
