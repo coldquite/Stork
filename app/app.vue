@@ -24,13 +24,11 @@ useSeoMeta({
 
 <template>
   <UApp>
-    <UHeader>
+    <UHeader class="border-b-2">
       <template #left>
         <NuxtLink to="/">
           <AppLogo />
         </NuxtLink>
-
-        <TemplateMenu />
       </template>
 
       <template #right>
