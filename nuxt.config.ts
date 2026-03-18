@@ -1,13 +1,7 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  typescript: {
-    typeCheck: true
-  },
 
-  modules: [
-    '@nuxt/eslint',
-    '@nuxt/ui'
-  ],
+  modules: ['@nuxt/eslint', '@nuxt/ui', '@pinia/nuxt'],
 
   devtools: {
     enabled: true
@@ -20,6 +14,9 @@ export default defineNuxtConfig({
   },
 
   compatibilityDate: '2025-01-15',
+  typescript: {
+    typeCheck: true
+  },
 
   eslint: {
     config: {
@@ -28,5 +25,8 @@ export default defineNuxtConfig({
         braceStyle: '1tbs'
       }
     }
+  },
+  pinia: {
+    storesDirs: ['app/stores/**']
   }
 })
