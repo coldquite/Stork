@@ -3,6 +3,7 @@
 .output
 .nitro
 dist
+old/
 
 # Package manager artifacts
 node_modules
