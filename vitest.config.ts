@@ -1,0 +1,14 @@
+import { defineVitestConfig } from '@nuxt/test-utils/config'
+
+export default defineVitestConfig({
+  test: {
+    environment: 'nuxt',
+    include: ['tests/**/*.test.ts'],
+    passWithNoTests: true,
+    environmentOptions: {
+      nuxt: {
+        domEnvironment: 'happy-dom'
+      }
+    }
+  }
+})
