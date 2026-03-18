@@ -6,7 +6,8 @@
   "layout": {
     "footer": {
       "copy": "ČÁP © {year}",
-      "sourceCode": "Zdrojový kód"
+      "sourceCode": "Zdrojový kód",
+      "licenses": "Licence třetích stran"
     }
   }
 }

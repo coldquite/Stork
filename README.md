@@ -58,3 +58,12 @@ pnpm preview
 ```
 
 Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+
+## Credits
+
+This project makes use of the following open-source resources:
+
+- **[Nuxt UI](https://ui.nuxt.com/)** - The foundation for the UI components in this template.
+- **Bird Icon** - The bird icon used in this project is created by [Имя Автора] from [SVG Repo](https://www.svgrepo.com/svg/487079/bird) and is licensed under the [MIT License / CC BY 4.0 / CC0].
+
+---

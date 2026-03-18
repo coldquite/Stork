@@ -59,10 +59,14 @@ useSeoMeta({
       </div>
 
       <div class="text-muted relative z-10 flex items-center justify-center gap-3 pt-3 pb-1 text-center text-sm">
-        <span>{{ t('layout.footer.copy', { year: currentYear }) }}</span>
-        <span aria-hidden="true">•</span>
         <ULink :to="appConfig.project.sourceCodeUrl" target="_blank" class="text-primary">
           {{ t('layout.footer.sourceCode') }}
+        </ULink>
+        <span aria-hidden="true">•</span>
+        <span>{{ t('layout.footer.copy', { year: currentYear }) }}</span>
+        <span aria-hidden="true">•</span>
+        <ULink to="/licenses.txt" target="_blank" class="text-primary">
+          {{ t('layout.footer.licenses') }}
         </ULink>
       </div>
     </UFooter>

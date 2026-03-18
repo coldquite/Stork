@@ -1,3 +1,6 @@
+import license from 'rollup-plugin-license'
+import { buildLicensesReport, generatedLicensesOutputPath } from './non_dependecy_third_party_licenses/licenses-report'
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   modules: ['@nuxt/eslint', '@nuxt/ui', '@pinia/nuxt', '@nuxtjs/i18n'],
@@ -13,8 +16,30 @@ export default defineNuxtConfig({
   },
 
   compatibilityDate: '2025-01-15',
+
+  vite: {
+    plugins: [
+      license({
+        // Generates a third-party licenses report for the project
+        thirdParty: {
+          multipleVersions: true,
+          output: {
+            file: generatedLicensesOutputPath,
+            template(dependencies) {
+              return buildLicensesReport(dependencies)
+            }
+          },
+          allow: {
+            test: '(Apache-2.0 OR MIT OR BSD-2-Clause OR BSD-3-Clause OR ISC OR CC0-1.0 OR 0BSD OR Unlicense)',
+            failOnViolation: true
+          }
+        }
+      })
+    ]
+  },
+
   typescript: {
-    typeCheck: true
+    typeCheck: 'build'
   },
 
   eslint: {
@@ -42,6 +67,7 @@ export default defineNuxtConfig({
     langDir: 'locales',
     locales: [{ code: 'cs', name: 'Čeština', language: 'cs-CZ', file: 'cs.json' }]
   },
+
   pinia: {
     storesDirs: ['app/stores/**']
   }
