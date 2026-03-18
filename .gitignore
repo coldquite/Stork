@@ -5,6 +5,7 @@
 .nitro
 .cache
 dist
+coverage
 
 # Node dependencies
 node_modules
@@ -12,6 +13,7 @@ node_modules
 # Logs
 logs
 *.log
+pnpm-debug.log*
 
 # Misc
 .DS_Store
