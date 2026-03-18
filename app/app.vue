@@ -47,9 +47,12 @@ useSeoMeta({
       </template>
     </UHeader>
 
-    <UMain>
-      <NuxtPage />
-    </UMain>
+    <div class="relative">
+      <HeroBackground />
+      <UMain class="relative z-10">
+        <NuxtPage />
+      </UMain>
+    </div>
 
     <USeparator class="my-12">
       <AppLogoSimple class="h-7 w-auto shrink-0" />
