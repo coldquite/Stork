@@ -1,24 +1,24 @@
-<script setup>
-useHead({
-  meta: [{ name: 'viewport', content: 'width=device-width, initial-scale=1' }],
-  link: [{ rel: 'icon', href: '/favicon.ico' }],
-  htmlAttrs: {
-    lang: 'en'
-  }
-})
+<script setup lang="ts">
+const appConfig = useAppConfig()
+const { locale, t } = useI18n()
+const localeHead = useLocaleHead()
+const currentYear = new Date().getFullYear()
 
-const title = 'Nuxt Starter Template'
-const description =
-  'A production-ready starter template powered by Nuxt UI. Build beautiful, accessible, and performant applications in minutes, not hours.'
+useHead(() => ({
+  htmlAttrs: {
+    lang: localeHead.value.htmlAttrs?.lang || locale.value
+  },
+  meta: [{ name: 'viewport', content: 'width=device-width, initial-scale=1' }],
+  link: [{ rel: 'icon', href: '/favicon.ico' }]
+}))
 
 useSeoMeta({
-  title,
-  description,
-  ogTitle: title,
-  ogDescription: description,
-  ogImage: 'https://ui.nuxt.com/assets/templates/nuxt/starter-light.png',
-  twitterImage: 'https://ui.nuxt.com/assets/templates/nuxt/starter-light.png',
-  twitterCard: 'summary_large_image'
+  title: () => t('meta.title'),
+  description: () => t('meta.description'),
+  ogTitle: () => t('meta.title'),
+  ogDescription: () => t('meta.description'),
+  ogType: 'website',
+  ogLocale: () => locale.value
 })
 </script>
 
@@ -54,20 +54,13 @@ useSeoMeta({
     <USeparator icon="i-simple-icons-nuxtdotjs" />
 
     <UFooter>
-      <template #left>
-        <p class="text-muted text-sm">Built with Nuxt UI • © {{ new Date().getFullYear() }}</p>
-      </template>
-
-      <template #right>
-        <UButton
-          to="https://github.com/nuxt-ui-templates/starter"
-          target="_blank"
-          icon="i-simple-icons-github"
-          aria-label="GitHub"
-          color="neutral"
-          variant="ghost"
-        />
-      </template>
+      <div class="text-muted flex items-center justify-center gap-3 text-center text-sm">
+        <span>{{ t('layout.footer.copy', { year: currentYear }) }}</span>
+        <span aria-hidden="true">•</span>
+        <ULink :to="appConfig.project.sourceCodeUrl" target="_blank" class="text-primary">
+          {{ t('layout.footer.sourceCode') }}
+        </ULink>
+      </div>
     </UFooter>
   </UApp>
 </template>

@@ -1,0 +1,12 @@
+{
+  "meta": {
+    "title": "ČÁP",
+    "description": "Systém pro přípravu časových plánů státních závěrečných zkoušek na fakultě informatiky ČVUT v Praze"
+  },
+  "layout": {
+    "footer": {
+      "copy": "ČÁP © {year}",
+      "sourceCode": "Zdrojový kód"
+    }
+  }
+}
