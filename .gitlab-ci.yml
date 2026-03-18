@@ -1,0 +1,71 @@
+default:
+  image: node:24
+  before_script:
+    - corepack enable
+    - corepack prepare pnpm@10.32.1 --activate
+    - pnpm config set store-dir .cache/pnpm-store
+
+stages:
+  - setup
+  - code_quality
+  - build
+
+cache:
+  key:
+    files:
+      - pnpm-lock.yaml
+  paths:
+    - .cache/pnpm-store
+  policy: pull-push
+
+install_dependencies:
+  stage: setup
+  script:
+    - pnpm install --frozen-lockfile
+    - pnpm exec nuxt prepare
+  artifacts:
+    expire_in: 1 hour
+    paths:
+      - node_modules
+      - .cache/pnpm-store
+      - .nuxt
+
+lint:
+  stage: code_quality
+  needs:
+    - job: install_dependencies
+      artifacts: true
+  script:
+    - pnpm lint
+
+format_check:
+  stage: code_quality
+  needs:
+    - job: install_dependencies
+      artifacts: true
+  script:
+    - pnpm format:check
+
+typecheck:
+  stage: code_quality
+  needs:
+    - job: install_dependencies
+      artifacts: true
+  script:
+    - pnpm typecheck
+
+test:
+  stage: code_quality
+  needs:
+    - job: install_dependencies
+      artifacts: true
+  script:
+    - pnpm test
+
+build:
+  stage: build
+  needs:
+    - job: install_dependencies
+      artifacts: true
+  script:
+    - pnpm build
