@@ -27,7 +27,7 @@ useSeoMeta({
     <UHeader>
       <template #left>
         <NuxtLink to="/">
-          <AppLogo class="h-6 w-auto shrink-0" />
+          <AppLogo />
         </NuxtLink>
 
         <TemplateMenu />
@@ -51,7 +51,9 @@ useSeoMeta({
       <NuxtPage />
     </UMain>
 
-    <USeparator icon="i-simple-icons-nuxtdotjs" />
+    <USeparator class="my-12">
+      <AppLogoSimple class="h-7 w-auto shrink-0" />
+    </USeparator>
 
     <UFooter>
       <div class="text-muted flex items-center justify-center gap-3 text-center text-sm">

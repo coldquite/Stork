@@ -1,8 +1,17 @@
 @import 'tailwindcss';
 @import '@nuxt/ui';
 
+.light {
+  --ui-bg: #f7fbff;
+  --ui-bg-muted: #f1f7fd;
+  --ui-bg-elevated: #eaf3fb;
+  --ui-bg-accented: #deebf8;
+}
+
 @theme static {
-  --font-sans: 'Public Sans', sans-serif;
+  --font-sans: 'Roboto', 'Inter', sans-serif;
+  --font-roboto: 'Roboto', sans-serif;
+  --font-inter: 'Inter', sans-serif;
 
   --color-stork-50: #f2f8fd;
   --color-stork-100: #e0effa;
@@ -15,4 +24,32 @@
   --color-stork-800: #003b6f;
   --color-stork-900: #002f58;
   --color-stork-950: #001c35;
+}
+
+@layer base {
+  body {
+    font-family: var(--font-roboto), sans-serif;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-inter), sans-serif;
+  }
+
+  h1 {
+    font-weight: 800;
+    font-size: 48px;
+    letter-spacing: -0.04em;
+    line-height: 1.1;
+  }
+
+  h2 {
+    font-weight: 700;
+    font-size: 32px;
+    letter-spacing: -0.02em;
+  }
 }

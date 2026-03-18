@@ -25,6 +25,16 @@ export default defineNuxtConfig({
       }
     }
   },
+
+  fonts: {
+    provider: 'google',
+    families: [
+      { name: 'Inter', provider: 'google' },
+      { name: 'Roboto', provider: 'google' }
+    ],
+    defaults: { weights: [400, 500, 700], styles: ['normal', 'italic'] }
+  },
+
   i18n: {
     strategy: 'no_prefix',
     defaultLocale: 'cs',
