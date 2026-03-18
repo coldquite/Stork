@@ -54,12 +54,13 @@ useSeoMeta({
       </UMain>
     </div>
 
-    <USeparator class="my-12">
-      <AppLogoSimple class="h-7 w-auto shrink-0" />
-    </USeparator>
+    <UFooter class="relative mt-12 overflow-hidden">
+      <div aria-hidden="true" class="pointer-events-none absolute inset-x-0 top-0 h-20">
+        <USeparator />
+        <LazyStarsBg />
+      </div>
 
-    <UFooter>
-      <div class="text-muted flex items-center justify-center gap-3 text-center text-sm">
+      <div class="text-muted relative z-10 flex items-center justify-center gap-3 pt-3 pb-1 text-center text-sm">
         <span>{{ t('layout.footer.copy', { year: currentYear }) }}</span>
         <span aria-hidden="true">•</span>
         <ULink :to="appConfig.project.sourceCodeUrl" target="_blank" class="text-primary">
