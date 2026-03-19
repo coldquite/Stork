@@ -25,3 +25,6 @@ pnpm-debug.log*
 .env
 .env.*
 !.env.example
+
+/app/generated/prisma
+/prisma/generated

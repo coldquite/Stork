@@ -22,6 +22,7 @@ install_dependencies:
   stage: setup
   script:
     - pnpm install --frozen-lockfile
+    - pnpm db:generate
     - pnpm exec nuxt prepare
   artifacts:
     expire_in: 1 hour
@@ -29,6 +30,7 @@ install_dependencies:
       - node_modules
       - .cache/pnpm-store
       - .nuxt
+      - prisma/generated
 
 lint:
   stage: code_quality
