@@ -22,6 +22,9 @@ export default defineNuxtConfig({
     authSessionAbsoluteMaxAgeSeconds: 604800, // 7d
     authOAuthStateMaxAgeSeconds: 600, // 10m
     public: {
+      i18n: {
+        baseUrl: 'http://localhost:3000'
+      },
       fitAuthRedirectUri: 'https://cap.ksi.in.fit.cvut.cz/api/auth/callback',
       fitAuthAuthorizeUrl: 'https://auth.fit.cvut.cz/oauth/authorize',
       fitAuthScope: 'cvut:umapi:read' // Minimal required scope; recommended by ICT CVUT for this application
@@ -77,6 +80,7 @@ export default defineNuxtConfig({
     strategy: 'no_prefix',
     defaultLocale: 'cs',
     detectBrowserLanguage: false,
+    baseUrl: '',
     langDir: 'locales',
     locales: [{ code: 'cs', name: 'Čeština', language: 'cs-CZ', file: 'cs.json' }]
   },
