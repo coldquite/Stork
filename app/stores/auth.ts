@@ -1,0 +1,66 @@
+import type { AuthSessionResponse } from '#shared/types/auth'
+
+export const useAuthStore = defineStore('auth', () => {
+  const isAuthenticated = ref(false)
+  const username = ref<string | null>(null)
+  const isSessionLoading = ref(false)
+  const isLogoutLoading = ref(false)
+
+  function clearSessionState(): void {
+    isAuthenticated.value = false
+    username.value = null
+  }
+
+  function applySessionState(session: AuthSessionResponse): void {
+    isAuthenticated.value = session.authenticated
+    username.value = session.username
+  }
+
+  async function fetchSession(): Promise<void> {
+    if (isSessionLoading.value) {
+      return
+    }
+
+    isSessionLoading.value = true
+
+    try {
+      const requestFetch = useRequestFetch()
+      const session = await requestFetch<AuthSessionResponse>('/api/auth/session')
+      applySessionState(session)
+    } catch {
+      clearSessionState()
+    } finally {
+      isSessionLoading.value = false
+    }
+  }
+
+  async function startFitLogin(): Promise<void> {
+    await navigateTo('/api/auth/login', { external: true })
+  }
+
+  async function logout(): Promise<void> {
+    if (isLogoutLoading.value) {
+      return
+    }
+
+    isLogoutLoading.value = true
+
+    try {
+      await $fetch('/api/auth/logout', { method: 'POST' })
+      clearSessionState()
+      await navigateTo('/login', { replace: true })
+    } finally {
+      isLogoutLoading.value = false
+    }
+  }
+
+  return {
+    isAuthenticated,
+    username,
+    isSessionLoading,
+    isLogoutLoading,
+    fetchSession,
+    startFitLogin,
+    logout
+  }
+})

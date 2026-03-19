@@ -20,6 +20,7 @@ export default defineNuxtConfig({
     authSessionSecret: '',
     authSessionMaxAgeSeconds: 43200, // 12h
     authSessionAbsoluteMaxAgeSeconds: 604800, // 7d
+    authOAuthStateMaxAgeSeconds: 600, // 10m
     public: {
       fitAuthRedirectUri: 'https://cap.ksi.in.fit.cvut.cz/api/auth/callback',
       fitAuthAuthorizeUrl: 'https://auth.fit.cvut.cz/oauth/authorize',
