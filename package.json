@@ -32,12 +32,14 @@
     "nuxt": "^4.4.2",
     "pg": "^8.20.0",
     "pinia": "^3.0.3",
+    "playwright": "^1.58.2",
     "tailwindcss": "^4.2.1"
   },
   "devDependencies": {
     "@nuxt/eslint": "^1.15.2",
     "@nuxt/test-utils": "^3.20.1",
     "@nuxtjs/i18n": "^10.2.3",
+    "@playwright/test": "^1.58.2",
     "@types/pg": "^8.18.0",
     "@vue/test-utils": "^2.4.6",
     "dotenv": "^17.3.1",
