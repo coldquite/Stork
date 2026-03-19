@@ -6,7 +6,7 @@ export const AUTH_STATE_COOKIE_NAME = 'stork_oauth_state'
 const baseCookieOptions = {
   httpOnly: true,
   sameSite: 'lax' as const,
-  secure: true
+  secure: !import.meta.dev
 }
 
 // Options for the main user session cookie

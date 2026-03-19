@@ -25,7 +25,7 @@ export default defineNuxtConfig({
       i18n: {
         baseUrl: 'http://localhost:3000'
       },
-      fitAuthRedirectUri: 'https://cap.ksi.in.fit.cvut.cz/api/auth/callback',
+      fitAuthRedirectUri: 'http://localhost:3000/api/auth/callback',
       fitAuthAuthorizeUrl: 'https://auth.fit.cvut.cz/oauth/authorize',
       fitAuthScope: 'cvut:umapi:read' // Minimal required scope; recommended by ICT CVUT for this application
     }
