@@ -3,7 +3,7 @@ import { buildLicensesReport, generatedLicensesOutputPath } from './non_dependec
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  modules: ['@nuxt/eslint', '@nuxt/ui', '@pinia/nuxt', '@nuxtjs/i18n'],
+  modules: ['@nuxt/eslint', '@nuxt/ui', '@pinia/nuxt', '@nuxtjs/i18n', '@sentry/nuxt/module'],
 
   devtools: {
     enabled: true
@@ -29,6 +29,10 @@ export default defineNuxtConfig({
       fitAuthAuthorizeUrl: 'https://auth.fit.cvut.cz/oauth/authorize',
       fitAuthScope: 'cvut:umapi:read' // Minimal required scope; recommended by ICT CVUT for this application
     }
+  },
+
+  sourcemap: {
+    client: 'hidden'
   },
 
   compatibilityDate: '2025-01-15',
@@ -87,5 +91,11 @@ export default defineNuxtConfig({
 
   pinia: {
     storesDirs: ['app/stores/**']
+  },
+
+  sentry: {
+    org: 'stork',
+    project: 'stork-app',
+    sentryUrl: 'https://sentry.ksi.fit.cvut.cz/'
   }
 })

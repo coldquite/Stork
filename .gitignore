@@ -29,3 +29,6 @@ pnpm-debug.log*
 
 /app/generated/prisma
 /prisma/generated
+
+# Sentry Config File
+.env.sentry-build-plugin

@@ -6,7 +6,7 @@
     "build": "nuxt build",
     "build:with_licenses_check": "pnpm build && pnpm licenses:check",
     "dev": "nuxt dev",
-    "start": "node .output/server/index.mjs",
+    "start": "node --import ./.output/server/sentry.server.config.mjs .output/server/index.mjs",
     "preview": "nuxt preview",
     "postinstall": "pnpm db:generate && nuxt prepare",
     "licenses:check": "git diff --exit-code -- public/licenses.txt",
@@ -29,6 +29,8 @@
     "@pinia/nuxt": "0.11.3",
     "@prisma/adapter-pg": "^7.5.0",
     "@prisma/client": "^7.5.0",
+    "@sentry/nuxt": "^10",
+    "import-in-the-middle": "^3.0.0",
     "nuxt": "^4.4.2",
     "pg": "^8.20.0",
     "pinia": "^3.0.3",
@@ -55,5 +57,10 @@
     "vitest": "^3.2.4",
     "vue-tsc": "^3.2.5"
   },
-  "packageManager": "pnpm@10.32.1"
+  "packageManager": "pnpm@10.32.1",
+  "pnpm": {
+    "overrides": {
+      "@vercel/nft": "^0.27.4"
+    }
+  }
 }
