@@ -9,5 +9,22 @@
       "sourceCode": "Zdrojový kód",
       "licenses": "Licence třetích stran"
     }
+  },
+  "login": {
+    "welcomeTitle": "Vítejte v ČÁP",
+    "description": "Pokračovat mohou pouze autorizovaní uživatelé FIT ČVUT",
+    "themeHelper": "Režim vzhledu",
+    "button": "Přihlásit se přes FIT Auth",
+    "errorTitle": "Přihlášení se nezdařilo",
+    "errorDefault": "Přihlášení se nepodařilo dokončit. Zkuste to prosím znovu.",
+    "errorState": "Přihlášení bylo z bezpečnostních důvodů odmítnuto. Spusťte přihlášení znovu.",
+    "errorConfig": "Přihlášení není dostupné, protože server není správně nakonfigurován.",
+    "errorForbidden": "Tento účet nemá oprávnění pro přístup do aplikace."
+  },
+  "dashboard": {
+    "title": "ČÁP",
+    "description": "Hlavní rozhraní aplikace pro práci s harmonogramem státních závěrečných zkoušek.",
+    "signedInAs": "Aktivní účet: {username}",
+    "logoutButton": "Odhlásit se"
   }
 }
