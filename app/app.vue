@@ -53,7 +53,7 @@ useSeoMeta({
     </div>
 
     <UFooter class="relative mt-12 overflow-hidden">
-      <div aria-hidden="true" class="pointer-events-none absolute inset-x-0 top-0 h-20">
+      <div aria-hidden="true" class="pointer-events-none absolute inset-x-0 top-0 bottom-0">
         <USeparator />
         <LazyStarsBg />
       </div>
@@ -65,9 +65,9 @@ useSeoMeta({
         <span aria-hidden="true">•</span>
         <span>{{ t('layout.footer.copy', { year: currentYear }) }}</span>
         <span aria-hidden="true">•</span>
-        <ULink to="/licenses.txt" target="_blank" class="text-primary">
+        <a href="/licenses.txt" target="_blank" class="text-primary">
           {{ t('layout.footer.licenses') }}
-        </ULink>
+        </a>
       </div>
     </UFooter>
   </UApp>
