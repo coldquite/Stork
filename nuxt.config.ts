@@ -1,6 +1,9 @@
 import license from 'rollup-plugin-license'
 import { buildLicensesReport, generatedLicensesOutputPath } from './non_dependecy_third_party_licenses/licenses-report'
 
+const shouldDisableSentrySourceMapsUpload =
+  process.env.CI === 'true' && process.env.SENTRY_DISABLE_SOURCEMAPS_UPLOAD === '1'
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   modules: ['@nuxt/eslint', '@nuxt/ui', '@pinia/nuxt', '@nuxtjs/i18n', '@sentry/nuxt/module'],
@@ -28,6 +31,14 @@ export default defineNuxtConfig({
       fitAuthRedirectUri: 'http://localhost:3000/api/auth/callback',
       fitAuthAuthorizeUrl: 'https://auth.fit.cvut.cz/oauth/authorize',
       fitAuthScope: 'cvut:umapi:read' // Minimal required scope; recommended by ICT CVUT for this application
+    }
+  },
+
+  routeRules: {
+    '/**': {
+      headers: {
+        'Document-Policy': 'js-profiling'
+      }
     }
   },
 
@@ -94,8 +105,12 @@ export default defineNuxtConfig({
   },
 
   sentry: {
-    org: 'stork',
-    project: 'stork-app',
-    sentryUrl: 'https://sentry.ksi.fit.cvut.cz/'
+    org: process.env.SENTRY_ORG ?? 'stork',
+    project: process.env.SENTRY_PROJECT ?? 'stork-app',
+    sentryUrl: process.env.SENTRY_URL ?? 'https://sentry.ksi.fit.cvut.cz',
+    authToken: process.env.SENTRY_AUTH_TOKEN,
+    sourcemaps: {
+      disable: shouldDisableSentrySourceMapsUpload
+    }
   }
 })

@@ -69,5 +69,8 @@ build:
   needs:
     - job: install_dependencies
       artifacts: true
+  variables:
+    NODE_OPTIONS: '--max-old-space-size=4096'
+    SENTRY_DISABLE_SOURCEMAPS_UPLOAD: '1'
   script:
     - pnpm build:with_licenses_check

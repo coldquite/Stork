@@ -9,6 +9,10 @@ Sentry.init({
   // for finer control
   tracesSampleRate: 1.0,
 
+  profilesSampleRate: 1.0,
+
+  tracePropagationTargets: ['localhost', /^\/api\//, /^https:\/\/cap\.ksi\.in\.fit\.cvut\.cz\/api/],
+
   // This sets the sample rate to be 10%. You may want this to be 100% while
   // in development and sample at a lower rate in production
   replaysSessionSampleRate: 0.1,
@@ -17,8 +21,7 @@ Sentry.init({
   // sessions when an error occurs.
   replaysOnErrorSampleRate: 1.0,
 
-  // If you don't want to use Session Replay, just remove the line below:
-  integrations: [Sentry.replayIntegration()],
+  integrations: [Sentry.browserTracingIntegration(), Sentry.browserProfilingIntegration(), Sentry.replayIntegration()],
 
   initialScope: {
     tags: {
