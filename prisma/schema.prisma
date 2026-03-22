@@ -11,3 +11,105 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+enum TimeScheduleType {
+  MANUAL
+  AUTO
+}
+
+enum CommitteeItemType {
+  STUDENT
+  PAUSE
+}
+
+enum RepeatType {
+  NONE
+  THESIS_DEFENSE
+  ORAL_EXAM
+  BOTH
+  UNKNOWN
+}
+
+enum ThesisLanguage {
+  CZECH
+  ENGLISH
+  SLOVAK
+}
+
+model TimeSchedule {
+  id        String           @id @default(cuid())
+  name      String?
+  type      TimeScheduleType @default(MANUAL)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  committees Committee[]
+
+  @@index([type, updatedAt])
+}
+
+model Committee {
+  id             String       @id @default(cuid())
+  timeScheduleId String
+  timeSchedule   TimeSchedule @relation(fields: [timeScheduleId], references: [id], onDelete: Cascade)
+
+  code          String
+  sortOrder     Int
+  startMinute   Int       @default(525)
+  date          DateTime?
+  room          String?
+  secretaryName String?
+  invigilators  String[]  @default([])
+
+  items CommitteeItem[]
+
+  @@unique([timeScheduleId, code])
+  @@unique([timeScheduleId, sortOrder])
+}
+
+model CommitteeItem {
+  id          String    @id @default(cuid())
+  committeeId String
+  committee   Committee @relation(fields: [committeeId], references: [id], onDelete: Cascade)
+
+  type     CommitteeItemType
+  position Int
+
+  student StudentItem?
+  pause   PauseItem?
+
+  @@unique([committeeId, position])
+}
+
+model StudentItem {
+  itemId         String        @id
+  item           CommitteeItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  personalNumber String?
+
+  firstName        String
+  lastName         String
+  email            String
+  mobilePhone      String?
+  titlesBefore     String?
+  titlesAfter      String?
+  specialization   String
+  thesisTitleLocal String?
+  thesisTitleEn    String?
+  thesisLanguage   ThesisLanguage?
+  supervisorName   String
+  reviewerName     String
+
+  repeatType RepeatType @default(NONE)
+  elsa       Boolean    @default(false)
+
+  prepareMinutes Int @default(45)
+  examMinutes    Int @default(30)
+}
+
+model PauseItem {
+  itemId String        @id
+  item   CommitteeItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  label           String
+  durationMinutes Int    @default(20)
+}
