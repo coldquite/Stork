@@ -55,11 +55,11 @@ model Committee {
 
   code          String
   sortOrder     Int
-  startMinute   Int       @default(525)
-  date          DateTime?
+  startMinute   Int      @default(525)
+  date          DateTime
   room          String?
   secretaryName String?
-  invigilators  String[]  @default([])
+  invigilators  String[] @default([])
 
   items CommitteeItem[]
 
