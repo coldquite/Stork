@@ -1,8 +1,8 @@
 // @vitest-environment node
 
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { createSessionToken, parseSessionToken } from '../../server/utils/auth-session'
-import type { AuthSessionPayload } from '../../server/utils/auth-session'
+import { createSessionToken, parseSessionToken } from '../../../server/utils/auth-session'
+import type { AuthSessionPayload } from '../../../server/utils/auth-session'
 
 describe('auth-session token', () => {
   const secret = 'test-session-secret'
