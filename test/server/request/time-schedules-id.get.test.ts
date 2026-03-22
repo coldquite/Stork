@@ -196,7 +196,7 @@ describe('GET /api/time-schedules/:id', () => {
   it('returns 404 when schedule does not exist', async () => {
     findUniqueMock.mockResolvedValue(null)
 
-    expect(handler({ context: { params: { id: 'missing' } } })).rejects.toMatchObject({
+    await expect(handler({ context: { params: { id: 'missing' } } })).rejects.toMatchObject({
       statusCode: 404
     })
   })
@@ -206,7 +206,7 @@ describe('GET /api/time-schedules/:id', () => {
       throw new Error('Unauthorized')
     })
 
-    expect(handler({ context: { params: { id: 'schedule-1' } } })).rejects.toThrow('Unauthorized')
+    await expect(handler({ context: { params: { id: 'schedule-1' } } })).rejects.toThrow('Unauthorized')
     expect(findUniqueMock).not.toHaveBeenCalled()
   })
 })
