@@ -1,5 +1,14 @@
 <script setup lang="ts">
-const appConfig = useAppConfig()
+import { useAuthStore } from '~/stores/auth'
+
+const { t } = useI18n()
+const authStore = useAuthStore()
+
+const usernameLabel = computed(() => authStore.username || '-')
+
+const logoutButtonLabel = computed(() => {
+  return `${t('dashboard.logoutButton')}: ${usernameLabel.value}`
+})
 </script>
 
 <template>
@@ -12,16 +21,19 @@ const appConfig = useAppConfig()
       </template>
 
       <template #right>
-        <UColorModeButton />
-
         <UButton
-          :to="appConfig.project.sourceCodeUrl"
-          target="_blank"
-          icon="i-simple-icons-github"
-          aria-label="GitHub"
-          color="neutral"
-          variant="ghost"
-        />
+          color="primary"
+          variant="subtle"
+          icon="i-lucide-log-out"
+          :aria-label="logoutButtonLabel"
+          :loading="authStore.isLogoutLoading"
+          @click="authStore.logout"
+        >
+          <span>{{ `${t('dashboard.logoutButton')}:` }}</span>
+          <span class="text-toned">{{ usernameLabel }}</span>
+        </UButton>
+
+        <UColorModeButton />
       </template>
     </UHeader>
 
