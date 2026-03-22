@@ -6,7 +6,7 @@ export type ThesisLanguageDto = 'CZECH' | 'ENGLISH' | 'SLOVAK'
 export interface TimeScheduleListItemDto {
   id: string
   name: string | null
-  updatedAt: string
+  createdAt: string
   counts: {
     committees: number
     items: number
@@ -80,7 +80,6 @@ export interface TimeScheduleDto {
   name: string | null
   type: TimeScheduleTypeDto
   createdAt: string
-  updatedAt: string
   committees: CommitteeDto[]
 }
 
@@ -102,12 +101,11 @@ export type PostCommitteeDto = Omit<CommitteeDto, 'id' | 'timeScheduleId' | 'ite
   items: PostCommitteeItemDto[]
 }
 
-export type PostTimeScheduleRequestDto = Omit<TimeScheduleDto, 'id' | 'createdAt' | 'updatedAt' | 'committees'> & {
+export type PostTimeScheduleRequestDto = Omit<TimeScheduleDto, 'id' | 'createdAt' | 'committees'> & {
   committees: PostCommitteeDto[]
 }
 
 export interface PostTimeScheduleResponseDto {
   id: string
   createdAt: string
-  updatedAt: string
 }

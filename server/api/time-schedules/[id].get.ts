@@ -44,7 +44,6 @@ export default defineEventHandler(async (event): Promise<TimeScheduleDto> => {
     name: schedule.name,
     type: schedule.type,
     createdAt: schedule.createdAt.toISOString(),
-    updatedAt: schedule.updatedAt.toISOString(),
     committees: schedule.committees.map((committee) => ({
       id: committee.id,
       timeScheduleId: committee.timeScheduleId,

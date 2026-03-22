@@ -5,7 +5,7 @@ import type { TimeScheduleListItemDto } from '#shared/types/time-schedules'
 interface TimeScheduleListRow {
   id: string
   name: string | null
-  updatedAt: Date
+  createdAt: Date
   committeesCount: number
   itemsCount: number
   studentsCount: number
@@ -18,7 +18,7 @@ export default defineEventHandler(async (event): Promise<TimeScheduleListItemDto
   const scheduleRows = await prisma.$queryRaw<TimeScheduleListRow[]>`
     SELECT ts.id,
            ts.name,
-           ts."updatedAt",
+           ts."createdAt",
            COUNT(DISTINCT c.id)::int AS "committeesCount",
            COUNT(ci.id)::int         AS "itemsCount",
            COUNT(si."itemId")::int   AS "studentsCount",
@@ -28,14 +28,14 @@ export default defineEventHandler(async (event): Promise<TimeScheduleListItemDto
            LEFT JOIN "CommitteeItem" ci ON ci."committeeId" = c.id
            LEFT JOIN "StudentItem" si ON si."itemId" = ci.id
            LEFT JOIN "PauseItem" pi ON pi."itemId" = ci.id
-    GROUP BY ts.id, ts.name, ts."updatedAt"
-    ORDER BY ts."updatedAt" DESC
+    GROUP BY ts.id, ts.name, ts."createdAt"
+    ORDER BY ts."createdAt" DESC
   `
 
   return scheduleRows.map((row) => ({
     id: row.id,
     name: row.name,
-    updatedAt: row.updatedAt.toISOString(),
+    createdAt: row.createdAt.toISOString(),
     counts: {
       committees: row.committeesCount,
       items: row.itemsCount,
