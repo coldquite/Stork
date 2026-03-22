@@ -1,5 +1,6 @@
 import { prisma } from '#server/utils/db'
 import { requireAuthenticatedUser } from '#server/utils/require-auth'
+import type { TimeScheduleListItemDto } from '#shared/types/time-schedules'
 
 interface TimeScheduleListRow {
   id: string
@@ -11,19 +12,7 @@ interface TimeScheduleListRow {
   pausesCount: number
 }
 
-interface TimeScheduleListResponseItem {
-  id: string
-  name: string | null
-  updatedAt: string
-  counts: {
-    committees: number
-    items: number
-    students: number
-    pauses: number
-  }
-}
-
-export default defineEventHandler(async (event): Promise<{ schedules: TimeScheduleListResponseItem[] }> => {
+export default defineEventHandler(async (event): Promise<TimeScheduleListItemDto[]> => {
   requireAuthenticatedUser(event)
 
   const scheduleRows = await prisma.$queryRaw<TimeScheduleListRow[]>`
@@ -43,17 +32,15 @@ export default defineEventHandler(async (event): Promise<{ schedules: TimeSchedu
     ORDER BY ts."updatedAt" DESC
   `
 
-  return {
-    schedules: scheduleRows.map((row) => ({
-      id: row.id,
-      name: row.name,
-      updatedAt: row.updatedAt.toISOString(),
-      counts: {
-        committees: row.committeesCount,
-        items: row.itemsCount,
-        students: row.studentsCount,
-        pauses: row.pausesCount
-      }
-    }))
-  }
+  return scheduleRows.map((row) => ({
+    id: row.id,
+    name: row.name,
+    updatedAt: row.updatedAt.toISOString(),
+    counts: {
+      committees: row.committeesCount,
+      items: row.itemsCount,
+      students: row.studentsCount,
+      pauses: row.pausesCount
+    }
+  }))
 })
