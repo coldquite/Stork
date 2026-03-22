@@ -83,3 +83,31 @@ export interface TimeScheduleDto {
   updatedAt: string
   committees: CommitteeDto[]
 }
+
+export type PostStudentItemDto = Omit<StudentItemDto, 'itemId'>
+
+export type PostPauseItemDto = Omit<PauseItemDto, 'itemId'>
+
+export type PostStudentCommitteeItemDto = Omit<StudentCommitteeItemDto, 'id' | 'committeeId' | 'student'> & {
+  student: PostStudentItemDto
+}
+
+export type PostPauseCommitteeItemDto = Omit<PauseCommitteeItemDto, 'id' | 'committeeId' | 'pause'> & {
+  pause: PostPauseItemDto
+}
+
+export type PostCommitteeItemDto = PostStudentCommitteeItemDto | PostPauseCommitteeItemDto
+
+export type PostCommitteeDto = Omit<CommitteeDto, 'id' | 'timeScheduleId' | 'items'> & {
+  items: PostCommitteeItemDto[]
+}
+
+export type PostTimeScheduleRequestDto = Omit<TimeScheduleDto, 'id' | 'createdAt' | 'updatedAt' | 'committees'> & {
+  committees: PostCommitteeDto[]
+}
+
+export interface PostTimeScheduleResponseDto {
+  id: string
+  createdAt: string
+  updatedAt: string
+}
