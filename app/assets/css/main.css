@@ -24,6 +24,18 @@
   --color-stork-800: #003b6f;
   --color-stork-900: #002f58;
   --color-stork-950: #001c35;
+
+  --color-capaccent-50: #fff8eb;
+  --color-capaccent-100: #ffefcc;
+  --color-capaccent-200: #ffd89a;
+  --color-capaccent-300: #ffc168;
+  --color-capaccent-400: #ffaa36;
+  --color-capaccent-500: #ff9500;
+  --color-capaccent-600: #db8000;
+  --color-capaccent-700: #b86b00;
+  --color-capaccent-800: #945600;
+  --color-capaccent-900: #704100;
+  --color-capaccent-950: #3d2300;
 }
 
 @layer base {
