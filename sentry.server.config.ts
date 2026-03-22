@@ -1,11 +1,14 @@
 import * as Sentry from '@sentry/nuxt'
 
+const isProduction = process.env.NODE_ENV === 'production'
+
 Sentry.init({
-  dsn: 'https://9eec3fe8af3ead18786c1052d7f55d1b@sentry.ksi.fit.cvut.cz/18',
+  dsn: isProduction ? 'https://9eec3fe8af3ead18786c1052d7f55d1b@sentry.ksi.fit.cvut.cz/18' : undefined,
+  enabled: isProduction,
 
   // We recommend adjusting this value in production, or using tracesSampler
   // for finer control
-  tracesSampleRate: 1.0,
+  tracesSampleRate: isProduction ? 1.0 : 0,
 
   initialScope: {
     tags: {
@@ -14,7 +17,7 @@ Sentry.init({
   },
 
   // Enable logs to be sent to Sentry
-  enableLogs: true,
+  enableLogs: isProduction,
 
   // Enable sending of user PII (Personally Identifiable Information)
   // https://docs.sentry.io/platforms/javascript/guides/nuxt/configuration/options/#sendDefaultPii
