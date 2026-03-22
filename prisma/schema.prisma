@@ -93,9 +93,9 @@ model StudentItem {
   titlesBefore     String?
   titlesAfter      String?
   specialization   String
-  thesisTitleLocal String?
-  thesisTitleEn    String?
-  thesisLanguage   ThesisLanguage?
+  thesisTitleLocal String
+  thesisTitleEn    String
+  thesisLanguage   ThesisLanguage
   supervisorName   String
   reviewerName     String
 
