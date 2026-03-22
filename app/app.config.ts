@@ -5,7 +5,54 @@ export default defineAppConfig({
   ui: {
     colors: {
       primary: 'stork',
-      neutral: 'slate'
+      neutral: 'slate',
+      secondary: 'capaccent'
+    },
+    header: {
+      slots: {
+        root: 'bg-default/75 backdrop-blur border-b-2 border-default h-(--ui-header-height) sticky top-0 z-50'
+      }
+    },
+    card: {
+      variants: {
+        variant: {
+          outline: {
+            root: 'bg-default ring-2 ring-default divide-y-2 divide-default'
+          },
+          subtle: {
+            root: 'bg-elevated/50 ring-2 ring-default divide-y-2 divide-default'
+          }
+        }
+      }
+    },
+    pageCTA: {
+      variants: {
+        variant: {
+          outline: {
+            root: 'bg-default ring-2 ring-default'
+          },
+          subtle: {
+            root: 'bg-elevated/50 ring-2 ring-default'
+          }
+        }
+      }
+    },
+    modal: {
+      slots: {
+        content: 'bg-default divide-y-2 divide-default flex flex-col focus:outline-none'
+      },
+      variants: {
+        fullscreen: {
+          false: {
+            content: 'w-[calc(100vw-2rem)] max-w-lg rounded-lg shadow-lg ring-2 ring-default'
+          }
+        }
+      }
+    },
+    separator: {
+      defaultVariants: {
+        size: 'sm'
+      }
     }
   }
 })
