@@ -1,4 +1,11 @@
 {
+  "common": {
+    "confirmDialog": {
+      "title": "Potvrzení akce",
+      "cancel": "Zrušit",
+      "confirm": "Potvrdit"
+    }
+  },
   "meta": {
     "title": "ČÁP",
     "description": "Systém pro přípravu časových plánů státních závěrečných zkoušek na fakultě informatiky ČVUT v Praze"
@@ -25,6 +32,7 @@
     "title": "ČÁP",
     "description": "Hlavní rozhraní aplikace pro práci s harmonogramem státních závěrečných zkoušek.",
     "signedInAs": "Aktivní účet: {username}",
-    "logoutButton": "Odhlásit se"
+    "logoutButton": "Odhlásit se",
+    "logoutConfirmDescription": "Opravdu se chcete odhlásit? Ztratíte všechna neuložená rozpracovaná data."
   }
 }
