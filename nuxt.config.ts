@@ -70,7 +70,10 @@ export default defineNuxtConfig({
   },
 
   typescript: {
-    typeCheck: 'build'
+    typeCheck: 'build',
+    tsConfig: {
+      include: ['../test/**/*.ts']
+    }
   },
 
   eslint: {
