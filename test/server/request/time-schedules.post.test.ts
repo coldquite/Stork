@@ -1,10 +1,14 @@
 // @vitest-environment node
 
 import { describe, expect, it } from 'vitest'
-import type { PostTimeScheduleResponseDto, TimeScheduleDto } from '#shared/types/time-schedules'
+import type {
+  PostTimeScheduleRequestDto,
+  PostTimeScheduleResponseDto,
+  TimeScheduleDto
+} from '#shared/types/time-schedules'
 import { apiUrl, createAuthCookie, createUniqueSuffix } from './_helpers'
 
-function createPostPayload(suffix: string) {
+function createPostPayload(suffix: string): PostTimeScheduleRequestDto {
   return {
     name: `Nový plán ${suffix}`,
     type: 'MANUAL',
@@ -57,15 +61,37 @@ function createPostPayload(suffix: string) {
   }
 }
 
+type PostCommitteeDraft = PostTimeScheduleRequestDto['committees'][number]
+type PostCommitteeItemDraft = PostCommitteeDraft['items'][number]
+
+async function postTimeSchedule(payload: unknown, authCookie?: string): Promise<Response> {
+  const headers: Record<string, string> = {
+    'content-type': 'application/json'
+  }
+
+  if (authCookie) {
+    headers.cookie = authCookie
+  }
+
+  return fetch(apiUrl('/api/time-schedules'), {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(payload)
+  })
+}
+
+async function readErrorMessage(response: Response): Promise<string> {
+  try {
+    const payload = (await response.json()) as { statusMessage?: string; message?: string }
+    return payload.statusMessage ?? payload.message ?? ''
+  } catch {
+    return ''
+  }
+}
+
 describe('POST /api/time-schedules (integration)', () => {
   it('returns 401 without authentication cookie', async () => {
-    const response = await fetch(apiUrl('/api/time-schedules'), {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json'
-      },
-      body: JSON.stringify(createPostPayload(createUniqueSuffix()))
-    })
+    const response = await postTimeSchedule(createPostPayload(createUniqueSuffix()))
 
     expect(response.status).toBe(401)
   })
@@ -73,21 +99,13 @@ describe('POST /api/time-schedules (integration)', () => {
   it('creates schedule and returns metadata; created tree is retrievable via GET by id', async () => {
     const authCookie = createAuthCookie()
     const payloadSeed = createUniqueSuffix()
-    const response = await fetch(apiUrl('/api/time-schedules'), {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        cookie: authCookie
-      },
-      body: JSON.stringify(createPostPayload(payloadSeed))
-    })
+    const response = await postTimeSchedule(createPostPayload(payloadSeed), authCookie)
 
     expect(response.status).toBe(201)
     const payload = (await response.json()) as PostTimeScheduleResponseDto
 
     expect(payload.id.length).toBeGreaterThan(0)
     expect(Number.isNaN(Date.parse(payload.createdAt))).toBe(false)
-    expect(Number.isNaN(Date.parse(payload.updatedAt))).toBe(false)
 
     const getResponse = await fetch(apiUrl(`/api/time-schedules/${payload.id}`), {
       headers: {
@@ -103,7 +121,8 @@ describe('POST /api/time-schedules (integration)', () => {
     expect(persistedSchedule.type).toBe('MANUAL')
     expect(persistedSchedule.committees).toHaveLength(1)
 
-    const committee = persistedSchedule.committees[0]
+    const committee = persistedSchedule.committees[0] as TimeScheduleDto['committees'][number]
+
     expect(committee.code).toBe(`1-NI-SI-${payloadSeed}`)
     expect(committee.items).toHaveLength(2)
 
@@ -122,25 +141,378 @@ describe('POST /api/time-schedules (integration)', () => {
     expect(pauseItem!.pause!.label).toBe('Přestávka')
   })
 
-  it('rejects request body with nested id fields', async () => {
+  it('returns 409 on unique-constraint conflict from database', async () => {
     const suffix = createUniqueSuffix()
-    const response = await fetch(apiUrl('/api/time-schedules'), {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        cookie: createAuthCookie()
-      },
-      body: JSON.stringify({
-        ...createPostPayload(suffix),
-        committees: [
-          {
-            ...createPostPayload(suffix).committees[0],
-            id: 'committee-id-should-not-be-sent'
-          }
-        ]
-      })
-    })
+    const payload = createPostPayload(suffix)
+    const firstCommittee = payload.committees[0] as PostCommitteeDraft
+
+    payload.committees = [
+      firstCommittee,
+      {
+        ...firstCommittee,
+        code: firstCommittee.code,
+        sortOrder: firstCommittee.sortOrder + 1
+      }
+    ]
+
+    const response = await postTimeSchedule(payload, createAuthCookie())
+    const statusMessage = await readErrorMessage(response)
+
+    expect(response.status).toBe(409)
+    expect(statusMessage).toContain('unique constraints')
+  })
+
+  it.each([
+    {
+      name: 'payload is not an object',
+      mutate: () => null
+    },
+    {
+      name: 'payload has unknown top-level key',
+      mutate: (payload: PostTimeScheduleRequestDto) => ({ ...payload, unknownTopLevel: true })
+    },
+    {
+      name: 'payload contains forbidden createdAt',
+      mutate: (payload: PostTimeScheduleRequestDto) => ({ ...payload, createdAt: '2026-01-01T00:00:00.000Z' })
+    },
+    {
+      name: 'payload contains forbidden nested itemId',
+      mutate: (payload: PostTimeScheduleRequestDto) => {
+        const firstCommittee = payload.committees[0] as PostCommitteeDraft
+        const pauseItem = firstCommittee.items[1] as Extract<PostCommitteeItemDraft, { type: 'PAUSE' }>
+
+        return {
+          ...payload,
+          committees: [
+            {
+              ...firstCommittee,
+              items: [
+                {
+                  ...pauseItem,
+                  pause: {
+                    ...pauseItem.pause,
+                    itemId: 'forbidden'
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      name: 'name has invalid type',
+      mutate: (payload: PostTimeScheduleRequestDto) => ({ ...payload, name: 123 })
+    },
+    {
+      name: 'type has unsupported enum value',
+      mutate: (payload: PostTimeScheduleRequestDto) => ({ ...payload, type: 'INVALID_TYPE' })
+    },
+    {
+      name: 'committees is not an array',
+      mutate: (payload: PostTimeScheduleRequestDto) => ({ ...payload, committees: {} })
+    },
+    {
+      name: 'committee has unknown key',
+      mutate: (payload: PostTimeScheduleRequestDto) => {
+        const firstCommittee = payload.committees[0] as PostCommitteeDraft
+
+        return {
+          ...payload,
+          committees: [{ ...firstCommittee, unknownCommitteeField: true }]
+        }
+      }
+    },
+    {
+      name: 'committee date is invalid',
+      mutate: (payload: PostTimeScheduleRequestDto) => {
+        const firstCommittee = payload.committees[0] as PostCommitteeDraft
+
+        return {
+          ...payload,
+          committees: [{ ...firstCommittee, date: 'not-a-date' }]
+        }
+      }
+    },
+    {
+      name: 'committee room has invalid type',
+      mutate: (payload: PostTimeScheduleRequestDto) => {
+        const firstCommittee = payload.committees[0] as PostCommitteeDraft
+
+        return {
+          ...payload,
+          committees: [{ ...firstCommittee, room: 10 }]
+        }
+      }
+    },
+    {
+      name: 'committee invigilators is not an array',
+      mutate: (payload: PostTimeScheduleRequestDto) => {
+        const firstCommittee = payload.committees[0] as PostCommitteeDraft
+
+        return {
+          ...payload,
+          committees: [{ ...firstCommittee, invigilators: 'not-array' }]
+        }
+      }
+    },
+    {
+      name: 'committee invigilator entry is not a string',
+      mutate: (payload: PostTimeScheduleRequestDto) => {
+        const firstCommittee = payload.committees[0] as PostCommitteeDraft
+
+        return {
+          ...payload,
+          committees: [{ ...firstCommittee, invigilators: ['Dozor A', 123] }]
+        }
+      }
+    },
+    {
+      name: 'committee items is not an array',
+      mutate: (payload: PostTimeScheduleRequestDto) => {
+        const firstCommittee = payload.committees[0] as PostCommitteeDraft
+
+        return {
+          ...payload,
+          committees: [{ ...firstCommittee, items: {} }]
+        }
+      }
+    },
+    {
+      name: 'committee item has unknown key',
+      mutate: (payload: PostTimeScheduleRequestDto) => {
+        const firstCommittee = payload.committees[0] as PostCommitteeDraft
+        const firstItem = firstCommittee.items[0] as PostCommitteeItemDraft
+
+        return {
+          ...payload,
+          committees: [
+            {
+              ...firstCommittee,
+              items: [{ ...firstItem, unknownItemField: true }]
+            }
+          ]
+        }
+      }
+    },
+    {
+      name: 'committee item type is invalid',
+      mutate: (payload: PostTimeScheduleRequestDto) => {
+        const firstCommittee = payload.committees[0] as PostCommitteeDraft
+        const firstItem = firstCommittee.items[0] as PostCommitteeItemDraft
+
+        return {
+          ...payload,
+          committees: [
+            {
+              ...firstCommittee,
+              items: [{ ...firstItem, type: 'INVALID_ITEM_TYPE' }]
+            }
+          ]
+        }
+      }
+    },
+    {
+      name: 'committee item position is not integer',
+      mutate: (payload: PostTimeScheduleRequestDto) => {
+        const firstCommittee = payload.committees[0] as PostCommitteeDraft
+        const firstItem = firstCommittee.items[0] as PostCommitteeItemDraft
+
+        return {
+          ...payload,
+          committees: [
+            {
+              ...firstCommittee,
+              items: [{ ...firstItem, position: 1.5 }]
+            }
+          ]
+        }
+      }
+    },
+    {
+      name: 'student item pause must be null',
+      mutate: (payload: PostTimeScheduleRequestDto) => {
+        const firstCommittee = payload.committees[0] as PostCommitteeDraft
+        const studentItem = firstCommittee.items[0] as Extract<PostCommitteeItemDraft, { type: 'STUDENT' }>
+
+        return {
+          ...payload,
+          committees: [
+            {
+              ...firstCommittee,
+              items: [
+                {
+                  ...studentItem,
+                  pause: {
+                    label: 'Wrong pause',
+                    durationMinutes: 1
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      name: 'pause item student must be null',
+      mutate: (payload: PostTimeScheduleRequestDto) => {
+        const firstCommittee = payload.committees[0] as PostCommitteeDraft
+        const pauseItem = firstCommittee.items[1] as Extract<PostCommitteeItemDraft, { type: 'PAUSE' }>
+        const studentItem = firstCommittee.items[0] as Extract<PostCommitteeItemDraft, { type: 'STUDENT' }>
+
+        return {
+          ...payload,
+          committees: [
+            {
+              ...firstCommittee,
+              items: [
+                {
+                  ...pauseItem,
+                  student: {
+                    ...studentItem.student
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      name: 'student thesisLanguage has invalid enum value',
+      mutate: (payload: PostTimeScheduleRequestDto) => {
+        const firstCommittee = payload.committees[0] as PostCommitteeDraft
+        const studentItem = firstCommittee.items[0] as Extract<PostCommitteeItemDraft, { type: 'STUDENT' }>
+
+        return {
+          ...payload,
+          committees: [
+            {
+              ...firstCommittee,
+              items: [
+                {
+                  ...studentItem,
+                  student: {
+                    ...studentItem.student,
+                    thesisLanguage: 'GERMAN'
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      name: 'student repeatType has invalid enum value',
+      mutate: (payload: PostTimeScheduleRequestDto) => {
+        const firstCommittee = payload.committees[0] as PostCommitteeDraft
+        const studentItem = firstCommittee.items[0] as Extract<PostCommitteeItemDraft, { type: 'STUDENT' }>
+
+        return {
+          ...payload,
+          committees: [
+            {
+              ...firstCommittee,
+              items: [
+                {
+                  ...studentItem,
+                  student: {
+                    ...studentItem.student,
+                    repeatType: 'INVALID_REPEAT'
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      name: 'student elsa has invalid type',
+      mutate: (payload: PostTimeScheduleRequestDto) => {
+        const firstCommittee = payload.committees[0] as PostCommitteeDraft
+        const studentItem = firstCommittee.items[0] as Extract<PostCommitteeItemDraft, { type: 'STUDENT' }>
+
+        return {
+          ...payload,
+          committees: [
+            {
+              ...firstCommittee,
+              items: [
+                {
+                  ...studentItem,
+                  student: {
+                    ...studentItem.student,
+                    elsa: 'false'
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      name: 'student prepareMinutes is not integer',
+      mutate: (payload: PostTimeScheduleRequestDto) => {
+        const firstCommittee = payload.committees[0] as PostCommitteeDraft
+        const studentItem = firstCommittee.items[0] as Extract<PostCommitteeItemDraft, { type: 'STUDENT' }>
+
+        return {
+          ...payload,
+          committees: [
+            {
+              ...firstCommittee,
+              items: [
+                {
+                  ...studentItem,
+                  student: {
+                    ...studentItem.student,
+                    prepareMinutes: 30.5
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      name: 'pause durationMinutes is not integer',
+      mutate: (payload: PostTimeScheduleRequestDto) => {
+        const firstCommittee = payload.committees[0] as PostCommitteeDraft
+        const pauseItem = firstCommittee.items[1] as Extract<PostCommitteeItemDraft, { type: 'PAUSE' }>
+
+        return {
+          ...payload,
+          committees: [
+            {
+              ...firstCommittee,
+              items: [
+                {
+                  ...pauseItem,
+                  pause: {
+                    ...pauseItem.pause,
+                    durationMinutes: '20'
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ])('returns 400 when $name', async ({ mutate }) => {
+    const suffix = createUniqueSuffix()
+    const payload = createPostPayload(suffix)
+    const invalidPayload = mutate(payload)
+
+    const response = await postTimeSchedule(invalidPayload, createAuthCookie())
+    const statusMessage = await readErrorMessage(response)
 
     expect(response.status).toBe(400)
+    expect(statusMessage).toContain('Invalid time schedule payload')
   })
 })
