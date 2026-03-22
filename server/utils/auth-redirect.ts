@@ -9,5 +9,5 @@ export function redirectToAuthFailure(event: H3Event, reason: AuthFailureReason)
 }
 
 export function redirectToHome(event: H3Event) {
-  return sendRedirect(event, '/', REDIRECT_FOUND_STATUS)
+  return sendRedirect(event, '/start', REDIRECT_FOUND_STATUS)
 }

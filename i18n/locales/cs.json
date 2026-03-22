@@ -28,10 +28,32 @@
     "errorConfig": "Přihlášení není dostupné, protože server není správně nakonfigurován.",
     "errorForbidden": "Tento účet nemá oprávnění pro přístup do aplikace."
   },
+  "start": {
+    "title": "Správa harmonogramů SZZ na jednom místě",
+    "description": "ČÁP vám pomůže připravit komise, studenty i časový plán přehledně a rychle.",
+    "actions": {
+      "create": {
+        "title": "Vytvořit nový plán",
+        "description": "Začněte s prázdným časovým plánem pro nové SZZ"
+      },
+      "browse": {
+        "title": "Procházet plány",
+        "description": "Otevřete existující plán ze seznamu všech plánů"
+      }
+    },
+    "recent": {
+      "title": "Nedávné plány",
+      "description": "Rychlý přístup k posledním 5 plánům",
+      "errorTitle": "Plány se nepodařilo načíst",
+      "errorDescription": "Zkuste stránku obnovit a akci opakovat.",
+      "emptyTitle": "Zatím není k dispozici žádný plán",
+      "emptyDescription": "Jakmile vytvoříte nebo uložíte plán, zobrazí se na tomto místě.",
+      "untitled": "Plán bez názvu",
+      "committees": "{count} komisí",
+      "students": "{count} studentů"
+    }
+  },
   "dashboard": {
-    "title": "ČÁP",
-    "description": "Hlavní rozhraní aplikace pro práci s harmonogramem státních závěrečných zkoušek.",
-    "signedInAs": "Aktivní účet: {username}",
     "logoutButton": "Odhlásit se",
     "logoutConfirmDescription": "Opravdu se chcete odhlásit? Ztratíte všechna neuložená rozpracovaná data."
   }
