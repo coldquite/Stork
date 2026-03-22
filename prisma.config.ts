@@ -3,12 +3,15 @@
 import 'dotenv/config'
 import { defineConfig } from 'prisma/config'
 
+const isCi = process.env['CI'] === 'true'
+
 export default defineConfig({
   schema: 'prisma/schema.prisma',
   migrations: {
     path: 'prisma/migrations'
   },
   datasource: {
-    url: process.env['DATABASE_URL']
+    url: process.env['DATABASE_URL'],
+    shadowDatabaseUrl: isCi ? process.env['SHADOW_DATABASE_URL'] : undefined
   }
 })

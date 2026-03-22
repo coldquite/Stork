@@ -57,6 +57,25 @@ typecheck:
   script:
     - pnpm typecheck
 
+prisma_schema_and_migrations_eqivalance_check:
+  stage: code_quality
+  needs:
+    - job: install_dependencies
+      artifacts: true
+  services:
+    - name: postgres:18.3-alpine3.23
+      alias: db
+  variables:
+    POSTGRES_DB: stork_app
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: postgres
+    DATABASE_URL: postgresql://postgres:postgres@db:5432/stork_app?schema=public
+    SHADOW_DATABASE_URL: postgresql://postgres:postgres@db:5432/stork_shadow?schema=public
+  script:
+    - apt-get update && apt-get install -y postgresql-client
+    - PGPASSWORD="$POSTGRES_PASSWORD" psql -h db -U "$POSTGRES_USER" -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE stork_shadow;"
+    - pnpm db:migrations:check
+
 test:
   stage: tests
   needs:
