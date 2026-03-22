@@ -1,146 +1,45 @@
 // @vitest-environment node
 
-import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
+import type { PostTimeScheduleResponseDto, TimeScheduleDto } from '#shared/types/time-schedules'
+import { apiUrl, createAuthCookie, createUniqueSuffix } from './_helpers'
 
-const { findUniqueMock, requireAuthenticatedUserMock } = vi.hoisted(() => {
-  ;(globalThis as { defineEventHandler?: unknown }).defineEventHandler = <T>(handler: T): T => handler
-
+function createStudentDraft(suffix: string) {
   return {
-    findUniqueMock: vi.fn(),
-    requireAuthenticatedUserMock: vi.fn()
+    personalNumber: `A${suffix}`,
+    firstName: 'Jan',
+    lastName: 'Novák',
+    email: `jan.${suffix}@example.test`,
+    mobilePhone: '+420777123456',
+    titlesBefore: 'Bc.',
+    titlesAfter: null,
+    specialization: 'Softwarové inženýrství',
+    thesisTitleLocal: `Lokální název ${suffix}`,
+    thesisTitleEn: `English title ${suffix}`,
+    thesisLanguage: 'CZECH' as const,
+    supervisorName: 'Vedoucí',
+    reviewerName: 'Oponent',
+    repeatType: 'NONE' as const,
+    elsa: false,
+    prepareMinutes: 45,
+    examMinutes: 30
   }
-})
+}
 
-vi.mock('#server/utils/db', () => {
-  return {
-    prisma: {
-      timeSchedule: {
-        findUnique: findUniqueMock
-      }
-    }
-  }
-})
-
-vi.mock('#server/utils/require-auth', () => {
-  return {
-    requireAuthenticatedUser: requireAuthenticatedUserMock
-  }
-})
-
-let handler: (event: { context: { params?: { id?: string } } }) => Promise<unknown>
-
-describe('GET /api/time-schedules/:id', () => {
-  beforeAll(async () => {
-    const importedModule = await import('../../../server/api/time-schedules/[id].get')
-    handler = importedModule.default
-  })
-
-  beforeEach(() => {
-    findUniqueMock.mockReset()
-    requireAuthenticatedUserMock.mockReset()
-  })
-
-  it('returns full time schedule graph for editor', async () => {
-    findUniqueMock.mockResolvedValue({
-      id: 'schedule-1',
-      name: 'Seed MANUAL v1',
+async function createScheduleViaPost(authCookie: string): Promise<string> {
+  const suffix = createUniqueSuffix()
+  const createResponse = await fetch(apiUrl('/api/time-schedules'), {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      cookie: authCookie
+    },
+    body: JSON.stringify({
+      name: `Seed MANUAL v1 ${suffix}`,
       type: 'MANUAL',
-      createdAt: new Date('2026-03-22T12:00:00.000Z'),
-      updatedAt: new Date('2026-03-22T13:00:00.000Z'),
       committees: [
         {
-          id: 'committee-1',
-          timeScheduleId: 'schedule-1',
-          code: '1-NI-SI',
-          sortOrder: 1,
-          startMinute: 525,
-          date: new Date('2026-06-10T00:00:00.000Z'),
-          room: 'TH:A-1435',
-          secretaryName: 'Sekretář 1',
-          invigilators: ['Dozor A', 'Dozor B'],
-          items: [
-            {
-              id: 'item-student-1',
-              committeeId: 'committee-1',
-              type: 'STUDENT',
-              position: 0,
-              student: {
-                itemId: 'item-student-1',
-                personalNumber: 'A12345',
-                firstName: 'Jan',
-                lastName: 'Novák',
-                email: 'jan.novak@example.test',
-                mobilePhone: '+420777123456',
-                titlesBefore: 'Bc.',
-                titlesAfter: null,
-                specialization: 'Softwarové inženýrství',
-                thesisTitleLocal: 'Lokální název',
-                thesisTitleEn: 'English title',
-                thesisLanguage: 'CZECH',
-                supervisorName: 'Vedoucí',
-                reviewerName: 'Oponent',
-                repeatType: 'NONE',
-                elsa: false,
-                prepareMinutes: 45,
-                examMinutes: 30
-              },
-              pause: null
-            },
-            {
-              id: 'item-pause-1',
-              committeeId: 'committee-1',
-              type: 'PAUSE',
-              position: 1,
-              student: null,
-              pause: {
-                itemId: 'item-pause-1',
-                label: 'Přestávka',
-                durationMinutes: 20
-              }
-            }
-          ]
-        }
-      ]
-    })
-
-    const response = await handler({ context: { params: { id: 'schedule-1' } } })
-
-    expect(requireAuthenticatedUserMock).toHaveBeenCalledTimes(1)
-    expect(findUniqueMock).toHaveBeenCalledTimes(1)
-    expect(findUniqueMock).toHaveBeenCalledWith({
-      where: {
-        id: 'schedule-1'
-      },
-      include: {
-        committees: {
-          orderBy: {
-            sortOrder: 'asc'
-          },
-          include: {
-            items: {
-              orderBy: {
-                position: 'asc'
-              },
-              include: {
-                student: true,
-                pause: true
-              }
-            }
-          }
-        }
-      }
-    })
-    expect(response).toEqual({
-      id: 'schedule-1',
-      name: 'Seed MANUAL v1',
-      type: 'MANUAL',
-      createdAt: '2026-03-22T12:00:00.000Z',
-      updatedAt: '2026-03-22T13:00:00.000Z',
-      committees: [
-        {
-          id: 'committee-1',
-          timeScheduleId: 'schedule-1',
-          code: '1-NI-SI',
+          code: `1-NI-SI-${suffix}`,
           sortOrder: 1,
           startMinute: 525,
           date: '2026-06-10T00:00:00.000Z',
@@ -149,40 +48,16 @@ describe('GET /api/time-schedules/:id', () => {
           invigilators: ['Dozor A', 'Dozor B'],
           items: [
             {
-              id: 'item-student-1',
-              committeeId: 'committee-1',
               type: 'STUDENT',
               position: 0,
-              student: {
-                itemId: 'item-student-1',
-                personalNumber: 'A12345',
-                firstName: 'Jan',
-                lastName: 'Novák',
-                email: 'jan.novak@example.test',
-                mobilePhone: '+420777123456',
-                titlesBefore: 'Bc.',
-                titlesAfter: null,
-                specialization: 'Softwarové inženýrství',
-                thesisTitleLocal: 'Lokální název',
-                thesisTitleEn: 'English title',
-                thesisLanguage: 'CZECH',
-                supervisorName: 'Vedoucí',
-                reviewerName: 'Oponent',
-                repeatType: 'NONE',
-                elsa: false,
-                prepareMinutes: 45,
-                examMinutes: 30
-              },
+              student: createStudentDraft(`${suffix}-001`),
               pause: null
             },
             {
-              id: 'item-pause-1',
-              committeeId: 'committee-1',
               type: 'PAUSE',
               position: 1,
               student: null,
               pause: {
-                itemId: 'item-pause-1',
                 label: 'Přestávka',
                 durationMinutes: 20
               }
@@ -193,20 +68,81 @@ describe('GET /api/time-schedules/:id', () => {
     })
   })
 
-  it('returns 404 when schedule does not exist', async () => {
-    findUniqueMock.mockResolvedValue(null)
+  expect(createResponse.status).toBe(201)
+  const created = (await createResponse.json()) as PostTimeScheduleResponseDto
+  return created.id
+}
 
-    await expect(handler({ context: { params: { id: 'missing' } } })).rejects.toMatchObject({
-      statusCode: 404
-    })
+describe('GET /api/time-schedules/:id (integration)', () => {
+  it('returns 401 without authentication cookie', async () => {
+    const response = await fetch(apiUrl('/api/time-schedules/schedule-missing'))
+
+    expect(response.status).toBe(401)
   })
 
-  it('rejects when user is not authenticated', async () => {
-    requireAuthenticatedUserMock.mockImplementation(() => {
-      throw new Error('Unauthorized')
+  it('returns 404 when schedule does not exist', async () => {
+    const response = await fetch(apiUrl(`/api/time-schedules/missing-${createUniqueSuffix()}`), {
+      headers: {
+        cookie: createAuthCookie()
+      }
     })
 
-    await expect(handler({ context: { params: { id: 'schedule-1' } } })).rejects.toThrow('Unauthorized')
-    expect(findUniqueMock).not.toHaveBeenCalled()
+    expect(response.status).toBe(404)
+  })
+
+  it('returns full schedule tree from database', async () => {
+    const authCookie = createAuthCookie()
+    const createdScheduleId = await createScheduleViaPost(authCookie)
+
+    const response = await fetch(apiUrl(`/api/time-schedules/${createdScheduleId}`), {
+      headers: {
+        cookie: authCookie
+      }
+    })
+
+    expect(response.status).toBe(200)
+
+    const payload = (await response.json()) as TimeScheduleDto
+
+    expect(payload.id).toBe(createdScheduleId)
+    expect(payload.type).toBe('MANUAL')
+    expect(payload.committees).toHaveLength(1)
+
+    const committee = payload.committees[0]
+    expect(committee).toBeDefined()
+    if (!committee) {
+      throw new Error('Expected first committee to be defined')
+    }
+
+    expect(committee.timeScheduleId).toBe(createdScheduleId)
+    expect(committee.sortOrder).toBe(1)
+    expect(committee.startMinute).toBe(525)
+    expect(committee.date).toBe('2026-06-10T00:00:00.000Z')
+    expect(committee.room).toBe('TH:A-1435')
+    expect(committee.invigilators).toEqual(['Dozor A', 'Dozor B'])
+    expect(committee.items).toHaveLength(2)
+
+    const studentItem = committee.items.find((item) => item.type === 'STUDENT')
+    const pauseItem = committee.items.find((item) => item.type === 'PAUSE')
+
+    expect(studentItem).toBeDefined()
+    expect(pauseItem).toBeDefined()
+
+    if (studentItem && studentItem.type === 'STUDENT') {
+      expect(studentItem.id.length).toBeGreaterThan(0)
+      expect(studentItem.committeeId).toBe(committee.id)
+      expect(studentItem.position).toBe(0)
+      expect(studentItem.student.firstName).toBe('Jan')
+      expect(studentItem.pause).toBeNull()
+    }
+
+    if (pauseItem && pauseItem.type === 'PAUSE') {
+      expect(pauseItem.id.length).toBeGreaterThan(0)
+      expect(pauseItem.committeeId).toBe(committee.id)
+      expect(pauseItem.position).toBe(1)
+      expect(pauseItem.student).toBeNull()
+      expect(pauseItem.pause.label).toBe('Přestávka')
+      expect(pauseItem.pause.durationMinutes).toBe(20)
+    }
   })
 })
