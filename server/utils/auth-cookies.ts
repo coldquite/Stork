@@ -6,7 +6,9 @@ export const AUTH_STATE_COOKIE_NAME = 'stork_oauth_state'
 const baseCookieOptions = {
   httpOnly: true,
   sameSite: 'lax' as const,
-  secure: !import.meta.dev
+  // Current deployment is HTTP-only as the service is private (VPN-only). Browsers would drop secure cookies.
+  // https://discordapp.com/channels/366970031445377024/1203136774168256592/1484669083281526975
+  secure: false
 }
 
 // Options for the main user session cookie
