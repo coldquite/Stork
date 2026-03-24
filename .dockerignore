@@ -5,6 +5,7 @@ node_modules
 .nuxt
 .output
 .pnpm-store
+.cache
 coverage
 dist
 logs

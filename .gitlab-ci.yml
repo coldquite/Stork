@@ -10,6 +10,7 @@ stages:
   - code_quality
   - tests
   - build
+  - deploy
 
 cache:
   key:
@@ -124,3 +125,47 @@ licenses_check:
     SENTRY_DISABLE_SOURCEMAPS_UPLOAD: '1'
   script:
     - pnpm build:with_licenses_check
+
+build_app_image:
+  stage: build
+  image: docker:28.2.2
+  services:
+    - name: docker:28.2.2-dind
+      alias: docker
+  cache: []
+  before_script: []
+  needs:
+    - job: licenses_check
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ''
+  script:
+    - echo "${CI_REGISTRY_PASSWORD}" | docker login "${CI_REGISTRY}" --username "${CI_REGISTRY_USER}" --password-stdin
+    - docker build --pull -t "${CI_REGISTRY_IMAGE}/app:${CI_COMMIT_SHA}" -t "${CI_REGISTRY_IMAGE}/app:main" .
+    - docker push "${CI_REGISTRY_IMAGE}/app:${CI_COMMIT_SHA}"
+    - docker push "${CI_REGISTRY_IMAGE}/app:main"
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: on_success
+    - when: never
+
+deploy_production:
+  stage: deploy
+  image: alpine:3.23
+  cache: []
+  needs:
+    - job: build_app_image
+  variables:
+    DEPLOY_SSH_HOST: cap.ksi.in.fit.cvut.cz
+    DEPLOY_APP_IMAGE: ${CI_REGISTRY_IMAGE}/app:${CI_COMMIT_SHA}
+  before_script:
+    - apk add --no-cache bash openssh-client rsync
+  script:
+    - bash deploy/gitlab-vps-deploy.sh
+  resource_group: production
+  environment:
+    name: production
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: manual
+    - when: never
