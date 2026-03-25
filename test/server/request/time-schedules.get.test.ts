@@ -176,4 +176,127 @@ describe('GET /api/time-schedules (integration)', () => {
       }
     })
   })
+
+  it('supports pagination via page and pageSize query parameters', async () => {
+    const authCookie = createAuthCookie()
+    const suffix = createUniqueSuffix()
+
+    const createdIds = await Promise.all([
+      createScheduleViaPost(
+        {
+          name: `Paged Schedule 1 ${suffix}`,
+          type: 'MANUAL',
+          committees: []
+        },
+        authCookie
+      ),
+      createScheduleViaPost(
+        {
+          name: `Paged Schedule 2 ${suffix}`,
+          type: 'MANUAL',
+          committees: []
+        },
+        authCookie
+      ),
+      createScheduleViaPost(
+        {
+          name: `Paged Schedule 3 ${suffix}`,
+          type: 'MANUAL',
+          committees: []
+        },
+        authCookie
+      )
+    ])
+
+    const allManualResponse = await fetch(apiUrl('/api/time-schedules?type=MANUAL&page=1&pageSize=100'), {
+      headers: { cookie: authCookie }
+    })
+
+    expect(allManualResponse.status).toBe(200)
+    const allManual = (await allManualResponse.json()) as TimeScheduleListItemDto[]
+    const allManualIds = allManual.map((schedule) => schedule.id)
+
+    expect(allManualIds).toEqual(expect.arrayContaining(createdIds))
+
+    const pageOneResponse = await fetch(apiUrl('/api/time-schedules?type=MANUAL&page=1&pageSize=2'), {
+      headers: { cookie: authCookie }
+    })
+    const pageTwoResponse = await fetch(apiUrl('/api/time-schedules?type=MANUAL&page=2&pageSize=2'), {
+      headers: { cookie: authCookie }
+    })
+
+    expect(pageOneResponse.status).toBe(200)
+    expect(pageTwoResponse.status).toBe(200)
+
+    const pageOne = (await pageOneResponse.json()) as TimeScheduleListItemDto[]
+    const pageTwo = (await pageTwoResponse.json()) as TimeScheduleListItemDto[]
+
+    const pageOneIds = pageOne.map((schedule) => schedule.id)
+    const pageTwoIds = pageTwo.map((schedule) => schedule.id)
+
+    expect(pageOneIds).toEqual(allManualIds.slice(0, 2))
+    expect(pageTwoIds).toEqual(allManualIds.slice(2, 4))
+  })
+
+  it('supports optional filtering by schedule type', async () => {
+    const authCookie = createAuthCookie()
+    const suffix = createUniqueSuffix()
+
+    const manualScheduleId = await createScheduleViaPost(
+      {
+        name: `Manual Filter Schedule ${suffix}`,
+        type: 'MANUAL',
+        committees: []
+      },
+      authCookie
+    )
+
+    const autoScheduleId = await createScheduleViaPost(
+      {
+        name: `Auto Filter Schedule ${suffix}`,
+        type: 'AUTO',
+        committees: []
+      },
+      authCookie
+    )
+
+    const manualResponse = await fetch(apiUrl('/api/time-schedules?type=MANUAL&page=1&pageSize=100'), {
+      headers: { cookie: authCookie }
+    })
+    const autoResponse = await fetch(apiUrl('/api/time-schedules?type=AUTO&page=1&pageSize=100'), {
+      headers: { cookie: authCookie }
+    })
+
+    expect(manualResponse.status).toBe(200)
+    expect(autoResponse.status).toBe(200)
+
+    const manualPayload = (await manualResponse.json()) as TimeScheduleListItemDto[]
+    const autoPayload = (await autoResponse.json()) as TimeScheduleListItemDto[]
+
+    const manualIds = manualPayload.map((schedule) => schedule.id)
+    const autoIds = autoPayload.map((schedule) => schedule.id)
+
+    expect(manualIds).toContain(manualScheduleId)
+    expect(manualIds).not.toContain(autoScheduleId)
+
+    expect(autoIds).toContain(autoScheduleId)
+    expect(autoIds).not.toContain(manualScheduleId)
+  })
+
+  it.each([
+    '/api/time-schedules?page=0',
+    '/api/time-schedules?page=-1',
+    '/api/time-schedules?page=abc',
+    '/api/time-schedules?pageSize=0',
+    '/api/time-schedules?type=INVALID',
+    '/api/time-schedules?page=1&page=2'
+  ])('returns 400 for invalid query: %s', async (path) => {
+    const response = await fetch(apiUrl(path), {
+      headers: {
+        cookie: createAuthCookie()
+      }
+    })
+
+    expect(response.status).toBe(400)
+  })
 })

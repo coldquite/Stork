@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { TimeScheduleListItemDto } from '#shared/types/time-schedules'
 import { useStartStore } from '~/stores/start'
 
 const { t } = useI18n()

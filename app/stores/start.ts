@@ -11,7 +11,7 @@ export const useStartStore = defineStore('start', () => {
   const isRecentPlansLoading = ref(false)
   const hasRecentPlansError = ref(false)
 
-  async function fetchRecentPlans(limit = 5): Promise<void> {
+  async function fetchRecentPlans(limit = 7): Promise<void> {
     if (isRecentPlansLoading.value) {
       return
     }
@@ -21,8 +21,7 @@ export const useStartStore = defineStore('start', () => {
 
     try {
       const requestFetch = useRequestFetch()
-      const schedules = await requestFetch<TimeScheduleListItemDto[]>('/api/time-schedules')
-      recentPlans.value = schedules.slice(0, limit)
+      recentPlans.value = await requestFetch<TimeScheduleListItemDto[]>(`/api/time-schedules?page=1&pageSize=${limit}`)
     } catch {
       hasRecentPlansError.value = true
       recentPlans.value = []
