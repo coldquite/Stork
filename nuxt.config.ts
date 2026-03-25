@@ -49,6 +49,9 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-01-15',
 
   vite: {
+    optimizeDeps: {
+      include: ['date-fns', 'date-fns/locale/cs']
+    },
     plugins: [
       license({
         // Generates a third-party licenses report for the project

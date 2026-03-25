@@ -19,6 +19,7 @@
  * - Ignores stale save responses if the draft changed while a request was in flight
  */
 
+import { addMilliseconds, differenceInMilliseconds, isValid, parseISO } from 'date-fns'
 import type {
   CommitteeItemDto,
   CommitteeDto,
@@ -324,7 +325,7 @@ export const useScheduleDraftStore = defineStore('schedule-draft', () => {
 
     clearAutoSaveTimer()
     const delay = Math.max(0, delayMs)
-    nextAutoSaveAt.value = new Date(Date.now() + delay).toISOString()
+    nextAutoSaveAt.value = addMilliseconds(new Date(), delay).toISOString()
 
     autoSaveTimer = setTimeout(() => {
       void runAutoSave()
@@ -343,12 +344,16 @@ export const useScheduleDraftStore = defineStore('schedule-draft', () => {
     }
 
     if (lastAutoSaveAt.value) {
-      const elapsedMs = Date.now() - new Date(lastAutoSaveAt.value).getTime()
-      const remainingMs = autoSavePolicy.value.minIntervalMs - elapsedMs
+      const lastAutoSaveDate = parseISO(lastAutoSaveAt.value)
 
-      if (remainingMs > 0) {
-        scheduleAutoSave(remainingMs)
-        return null
+      if (isValid(lastAutoSaveDate)) {
+        const elapsedMs = differenceInMilliseconds(new Date(), lastAutoSaveDate)
+        const remainingMs = autoSavePolicy.value.minIntervalMs - elapsedMs
+
+        if (remainingMs > 0) {
+          scheduleAutoSave(remainingMs)
+          return null
+        }
       }
     }
 

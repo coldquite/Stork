@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { getYear } from 'date-fns'
+
 const appConfig = useAppConfig()
 const { t } = useI18n()
-const currentYear = new Date().getFullYear()
+const currentYear = getYear(new Date())
 </script>
 
 <template>
