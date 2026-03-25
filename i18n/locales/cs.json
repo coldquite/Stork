@@ -63,6 +63,18 @@
         "justNow": "právě teď"
       }
     },
+    "plansModal": {
+      "title": "Uložené plány",
+      "tabs": {
+        "manual": "Manuální uložení",
+        "auto": "Automatické uložení"
+      },
+      "updatedAt": "Aktualizováno:",
+      "loading": "Načítám uložené plány...",
+      "autoBadge": "Auto uložení",
+      "emptyTitle": "Zatím zde nejsou žádné plány",
+      "emptyDescription": "Jakmile uložíte plán, zobrazí se na tomto místě."
+    },
     "recent": {
       "title": "Nedávné plány",
       "description": "Rychlý přístup k posledním 7 plánům",

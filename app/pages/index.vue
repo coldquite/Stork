@@ -4,6 +4,8 @@ import { HOMEPAGE_NEW_PLAN_NAME_MAX_LENGTH } from '~/composables/useHomepage'
 const { t } = useI18n()
 const {
   homepageStore,
+  manualDrafts,
+  autoDrafts,
   restoreDraftLine,
   restoreDraftUpdatedLine,
   showRestoreCard,
@@ -12,14 +14,18 @@ const {
   recentPlanOpenError,
   openRecentPlanDialogDescription,
   requestOpenRecentPlan,
+  requestOpenBrowsePlan,
   cancelOpenRecentPlan,
   confirmOpenRecentPlan,
   isCreatePlanConfirmDialogOpen,
   isCreatePlanNameDialogOpen,
   isCreatingNewPlan,
+  isBrowsePlansDialogOpen,
+  isBrowsePlansLoading,
   newPlanNameInput,
   newPlanNameError,
   requestCreatePlan,
+  requestBrowsePlans,
   requestRestoreDraft,
   cancelCreatePlanConfirm,
   confirmCreatePlanConfirm,
@@ -48,6 +54,7 @@ await callOnce('homepage-recent-plans', async () => {
       :restore-draft-updated-line="restoreDraftUpdatedLine"
       :show-restore-card="showRestoreCard"
       @create-click="requestCreatePlan"
+      @browse-click="requestBrowsePlans"
       @restore-click="requestRestoreDraft"
     />
 
@@ -87,6 +94,14 @@ await callOnce('homepage-recent-plans', async () => {
       :validation-error="newPlanNameError"
       @cancel="cancelCreatePlanNameDialog"
       @submit="submitCreatePlanName"
+    />
+
+    <HomepagePlansDialog
+      v-model:open="isBrowsePlansDialogOpen"
+      :manual-drafts="manualDrafts"
+      :auto-drafts="autoDrafts"
+      :is-loading="isBrowsePlansLoading"
+      @open-plan="requestOpenBrowsePlan"
     />
   </UContainer>
 </template>

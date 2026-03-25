@@ -6,10 +6,14 @@ interface HomepageActionCardsProps {
 }
 
 defineProps<HomepageActionCardsProps>()
-const emit = defineEmits<{ createClick: []; restoreClick: [] }>()
+const emit = defineEmits<{ createClick: []; browseClick: []; restoreClick: [] }>()
 
 function handleCreateClick(): void {
   emit('createClick')
+}
+
+function handleBrowseClick(): void {
+  emit('browseClick')
 }
 
 function handleRestoreClick(): void {
@@ -40,6 +44,7 @@ function handleRestoreClick(): void {
 
     <UCard
       class="group border-capaccent-300 hover:border-capaccent-500 hover:bg-capaccent-50 dark:hover:bg-capaccent-500/25 cursor-pointer border-2 transition-colors duration-300 ease-out"
+      @click="handleBrowseClick"
     >
       <div class="flex flex-col items-center py-6 text-center">
         <div

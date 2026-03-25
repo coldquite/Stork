@@ -1,11 +1,25 @@
 import { differenceInSeconds, formatDistanceToNowStrict, isValid, parseISO } from 'date-fns'
 import { cs } from 'date-fns/locale'
 import { computed, ref, watch } from 'vue'
-import type { TimeScheduleListItemDto } from '#shared/types/time-schedules'
+import type { TimeScheduleListItemDto, TimeScheduleTypeDto } from '#shared/types/time-schedules'
 import { useScheduleDraftStore } from '~/stores/schedule-draft'
 import { useHomepageStore } from '~/stores/homepage'
 
+interface HomepageDraftListItem {
+  id: string
+  name: string
+  updatedAt: string
+  committeesCount: number
+  studentsCount: number
+}
+
+interface PlanOpenCandidate {
+  id: string
+  name: string
+}
+
 export const HOMEPAGE_NEW_PLAN_NAME_MAX_LENGTH = 120
+const HOMEPAGE_BROWSE_PLANS_PAGE_SIZE = 20
 
 export function useHomepage() {
   const { t } = useI18n()
@@ -14,7 +28,7 @@ export function useHomepage() {
 
   const isOpenRecentPlanDialogOpen = ref(false)
   const isOpeningRecentPlan = ref(false)
-  const pendingRecentPlan = ref<TimeScheduleListItemDto | null>(null)
+  const pendingOpenPlan = ref<PlanOpenCandidate | null>(null)
   const recentPlanOpenError = ref<string | null>(null)
 
   const isCreatePlanConfirmDialogOpen = ref(false)
@@ -22,6 +36,13 @@ export function useHomepage() {
   const isCreatingNewPlan = ref(false)
   const newPlanNameInput = ref('')
   const newPlanNameError = ref<string | null>(null)
+
+  const isBrowsePlansDialogOpen = ref(false)
+  const isBrowsePlansLoading = ref(false)
+  let browsePlansRequestId = 0
+
+  const manualDrafts = ref<HomepageDraftListItem[]>([])
+  const autoDrafts = ref<HomepageDraftListItem[]>([])
 
   const showRestoreCard = computed(() => {
     return scheduleDraftStore.hasDraft && !isOpeningRecentPlan.value && !isCreatingNewPlan.value
@@ -45,7 +66,7 @@ export function useHomepage() {
 
   const openRecentPlanDialogDescription = computed(() => {
     return t('homepage.recent.openPlanConfirmDescription', {
-      name: pendingRecentPlan.value?.name ?? ''
+      name: pendingOpenPlan.value?.name ?? ''
     })
   })
 
@@ -119,6 +140,55 @@ export function useHomepage() {
     openCreatePlanNameDialog()
   }
 
+  async function fetchDraftsByType(type: TimeScheduleTypeDto): Promise<HomepageDraftListItem[]> {
+    const requestFetch = useRequestFetch()
+    const plans = await requestFetch<TimeScheduleListItemDto[]>(
+      `/api/time-schedules?page=1&pageSize=${HOMEPAGE_BROWSE_PLANS_PAGE_SIZE}&type=${type}`
+    )
+
+    return plans.map((plan) => ({
+      id: plan.id,
+      name: plan.name,
+      updatedAt: plan.createdAt,
+      committeesCount: plan.counts.committees,
+      studentsCount: plan.counts.students
+    }))
+  }
+
+  async function refreshBrowsePlans(): Promise<void> {
+    const requestId = ++browsePlansRequestId
+    isBrowsePlansLoading.value = true
+    manualDrafts.value = []
+    autoDrafts.value = []
+
+    try {
+      const [manualPlans, autoPlans] = await Promise.all([fetchDraftsByType('MANUAL'), fetchDraftsByType('AUTO')])
+
+      if (requestId !== browsePlansRequestId) {
+        return
+      }
+
+      manualDrafts.value = manualPlans
+      autoDrafts.value = autoPlans
+    } catch {
+      if (requestId !== browsePlansRequestId) {
+        return
+      }
+
+      manualDrafts.value = []
+      autoDrafts.value = []
+    } finally {
+      if (requestId === browsePlansRequestId) {
+        isBrowsePlansLoading.value = false
+      }
+    }
+  }
+
+  function requestBrowsePlans(): void {
+    isBrowsePlansDialogOpen.value = true
+    void refreshBrowsePlans()
+  }
+
   function requestRestoreDraft(): void {
     if (isCreatingNewPlan.value || isOpeningRecentPlan.value || !scheduleDraftStore.hasDraft) {
       return
@@ -174,7 +244,7 @@ export function useHomepage() {
     }
   }
 
-  async function openRecentPlan(planId: string): Promise<void> {
+  async function openPlanById(planId: string): Promise<void> {
     if (isOpeningRecentPlan.value) {
       return
     }
@@ -192,20 +262,31 @@ export function useHomepage() {
     }
   }
 
-  function requestOpenRecentPlan(plan: TimeScheduleListItemDto): void {
+  function requestOpenPlan(plan: PlanOpenCandidate, closeBrowseModal = false): void {
     if (isOpeningRecentPlan.value) {
       return
     }
 
     recentPlanOpenError.value = null
+    if (closeBrowseModal) {
+      isBrowsePlansDialogOpen.value = false
+    }
 
     if (!scheduleDraftStore.hasDraft) {
-      void openRecentPlan(plan.id)
+      void openPlanById(plan.id)
       return
     }
 
-    pendingRecentPlan.value = plan
+    pendingOpenPlan.value = plan
     isOpenRecentPlanDialogOpen.value = true
+  }
+
+  function requestOpenRecentPlan(plan: TimeScheduleListItemDto): void {
+    requestOpenPlan(plan)
+  }
+
+  function requestOpenBrowsePlan(plan: HomepageDraftListItem): void {
+    requestOpenPlan(plan, true)
   }
 
   function cancelOpenRecentPlan(): void {
@@ -214,23 +295,25 @@ export function useHomepage() {
     }
 
     isOpenRecentPlanDialogOpen.value = false
-    pendingRecentPlan.value = null
+    pendingOpenPlan.value = null
   }
 
   async function confirmOpenRecentPlan(): Promise<void> {
-    const selectedPlan = pendingRecentPlan.value
+    const selectedPlan = pendingOpenPlan.value
 
     if (!selectedPlan || isOpeningRecentPlan.value) {
       return
     }
 
     isOpenRecentPlanDialogOpen.value = false
-    pendingRecentPlan.value = null
-    await openRecentPlan(selectedPlan.id)
+    pendingOpenPlan.value = null
+    await openPlanById(selectedPlan.id)
   }
 
   return {
     homepageStore,
+    manualDrafts,
+    autoDrafts,
     restoreDraftLine,
     restoreDraftUpdatedLine,
     showRestoreCard,
@@ -239,14 +322,18 @@ export function useHomepage() {
     recentPlanOpenError,
     openRecentPlanDialogDescription,
     requestOpenRecentPlan,
+    requestOpenBrowsePlan,
     cancelOpenRecentPlan,
     confirmOpenRecentPlan,
     isCreatePlanConfirmDialogOpen,
     isCreatePlanNameDialogOpen,
     isCreatingNewPlan,
+    isBrowsePlansDialogOpen,
+    isBrowsePlansLoading,
     newPlanNameInput,
     newPlanNameError,
     requestCreatePlan,
+    requestBrowsePlans,
     requestRestoreDraft,
     cancelCreatePlanConfirm,
     confirmCreatePlanConfirm,
