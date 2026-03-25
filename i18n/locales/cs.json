@@ -38,7 +38,19 @@
     "actions": {
       "create": {
         "title": "Vytvořit nový plán",
-        "description": "Začněte s prázdným časovým plánem pro nové SZZ"
+        "description": "Začněte s prázdným časovým plánem pro nové SZZ",
+        "confirmAction": "Vytvořit nový plán",
+        "confirmDescription": "Opravdu chcete vytvořit nový plán? Aktuální rozpracovaný časový plán bude ztracen.",
+        "nameDialogTitle": "Název nového plánu",
+        "nameDialogDescription": "Zadejte název nového časového plánu.",
+        "namePlaceholder": "Např. SZZ Informatika - červen 2026",
+        "submitAction": "Pokračovat do editoru",
+        "validationHint": "Název nesmí začínat ani končit mezerou a může mít maximálně {max} znaků.",
+        "validation": {
+          "required": "Název musí obsahovat alespoň 1 znak bez mezer.",
+          "leadingTrailingWhitespace": "Název nesmí začínat ani končit mezerou.",
+          "maxLength": "Název může mít maximálně {max} znaků."
+        }
       },
       "browse": {
         "title": "Procházet plány",
@@ -55,6 +67,10 @@
       "description": "Rychlý přístup k posledním 7 plánům",
       "errorTitle": "Plány se nepodařilo načíst",
       "errorDescription": "Zkuste stránku obnovit a akci opakovat.",
+      "openPlanAction": "Otevřít plán",
+      "openPlanConfirmDescription": "Opravdu chcete otevřít plán „{name}“? Aktuální rozpracovaný časový plán bude ztracen.",
+      "openPlanErrorTitle": "Plán se nepodařilo otevřít",
+      "openPlanErrorDescription": "Nepodařilo se načíst vybraný plán. Zkuste akci opakovat.",
       "emptyTitle": "Zatím není k dispozici žádný plán",
       "emptyDescription": "Jakmile vytvoříte nebo uložíte plán, zobrazí se na tomto místě.",
       "committees": "{count} komisí",
