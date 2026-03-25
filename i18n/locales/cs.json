@@ -4,6 +4,10 @@
       "title": "Potvrzení akce",
       "cancel": "Zrušit",
       "confirm": "Potvrdit"
+    },
+    "errors": {
+      "unexpected": "Došlo k neočekávané chybě.",
+      "draftNotInitialized": "Koncept harmonogramu není inicializovaný."
     }
   },
   "meta": {
