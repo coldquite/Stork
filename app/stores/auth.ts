@@ -1,3 +1,10 @@
+/**
+ * Auth Store
+ *
+ * Keeps the client-side authentication session state for the current user.
+ * It loads session info from the backend, starts FIT login redirect flow,
+ * and performs logout while exposing loading flags for UI actions.
+ */
 import type { AuthSessionResponse } from '#shared/types/auth'
 
 export const useAuthStore = defineStore('auth', () => {
