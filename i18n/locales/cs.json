@@ -43,11 +43,16 @@
       "browse": {
         "title": "Procházet plány",
         "description": "Otevřete existující plán ze seznamu všech plánů"
+      },
+      "restore": {
+        "title": "Máte rozpracovaný plán",
+        "status": "{name} - rozpracovaný - naposledy upraveno {relativeTime}",
+        "justNow": "právě teď"
       }
     },
     "recent": {
       "title": "Nedávné plány",
-      "description": "Rychlý přístup k posledním 5 plánům",
+      "description": "Rychlý přístup k posledním 7 plánům",
       "errorTitle": "Plány se nepodařilo načíst",
       "errorDescription": "Zkuste stránku obnovit a akci opakovat.",
       "emptyTitle": "Zatím není k dispozici žádný plán",
