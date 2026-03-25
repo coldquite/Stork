@@ -19,11 +19,6 @@ function formatPlanDate(value: string): string {
   const year = date.getFullYear()
   return `${day}.${month}.${year}`
 }
-
-function resolvePlanName(plan: TimeScheduleListItemDto): string {
-  const planName = plan.name?.trim()
-  return planName && planName.length > 0 ? planName : t('start.recent.untitled')
-}
 </script>
 
 <template>
@@ -121,7 +116,7 @@ function resolvePlanName(plan: TimeScheduleListItemDto): string {
               </div>
               <div class="min-w-0">
                 <p class="truncate font-medium">
-                  {{ resolvePlanName(plan) }}
+                  {{ plan.name }}
                 </p>
                 <p class="text-muted text-sm">
                   {{ formatPlanDate(plan.createdAt) }}

@@ -4,7 +4,7 @@ import type { TimeScheduleListItemDto } from '#shared/types/time-schedules'
 
 interface TimeScheduleListRow {
   id: string
-  name: string | null
+  name: string
   createdAt: Date
   committeesCount: number
   itemsCount: number

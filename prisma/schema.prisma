@@ -38,7 +38,7 @@ enum ThesisLanguage {
 
 model TimeSchedule {
   id        String           @id @default(cuid())
-  name      String?
+  name      String
   type      TimeScheduleType @default(MANUAL)
   createdAt DateTime         @default(now())
 

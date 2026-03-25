@@ -141,6 +141,35 @@ describe('POST /api/time-schedules (integration)', () => {
     expect(pauseItem!.pause!.label).toBe('Přestávka')
   })
 
+  it('keeps provided schedule name for AUTO payloads', async () => {
+    const authCookie = createAuthCookie()
+    const payloadSeed = createUniqueSuffix()
+    const providedName = `User Provided Name ${payloadSeed}`
+    const response = await postTimeSchedule(
+      {
+        ...createPostPayload(payloadSeed),
+        name: providedName,
+        type: 'AUTO'
+      },
+      authCookie
+    )
+
+    expect(response.status).toBe(201)
+    const payload = (await response.json()) as PostTimeScheduleResponseDto
+
+    const getResponse = await fetch(apiUrl(`/api/time-schedules/${payload.id}`), {
+      headers: {
+        cookie: authCookie
+      }
+    })
+
+    expect(getResponse.status).toBe(200)
+    const persistedSchedule = (await getResponse.json()) as TimeScheduleDto
+
+    expect(persistedSchedule.type).toBe('AUTO')
+    expect(persistedSchedule.name).toBe(providedName)
+  })
+
   it('returns 409 on unique-constraint conflict from database', async () => {
     const suffix = createUniqueSuffix()
     const payload = createPostPayload(suffix)
@@ -203,6 +232,18 @@ describe('POST /api/time-schedules (integration)', () => {
     {
       name: 'name has invalid type',
       mutate: (payload: PostTimeScheduleRequestDto) => ({ ...payload, name: 123 })
+    },
+    {
+      name: 'name is null',
+      mutate: (payload: PostTimeScheduleRequestDto) => ({ ...payload, name: null })
+    },
+    {
+      name: 'name is empty string',
+      mutate: (payload: PostTimeScheduleRequestDto) => ({ ...payload, name: '' })
+    },
+    {
+      name: 'name contains only whitespace',
+      mutate: (payload: PostTimeScheduleRequestDto) => ({ ...payload, name: '   ' })
     },
     {
       name: 'type has unsupported enum value',

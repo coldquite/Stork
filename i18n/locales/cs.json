@@ -52,7 +52,6 @@
       "errorDescription": "Zkuste stránku obnovit a akci opakovat.",
       "emptyTitle": "Zatím není k dispozici žádný plán",
       "emptyDescription": "Jakmile vytvoříte nebo uložíte plán, zobrazí se na tomto místě.",
-      "untitled": "Plán bez názvu",
       "committees": "{count} komisí",
       "students": "{count} studentů"
     }

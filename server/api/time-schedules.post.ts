@@ -78,6 +78,16 @@ function parseString(value: unknown, path: string): string {
   return value
 }
 
+function parseTrimmedNonEmptyString(value: unknown, path: string): string {
+  const parsedValue = parseString(value, path).trim()
+
+  if (parsedValue.length < 1) {
+    invalidPayload(`${path} must have at least 1 non-whitespace character`)
+  }
+
+  return parsedValue
+}
+
 function parseNullableString(value: unknown, path: string): string | null {
   if (value === null) {
     return null
@@ -255,7 +265,7 @@ function parsePostTimeSchedulePayload(payload: unknown): PostTimeScheduleRequest
   assertNoUnknownKeys(record, ['name', 'type', 'committees'], 'payload')
 
   return {
-    name: parseNullableString(record.name, 'payload.name'),
+    name: parseTrimmedNonEmptyString(record.name, 'payload.name'),
     type: parseEnumValue(record.type, TIME_SCHEDULE_TYPES, 'payload.type'),
     committees: parseArray(record.committees, 'payload.committees', parseCommittee)
   }

@@ -5,7 +5,7 @@ export type ThesisLanguageDto = 'CZECH' | 'ENGLISH' | 'SLOVAK'
 
 export interface TimeScheduleListItemDto {
   id: string
-  name: string | null
+  name: string
   createdAt: string
   counts: {
     committees: number
@@ -77,7 +77,7 @@ export interface CommitteeDto {
 
 export interface TimeScheduleDto {
   id: string
-  name: string | null
+  name: string
   type: TimeScheduleTypeDto
   createdAt: string
   committees: CommitteeDto[]

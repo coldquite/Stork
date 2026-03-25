@@ -243,9 +243,10 @@ describe('useScheduleDraftStore', () => {
       throw new Error('Expected request options in autosave call')
     }
 
-    const payload = requestOptions.body as { type: string }
+    const payload = requestOptions.body as { type: string; name: string }
 
     expect(payload.type).toBe('AUTO')
+    expect(payload.name.startsWith('AUTO-')).toBe(true)
     expect(store.isDirty).toBe(false)
     expect(store.lastSavedType).toBe('AUTO')
     expect(store.lastAutoSaveAt).toBe('2026-06-11T11:00:00.000Z')

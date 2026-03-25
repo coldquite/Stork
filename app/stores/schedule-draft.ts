@@ -43,6 +43,7 @@ const DEFAULT_SCHEDULE_AUTOSAVE_POLICY: Readonly<ScheduleAutoSavePolicy> = Objec
   minIntervalMs: 300_000,
   retryAfterErrorMs: 60_000
 })
+const DEFAULT_NEW_SCHEDULE_NAME_PREFIX = 'Nový plán '
 
 export type ScheduleDraft = Omit<PostTimeScheduleRequestDto, 'committees'> & {
   committees: ScheduleDraftCommittee[]
@@ -63,13 +64,21 @@ function deepClone<T>(value: T): T {
   return structuredClone(toRaw(value))
 }
 
-function normalizedName(name: string | null | undefined): string | null {
+function normalizedName(name: string | null | undefined, fallback = ''): string {
   if (name === null || name === undefined) {
-    return null
+    return fallback
   }
 
   const normalized = name.trim()
-  return normalized.length > 0 ? normalized : null
+  return normalized.length > 0 ? normalized : fallback
+}
+
+function createAutoScheduleName(now: Date = new Date()): string {
+  return `AUTO-${now.toISOString()}`
+}
+
+function createDefaultNewScheduleName(now: Date = new Date()): string {
+  return `${DEFAULT_NEW_SCHEDULE_NAME_PREFIX}${now.toISOString()}`
 }
 
 function toDraftItem(item: CommitteeItemDto | PostCommitteeItemDto): ScheduleDraftItem {
@@ -112,8 +121,10 @@ function toDraftCommittee(committee: CommitteeDto | PostCommitteeDto): ScheduleD
 type DraftScheduleSource = Pick<PostTimeScheduleRequestDto, 'name' | 'type' | 'committees'>
 
 function toDraftFromSource(source: DraftScheduleSource): ScheduleDraft {
+  const fallbackName = createDefaultNewScheduleName()
+
   return {
-    name: normalizedName(source.name),
+    name: normalizedName(source.name, fallbackName),
     type: source.type,
     committees: source.committees
       .slice()
@@ -153,10 +164,11 @@ function toPostPayload(
   explicitName?: string | null
 ): PostTimeScheduleRequestDto {
   const payload = deepClone(draft)
+  const targetName = explicitName !== undefined ? explicitName : payload.name
 
   return {
     ...payload,
-    name: normalizedName(explicitName !== undefined ? explicitName : payload.name),
+    name: normalizedName(targetName, ''),
     type: scheduleType,
     committees: payload.committees
       .slice()
@@ -344,7 +356,7 @@ export const useScheduleDraftStore = defineStore('schedule-draft', () => {
     autoSaveError.value = null
 
     try {
-      return await persistDraft('AUTO')
+      return await persistDraft('AUTO', createAutoScheduleName())
     } catch (error: unknown) {
       autoSaveError.value = resolveErrorMessage(error, resolveUnexpectedErrorMessage())
       scheduleAutoSave(autoSavePolicy.value.retryAfterErrorMs)
@@ -356,7 +368,7 @@ export const useScheduleDraftStore = defineStore('schedule-draft', () => {
 
   function initializeNewDraft(initialDraft?: Partial<ScheduleDraft>): void {
     replaceDraft({
-      name: normalizedName(initialDraft?.name),
+      name: normalizedName(initialDraft?.name, createDefaultNewScheduleName()),
       type: 'MANUAL',
       committees: deepClone(initialDraft?.committees ?? [])
     })
