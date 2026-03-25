@@ -2,8 +2,6 @@
 definePageMeta({
   middleware: 'editor-draft'
 })
-
-const { t } = useI18n()
 </script>
 
 <template>

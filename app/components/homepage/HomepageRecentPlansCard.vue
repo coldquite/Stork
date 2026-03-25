@@ -2,14 +2,14 @@
 import { format, isValid, parseISO } from 'date-fns'
 import type { TimeScheduleListItemDto } from '#shared/types/time-schedules'
 
-interface StartRecentPlansCardProps {
+interface HomepageRecentPlansCardProps {
   recentPlans: TimeScheduleListItemDto[]
   isRecentPlansLoading: boolean
   hasRecentPlansError: boolean
   recentPlanOpenError: string | null
 }
 
-defineProps<StartRecentPlansCardProps>()
+defineProps<HomepageRecentPlansCardProps>()
 const emit = defineEmits<{ openPlan: [plan: TimeScheduleListItemDto] }>()
 
 function formatPlanDate(value: string): string {
@@ -34,10 +34,10 @@ function handleOpenPlan(plan: TimeScheduleListItemDto): void {
         <div class="space-y-2">
           <h2 class="flex items-center gap-2 text-lg font-semibold">
             <UIcon name="i-lucide-clock-3" class="text-muted size-5" />
-            {{ $t('start.recent.title') }}
+            {{ $t('homepage.recent.title') }}
           </h2>
           <p class="text-muted">
-            {{ $t('start.recent.description') }}
+            {{ $t('homepage.recent.description') }}
           </p>
         </div>
       </template>
@@ -51,8 +51,8 @@ function handleOpenPlan(plan: TimeScheduleListItemDto): void {
         color="error"
         variant="soft"
         icon="i-lucide-triangle-alert"
-        :title="$t('start.recent.errorTitle')"
-        :description="$t('start.recent.errorDescription')"
+        :title="$t('homepage.recent.errorTitle')"
+        :description="$t('homepage.recent.errorDescription')"
       />
 
       <template v-else>
@@ -62,15 +62,15 @@ function handleOpenPlan(plan: TimeScheduleListItemDto): void {
           color="error"
           variant="soft"
           icon="i-lucide-triangle-alert"
-          :title="$t('start.recent.openPlanErrorTitle')"
+          :title="$t('homepage.recent.openPlanErrorTitle')"
           :description="recentPlanOpenError"
         />
 
         <UEmpty
           v-if="recentPlans.length === 0"
           icon="i-lucide-calendar"
-          :title="$t('start.recent.emptyTitle')"
-          :description="$t('start.recent.emptyDescription')"
+          :title="$t('homepage.recent.emptyTitle')"
+          :description="$t('homepage.recent.emptyDescription')"
         />
 
         <div v-else class="space-y-2">
@@ -98,9 +98,9 @@ function handleOpenPlan(plan: TimeScheduleListItemDto): void {
               <div class="text-muted flex items-center gap-4 text-sm">
                 <span class="flex items-center gap-1">
                   <UIcon name="i-lucide-users" class="size-4" />
-                  {{ $t('start.recent.committees', { count: plan.counts.committees }) }}
+                  {{ $t('homepage.recent.committees', { count: plan.counts.committees }) }}
                 </span>
-                <span>{{ $t('start.recent.students', { count: plan.counts.students }) }}</span>
+                <span>{{ $t('homepage.recent.students', { count: plan.counts.students }) }}</span>
               </div>
               <UIcon
                 name="i-lucide-chevron-right"

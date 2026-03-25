@@ -1,12 +1,12 @@
 /**
- * Start Store
+ * Homepage Store
  *
- * Provides data for the start page "recent plans" section.
+ * Provides data for the homepage "recent plans" section.
  * It fetches schedule list items from the backend, keeps only a limited number of latest entries.
  */
 import type { TimeScheduleListItemDto } from '#shared/types/time-schedules'
 
-export const useStartStore = defineStore('start', () => {
+export const useHomepageStore = defineStore('homepage', () => {
   const recentPlans = ref<TimeScheduleListItemDto[]>([])
   const isRecentPlansLoading = ref(false)
   const hasRecentPlansError = ref(false)

@@ -1,10 +1,10 @@
 <script setup lang="ts">
-interface StartActionCardsProps {
+interface HomepageActionCardsProps {
   restoreDraftStatus: string
   showRestoreCard: boolean
 }
 
-defineProps<StartActionCardsProps>()
+defineProps<HomepageActionCardsProps>()
 const emit = defineEmits<{ createClick: [] }>()
 
 function handleCreateClick(): void {
@@ -25,10 +25,10 @@ function handleCreateClick(): void {
           <UIcon name="i-lucide-plus" class="text-primary size-8" />
         </div>
         <h2 class="mb-2 text-xl font-semibold">
-          {{ $t('start.actions.create.title') }}
+          {{ $t('homepage.actions.create.title') }}
         </h2>
         <p class="text-muted">
-          {{ $t('start.actions.create.description') }}
+          {{ $t('homepage.actions.create.description') }}
         </p>
       </div>
     </UCard>
@@ -43,10 +43,10 @@ function handleCreateClick(): void {
           <UIcon name="i-lucide-folder-open" class="text-capaccent-800 size-8" />
         </div>
         <h2 class="mb-2 text-xl font-semibold transition-colors duration-300 ease-out">
-          {{ $t('start.actions.browse.title') }}
+          {{ $t('homepage.actions.browse.title') }}
         </h2>
         <p class="text-muted group-hover:text-default transition-colors duration-300 ease-out">
-          {{ $t('start.actions.browse.description') }}
+          {{ $t('homepage.actions.browse.description') }}
         </p>
       </div>
     </UCard>
@@ -66,7 +66,7 @@ function handleCreateClick(): void {
           />
         </div>
         <h2 class="mb-2 text-xl font-semibold">
-          {{ $t('start.actions.restore.title') }}
+          {{ $t('homepage.actions.restore.title') }}
         </h2>
         <p class="text-sm">
           {{ restoreDraftStatus }}

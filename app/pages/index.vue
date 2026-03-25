@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { START_NEW_PLAN_NAME_MAX_LENGTH } from '~/composables/useStartPage'
+import { HOMEPAGE_NEW_PLAN_NAME_MAX_LENGTH } from '~/composables/useHomepage'
 
 const { t } = useI18n()
 const {
-  startStore,
+  homepageStore,
   restoreDraftStatus,
   showRestoreCard,
   isOpenRecentPlanDialogOpen,
@@ -23,10 +23,10 @@ const {
   confirmCreatePlanConfirm,
   cancelCreatePlanNameDialog,
   submitCreatePlanName
-} = useStartPage()
+} = useHomepage()
 
-await callOnce('start-recent-plans', async () => {
-  await startStore.fetchRecentPlans()
+await callOnce('homepage-recent-plans', async () => {
+  await homepageStore.fetchRecentPlans()
 })
 </script>
 
@@ -34,32 +34,32 @@ await callOnce('start-recent-plans', async () => {
   <UContainer class="max-w-5xl py-14">
     <header class="mb-12 text-center">
       <h1 class="mx-auto mb-3 max-w-[20ch]">
-        {{ t('start.title') }}
+        {{ t('homepage.title') }}
       </h1>
       <p class="text-muted mx-auto max-w-3xl text-lg">
-        {{ t('start.description') }}
+        {{ t('homepage.description') }}
       </p>
     </header>
 
-    <StartActionCards
+    <HomepageActionCards
       :restore-draft-status="restoreDraftStatus"
       :show-restore-card="showRestoreCard"
       @create-click="requestCreatePlan"
     />
 
-    <StartRecentPlansCard
-      :recent-plans="startStore.recentPlans"
-      :is-recent-plans-loading="startStore.isRecentPlansLoading"
-      :has-recent-plans-error="startStore.hasRecentPlansError"
+    <HomepageRecentPlansCard
+      :recent-plans="homepageStore.recentPlans"
+      :is-recent-plans-loading="homepageStore.isRecentPlansLoading"
+      :has-recent-plans-error="homepageStore.hasRecentPlansError"
       :recent-plan-open-error="recentPlanOpenError"
       @open-plan="requestOpenRecentPlan"
     />
 
     <CommonAppActionConfirmDialog
       v-model:open="isOpenRecentPlanDialogOpen"
-      :action-label="t('start.recent.openPlanAction')"
+      :action-label="t('homepage.recent.openPlanAction')"
       :description="openRecentPlanDialogDescription"
-      :confirm-label="t('start.recent.openPlanAction')"
+      :confirm-label="t('homepage.recent.openPlanAction')"
       :loading="isOpeningRecentPlan"
       @cancel="cancelOpenRecentPlan"
       @confirm="confirmOpenRecentPlan"
@@ -67,19 +67,19 @@ await callOnce('start-recent-plans', async () => {
 
     <CommonAppActionConfirmDialog
       v-model:open="isCreatePlanConfirmDialogOpen"
-      :action-label="t('start.actions.create.confirmAction')"
-      :description="t('start.actions.create.confirmDescription')"
-      :confirm-label="t('start.actions.create.confirmAction')"
+      :action-label="t('homepage.actions.create.confirmAction')"
+      :description="t('homepage.actions.create.confirmDescription')"
+      :confirm-label="t('homepage.actions.create.confirmAction')"
       :loading="isCreatingNewPlan"
       @cancel="cancelCreatePlanConfirm"
       @confirm="confirmCreatePlanConfirm"
     />
 
-    <StartCreatePlanNameDialog
+    <HomepageCreatePlanNameDialog
       v-model:open="isCreatePlanNameDialogOpen"
       v-model:name="newPlanNameInput"
       :loading="isCreatingNewPlan"
-      :max-length="START_NEW_PLAN_NAME_MAX_LENGTH"
+      :max-length="HOMEPAGE_NEW_PLAN_NAME_MAX_LENGTH"
       :validation-error="newPlanNameError"
       @cancel="cancelCreatePlanNameDialog"
       @submit="submitCreatePlanName"

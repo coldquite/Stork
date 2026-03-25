@@ -1,11 +1,11 @@
 <script setup lang="ts">
-interface StartCreatePlanNameDialogProps {
+interface HomepageCreatePlanNameDialogProps {
   loading: boolean
   maxLength: number
   validationError: string | null
 }
 
-defineProps<StartCreatePlanNameDialogProps>()
+defineProps<HomepageCreatePlanNameDialogProps>()
 
 const open = defineModel<boolean>('open', { default: false })
 const name = defineModel<string>('name', { default: '' })
@@ -24,8 +24,8 @@ function handleSubmit(): void {
 <template>
   <UModal
     v-model:open="open"
-    :title="$t('start.actions.create.nameDialogTitle')"
-    :description="$t('start.actions.create.nameDialogDescription')"
+    :title="$t('homepage.actions.create.nameDialogTitle')"
+    :description="$t('homepage.actions.create.nameDialogDescription')"
     :dismissible="!loading"
     :close="{ disabled: loading }"
   >
@@ -34,14 +34,14 @@ function handleSubmit(): void {
         <UInput
           v-model="name"
           autofocus
-          :placeholder="$t('start.actions.create.namePlaceholder')"
+          :placeholder="$t('homepage.actions.create.namePlaceholder')"
           :disabled="loading"
           :maxlength="maxLength"
           @keydown.enter="handleSubmit"
         />
 
         <p class="text-muted text-xs">
-          {{ $t('start.actions.create.validationHint', { max: maxLength }) }}
+          {{ $t('homepage.actions.create.validationHint', { max: maxLength }) }}
         </p>
 
         <p v-if="validationError" class="text-error text-sm">
@@ -57,7 +57,7 @@ function handleSubmit(): void {
         </UButton>
 
         <UButton color="primary" variant="solid" :loading="loading" @click="handleSubmit">
-          {{ $t('start.actions.create.submitAction') }}
+          {{ $t('homepage.actions.create.submitAction') }}
         </UButton>
       </div>
     </template>

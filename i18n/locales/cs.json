@@ -32,7 +32,7 @@
     "errorConfig": "Přihlášení není dostupné, protože server není správně nakonfigurován.",
     "errorForbidden": "Tento účet nemá oprávnění pro přístup do aplikace."
   },
-  "start": {
+  "homepage": {
     "title": "Správa harmonogramů SZZ na jednom místě",
     "description": "ČÁP vám pomůže připravit komise, studenty i časový plán přehledně a rychle.",
     "actions": {

@@ -3,13 +3,13 @@ import { cs } from 'date-fns/locale'
 import { computed, ref, watch } from 'vue'
 import type { TimeScheduleListItemDto } from '#shared/types/time-schedules'
 import { useScheduleDraftStore } from '~/stores/schedule-draft'
-import { useStartStore } from '~/stores/start'
+import { useHomepageStore } from '~/stores/homepage'
 
-export const START_NEW_PLAN_NAME_MAX_LENGTH = 120
+export const HOMEPAGE_NEW_PLAN_NAME_MAX_LENGTH = 120
 
-export function useStartPage() {
+export function useHomepage() {
   const { t } = useI18n()
-  const startStore = useStartStore()
+  const homepageStore = useHomepageStore()
   const scheduleDraftStore = useScheduleDraftStore()
 
   const isOpenRecentPlanDialogOpen = ref(false)
@@ -31,14 +31,14 @@ export function useStartPage() {
     const draftName = scheduleDraftStore.draft?.name ?? ''
     const relativeTime = formatRelativeTimeCz(scheduleDraftStore.lastSavedAt)
 
-    return t('start.actions.restore.status', {
+    return t('homepage.actions.restore.status', {
       name: draftName,
       relativeTime
     })
   })
 
   const openRecentPlanDialogDescription = computed(() => {
-    return t('start.recent.openPlanConfirmDescription', {
+    return t('homepage.recent.openPlanConfirmDescription', {
       name: pendingRecentPlan.value?.name ?? ''
     })
   })
@@ -58,17 +58,17 @@ export function useStartPage() {
 
   function formatRelativeTimeCz(value: string | null): string {
     if (!value) {
-      return t('start.actions.restore.justNow')
+      return t('homepage.actions.restore.justNow')
     }
 
     const timestamp = parseISO(value)
     if (!isValid(timestamp)) {
-      return t('start.actions.restore.justNow')
+      return t('homepage.actions.restore.justNow')
     }
 
     const diffSeconds = Math.abs(differenceInSeconds(new Date(), timestamp))
     if (diffSeconds < 60) {
-      return t('start.actions.restore.justNow')
+      return t('homepage.actions.restore.justNow')
     }
 
     return formatDistanceToNowStrict(timestamp, {
@@ -82,15 +82,15 @@ export function useStartPage() {
     const trimmedName = name.trim()
 
     if (trimmedName.length < 1) {
-      return t('start.actions.create.validation.required')
+      return t('homepage.actions.create.validation.required')
     }
 
     if (name !== trimmedName) {
-      return t('start.actions.create.validation.leadingTrailingWhitespace')
+      return t('homepage.actions.create.validation.leadingTrailingWhitespace')
     }
 
-    if (trimmedName.length > START_NEW_PLAN_NAME_MAX_LENGTH) {
-      return t('start.actions.create.validation.maxLength', { max: START_NEW_PLAN_NAME_MAX_LENGTH })
+    if (trimmedName.length > HOMEPAGE_NEW_PLAN_NAME_MAX_LENGTH) {
+      return t('homepage.actions.create.validation.maxLength', { max: HOMEPAGE_NEW_PLAN_NAME_MAX_LENGTH })
     }
 
     return null
@@ -172,7 +172,7 @@ export function useStartPage() {
       await scheduleDraftStore.loadDraftByScheduleId(planId)
       await navigateTo('/editor')
     } catch {
-      recentPlanOpenError.value = t('start.recent.openPlanErrorDescription')
+      recentPlanOpenError.value = t('homepage.recent.openPlanErrorDescription')
     } finally {
       isOpeningRecentPlan.value = false
     }
@@ -216,7 +216,7 @@ export function useStartPage() {
   }
 
   return {
-    startStore,
+    homepageStore,
     restoreDraftStatus,
     showRestoreCard,
     isOpenRecentPlanDialogOpen,
