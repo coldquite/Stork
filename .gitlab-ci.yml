@@ -153,8 +153,6 @@ deploy_production:
   stage: deploy
   image: alpine:3.23
   cache: []
-  needs:
-    - job: build_app_image
   variables:
     DEPLOY_SSH_HOST: cap.ksi.in.fit.cvut.cz
     DEPLOY_APP_IMAGE: ${CI_REGISTRY_IMAGE}/app:${CI_COMMIT_SHA}
