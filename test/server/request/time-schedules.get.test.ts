@@ -158,6 +158,7 @@ describe('GET /api/time-schedules (integration)', () => {
     expect(rowA).toMatchObject({
       id: scheduleAId,
       name: `Schedule A ${suffixA}`,
+      type: 'MANUAL',
       counts: {
         committees: 2,
         items: 4,
@@ -168,6 +169,7 @@ describe('GET /api/time-schedules (integration)', () => {
     expect(rowB).toMatchObject({
       id: scheduleBId,
       name: `Schedule B ${suffixB}`,
+      type: 'AUTO',
       counts: {
         committees: 1,
         items: 1,

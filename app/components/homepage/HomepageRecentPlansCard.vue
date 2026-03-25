@@ -85,9 +85,14 @@ function handleOpenPlan(plan: TimeScheduleListItemDto): void {
                 <UIcon name="i-lucide-calendar" class="size-5" />
               </div>
               <div class="min-w-0">
-                <p class="truncate font-medium">
-                  {{ plan.name }}
-                </p>
+                <div class="flex items-center gap-2">
+                  <p class="truncate font-medium">
+                    {{ plan.name }}
+                  </p>
+                  <UBadge v-if="plan.type === 'AUTO'" color="secondary" variant="soft" class="shrink-0 text-[11px]">
+                    {{ $t('homepage.plansModal.autoBadge') }}
+                  </UBadge>
+                </div>
                 <p class="text-muted text-sm">
                   {{ formatPlanDate(plan.createdAt) }}
                 </p>
