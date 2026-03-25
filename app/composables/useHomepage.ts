@@ -27,12 +27,18 @@ export function useHomepage() {
     return scheduleDraftStore.hasDraft && !isOpeningRecentPlan.value && !isCreatingNewPlan.value
   })
 
-  const restoreDraftStatus = computed(() => {
+  const restoreDraftLine = computed(() => {
     const draftName = scheduleDraftStore.draft?.name ?? ''
+
+    return t('homepage.actions.restore.draftLine', {
+      name: draftName
+    })
+  })
+
+  const restoreDraftUpdatedLine = computed(() => {
     const relativeTime = formatRelativeTimeCz(scheduleDraftStore.lastSavedAt)
 
-    return t('homepage.actions.restore.status', {
-      name: draftName,
+    return t('homepage.actions.restore.updatedLine', {
       relativeTime
     })
   })
@@ -111,6 +117,14 @@ export function useHomepage() {
     }
 
     openCreatePlanNameDialog()
+  }
+
+  function requestRestoreDraft(): void {
+    if (isCreatingNewPlan.value || isOpeningRecentPlan.value || !scheduleDraftStore.hasDraft) {
+      return
+    }
+
+    void navigateTo('/editor')
   }
 
   function cancelCreatePlanConfirm(): void {
@@ -217,7 +231,8 @@ export function useHomepage() {
 
   return {
     homepageStore,
-    restoreDraftStatus,
+    restoreDraftLine,
+    restoreDraftUpdatedLine,
     showRestoreCard,
     isOpenRecentPlanDialogOpen,
     isOpeningRecentPlan,
@@ -232,6 +247,7 @@ export function useHomepage() {
     newPlanNameInput,
     newPlanNameError,
     requestCreatePlan,
+    requestRestoreDraft,
     cancelCreatePlanConfirm,
     confirmCreatePlanConfirm,
     cancelCreatePlanNameDialog,

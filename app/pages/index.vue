@@ -4,7 +4,8 @@ import { HOMEPAGE_NEW_PLAN_NAME_MAX_LENGTH } from '~/composables/useHomepage'
 const { t } = useI18n()
 const {
   homepageStore,
-  restoreDraftStatus,
+  restoreDraftLine,
+  restoreDraftUpdatedLine,
   showRestoreCard,
   isOpenRecentPlanDialogOpen,
   isOpeningRecentPlan,
@@ -19,6 +20,7 @@ const {
   newPlanNameInput,
   newPlanNameError,
   requestCreatePlan,
+  requestRestoreDraft,
   cancelCreatePlanConfirm,
   confirmCreatePlanConfirm,
   cancelCreatePlanNameDialog,
@@ -42,9 +44,11 @@ await callOnce('homepage-recent-plans', async () => {
     </header>
 
     <HomepageActionCards
-      :restore-draft-status="restoreDraftStatus"
+      :restore-draft-line="restoreDraftLine"
+      :restore-draft-updated-line="restoreDraftUpdatedLine"
       :show-restore-card="showRestoreCard"
       @create-click="requestCreatePlan"
+      @restore-click="requestRestoreDraft"
     />
 
     <HomepageRecentPlansCard

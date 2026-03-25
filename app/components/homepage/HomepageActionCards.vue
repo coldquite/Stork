@@ -1,14 +1,19 @@
 <script setup lang="ts">
 interface HomepageActionCardsProps {
-  restoreDraftStatus: string
+  restoreDraftLine: string
+  restoreDraftUpdatedLine: string
   showRestoreCard: boolean
 }
 
 defineProps<HomepageActionCardsProps>()
-const emit = defineEmits<{ createClick: [] }>()
+const emit = defineEmits<{ createClick: []; restoreClick: [] }>()
 
 function handleCreateClick(): void {
   emit('createClick')
+}
+
+function handleRestoreClick(): void {
+  emit('restoreClick')
 }
 </script>
 
@@ -55,6 +60,7 @@ function handleCreateClick(): void {
   <section v-if="showRestoreCard" class="mb-8">
     <UCard
       class="group bg-success/10 border-success/80 hover:border-success hover:bg-success/15 cursor-pointer border-2 transition-colors duration-300 ease-out"
+      @click="handleRestoreClick"
     >
       <div class="flex flex-col items-center py-6 text-center">
         <div
@@ -68,8 +74,11 @@ function handleCreateClick(): void {
         <h2 class="mb-2 text-xl font-semibold">
           {{ $t('homepage.actions.restore.title') }}
         </h2>
-        <p class="text-sm">
-          {{ restoreDraftStatus }}
+        <p class="text-muted text-sm">
+          {{ restoreDraftLine }}
+        </p>
+        <p class="text-muted text-sm">
+          {{ restoreDraftUpdatedLine }}
         </p>
       </div>
     </UCard>

@@ -57,8 +57,9 @@
         "description": "Otevřete existující plán ze seznamu všech plánů"
       },
       "restore": {
-        "title": "Máte rozpracovaný plán",
-        "status": "{name} - rozpracovaný - naposledy upraveno {relativeTime}",
+        "title": "Vrátit se k rozpracovanému plánu",
+        "draftLine": "Máte rozpracovaný časový plán: {name}.",
+        "updatedLine": "Naposledy upraveno: {relativeTime}",
         "justNow": "právě teď"
       }
     },
