@@ -39,6 +39,7 @@
     "nuxt": "^4.4.2",
     "pg": "^8.20.0",
     "pinia": "^3.0.3",
+    "pinia-plugin-persistedstate": "^4.7.1",
     "playwright": "^1.58.2",
     "tailwindcss": "^4.2.1"
   },
