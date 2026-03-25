@@ -1,4 +1,8 @@
-name: stork
+name: stork-prod
+
+# Standalone production compose file
+#
+# docker compose -f docker-compose.prod.yml --env-file .env up -d --wait
 services:
   db:
     image: postgres:18.3-alpine3.23

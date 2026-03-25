@@ -17,7 +17,7 @@ done
 
 deploy_ssh_user="${DEPLOY_SSH_USER:-deploy}"
 deploy_app_dir="${DEPLOY_APP_DIR:-/opt/stork}"
-deploy_compose_file="${DEPLOY_COMPOSE_FILE:-docker-compose.yml}"
+deploy_compose_file="${DEPLOY_COMPOSE_FILE:-docker-compose.prod.yml}"
 deploy_remote_env_file="${DEPLOY_REMOTE_ENV_FILE:-.env}"
 deploy_app_image="${DEPLOY_APP_IMAGE}"
 deploy_registry="gitlab.fit.cvut.cz:5050"
