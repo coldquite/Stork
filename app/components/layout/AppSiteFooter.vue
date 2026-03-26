@@ -10,10 +10,12 @@ const currentYear = getYear(new Date())
   <UFooter class="relative overflow-hidden">
     <div aria-hidden="true" class="pointer-events-none absolute inset-x-0 top-0 bottom-0">
       <USeparator />
-      <LazyStarsBg />
+      <LazyStarsBg class="footer-stars-bg" />
     </div>
 
-    <div class="text-muted relative z-10 flex items-center justify-center gap-3 pt-3 pb-1 text-center text-sm">
+    <div
+      class="text-muted relative z-10 flex items-center justify-center gap-3 pt-3 pb-1 text-center text-sm font-normal"
+    >
       <ULink :to="appConfig.project.sourceCodeUrl" target="_blank" class="text-primary">
         {{ t('layout.footer.sourceCode') }}
       </ULink>

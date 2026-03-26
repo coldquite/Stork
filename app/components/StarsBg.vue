@@ -16,9 +16,9 @@ const props = withDefaults(
     size?: { min: number; max: number }
   }>(),
   {
-    starCount: 700,
+    starCount: 1400,
     color: 'var(--ui-primary)',
-    speed: 'normal',
+    speed: 'slow',
     size: () => ({
       min: 1,
       max: 3
@@ -30,8 +30,7 @@ const generateStars = (count: number): Star[] => {
   return Array.from({ length: count }, () => ({
     x: Math.floor(Math.random() * 2000),
     y: Math.floor(Math.random() * 2000),
-    size:
-      typeof props.size === 'number' ? props.size : Math.random() * (props.size.max - props.size.min) + props.size.min
+    size: Math.random() * (props.size.max - props.size.min) + props.size.min
   }))
 }
 
@@ -57,9 +56,9 @@ const starLayers = computed(() => [
 </script>
 
 <template>
-  <div class="pointer-events-none absolute inset-x-5 inset-y-0 z-[-1] overflow-hidden sm:inset-x-7 lg:inset-x-9">
+  <div class="pointer-events-none absolute inset-0 z-[-1] overflow-hidden">
     <svg
-      class="pointer-events-none absolute inset-0"
+      class="pointer-events-none absolute inset-x-5 inset-y-0 sm:inset-x-7 lg:inset-x-9"
       viewBox="0 0 1017 181"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
