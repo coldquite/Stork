@@ -24,7 +24,7 @@ function handleRestoreClick(): void {
 <template>
   <section class="mb-8 grid gap-6 md:grid-cols-2">
     <UCard
-      class="group border-primary/85 hover:border-primary hover:bg-primary/15 cursor-pointer border-2 border-dashed transition-colors duration-300 ease-out"
+      class="group border-primary/85 hover:border-primary hover:bg-primary/10 dark:hover:bg-primary/15 cursor-pointer border-2 border-dashed transition-colors duration-300 ease-out"
       @click="handleCreateClick"
     >
       <div class="flex flex-col items-center py-6 text-center">
