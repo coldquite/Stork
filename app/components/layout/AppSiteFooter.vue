@@ -4,13 +4,16 @@ import { getYear } from 'date-fns'
 const appConfig = useAppConfig()
 const { t } = useI18n()
 const currentYear = getYear(new Date())
+const route = useRoute()
+
+const footerStarCount = computed(() => (route.path === '/editor' ? 0 : 2800))
 </script>
 
 <template>
   <UFooter class="relative overflow-hidden">
     <div aria-hidden="true" class="pointer-events-none absolute inset-x-0 top-0 bottom-0">
       <USeparator />
-      <LazyStarsBg class="footer-stars-bg" />
+      <LazyStarsBg :key="`footer-stars-${footerStarCount}`" :star-count="footerStarCount" class="footer-stars-bg" />
     </div>
 
     <div

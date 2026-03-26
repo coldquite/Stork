@@ -14,11 +14,13 @@ const props = withDefaults(
     color?: string
     speed?: 'slow' | 'normal' | 'fast'
     size?: { min: number; max: number }
+    direction?: 'up' | 'down'
   }>(),
   {
     starCount: 2800,
     color: 'var(--ui-primary)',
     speed: 'slow',
+    direction: 'up',
     size: () => ({
       min: 1,
       max: 3
@@ -40,7 +42,9 @@ const speedMap = {
   fast: { duration: 100, opacity: 1, ratio: 0.4 }
 }
 
-const stars = useState<{ slow: Star[]; normal: Star[]; fast: Star[] }>('footer-stars', () => {
+const starsStateKey = `stars-bg:${props.starCount}:${props.size.min}:${props.size.max}`
+
+const stars = useState<{ slow: Star[]; normal: Star[]; fast: Star[] }>(starsStateKey, () => {
   return {
     slow: generateStars(Math.floor(props.starCount * speedMap.slow.ratio)),
     normal: generateStars(Math.floor(props.starCount * speedMap.normal.ratio)),
@@ -96,11 +100,11 @@ const starLayers = computed(() => [
       </defs>
     </svg>
 
-    <div class="stars absolute inset-x-0 top-0 size-full">
+    <div :class="['stars absolute inset-x-0 top-0 size-full', direction === 'down' ? 'stars--down' : '']">
       <div
         v-for="(layer, index) in starLayers"
         :key="index"
-        class="star-layer"
+        :class="['star-layer', direction === 'down' ? 'star-layer--down' : '']"
         :style="{
           '--star-duration': `${layer.duration}s`,
           '--star-opacity': layer.opacity,
@@ -147,10 +151,31 @@ const starLayers = computed(() => [
   mask-size: cover;
 }
 
+.stars--down {
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    #d9d9d9 0%,
+    rgba(217, 217, 217, 0.88) 28%,
+    rgba(217, 217, 217, 0.45) 58%,
+    rgba(217, 217, 217, 0) 100%
+  );
+  mask-image: linear-gradient(
+    180deg,
+    #d9d9d9 0%,
+    rgba(217, 217, 217, 0.88) 28%,
+    rgba(217, 217, 217, 0.45) 58%,
+    rgba(217, 217, 217, 0) 100%
+  );
+}
+
 .star-layer {
   animation: risingStarsAnimation linear infinite;
   animation-duration: var(--star-duration);
   will-change: transform;
+}
+
+.star-layer--down {
+  animation-name: fallingStarsAnimation;
 }
 
 @keyframes risingStarsAnimation {
@@ -160,6 +185,16 @@ const starLayers = computed(() => [
 
   100% {
     transform: translateY(-2000px);
+  }
+}
+
+@keyframes fallingStarsAnimation {
+  0% {
+    transform: translateY(0);
+  }
+
+  100% {
+    transform: translateY(2000px);
   }
 }
 </style>
