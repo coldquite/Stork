@@ -1,6 +1,6 @@
 import { differenceInSeconds, formatDistanceToNowStrict, isValid, parseISO } from 'date-fns'
 import { cs } from 'date-fns/locale'
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import type { TimeScheduleListItemDto, TimeScheduleTypeDto } from '#shared/types/time-schedules'
 import { useScheduleDraftStore } from '~/stores/schedule-draft'
 import { useHomepageStore } from '~/stores/homepage'
@@ -43,9 +43,14 @@ export function useHomepage() {
 
   const manualDrafts = ref<HomepageDraftListItem[]>([])
   const autoDrafts = ref<HomepageDraftListItem[]>([])
+  const isClientReady = ref(false)
+
+  onMounted(() => {
+    isClientReady.value = true
+  })
 
   const showRestoreCard = computed(() => {
-    return scheduleDraftStore.hasDraft && !isOpeningRecentPlan.value && !isCreatingNewPlan.value
+    return isClientReady.value && scheduleDraftStore.hasDraft && !isOpeningRecentPlan.value && !isCreatingNewPlan.value
   })
 
   const restoreDraftLine = computed(() => {
