@@ -25,9 +25,9 @@ const footerStarCount = computed(() => (route.path === '/editor' ? 0 : 2800))
       <span aria-hidden="true">•</span>
       <span>{{ t('layout.footer.copy', { year: currentYear }) }}</span>
       <span aria-hidden="true">•</span>
-      <a href="/licenses.txt" target="_blank" class="text-primary">
+      <ULink to="/licenses.txt" target="_blank" class="text-primary">
         {{ t('layout.footer.licenses') }}
-      </a>
+      </ULink>
     </div>
   </UFooter>
 </template>
