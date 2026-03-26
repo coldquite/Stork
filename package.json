@@ -34,6 +34,7 @@
     "@prisma/adapter-pg": "^7.5.0",
     "@prisma/client": "^7.5.0",
     "@sentry/nuxt": "^10",
+    "@vueuse/integrations": "^14.2.1",
     "date-fns": "^4.1.0",
     "import-in-the-middle": "^3.0.0",
     "nuxt": "^4.4.2",
@@ -41,6 +42,7 @@
     "pinia": "^3.0.3",
     "pinia-plugin-persistedstate": "^4.7.1",
     "playwright": "^1.58.2",
+    "sortablejs": "^1.15.7",
     "tailwindcss": "^4.2.1"
   },
   "devDependencies": {
