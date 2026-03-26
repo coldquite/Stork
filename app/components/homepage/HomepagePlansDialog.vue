@@ -117,7 +117,7 @@ function handleOpenPlan(plan: HomepagePlansDialogItem): void {
                     <h3 class="truncate text-sm font-semibold">
                       {{ draft.name }}
                     </h3>
-                    <UBadge color="secondary" variant="soft" class="text-[11px]">
+                    <UBadge color="secondary" variant="soft" class="auto-save-badge text-[11px]">
                       {{ t('homepage.plansModal.autoBadge') }}
                     </UBadge>
                   </div>
