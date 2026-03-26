@@ -89,7 +89,12 @@ function handleOpenPlan(plan: TimeScheduleListItemDto): void {
                   <p class="truncate font-medium">
                     {{ plan.name }}
                   </p>
-                  <UBadge v-if="plan.type === 'AUTO'" color="secondary" variant="soft" class="shrink-0 text-[11px]">
+                  <UBadge
+                    v-if="plan.type === 'AUTO'"
+                    color="secondary"
+                    variant="soft"
+                    class="auto-save-badge shrink-0 text-[11px]"
+                  >
                     {{ $t('homepage.plansModal.autoBadge') }}
                   </UBadge>
                 </div>
