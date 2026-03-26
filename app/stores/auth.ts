@@ -6,6 +6,7 @@
  * and performs logout while exposing loading flags for UI actions.
  */
 import type { AuthSessionResponse } from '#shared/types/auth'
+import { useScheduleDraftStore } from '~/stores/schedule-draft'
 
 export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = ref(false)
@@ -53,7 +54,9 @@ export const useAuthStore = defineStore('auth', () => {
     isLogoutLoading.value = true
 
     try {
+      const scheduleDraftStore = useScheduleDraftStore()
       await $fetch('/api/auth/logout', { method: 'POST' })
+      scheduleDraftStore.clearDraft()
       clearSessionState()
       await navigateTo('/login', { replace: true })
     } finally {
