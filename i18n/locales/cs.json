@@ -90,6 +90,75 @@
       "students": "{count} studentů"
     }
   },
+  "editor": {
+    "title": "Editor harmonogramu",
+    "untitled": "Bez názvu",
+    "loading": "Načítám editor...",
+    "navigation": {
+      "backToHomepage": "Zpět na hlavní stránku"
+    },
+    "plan": {
+      "rename": {
+        "title": "Přejmenovat plán",
+        "description": "Upravte název aktuálního časového plánu.",
+        "placeholder": "Např. SZZ Informatika - červen 2026",
+        "hint": "Název nesmí začínat ani končit mezerou a může mít maximálně {max} znaků.",
+        "submit": "Uložit název",
+        "openAriaLabel": "Přejmenovat plán {name}",
+        "validation": {
+          "required": "Název musí obsahovat alespoň 1 znak bez mezer.",
+          "leadingTrailingWhitespace": "Název nesmí začínat ani končit mezerou.",
+          "maxLength": "Název může mít maximálně {max} znaků."
+        }
+      }
+    },
+    "committees": {
+      "title": "Komise",
+      "create": {
+        "title": "Přidat komisi",
+        "description": "Zadejte název nové komise.",
+        "placeholder": "Např. A1",
+        "hint": "Název komise musí být v rámci tohoto plánu unikátní.",
+        "submit": "Vytvořit komisi",
+        "openAction": "Přidat komisi"
+      },
+      "rename": {
+        "title": "Přejmenovat komisi",
+        "description": "Upravte název komise „{name}“.",
+        "placeholder": "Např. A1",
+        "hint": "Název komise musí být v rámci tohoto plánu unikátní.",
+        "submit": "Uložit název",
+        "openAriaLabel": "Přejmenovat komisi {name}",
+        "validation": {
+          "required": "Název komise musí obsahovat alespoň 1 znak bez mezer.",
+          "duplicate": "Komise s tímto názvem už v plánu existuje."
+        }
+      },
+      "delete": {
+        "confirmAction": "Odstranit komisi",
+        "description": "Opravdu chcete odstranit komisi „{name}“ včetně všech studentů v této komisi? Tato akce je nevratná.",
+        "openAriaLabel": "Odstranit komisi {name}"
+      }
+    },
+    "committee": {
+      "title": "Vybraná komise",
+      "room": "Místnost konání",
+      "date": "Datum konání",
+      "secretary": "Tajemník"
+    },
+    "students": {
+      "count": "{count} studentů",
+      "emptyTitle": "Komise zatím nemá studenty",
+      "emptyDescription": "Jakmile přidáte studenty, zobrazí se zde."
+    },
+    "table": {
+      "order": "Pořadí",
+      "student": "Student",
+      "personalNumber": "Osobní číslo",
+      "specialization": "Specializace",
+      "thesisTitle": "Téma práce"
+    }
+  },
   "dashboard": {
     "logoutButton": "Odhlásit se",
     "logoutConfirmDescription": "Opravdu se chcete odhlásit? Ztratíte všechna neuložená rozpracovaná data."
