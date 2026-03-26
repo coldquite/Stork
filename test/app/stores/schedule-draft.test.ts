@@ -131,6 +131,8 @@ describe('useScheduleDraftStore', () => {
     expect(store.isDirty).toBe(false)
     expect(store.draft?.committees).toHaveLength(1)
     expect(store.draft?.committees[0]?.items).toHaveLength(2)
+    expect(store.draft?.committees[0]?.items[0]?.student).not.toHaveProperty('itemId')
+    expect(store.draft?.committees[0]?.items[1]?.pause).not.toHaveProperty('itemId')
   })
 
   it('marks draft as dirty after local mutation', async () => {
@@ -191,6 +193,8 @@ describe('useScheduleDraftStore', () => {
     expect(requestOptions.method).toBe('POST')
     expect(payload.type).toBe('MANUAL')
     expect(payload.name).toBe('Ruční uložení')
+    expect(payload.committees[0]?.items[0]?.student).not.toHaveProperty('itemId')
+    expect(payload.committees[0]?.items[1]?.pause).not.toHaveProperty('itemId')
 
     expect(store.isDirty).toBe(false)
     expect(store.lastSavedScheduleId).toBe('saved-manual-1')

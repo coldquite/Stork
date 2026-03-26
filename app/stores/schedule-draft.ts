@@ -25,6 +25,10 @@ import type {
   CommitteeDto,
   PostCommitteeDto,
   PostCommitteeItemDto,
+  PostPauseItemDto,
+  PostStudentItemDto,
+  PauseItemDto,
+  StudentItemDto,
   PostTimeScheduleRequestDto,
   PostTimeScheduleResponseDto,
   TimeScheduleDto,
@@ -88,7 +92,7 @@ function toDraftItem(item: CommitteeItemDto | PostCommitteeItemDto): ScheduleDra
       localId: createLocalId(),
       type: 'STUDENT',
       position: item.position,
-      student: deepClone(item.student),
+      student: toPostStudentItem(item.student),
       pause: null
     }
   }
@@ -98,7 +102,7 @@ function toDraftItem(item: CommitteeItemDto | PostCommitteeItemDto): ScheduleDra
     type: 'PAUSE',
     position: item.position,
     student: null,
-    pause: deepClone(item.pause)
+    pause: toPostPauseItem(item.pause)
   }
 }
 
@@ -142,17 +146,46 @@ function serializeDraft(draft: ScheduleDraft | null): string | null {
   return JSON.stringify(draft)
 }
 
+function toPostStudentItem(student: StudentItemDto | PostStudentItemDto): PostStudentItemDto {
+  const clonedStudent = deepClone(student) as PostStudentItemDto & { itemId?: string }
+  const { itemId: _itemId, ...postStudent } = clonedStudent
+  return postStudent
+}
+
+function toPostPauseItem(pause: PauseItemDto | PostPauseItemDto): PostPauseItemDto {
+  const clonedPause = deepClone(pause) as PostPauseItemDto & { itemId?: string }
+  const { itemId: _itemId, ...postPause } = clonedPause
+  return postPause
+}
+
 function toPostCommitteeItem(item: ScheduleDraftItem): PostCommitteeItemDto {
-  const { localId: _localId, ...postItem } = deepClone(item)
-  return postItem as PostCommitteeItemDto
+  if (item.type === 'STUDENT') {
+    return {
+      type: 'STUDENT',
+      position: item.position,
+      student: toPostStudentItem(item.student),
+      pause: null
+    }
+  }
+
+  return {
+    type: 'PAUSE',
+    position: item.position,
+    student: null,
+    pause: toPostPauseItem(item.pause)
+  }
 }
 
 function toPostCommittee(committee: ScheduleDraftCommittee): PostCommitteeDto {
-  const { localId: _localId, items, ...rest } = deepClone(committee)
-
   return {
-    ...rest,
-    items: items
+    code: committee.code,
+    sortOrder: committee.sortOrder,
+    startMinute: committee.startMinute,
+    date: committee.date,
+    room: committee.room,
+    secretaryName: committee.secretaryName,
+    invigilators: deepClone(committee.invigilators),
+    items: committee.items
       .slice()
       .sort((left, right) => left.position - right.position)
       .map((item) => toPostCommitteeItem(item))
