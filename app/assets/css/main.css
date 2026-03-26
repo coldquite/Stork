@@ -2,10 +2,19 @@
 @import '@nuxt/ui';
 
 .light {
-  --ui-bg: #f7fbff;
-  --ui-bg-muted: #f1f7fd;
-  --ui-bg-elevated: #eaf3fb;
-  --ui-bg-accented: #deebf8;
+  --ui-bg: #ffffff;
+  --ui-bg-muted: #f8fafc;
+  --ui-bg-elevated: #f1f5f9;
+  --ui-bg-accented: #e8eef5;
+  --ui-border: var(--color-stork-200);
+  --ui-border-muted: var(--color-stork-100);
+  --ui-border-accented: var(--color-stork-300);
+}
+
+.dark {
+  --ui-border: #304963;
+  --ui-border-muted: #3a5b7c;
+  --ui-border-accented: #4a73a0;
 }
 
 @theme static {
@@ -39,6 +48,34 @@
 }
 
 @layer base {
+  .light body {
+    background-color: #f2f4f7;
+  }
+
+  .light .footer-stars-bg svg g {
+    opacity: 0.68;
+  }
+
+  .light .footer-stars-bg svg path {
+    fill-opacity: 0.3;
+  }
+
+  .light .auto-save-badge {
+    background-color: var(--color-capaccent-200);
+    border-color: var(--color-capaccent-300);
+    border-style: solid;
+    border-width: 1px;
+    color: var(--color-capaccent-900);
+  }
+
+  .dark .footer-stars-bg svg g {
+    opacity: 0.78;
+  }
+
+  .dark .footer-stars-bg svg path {
+    fill-opacity: 0.36;
+  }
+
   body {
     font-family: var(--font-roboto), sans-serif;
     font-weight: 400;
