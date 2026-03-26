@@ -52,6 +52,10 @@
     background-color: #f2f4f7;
   }
 
+  .dark body {
+    background-color: oklch(19% 0.042 265.225);
+  }
+
   .light .footer-stars-bg svg g {
     opacity: 0.68;
   }
