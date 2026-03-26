@@ -40,11 +40,11 @@ function handleSubmit(): void {
           @keydown.enter="handleSubmit"
         />
 
-        <p class="text-muted text-xs">
+        <p class="text-muted text-base">
           {{ $t('homepage.actions.create.validationHint', { max: maxLength }) }}
         </p>
 
-        <p v-if="validationError" class="text-error text-sm">
+        <p v-if="validationError" class="text-error text-base">
           {{ validationError }}
         </p>
       </div>

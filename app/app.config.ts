@@ -39,7 +39,8 @@ export default defineAppConfig({
     },
     modal: {
       slots: {
-        content: 'bg-default divide-y-2 divide-default flex flex-col focus:outline-none'
+        content: 'bg-default divide-y-2 divide-default flex flex-col focus:outline-none',
+        description: 'mt-1 text-muted text-base'
       },
       variants: {
         fullscreen: {
