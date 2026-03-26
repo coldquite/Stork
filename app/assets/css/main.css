@@ -105,4 +105,12 @@
     font-size: 32px;
     letter-spacing: -0.02em;
   }
+
+  :where(a, button, [role='button'], [class*='hover:']):hover {
+    transition-timing-function: cubic-bezier(0.2, 0, 0, 1) !important;
+  }
+
+  .group:hover :where([class*='group-hover:']) {
+    transition-timing-function: cubic-bezier(0.2, 0, 0, 1) !important;
+  }
 }
