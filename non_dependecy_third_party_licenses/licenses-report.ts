@@ -1,11 +1,15 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
-import { EOL } from 'node:os'
 import { resolve } from 'node:path'
 import type { Dependency } from 'rollup-plugin-license'
 
 export const generatedLicensesOutputPath = resolve(process.cwd(), 'public/licenses.txt')
 
 const nonDependencyLicensesDir = resolve(process.cwd(), 'non_dependecy_third_party_licenses')
+const LICENSE_NEWLINE = '\n'
+
+export function normalizeLineEndings(content: string): string {
+  return content.replace(/\r\n?/g, LICENSE_NEWLINE)
+}
 
 function renderNonDependencyLicenses(): string {
   if (!existsSync(nonDependencyLicensesDir)) {
@@ -23,14 +27,18 @@ function renderNonDependencyLicenses(): string {
   const content = files
     .map((entry) => {
       const filePath = resolve(nonDependencyLicensesDir, entry.name)
-      return `# ${entry.name}${EOL}${readFileSync(filePath, 'utf-8').trim()}`
+      const fileContent = normalizeLineEndings(readFileSync(filePath, 'utf-8')).trim()
+      return `# ${entry.name}${LICENSE_NEWLINE}${fileContent}`
     })
-    .join(`${EOL}${EOL}`)
+    .join(`${LICENSE_NEWLINE}${LICENSE_NEWLINE}`)
 
-  return `${EOL}${EOL}===== NON-DEPENDENCY THIRD-PARTY LICENSES =====${EOL}${EOL}${content}`
+  return `${LICENSE_NEWLINE}${LICENSE_NEWLINE}===== NON-DEPENDENCY THIRD-PARTY LICENSES =====${LICENSE_NEWLINE}${LICENSE_NEWLINE}${content}`
 }
 
 export function buildLicensesReport(dependencies: Dependency[]): string {
-  const dependenciesSection = dependencies.map((dependency) => dependency.text()).join(`${EOL}${EOL}---${EOL}${EOL}`)
-  return `${dependenciesSection}${renderNonDependencyLicenses()}`
+  const dependenciesSection = dependencies
+    .map((dependency) => normalizeLineEndings(dependency.text()))
+    .join(`${LICENSE_NEWLINE}${LICENSE_NEWLINE}---${LICENSE_NEWLINE}${LICENSE_NEWLINE}`)
+
+  return normalizeLineEndings(`${dependenciesSection}${renderNonDependencyLicenses()}`)
 }
