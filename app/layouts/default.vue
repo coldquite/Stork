@@ -3,9 +3,16 @@ import { useAuthStore } from '~/stores/auth'
 
 const { t } = useI18n()
 const authStore = useAuthStore()
+const route = useRoute()
 const isLogoutDialogOpen = ref(false)
+const editorHeaderUi = {
+  container: 'max-w-[98vw]'
+}
 
 const usernameLabel = computed(() => authStore.username || '-')
+const isEditorRoute = computed(() => route.path.startsWith('/editor'))
+const headerUi = computed(() => (isEditorRoute.value ? editorHeaderUi : undefined))
+const editorBackToHomepageLabel = computed(() => t('editor.navigation.backToHomepage'))
 
 const logoutButtonLabel = computed(() => {
   return `${t('dashboard.logoutButton')}: ${usernameLabel.value}`
@@ -27,11 +34,25 @@ async function confirmLogout(): Promise<void> {
 
 <template>
   <div>
-    <UHeader class="border-b-2">
+    <UHeader class="border-b-2" :ui="headerUi">
       <template #left>
-        <NuxtLink to="/">
-          <AppLogo />
-        </NuxtLink>
+        <div class="flex items-center gap-44">
+          <NuxtLink to="/">
+            <AppLogo />
+          </NuxtLink>
+
+          <UButton
+            v-if="isEditorRoute"
+            to="/"
+            color="primary"
+            variant="subtle"
+            icon="i-lucide-house"
+            :aria-label="editorBackToHomepageLabel"
+            :ui="{ leadingIcon: 'text-toned' }"
+          >
+            {{ editorBackToHomepageLabel }}
+          </UButton>
+        </div>
       </template>
 
       <template #right>
