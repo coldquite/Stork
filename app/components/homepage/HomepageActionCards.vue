@@ -79,10 +79,10 @@ function handleRestoreClick(): void {
         <h2 class="mb-2 text-xl font-semibold">
           {{ $t('homepage.actions.restore.title') }}
         </h2>
-        <p class="text-muted text-sm">
+        <p class="text-muted">
           {{ restoreDraftLine }}
         </p>
-        <p class="text-muted text-sm">
+        <p class="text-muted">
           {{ restoreDraftUpdatedLine }}
         </p>
       </div>
