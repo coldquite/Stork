@@ -16,7 +16,7 @@ const props = withDefaults(
     size?: { min: number; max: number }
   }>(),
   {
-    starCount: 1400,
+    starCount: 2800,
     color: 'var(--ui-primary)',
     speed: 'slow',
     size: () => ({
@@ -28,7 +28,7 @@ const props = withDefaults(
 
 const generateStars = (count: number): Star[] => {
   return Array.from({ length: count }, () => ({
-    x: Math.floor(Math.random() * 2000),
+    x: Math.random() * 100,
     y: Math.floor(Math.random() * 2000),
     size: Math.random() * (props.size.max - props.size.min) + props.size.min
   }))
@@ -112,7 +112,7 @@ const starLayers = computed(() => [
           :key="starIndex"
           class="star absolute rounded-full"
           :style="{
-            left: `${star.x}px`,
+            left: `${star.x}%`,
             top: `${star.y}px`,
             width: `${star.size}px`,
             height: `${star.size}px`,
@@ -127,8 +127,6 @@ const starLayers = computed(() => [
 
 <style scoped>
 .stars {
-  left: 50%;
-  transform: translate(-50%);
   -webkit-mask-image: linear-gradient(
     180deg,
     rgba(217, 217, 217, 0) 0%,
