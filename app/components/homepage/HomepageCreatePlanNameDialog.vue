@@ -30,9 +30,10 @@ function handleSubmit(): void {
     :close="{ disabled: loading }"
   >
     <template #body>
-      <div class="space-y-2">
+      <div class="w-full space-y-2">
         <UInput
           v-model="name"
+          class="w-full"
           autofocus
           :placeholder="$t('homepage.actions.create.namePlaceholder')"
           :disabled="loading"
