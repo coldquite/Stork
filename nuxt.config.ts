@@ -57,7 +57,7 @@ export default defineNuxtConfig({
 
   vite: {
     optimizeDeps: {
-      include: ['date-fns', 'date-fns/locale/cs']
+      include: ['date-fns', 'date-fns/locale', 'date-fns/locale/cs', '@vueuse/integrations/useSortable']
     },
     plugins: [
       license({
