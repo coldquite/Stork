@@ -39,9 +39,9 @@ async function createScheduleViaPost(authCookie: string): Promise<string> {
       type: 'MANUAL',
       committees: [
         {
-          name: `1-NI-SI-${suffix}`,
+          name: `2-NI-SI-${suffix}`,
           startMinute: 525,
-          date: '2026-06-10T00:00:00.000Z',
+          date: '2026-06-11T00:00:00.000Z',
           room: 'TH:A-1435',
           secretaryName: 'Sekretář 1',
           invigilators: ['Dozor A', 'Dozor B'],
@@ -75,6 +75,28 @@ async function createScheduleViaPost(authCookie: string): Promise<string> {
               }
             }
           ]
+        },
+        {
+          name: `1-NI-SI-${suffix}`,
+          startMinute: 510,
+          date: '2026-06-10T00:00:00.000Z',
+          room: 'TH:A-1436',
+          secretaryName: 'Sekretář 2',
+          invigilators: ['Dozor C'],
+          language: 'ENGLISH',
+          studyProgramCode: `M-${suffix}`,
+          studyProgramName: `Study program M ${suffix}`,
+          studyProgramType: 'MAGISTER',
+          specializationName: `Specialization M ${suffix}`,
+          specializationCode: `SPEC-M-${suffix}`,
+          defenseDepartmentCode: `KAT-M-${suffix}`,
+          defenseDepartmentName: `Department M ${suffix}`,
+          chairName: 'Chair',
+          viceChairName: 'Vice chair',
+          member1Name: 'Member 1',
+          member2Name: 'Member 2',
+          member3Name: 'Member 3',
+          items: []
         }
       ]
     })
@@ -118,33 +140,43 @@ describe('GET /api/time-schedules/:id (integration)', () => {
 
     expect(payload.id).toBe(createdScheduleId)
     expect(payload.type).toBe('MANUAL')
-    expect(payload.committees).toHaveLength(1)
+    expect(payload.committees).toHaveLength(2)
 
-    const committee = payload.committees[0]
-    expect(committee).toBeDefined()
-    if (!committee) {
-      throw new Error('Expected first committee to be defined')
+    const firstCommittee = payload.committees[0]
+    const secondCommittee = payload.committees[1]
+    expect(firstCommittee).toBeDefined()
+    expect(secondCommittee).toBeDefined()
+    if (!firstCommittee || !secondCommittee) {
+      throw new Error('Expected both committees to be defined')
     }
 
-    expect(committee.timeScheduleId).toBe(createdScheduleId)
-    expect(committee.name).toMatch(/^1-NI-SI-/)
-    expect(committee.startMinute).toBe(525)
-    expect(committee.date).toBe('2026-06-10T00:00:00.000Z')
-    expect(committee.room).toBe('TH:A-1435')
-    expect(committee.invigilators).toEqual(['Dozor A', 'Dozor B'])
-    expect(committee.language).toBe('CZECH')
-    expect(committee.studyProgramType).toBe('BACHELOR')
-    expect(committee.items).toHaveLength(2)
+    expect(firstCommittee.timeScheduleId).toBe(createdScheduleId)
+    expect(firstCommittee.name).toMatch(/^1-NI-SI-/)
+    expect(firstCommittee.startMinute).toBe(510)
+    expect(firstCommittee.date).toBe('2026-06-10T00:00:00.000Z')
+    expect(firstCommittee.language).toBe('ENGLISH')
+    expect(firstCommittee.studyProgramType).toBe('MAGISTER')
+    expect(firstCommittee.items).toHaveLength(0)
 
-    const studentItem = committee.items.find((item) => item.type === 'STUDENT')
-    const pauseItem = committee.items.find((item) => item.type === 'PAUSE')
+    expect(secondCommittee.timeScheduleId).toBe(createdScheduleId)
+    expect(secondCommittee.name).toMatch(/^2-NI-SI-/)
+    expect(secondCommittee.startMinute).toBe(525)
+    expect(secondCommittee.date).toBe('2026-06-11T00:00:00.000Z')
+    expect(secondCommittee.room).toBe('TH:A-1435')
+    expect(secondCommittee.invigilators).toEqual(['Dozor A', 'Dozor B'])
+    expect(secondCommittee.language).toBe('CZECH')
+    expect(secondCommittee.studyProgramType).toBe('BACHELOR')
+    expect(secondCommittee.items).toHaveLength(2)
+
+    const studentItem = secondCommittee.items.find((item) => item.type === 'STUDENT')
+    const pauseItem = secondCommittee.items.find((item) => item.type === 'PAUSE')
 
     expect(studentItem).toBeDefined()
     expect(pauseItem).toBeDefined()
 
     if (studentItem && studentItem.type === 'STUDENT') {
       expect(studentItem.id.length).toBeGreaterThan(0)
-      expect(studentItem.committeeId).toBe(committee.id)
+      expect(studentItem.committeeId).toBe(secondCommittee.id)
       expect(studentItem.position).toBe(0)
       expect(studentItem.student.firstName).toBe('Jan')
       expect(studentItem.pause).toBeNull()
@@ -152,7 +184,7 @@ describe('GET /api/time-schedules/:id (integration)', () => {
 
     if (pauseItem && pauseItem.type === 'PAUSE') {
       expect(pauseItem.id.length).toBeGreaterThan(0)
-      expect(pauseItem.committeeId).toBe(committee.id)
+      expect(pauseItem.committeeId).toBe(secondCommittee.id)
       expect(pauseItem.position).toBe(1)
       expect(pauseItem.student).toBeNull()
       expect(pauseItem.pause.label).toBe('Přestávka')
