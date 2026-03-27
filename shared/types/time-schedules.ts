@@ -2,6 +2,8 @@ export type TimeScheduleTypeDto = 'MANUAL' | 'AUTO'
 export type CommitteeItemTypeDto = 'STUDENT' | 'PAUSE'
 export type RepeatTypeDto = 'NONE' | 'THESIS_DEFENSE' | 'ORAL_EXAM' | 'BOTH' | 'UNKNOWN'
 export type ThesisLanguageDto = 'CZECH' | 'ENGLISH' | 'SLOVAK'
+export type StudyProgramTypeDto = 'BACHELOR' | 'MAGISTER'
+export type CommitteeLanguageDto = 'CZECH' | 'ENGLISH'
 
 export interface TimeScheduleListItemDto {
   id: string
@@ -66,13 +68,25 @@ export type CommitteeItemDto = StudentCommitteeItemDto | PauseCommitteeItemDto
 export interface CommitteeDto {
   id: string
   timeScheduleId: string
-  code: string
-  sortOrder: number
+  name: string
   startMinute: number
   date: string
   room: string | null
   secretaryName: string | null
   invigilators: string[]
+  language: CommitteeLanguageDto
+  studyProgramCode: string
+  studyProgramName: string
+  studyProgramType: StudyProgramTypeDto
+  specializationName: string
+  specializationCode: string
+  defenseDepartmentCode: string
+  defenseDepartmentName: string
+  chairName: string
+  viceChairName: string
+  member1Name: string
+  member2Name: string
+  member3Name: string
   items: CommitteeItemDto[]
 }
 

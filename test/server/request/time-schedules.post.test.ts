@@ -14,13 +14,25 @@ function createPostPayload(suffix: string): PostTimeScheduleRequestDto {
     type: 'MANUAL',
     committees: [
       {
-        code: `1-NI-SI-${suffix}`,
-        sortOrder: 1,
+        name: `1-NI-SI-${suffix}`,
         startMinute: 525,
         date: '2026-06-10T00:00:00.000Z',
         room: 'TH:A-1435',
         secretaryName: 'Sekretář 1',
         invigilators: ['Dozor A', 'Dozor B'],
+        language: 'CZECH',
+        studyProgramCode: `B-${suffix}`,
+        studyProgramName: `Study program ${suffix}`,
+        studyProgramType: 'BACHELOR',
+        specializationName: `Specialization ${suffix}`,
+        specializationCode: `SPEC-${suffix}`,
+        defenseDepartmentCode: `KAT-${suffix}`,
+        defenseDepartmentName: `Department ${suffix}`,
+        chairName: 'Předseda',
+        viceChairName: 'Místopředseda',
+        member1Name: 'Člen 1',
+        member2Name: 'Člen 2',
+        member3Name: 'Člen 3',
         items: [
           {
             type: 'STUDENT' as const,
@@ -123,7 +135,9 @@ describe('POST /api/time-schedules (integration)', () => {
 
     const committee = persistedSchedule.committees[0] as TimeScheduleDto['committees'][number]
 
-    expect(committee.code).toBe(`1-NI-SI-${payloadSeed}`)
+    expect(committee.name).toBe(`1-NI-SI-${payloadSeed}`)
+    expect(committee.language).toBe('CZECH')
+    expect(committee.studyProgramCode).toBe(`B-${payloadSeed}`)
     expect(committee.items).toHaveLength(2)
 
     const studentItem = committee.items.find((item) => item.type === 'STUDENT')
@@ -179,8 +193,7 @@ describe('POST /api/time-schedules (integration)', () => {
       firstCommittee,
       {
         ...firstCommittee,
-        code: firstCommittee.code,
-        sortOrder: firstCommittee.sortOrder + 1
+        startMinute: firstCommittee.startMinute + 30
       }
     ]
 

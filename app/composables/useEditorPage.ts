@@ -21,7 +21,7 @@ function formatCommitteeDate(value: string): string {
 }
 
 function resolveCommitteeLabel(committee: ScheduleDraftCommittee): string {
-  return committee.code.trim()
+  return committee.name.trim()
 }
 
 function toStudentRow(item: ScheduleDraftItem & { type: 'STUDENT' }): StudentRow {
@@ -60,15 +60,12 @@ export function useEditorPage() {
   const committees = computed(() => {
     const draftCommittees = scheduleDraftStore.draft?.committees ?? []
 
-    return draftCommittees
-      .slice()
-      .sort((left, right) => left.sortOrder - right.sortOrder)
-      .map((committee) => ({
-        committee,
-        label: resolveCommitteeLabel(committee),
-        dateLabel: formatCommitteeDate(committee.date),
-        studentsCount: committee.items.filter((item) => item.type === 'STUDENT').length
-      }))
+    return draftCommittees.map((committee) => ({
+      committee,
+      label: resolveCommitteeLabel(committee),
+      dateLabel: formatCommitteeDate(committee.date),
+      studentsCount: committee.items.filter((item) => item.type === 'STUDENT').length
+    }))
   })
 
   watch(
@@ -209,22 +206,7 @@ export function useEditorPage() {
 
   function resolveLastCommittee(): ScheduleDraftCommittee | null {
     const draftCommittees = scheduleDraftStore.draft?.committees ?? []
-    if (draftCommittees.length < 1) {
-      return null
-    }
-
-    return draftCommittees.reduce((lastCommittee, committee) => {
-      if (committee.sortOrder > lastCommittee.sortOrder) {
-        return committee
-      }
-
-      return lastCommittee
-    })
-  }
-
-  function resolveNextCommitteeSortOrder(): number {
-    const lastCommittee = resolveLastCommittee()
-    return (lastCommittee?.sortOrder ?? 0) + 1
+    return draftCommittees.at(-1) ?? null
   }
 
   function openCreateCommitteeDialog(): void {
@@ -246,7 +228,7 @@ export function useEditorPage() {
     }
 
     renameCommitteeId.value = committeeId
-    renameCommitteeName.value = committee.code
+    renameCommitteeName.value = committee.name
     renameCommitteeValidationError.value = null
     isRenameCommitteeDialogOpen.value = true
   }
@@ -316,7 +298,7 @@ export function useEditorPage() {
     }
 
     const hasDuplicateName = (scheduleDraftStore.draft?.committees ?? []).some((committee) => {
-      return committee.localId !== committeeId && committee.code.trim() === normalizedName
+      return committee.localId !== committeeId && committee.name.trim() === normalizedName
     })
 
     if (hasDuplicateName) {
@@ -343,13 +325,25 @@ export function useEditorPage() {
     const lastCommittee = resolveLastCommittee()
     const nextCommittee: ScheduleDraftCommittee = {
       localId: crypto.randomUUID(),
-      code: normalizedName,
-      sortOrder: resolveNextCommitteeSortOrder(),
+      name: normalizedName,
       startMinute: lastCommittee?.startMinute ?? 525,
       date: lastCommittee?.date ?? new Date().toISOString(),
       room: lastCommittee?.room ?? null,
       secretaryName: lastCommittee?.secretaryName ?? null,
       invigilators: lastCommittee?.invigilators.slice() ?? [],
+      language: lastCommittee?.language ?? 'CZECH',
+      studyProgramCode: lastCommittee?.studyProgramCode ?? '',
+      studyProgramName: lastCommittee?.studyProgramName ?? '',
+      studyProgramType: lastCommittee?.studyProgramType ?? 'BACHELOR',
+      specializationName: lastCommittee?.specializationName ?? '',
+      specializationCode: lastCommittee?.specializationCode ?? '',
+      defenseDepartmentCode: lastCommittee?.defenseDepartmentCode ?? '',
+      defenseDepartmentName: lastCommittee?.defenseDepartmentName ?? '',
+      chairName: lastCommittee?.chairName ?? '',
+      viceChairName: lastCommittee?.viceChairName ?? '',
+      member1Name: lastCommittee?.member1Name ?? '',
+      member2Name: lastCommittee?.member2Name ?? '',
+      member3Name: lastCommittee?.member3Name ?? '',
       items: []
     }
 
@@ -375,7 +369,7 @@ export function useEditorPage() {
       return
     }
 
-    targetCommittee.code = normalizedName
+    targetCommittee.name = normalizedName
     closeRenameCommitteeDialog()
   }
 
@@ -394,7 +388,7 @@ export function useEditorPage() {
 
     const [deletedCommittee] = draft.committees.splice(targetIndex, 1)
     if (deletedCommittee && selectedCommitteeId.value === deletedCommittee.localId) {
-      const nextCommittee = draft.committees.slice().sort((left, right) => left.sortOrder - right.sortOrder)[0]
+      const nextCommittee = draft.committees[0]
       selectedCommitteeId.value = nextCommittee?.localId ?? ''
     }
 

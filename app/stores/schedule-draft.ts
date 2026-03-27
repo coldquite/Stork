@@ -109,13 +109,25 @@ function toDraftItem(item: CommitteeItemDto | PostCommitteeItemDto): ScheduleDra
 function toDraftCommittee(committee: CommitteeDto | PostCommitteeDto): ScheduleDraftCommittee {
   return {
     localId: createLocalId(),
-    code: committee.code,
-    sortOrder: committee.sortOrder,
+    name: committee.name,
     startMinute: committee.startMinute,
     date: committee.date,
     room: committee.room,
     secretaryName: committee.secretaryName,
     invigilators: deepClone(committee.invigilators),
+    language: committee.language,
+    studyProgramCode: committee.studyProgramCode,
+    studyProgramName: committee.studyProgramName,
+    studyProgramType: committee.studyProgramType,
+    specializationName: committee.specializationName,
+    specializationCode: committee.specializationCode,
+    defenseDepartmentCode: committee.defenseDepartmentCode,
+    defenseDepartmentName: committee.defenseDepartmentName,
+    chairName: committee.chairName,
+    viceChairName: committee.viceChairName,
+    member1Name: committee.member1Name,
+    member2Name: committee.member2Name,
+    member3Name: committee.member3Name,
     items: committee.items
       .slice()
       .sort((left, right) => left.position - right.position)
@@ -131,10 +143,7 @@ function toDraftFromSource(source: DraftScheduleSource): ScheduleDraft {
   return {
     name: normalizedName(source.name, fallbackName),
     type: source.type,
-    committees: source.committees
-      .slice()
-      .sort((left, right) => left.sortOrder - right.sortOrder)
-      .map((committee) => toDraftCommittee(committee))
+    committees: source.committees.map((committee) => toDraftCommittee(committee))
   }
 }
 
@@ -178,13 +187,25 @@ function toPostCommitteeItem(item: ScheduleDraftItem): PostCommitteeItemDto {
 
 function toPostCommittee(committee: ScheduleDraftCommittee): PostCommitteeDto {
   return {
-    code: committee.code,
-    sortOrder: committee.sortOrder,
+    name: committee.name,
     startMinute: committee.startMinute,
     date: committee.date,
     room: committee.room,
     secretaryName: committee.secretaryName,
     invigilators: deepClone(committee.invigilators),
+    language: committee.language,
+    studyProgramCode: committee.studyProgramCode,
+    studyProgramName: committee.studyProgramName,
+    studyProgramType: committee.studyProgramType,
+    specializationName: committee.specializationName,
+    specializationCode: committee.specializationCode,
+    defenseDepartmentCode: committee.defenseDepartmentCode,
+    defenseDepartmentName: committee.defenseDepartmentName,
+    chairName: committee.chairName,
+    viceChairName: committee.viceChairName,
+    member1Name: committee.member1Name,
+    member2Name: committee.member2Name,
+    member3Name: committee.member3Name,
     items: committee.items
       .slice()
       .sort((left, right) => left.position - right.position)
@@ -204,10 +225,7 @@ function toPostPayload(
     ...payload,
     name: normalizedName(targetName, ''),
     type: scheduleType,
-    committees: payload.committees
-      .slice()
-      .sort((left, right) => left.sortOrder - right.sortOrder)
-      .map((committee) => toPostCommittee(committee))
+    committees: payload.committees.map((committee) => toPostCommittee(committee))
   }
 }
 

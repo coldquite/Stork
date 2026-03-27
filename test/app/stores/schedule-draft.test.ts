@@ -46,13 +46,25 @@ function createApiSchedule(seed = 'A'): TimeScheduleDto {
       {
         id: `committee-${seed}`,
         timeScheduleId: `schedule-${seed}`,
-        code: `1-NI-SI-${seed}`,
-        sortOrder: 1,
+        name: `1-NI-SI-${seed}`,
         startMinute: 525,
         date: '2026-06-10T00:00:00.000Z',
         room: 'TH:A-1435',
         secretaryName: 'Sekretář 1',
         invigilators: ['Dozor A'],
+        language: 'CZECH',
+        studyProgramCode: `B-${seed}`,
+        studyProgramName: `Study program ${seed}`,
+        studyProgramType: 'BACHELOR',
+        specializationName: `Specialization ${seed}`,
+        specializationCode: `SPEC-${seed}`,
+        defenseDepartmentCode: `KAT-${seed}`,
+        defenseDepartmentName: `Department ${seed}`,
+        chairName: 'Předseda',
+        viceChairName: 'Místopředseda',
+        member1Name: 'Člen 1',
+        member2Name: 'Člen 2',
+        member3Name: 'Člen 3',
         items: [
           {
             id: `item-student-${seed}`,
@@ -480,7 +492,7 @@ describe('useScheduleDraftStore', () => {
     })
 
     expect(store.draft?.name).toBe('Plán M2')
-    expect(store.draft?.committees[0]?.code).toBe('1-NI-SI-M2')
+    expect(store.draft?.committees[0]?.name).toBe('1-NI-SI-M2')
     expect(store.isDirty).toBe(false)
     expect(store.lastSavedScheduleId).toBeNull()
   })

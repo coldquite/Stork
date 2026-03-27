@@ -39,13 +39,25 @@ async function createScheduleViaPost(authCookie: string): Promise<string> {
       type: 'MANUAL',
       committees: [
         {
-          code: `1-NI-SI-${suffix}`,
-          sortOrder: 1,
+          name: `1-NI-SI-${suffix}`,
           startMinute: 525,
           date: '2026-06-10T00:00:00.000Z',
           room: 'TH:A-1435',
           secretaryName: 'Sekretář 1',
           invigilators: ['Dozor A', 'Dozor B'],
+          language: 'CZECH',
+          studyProgramCode: `B-${suffix}`,
+          studyProgramName: `Study program ${suffix}`,
+          studyProgramType: 'BACHELOR',
+          specializationName: `Specialization ${suffix}`,
+          specializationCode: `SPEC-${suffix}`,
+          defenseDepartmentCode: `KAT-${suffix}`,
+          defenseDepartmentName: `Department ${suffix}`,
+          chairName: 'Předseda',
+          viceChairName: 'Místopředseda',
+          member1Name: 'Člen 1',
+          member2Name: 'Člen 2',
+          member3Name: 'Člen 3',
           items: [
             {
               type: 'STUDENT',
@@ -115,11 +127,13 @@ describe('GET /api/time-schedules/:id (integration)', () => {
     }
 
     expect(committee.timeScheduleId).toBe(createdScheduleId)
-    expect(committee.sortOrder).toBe(1)
+    expect(committee.name).toMatch(/^1-NI-SI-/)
     expect(committee.startMinute).toBe(525)
     expect(committee.date).toBe('2026-06-10T00:00:00.000Z')
     expect(committee.room).toBe('TH:A-1435')
     expect(committee.invigilators).toEqual(['Dozor A', 'Dozor B'])
+    expect(committee.language).toBe('CZECH')
+    expect(committee.studyProgramType).toBe('BACHELOR')
     expect(committee.items).toHaveLength(2)
 
     const studentItem = committee.items.find((item) => item.type === 'STUDENT')

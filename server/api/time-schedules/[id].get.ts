@@ -14,9 +14,7 @@ export default defineEventHandler(async (event): Promise<TimeScheduleDto> => {
     },
     include: {
       committees: {
-        orderBy: {
-          sortOrder: 'asc'
-        },
+        orderBy: [{ date: 'asc' }, { startMinute: 'asc' }, { id: 'asc' }],
         include: {
           items: {
             orderBy: {
@@ -47,13 +45,25 @@ export default defineEventHandler(async (event): Promise<TimeScheduleDto> => {
     committees: schedule.committees.map((committee) => ({
       id: committee.id,
       timeScheduleId: committee.timeScheduleId,
-      code: committee.code,
-      sortOrder: committee.sortOrder,
+      name: committee.name,
       startMinute: committee.startMinute,
       date: committee.date.toISOString(),
       room: committee.room,
       secretaryName: committee.secretaryName,
       invigilators: committee.invigilators,
+      language: committee.language,
+      studyProgramCode: committee.studyProgramCode,
+      studyProgramName: committee.studyProgramName,
+      studyProgramType: committee.studyProgramType,
+      specializationName: committee.specializationName,
+      specializationCode: committee.specializationCode,
+      defenseDepartmentCode: committee.defenseDepartmentCode,
+      defenseDepartmentName: committee.defenseDepartmentName,
+      chairName: committee.chairName,
+      viceChairName: committee.viceChairName,
+      member1Name: committee.member1Name,
+      member2Name: committee.member2Name,
+      member3Name: committee.member3Name,
       items: committee.items.map((item) => {
         if (item.type === 'STUDENT') {
           return {

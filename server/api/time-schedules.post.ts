@@ -3,6 +3,7 @@ import { Prisma } from '~~/prisma/generated/client/client'
 import { prisma } from '#server/utils/db'
 import { requireAuthenticatedUser } from '#server/utils/require-auth'
 import type {
+  CommitteeLanguageDto,
   PostCommitteeDto,
   PostCommitteeItemDto,
   PostPauseItemDto,
@@ -10,6 +11,7 @@ import type {
   PostTimeScheduleRequestDto,
   PostTimeScheduleResponseDto,
   RepeatTypeDto,
+  StudyProgramTypeDto,
   ThesisLanguageDto,
   TimeScheduleTypeDto
 } from '#shared/types/time-schedules'
@@ -21,6 +23,8 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 const FORBIDDEN_SYSTEM_FIELDS = new Set(['id', 'timeScheduleId', 'committeeId', 'itemId', 'createdAt'])
 const TIME_SCHEDULE_TYPES: ReadonlySet<TimeScheduleTypeDto> = new Set(['MANUAL', 'AUTO'])
 const COMMITTEE_ITEM_TYPES: ReadonlySet<'STUDENT' | 'PAUSE'> = new Set(['STUDENT', 'PAUSE'])
+const COMMITTEE_LANGUAGES: ReadonlySet<CommitteeLanguageDto> = new Set(['CZECH', 'ENGLISH'])
+const STUDY_PROGRAM_TYPES: ReadonlySet<StudyProgramTypeDto> = new Set(['BACHELOR', 'MAGISTER'])
 const THESIS_LANGUAGES: ReadonlySet<ThesisLanguageDto> = new Set(['CZECH', 'ENGLISH', 'SLOVAK'])
 const REPEAT_TYPES: ReadonlySet<RepeatTypeDto> = new Set(['NONE', 'THESIS_DEFENSE', 'ORAL_EXAM', 'BOTH', 'UNKNOWN'])
 
@@ -243,18 +247,51 @@ function parseCommittee(value: unknown, path: string): PostCommitteeDto {
   const record = assertRecord(value, path)
   assertNoUnknownKeys(
     record,
-    ['code', 'sortOrder', 'startMinute', 'date', 'room', 'secretaryName', 'invigilators', 'items'],
+    [
+      'name',
+      'startMinute',
+      'date',
+      'room',
+      'secretaryName',
+      'invigilators',
+      'language',
+      'studyProgramCode',
+      'studyProgramName',
+      'studyProgramType',
+      'specializationName',
+      'specializationCode',
+      'defenseDepartmentCode',
+      'defenseDepartmentName',
+      'chairName',
+      'viceChairName',
+      'member1Name',
+      'member2Name',
+      'member3Name',
+      'items'
+    ],
     path
   )
 
   return {
-    code: parseString(record.code, `${path}.code`),
-    sortOrder: parseInteger(record.sortOrder, `${path}.sortOrder`),
+    name: parseString(record.name, `${path}.name`),
     startMinute: parseInteger(record.startMinute, `${path}.startMinute`),
     date: parseDateString(record.date, `${path}.date`),
     room: parseNullableString(record.room, `${path}.room`),
     secretaryName: parseNullableString(record.secretaryName, `${path}.secretaryName`),
     invigilators: parseStringArray(record.invigilators, `${path}.invigilators`),
+    language: parseEnumValue(record.language, COMMITTEE_LANGUAGES, `${path}.language`),
+    studyProgramCode: parseString(record.studyProgramCode, `${path}.studyProgramCode`),
+    studyProgramName: parseString(record.studyProgramName, `${path}.studyProgramName`),
+    studyProgramType: parseEnumValue(record.studyProgramType, STUDY_PROGRAM_TYPES, `${path}.studyProgramType`),
+    specializationName: parseString(record.specializationName, `${path}.specializationName`),
+    specializationCode: parseString(record.specializationCode, `${path}.specializationCode`),
+    defenseDepartmentCode: parseString(record.defenseDepartmentCode, `${path}.defenseDepartmentCode`),
+    defenseDepartmentName: parseString(record.defenseDepartmentName, `${path}.defenseDepartmentName`),
+    chairName: parseString(record.chairName, `${path}.chairName`),
+    viceChairName: parseString(record.viceChairName, `${path}.viceChairName`),
+    member1Name: parseString(record.member1Name, `${path}.member1Name`),
+    member2Name: parseString(record.member2Name, `${path}.member2Name`),
+    member3Name: parseString(record.member3Name, `${path}.member3Name`),
     items: parseArray(record.items, `${path}.items`, parseCommitteeItem)
   }
 }
@@ -314,13 +351,25 @@ function mapItemCreateData(item: PostCommitteeItemDto): Prisma.CommitteeItemCrea
 
 function mapCommitteeCreateData(committee: PostCommitteeDto): Prisma.CommitteeCreateWithoutTimeScheduleInput {
   return {
-    code: committee.code,
-    sortOrder: committee.sortOrder,
+    name: committee.name,
     startMinute: committee.startMinute,
     date: new Date(committee.date),
     room: committee.room,
     secretaryName: committee.secretaryName,
     invigilators: committee.invigilators,
+    language: committee.language,
+    studyProgramCode: committee.studyProgramCode,
+    studyProgramName: committee.studyProgramName,
+    studyProgramType: committee.studyProgramType,
+    specializationName: committee.specializationName,
+    specializationCode: committee.specializationCode,
+    defenseDepartmentCode: committee.defenseDepartmentCode,
+    defenseDepartmentName: committee.defenseDepartmentName,
+    chairName: committee.chairName,
+    viceChairName: committee.viceChairName,
+    member1Name: committee.member1Name,
+    member2Name: committee.member2Name,
+    member3Name: committee.member3Name,
     items: {
       create: committee.items.map((item) => mapItemCreateData(item))
     }
