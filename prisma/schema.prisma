@@ -36,6 +36,16 @@ enum ThesisLanguage {
   SLOVAK
 }
 
+enum StudyProgramType {
+  BACHELOR
+  MAGISTER
+}
+
+enum CommitteeLanguage {
+  CZECH
+  ENGLISH
+}
+
 model TimeSchedule {
   id        String           @id @default(cuid())
   name      String
@@ -52,18 +62,33 @@ model Committee {
   timeScheduleId String
   timeSchedule   TimeSchedule @relation(fields: [timeScheduleId], references: [id], onDelete: Cascade)
 
-  code          String
-  sortOrder     Int
-  startMinute   Int      @default(525)
+  name          String
+  startMinute   Int               @default(525)
   date          DateTime
   room          String?
   secretaryName String?
-  invigilators  String[] @default([])
+  invigilators  String[]          @default([])
+  language      CommitteeLanguage
+
+  studyProgramCode String
+  studyProgramName String
+  studyProgramType StudyProgramType
+
+  specializationName String
+  specializationCode String
+
+  defenseDepartmentCode String
+  defenseDepartmentName String
+
+  chairName     String
+  viceChairName String
+  member1Name   String
+  member2Name   String
+  member3Name   String
 
   items CommitteeItem[]
 
-  @@unique([timeScheduleId, code])
-  @@unique([timeScheduleId, sortOrder])
+  @@unique([timeScheduleId, name])
 }
 
 model CommitteeItem {
