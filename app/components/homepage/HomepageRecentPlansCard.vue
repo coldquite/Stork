@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { format, isValid, parseISO } from 'date-fns'
 import type { TimeScheduleListItemDto } from '#shared/types/time-schedules'
 
 interface HomepageRecentPlansCardProps {
@@ -12,14 +11,24 @@ interface HomepageRecentPlansCardProps {
 defineProps<HomepageRecentPlansCardProps>()
 const emit = defineEmits<{ openPlan: [plan: TimeScheduleListItemDto] }>()
 
-function formatPlanDate(value: string): string {
-  const date = parseISO(value)
+const dateFormatter = new Intl.DateTimeFormat('cs-CZ', {
+  timeZone: 'Europe/Prague',
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric'
+})
 
-  if (!isValid(date)) {
+function formatDateInPrague(iso: string): string {
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) {
     return '-'
   }
 
-  return format(date, 'dd.MM.yyyy')
+  return dateFormatter.format(date)
+}
+
+function formatPlanDate(value: string): string {
+  return formatDateInPrague(value)
 }
 
 function handleOpenPlan(plan: TimeScheduleListItemDto): void {

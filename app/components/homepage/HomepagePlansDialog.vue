@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { format, isValid, parseISO } from 'date-fns'
 import { computed } from 'vue'
 
 interface HomepagePlansDialogItem {
@@ -22,18 +21,28 @@ const emit = defineEmits<{ openPlan: [plan: HomepagePlansDialogItem] }>()
 const open = defineModel<boolean>('open', { default: false })
 const { t } = useI18n()
 
+const dateTimeFormatter = new Intl.DateTimeFormat('cs-CZ', {
+  timeZone: 'Europe/Prague',
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: false
+})
+
 const tabs = computed(() => [
   { key: 'manual', label: t('homepage.plansModal.tabs.manual'), slot: 'manual' },
   { key: 'auto', label: t('homepage.plansModal.tabs.auto'), slot: 'auto' }
 ])
 
 function formatUpdatedAt(value: string): string {
-  const parsed = parseISO(value)
-  if (!isValid(parsed)) {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) {
     return '-'
   }
 
-  return format(parsed, 'dd.MM.yyyy HH:mm')
+  return dateTimeFormatter.format(date)
 }
 
 function handleOpenPlan(plan: HomepagePlansDialogItem): void {
