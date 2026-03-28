@@ -19,13 +19,13 @@ const footerStarCount = computed(() => (route.path === '/editor' ? 0 : 2800))
     <div
       class="text-muted relative z-10 flex items-center justify-center gap-3 pt-3 pb-1 text-center text-sm font-normal"
     >
-      <ULink :to="appConfig.project.sourceCodeUrl" target="_blank" class="text-primary">
+      <ULink :to="appConfig.project.sourceCodeUrl" external target="_blank" rel="noopener" class="text-primary">
         {{ t('layout.footer.sourceCode') }}
       </ULink>
       <span aria-hidden="true">•</span>
       <span>{{ t('layout.footer.copy', { year: currentYear }) }}</span>
       <span aria-hidden="true">•</span>
-      <ULink to="/licenses.txt" target="_blank" class="text-primary">
+      <ULink to="/licenses.txt" external target="_blank" rel="noopener" class="text-primary">
         {{ t('layout.footer.licenses') }}
       </ULink>
     </div>
