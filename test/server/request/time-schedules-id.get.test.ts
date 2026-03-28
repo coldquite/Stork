@@ -9,16 +9,23 @@ function createStudentDraft(suffix: string) {
     personalNumber: `A${suffix}`,
     firstName: 'Jan',
     lastName: 'Novák',
-    email: `jan.${suffix}@example.test`,
-    mobilePhone: '+420777123456',
     titlesBefore: 'Bc.',
     titlesAfter: null,
-    specialization: 'Softwarové inženýrství',
+    studyProgramName: `Study program ${suffix}`,
+    studyProgramType: 'BACHELOR' as const,
+    specializationName: 'Softwarové inženýrství',
+    specializationCode: `SPEC-${suffix}`,
+    defenseDepartmentCode: `KAT-${suffix}`,
+    defenseDepartmentName: `Department ${suffix}`,
+    studyLanguage: 'CZECH' as const,
+    thesisSubmissionAt: '2026-06-10T08:30:00.000Z',
     thesisTitleLocal: `Lokální název ${suffix}`,
     thesisTitleEn: `English title ${suffix}`,
     thesisLanguage: 'CZECH' as const,
     supervisorName: 'Vedoucí',
     reviewerName: 'Oponent',
+    additionalSupervisorName: null,
+    additionalReviewerName: null,
     repeatType: 'NONE' as const,
     elsa: false,
     prepareMinutes: 45,
@@ -46,7 +53,6 @@ async function createScheduleViaPost(authCookie: string): Promise<string> {
           secretaryName: 'Sekretář 1',
           invigilators: ['Dozor A', 'Dozor B'],
           language: 'CZECH',
-          studyProgramCode: `B-${suffix}`,
           studyProgramName: `Study program ${suffix}`,
           studyProgramType: 'BACHELOR',
           specializationName: `Specialization ${suffix}`,
@@ -84,9 +90,8 @@ async function createScheduleViaPost(authCookie: string): Promise<string> {
           secretaryName: 'Sekretář 2',
           invigilators: ['Dozor C'],
           language: 'ENGLISH',
-          studyProgramCode: `M-${suffix}`,
           studyProgramName: `Study program M ${suffix}`,
-          studyProgramType: 'MAGISTER',
+          studyProgramType: 'MASTER',
           specializationName: `Specialization M ${suffix}`,
           specializationCode: `SPEC-M-${suffix}`,
           defenseDepartmentCode: `KAT-M-${suffix}`,
@@ -155,7 +160,7 @@ describe('GET /api/time-schedules/:id (integration)', () => {
     expect(firstCommittee.startMinute).toBe(510)
     expect(firstCommittee.date).toBe('2026-06-10T00:00:00.000Z')
     expect(firstCommittee.language).toBe('ENGLISH')
-    expect(firstCommittee.studyProgramType).toBe('MAGISTER')
+    expect(firstCommittee.studyProgramType).toBe('MASTER')
     expect(firstCommittee.items).toHaveLength(0)
 
     expect(secondCommittee.timeScheduleId).toBe(createdScheduleId)

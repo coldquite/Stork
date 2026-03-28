@@ -1,9 +1,8 @@
 export type TimeScheduleTypeDto = 'MANUAL' | 'AUTO'
-export type CommitteeItemTypeDto = 'STUDENT' | 'PAUSE'
-export type RepeatTypeDto = 'NONE' | 'THESIS_DEFENSE' | 'ORAL_EXAM' | 'BOTH' | 'UNKNOWN'
+type RepeatTypeDto = 'NONE' | 'THESIS_DEFENSE' | 'ORAL_EXAM' | 'BOTH' | 'UNKNOWN'
 export type ThesisLanguageDto = 'CZECH' | 'ENGLISH' | 'SLOVAK'
-export type StudyProgramTypeDto = 'BACHELOR' | 'MAGISTER'
-export type CommitteeLanguageDto = 'CZECH' | 'ENGLISH'
+export type StudyProgramTypeDto = 'BACHELOR' | 'MASTER'
+export type StudyLanguageDto = 'CZECH' | 'ENGLISH'
 
 export interface TimeScheduleListItemDto {
   id: string
@@ -23,16 +22,23 @@ export interface StudentItemDto {
   personalNumber: string | null
   firstName: string
   lastName: string
-  email: string
-  mobilePhone: string | null
   titlesBefore: string | null
   titlesAfter: string | null
-  specialization: string
   thesisTitleLocal: string
   thesisTitleEn: string
   thesisLanguage: ThesisLanguageDto
   supervisorName: string
   reviewerName: string
+  additionalSupervisorName: string | null
+  additionalReviewerName: string | null
+  studyProgramName: string
+  studyProgramType: StudyProgramTypeDto
+  specializationName: string
+  specializationCode: string
+  defenseDepartmentCode: string
+  defenseDepartmentName: string
+  studyLanguage: StudyLanguageDto
+  thesisSubmissionAt: string | null
   repeatType: RepeatTypeDto
   elsa: boolean
   prepareMinutes: number
@@ -45,7 +51,7 @@ export interface PauseItemDto {
   durationMinutes: number
 }
 
-export interface StudentCommitteeItemDto {
+interface StudentCommitteeItemDto {
   id: string
   committeeId: string
   type: 'STUDENT'
@@ -54,7 +60,7 @@ export interface StudentCommitteeItemDto {
   pause: null
 }
 
-export interface PauseCommitteeItemDto {
+interface PauseCommitteeItemDto {
   id: string
   committeeId: string
   type: 'PAUSE'
@@ -74,8 +80,7 @@ export interface CommitteeDto {
   room: string | null
   secretaryName: string | null
   invigilators: string[]
-  language: CommitteeLanguageDto
-  studyProgramCode: string
+  language: StudyLanguageDto
   studyProgramName: string
   studyProgramType: StudyProgramTypeDto
   specializationName: string
@@ -102,11 +107,11 @@ export type PostStudentItemDto = Omit<StudentItemDto, 'itemId'>
 
 export type PostPauseItemDto = Omit<PauseItemDto, 'itemId'>
 
-export type PostStudentCommitteeItemDto = Omit<StudentCommitteeItemDto, 'id' | 'committeeId' | 'student'> & {
+type PostStudentCommitteeItemDto = Omit<StudentCommitteeItemDto, 'id' | 'committeeId' | 'student'> & {
   student: PostStudentItemDto
 }
 
-export type PostPauseCommitteeItemDto = Omit<PauseCommitteeItemDto, 'id' | 'committeeId' | 'pause'> & {
+type PostPauseCommitteeItemDto = Omit<PauseCommitteeItemDto, 'id' | 'committeeId' | 'pause'> & {
   pause: PostPauseItemDto
 }
 

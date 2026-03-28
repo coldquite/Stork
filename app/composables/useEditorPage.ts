@@ -56,9 +56,9 @@ function toStudentRow(item: ScheduleDraftItem & { type: 'STUDENT' }): StudentRow
 
   return {
     id: item.localId,
-    fullName: fullName.length > 0 ? fullName : item.student.email,
+    fullName: fullName.length > 0 ? fullName : '-',
     personalNumber: item.student.personalNumber?.trim() || '-',
-    specialization: item.student.specialization.trim() || '-',
+    specialization: item.student.specializationName.trim() || '-',
     thesisTitle: item.student.thesisTitleLocal.trim() || item.student.thesisTitleEn.trim() || '-'
   }
 }
@@ -359,7 +359,6 @@ export function useEditorPage() {
       secretaryName: lastCommittee?.secretaryName ?? null,
       invigilators: lastCommittee?.invigilators.slice() ?? [],
       language: lastCommittee?.language ?? 'CZECH',
-      studyProgramCode: lastCommittee?.studyProgramCode ?? '',
       studyProgramName: lastCommittee?.studyProgramName ?? '',
       studyProgramType: lastCommittee?.studyProgramType ?? 'BACHELOR',
       specializationName: lastCommittee?.specializationName ?? '',

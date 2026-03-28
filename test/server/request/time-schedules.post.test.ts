@@ -21,7 +21,6 @@ function createPostPayload(suffix: string): PostTimeScheduleRequestDto {
         secretaryName: 'Sekretář 1',
         invigilators: ['Dozor A', 'Dozor B'],
         language: 'CZECH',
-        studyProgramCode: `B-${suffix}`,
         studyProgramName: `Study program ${suffix}`,
         studyProgramType: 'BACHELOR',
         specializationName: `Specialization ${suffix}`,
@@ -41,16 +40,23 @@ function createPostPayload(suffix: string): PostTimeScheduleRequestDto {
               personalNumber: `A${suffix}`,
               firstName: 'Jan',
               lastName: 'Novák',
-              email: `jan.${suffix}@example.test`,
-              mobilePhone: '+420777123456',
               titlesBefore: 'Bc.',
               titlesAfter: null,
-              specialization: 'Softwarové inženýrství',
               thesisTitleLocal: `Lokální název ${suffix}`,
               thesisTitleEn: `English title ${suffix}`,
               thesisLanguage: 'CZECH' as const,
               supervisorName: 'Vedoucí',
               reviewerName: 'Oponent',
+              additionalSupervisorName: null,
+              additionalReviewerName: null,
+              studyProgramName: `Study program ${suffix}`,
+              studyProgramType: 'BACHELOR' as const,
+              specializationName: `Specialization ${suffix}`,
+              specializationCode: `SPEC-${suffix}`,
+              defenseDepartmentCode: `KAT-${suffix}`,
+              defenseDepartmentName: `Department ${suffix}`,
+              studyLanguage: 'CZECH' as const,
+              thesisSubmissionAt: '2026-06-10T12:15:00.000Z',
               repeatType: 'NONE' as const,
               elsa: false,
               prepareMinutes: 45,
@@ -137,7 +143,6 @@ describe('POST /api/time-schedules (integration)', () => {
 
     expect(committee.name).toBe(`1-NI-SI-${payloadSeed}`)
     expect(committee.language).toBe('CZECH')
-    expect(committee.studyProgramCode).toBe(`B-${payloadSeed}`)
     expect(committee.items).toHaveLength(2)
 
     const studentItem = committee.items.find((item) => item.type === 'STUDENT')
