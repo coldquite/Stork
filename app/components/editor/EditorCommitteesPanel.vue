@@ -39,7 +39,7 @@ function requestCreateCommittee(): void {
           <h2 class="text-lg font-semibold">
             {{ props.title }}
           </h2>
-          <p class="text-muted text-xs">
+          <p class="text-muted text-sm">
             {{ props.sortHint }}
           </p>
         </div>
