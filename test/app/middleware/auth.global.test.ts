@@ -66,4 +66,24 @@ describe('auth.global middleware', () => {
     expect(result).toBeUndefined()
     expect(navigateToMock).not.toHaveBeenCalled()
   })
+
+  it('allows unauthenticated users to stay on login route after session init', async () => {
+    authStoreMock.isSessionInitialized = true
+    authStoreMock.isAuthenticated = false
+
+    const result = await runMiddleware('/login')
+
+    expect(result).toBeUndefined()
+    expect(navigateToMock).not.toHaveBeenCalled()
+  })
+
+  it('does not redirect from login route while session is still uninitialized', async () => {
+    authStoreMock.isSessionInitialized = false
+    authStoreMock.isAuthenticated = true
+
+    const result = await runMiddleware('/login')
+
+    expect(result).toBeUndefined()
+    expect(navigateToMock).not.toHaveBeenCalled()
+  })
 })
