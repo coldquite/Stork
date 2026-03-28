@@ -27,6 +27,7 @@
     "check": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm db:format"
   },
   "dependencies": {
+    "@formkit/auto-animate": "^0.9.0",
     "@iconify-json/lucide": "^1.2.98",
     "@iconify-json/simple-icons": "^1.2.74",
     "@nuxt/ui": "^4.5.1",

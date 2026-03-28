@@ -1,9 +1,11 @@
 <script setup lang="ts">
+import { vAutoAnimate } from '@formkit/auto-animate/vue'
 import type { CommitteeTabItem } from '~/types/editor'
 
 const props = defineProps<{
   cardRootClass: string
   title: string
+  sortHint: string
   committeesCount: number
   selectedCommitteeId: string
   committeeTabs: CommitteeTabItem[]
@@ -20,6 +22,10 @@ const selectedCommitteeIdModel = computed({
   set: (value: string) => emit('update:selectedCommitteeId', value)
 })
 
+function selectCommittee(committeeId: string): void {
+  selectedCommitteeIdModel.value = committeeId
+}
+
 function requestCreateCommittee(): void {
   emit('createCommittee')
 }
@@ -28,52 +34,58 @@ function requestCreateCommittee(): void {
 <template>
   <UCard :ui="{ root: props.cardRootClass, header: 'sm:px-3 lg:px-3', body: 'p-0 sm:p-0' }">
     <template #header>
-      <div class="flex items-center justify-between">
-        <h2 class="text-lg font-semibold">
-          {{ props.title }}
-        </h2>
+      <div class="flex items-stretch justify-between gap-3">
+        <div class="flex min-w-0 flex-col">
+          <h2 class="text-lg font-semibold">
+            {{ props.title }}
+          </h2>
+          <p class="text-muted text-xs">
+            {{ props.sortHint }}
+          </p>
+        </div>
         <UBadge
           color="secondary"
           variant="outline"
           size="lg"
           leading-icon="i-lucide-scale"
-          class="bg-default px-2.5 py-1 text-base font-semibold ring-[2px] ring-current/45"
+          class="bg-default self-stretch px-2.5 text-base font-semibold ring-[2px] ring-current/45"
         >
           {{ props.committeesCount }}
         </UBadge>
       </div>
     </template>
 
-    <UTabs
-      v-model="selectedCommitteeIdModel"
-      :items="props.committeeTabs"
-      orientation="vertical"
-      :content="false"
-      variant="pill"
-      size="lg"
-      :ui="{
-        root: 'w-full',
-        list: 'w-full items-stretch rounded-none border-y-2 border-default bg-default p-0',
-        trigger:
-          'w-full justify-between rounded-none text-base font-semibold transition-colors data-[state=inactive]:hover:bg-accented data-[state=inactive]:hover:ring-1 data-[state=inactive]:hover:ring-inset data-[state=inactive]:hover:ring-primary/30 data-[state=active]:hover:ring-2 data-[state=active]:hover:ring-inset data-[state=active]:hover:ring-white/25',
-        indicator: 'inset-x-0 rounded-none',
-        trailingBadgeSize: 'md',
-        trailingBadge: 'px-2 py-0.5 text-sm font-semibold'
-      }"
-      class="w-full"
-    >
-      <template #trailing="{ item }">
-        <UBadge
-          color="primary"
-          variant="outline"
-          size="lg"
-          leading-icon="i-lucide-users"
-          class="bg-default px-2.5 py-1 text-base font-semibold ring-[2px] ring-current/45"
-        >
-          {{ item.studentsCount }}
-        </UBadge>
-      </template>
-    </UTabs>
+    <div class="border-default bg-default border-y-2 p-0">
+      <ul v-auto-animate role="listbox" :aria-label="props.title" class="w-full">
+        <li v-for="item in props.committeeTabs" :key="item.value">
+          <UButton
+            :variant="item.value === selectedCommitteeIdModel ? 'soft' : 'ghost'"
+            color="primary"
+            size="lg"
+            block
+            role="option"
+            :aria-selected="item.value === selectedCommitteeIdModel"
+            class="focus-visible:ring-primary/50 w-full justify-between rounded-none px-3 py-3 text-base font-semibold ring-0 focus-visible:ring-2 focus-visible:ring-inset"
+            :class="item.value === selectedCommitteeIdModel ? 'ring-primary/50 ring-2 ring-inset' : 'hover:bg-accented'"
+            @click="selectCommittee(item.value)"
+          >
+            <span class="truncate text-left">
+              {{ item.label }}
+            </span>
+
+            <UBadge
+              color="primary"
+              variant="outline"
+              size="lg"
+              leading-icon="i-lucide-users"
+              class="bg-default px-2.5 py-1 text-base font-semibold ring-[2px] ring-current/45"
+            >
+              {{ item.studentsCount }}
+            </UBadge>
+          </UButton>
+        </li>
+      </ul>
+    </div>
 
     <div class="border-default border-t-2 p-2">
       <UButton

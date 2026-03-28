@@ -24,6 +24,30 @@ function resolveCommitteeLabel(committee: ScheduleDraftCommittee): string {
   return committee.name.trim()
 }
 
+function resolveCommitteeDayTimestamp(committee: ScheduleDraftCommittee): number {
+  const parsedDate = parseISO(committee.date)
+  return isValid(parsedDate) ? parsedDate.getTime() : Number.POSITIVE_INFINITY
+}
+
+function compareCommitteesByTimeline(left: ScheduleDraftCommittee, right: ScheduleDraftCommittee): number {
+  const dayDiff = resolveCommitteeDayTimestamp(left) - resolveCommitteeDayTimestamp(right)
+  if (dayDiff !== 0) {
+    return dayDiff
+  }
+
+  const minuteDiff = left.startMinute - right.startMinute
+  if (minuteDiff !== 0) {
+    return minuteDiff
+  }
+
+  const nameDiff = left.name.localeCompare(right.name, 'cs')
+  if (nameDiff !== 0) {
+    return nameDiff
+  }
+
+  return left.localId.localeCompare(right.localId, 'cs')
+}
+
 function toStudentRow(item: ScheduleDraftItem & { type: 'STUDENT' }): StudentRow {
   const fullName = [item.student.titlesBefore, item.student.firstName, item.student.lastName, item.student.titlesAfter]
     .filter((part) => (part ?? '').trim().length > 0)
@@ -60,12 +84,15 @@ export function useEditorPage() {
   const committees = computed(() => {
     const draftCommittees = scheduleDraftStore.draft?.committees ?? []
 
-    return draftCommittees.map((committee) => ({
-      committee,
-      label: resolveCommitteeLabel(committee),
-      dateLabel: formatCommitteeDate(committee.date),
-      studentsCount: committee.items.filter((item) => item.type === 'STUDENT').length
-    }))
+    return draftCommittees
+      .slice()
+      .sort(compareCommitteesByTimeline)
+      .map((committee) => ({
+        committee,
+        label: resolveCommitteeLabel(committee),
+        dateLabel: formatCommitteeDate(committee.date),
+        studentsCount: committee.items.filter((item) => item.type === 'STUDENT').length
+      }))
   })
 
   watch(
@@ -206,7 +233,7 @@ export function useEditorPage() {
 
   function resolveLastCommittee(): ScheduleDraftCommittee | null {
     const draftCommittees = scheduleDraftStore.draft?.committees ?? []
-    return draftCommittees.at(-1) ?? null
+    return draftCommittees.slice().sort(compareCommitteesByTimeline).at(-1) ?? null
   }
 
   function openCreateCommitteeDialog(): void {
@@ -388,7 +415,7 @@ export function useEditorPage() {
 
     const [deletedCommittee] = draft.committees.splice(targetIndex, 1)
     if (deletedCommittee && selectedCommitteeId.value === deletedCommittee.localId) {
-      const nextCommittee = draft.committees[0]
+      const nextCommittee = committees.value[0]?.committee
       selectedCommitteeId.value = nextCommittee?.localId ?? ''
     }
 

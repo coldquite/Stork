@@ -114,6 +114,7 @@
     },
     "committees": {
       "title": "Komise",
+      "sortHint": "Seřazené podle data a času zahájení",
       "create": {
         "title": "Přidat komisi",
         "description": "Zadejte název nové komise.",

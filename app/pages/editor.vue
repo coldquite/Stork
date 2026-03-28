@@ -73,6 +73,7 @@ const draftRenameAriaLabel = computed(() => t('editor.plan.rename.openAriaLabel'
           <EditorCommitteesPanel
             :card-root-class="cardAccentRootClass"
             :title="t('editor.committees.title')"
+            :sort-hint="t('editor.committees.sortHint')"
             :committees-count="committees.length"
             :selected-committee-id="selectedCommitteeId"
             :committee-tabs="committeeTabs"
