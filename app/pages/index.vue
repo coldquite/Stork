@@ -30,7 +30,8 @@ const {
   cancelCreatePlanConfirm,
   confirmCreatePlanConfirm,
   cancelCreatePlanNameDialog,
-  submitCreatePlanName
+  submitCreatePlanName,
+  submitCreatePlanImport
 } = useHomepage()
 
 await callOnce('homepage-recent-plans', async () => {
@@ -86,7 +87,7 @@ await callOnce('homepage-recent-plans', async () => {
       @confirm="confirmCreatePlanConfirm"
     />
 
-    <HomepageCreatePlanNameDialog
+    <CreatePlanNameDialog
       v-model:open="isCreatePlanNameDialogOpen"
       v-model:name="newPlanNameInput"
       :loading="isCreatingNewPlan"
@@ -94,6 +95,7 @@ await callOnce('homepage-recent-plans', async () => {
       :validation-error="newPlanNameError"
       @cancel="cancelCreatePlanNameDialog"
       @submit="submitCreatePlanName"
+      @submit-import="submitCreatePlanImport"
     />
 
     <HomepagePlansDialog

@@ -34,18 +34,52 @@
   },
   "homepage": {
     "title": "Správa harmonogramů SZZ na jednom místě",
-    "description": "ČÁP vám pomůže připravit komise, studenty i časový plán přehledně a rychle.",
+    "description": "ČÁP vám pomůže připravit komise, studenty i časový plán přehledně a rychle",
     "actions": {
       "create": {
         "title": "Vytvořit nový plán",
-        "description": "Začněte s prázdným časovým plánem pro nové SZZ",
+        "description": "Využijte importy z IS KOS nebo začněte s prázdným časovým plánem pro nové SZZ",
         "confirmAction": "Vytvořit nový plán",
         "confirmDescription": "Opravdu chcete vytvořit nový plán? Aktuální rozpracovaný časový plán bude ztracen.",
+        "dialogTitle": "Nový plán",
+        "tabs": {
+          "import": "Import z KOS",
+          "empty": "Prázdný plán"
+        },
+        "import": {
+          "description": "Nahrajte exporty z informačního systému KOS",
+          "szzTypeLabel": "Typ SZZ",
+          "szzTypeTabs": {
+            "bachelor": "Bakalářské",
+            "master": "Magisterské",
+            "mixed": "Míchané"
+          },
+          "fields": {
+            "studentsCap": "Nahrajte soubor \"studenti-CAP\"",
+            "studentsCommittees": "Nahrajte soubor \"studenti-komise\"",
+            "studentsCapBachelor": "Nahrajte soubor \"studenti-CAP\" (bakalářské)",
+            "studentsCapMaster": "Nahrajte soubor \"studenti-CAP\" (magisterské)",
+            "studentsCommitteesBachelor": "Nahrajte soubor \"studenti-komise\" (bakalářské)",
+            "studentsCommitteesMaster": "Nahrajte soubor \"studenti-komise\" (magisterské)",
+            "committees": "Nahrajte soubor \"komise\"",
+            "committeesMixed": "Nahrajte soubor \"komise\" (míchané)"
+          },
+          "chooseFileAction": "Vybrat soubor",
+          "noFileSelected": "Soubor zatím není vybrán",
+          "filesHint": "Jsou povoleny pouze soubory .csv v kódování UTF-8 a oddělené středníkem ( ; ), což je výchozí nastavení IS KOS.",
+          "submitAction": "Nahrát soubory",
+          "validation": {
+            "validating": "Kontroluji soubor...",
+            "invalidExtension": "Povolen je pouze soubor s příponou .csv.",
+            "invalidEncoding": "Soubor musí být v kódování UTF-8.",
+            "invalidStructure": "Soubor neodpovídá podporované struktuře exportu z IS KOS.",
+            "invalidProgramType": "Soubor nelze zařadit na bakalářské nebo magisterské podle očekávaného sloupce."
+          }
+        },
         "nameDialogTitle": "Název nového plánu",
         "nameDialogDescription": "Zadejte název nového časového plánu.",
         "namePlaceholder": "Např. SZZ Informatika - červen 2026",
         "submitAction": "Pokračovat do editoru",
-        "validationHint": "Název nesmí začínat ani končit mezerou a může mít maximálně {max} znaků.",
         "validation": {
           "required": "Název musí obsahovat alespoň 1 znak bez mezer.",
           "leadingTrailingWhitespace": "Název nesmí začínat ani končit mezerou.",

@@ -62,20 +62,20 @@ model Committee {
   timeSchedule   TimeSchedule @relation(fields: [timeScheduleId], references: [id], onDelete: Cascade)
 
   name          String // studenti-komise: Komise - název (preprocess) + komise: Název komise (preprocess) ["242-BI, 5-BI-PI.21" => "5-BI-PI.21"]
-  startMinute   Int               @default(525) // 8:45
+  startMinute   Int           @default(525) // 8:45
   date          DateTime // komise: Datum
   room          String? // komise: Místo
   secretaryName String? // komise: Správce
-  invigilators  String[]          @default([])
+  invigilators  String[]      @default([])
   language      StudyLanguage // computed from "studenti-komise: St. program - kód" (endsWith "E" => ENGLISH, else CZECH)
 
-  studyProgramName String // studenti-komise: St. program - název [e.g. Informatika]
-  studyProgramType StudyProgramType // studenti-komise: St. program - typ (computed => "B" => BACHELOR, "M" => MASTER)
+  studyProgramName   String // studenti-komise: St. program - název + komise Název studijního programu [e.g. Informatika]
+  studyProgramType   StudyProgramType // studenti-komise: St. program - typ (computed => "B" => BACHELOR, "M" => MASTER)
   specializationName String // studenti-komise: Obor/spec - název + komise: Název oboru/specializace [e.g. Softwarové inženýrství 2021]
   specializationCode String // studenti-komise: Obor/spec - kód + komise: St. program (kód, název) [e.g. BI-SI21]
 
-  defenseDepartmentCode String // studenti-komise: VŠKP-typ A: Katedra obhajoby - kod + komise: Obor/specializace
-  defenseDepartmentName String // studenti-komise: VŠKP-typ A: Katedra obhajoby - název + komise: Název oboru/specializace
+  defenseDepartmentCode String // studenti-komise: VŠKP-typ A: Katedra obhajoby - kod + komise: Kat
+  defenseDepartmentName String // studenti-komise: VŠKP-typ A: Katedra obhajoby - název
 
   chairName     String // studenti-komise: Komise - předseda (preprocess)
   viceChairName String // studenti-komise: Komise - místopředseda (preprocess)
@@ -116,7 +116,7 @@ model StudentItem {
   titlesAfter              String? // studenti-CAP: titul za
   thesisTitleLocal         String // studenti-CAP: VŠKP-typ A: Název práce + studenti-komise: VŠKP-typ A: Český název práce
   thesisTitleEn            String // studenti-CAP: VŠKP-typ A: Překlad názvu práce + studenti-komise: VŠKP-typ A: Anglický název práce
-  thesisLanguage           ThesisLanguage // studenti-CAP: VŠKP-typ A: jazyk práce
+  thesisLanguage           ThesisLanguage // studenti-CAP: VŠKP-typ A: jazyk práce + studenti-komise: VŠKP-typ A: Jazyk práce
   supervisorName           String // studenti-CAP: VŠKP-typ A: Vedoucí práce 1 + studenti-komise: VŠKP-typ A: Vedoucí práce 1 (preprocess)
   reviewerName             String // studenti-CAP: VŠKP-typ A: Oponent práce 1 + studenti-komise: VŠKP-typ A: Oponent práce 1 (preprocess)
   additionalSupervisorName String? // studenti-komise: VŠKP-typ A: Vedoucí práce 2 (preprocess)
@@ -125,7 +125,7 @@ model StudentItem {
   studyProgramName   String // studenti-CAP: Studijní program (název) (Informatics)
   studyProgramType   StudyProgramType // computed from "studenti-CAP: Studijní program" (startwith "Bachelor"|"Bc." => BACHELOR, starts with "Mgr."|"Master" => MASTER)
   specializationName String // studenti-CAP: Obor/spec - název (Information Security 2021 (Bachelor in English))
-  specializationCode   String // studenti-CAP: Kód studijního plánu (BIE-IB.21)
+  specializationCode String // studenti-CAP: Kód studijního plánu (BIE-IB.21)
 
   defenseDepartmentCode String // studenti-CAP: Katedra studenta (kód)
   defenseDepartmentName String // studenti-CAP: Katedra studenta (název)

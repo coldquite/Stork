@@ -4,7 +4,9 @@ import { computed, onMounted, ref, watch } from 'vue'
 import type { TimeScheduleListItemDto, TimeScheduleTypeDto } from '#shared/types/time-schedules'
 import { useScheduleDraftStore } from '~/stores/schedule-draft'
 import { useHomepageStore } from '~/stores/homepage'
+import { useImportStore } from '~/stores/import'
 import type { HomepagePlanListItem, PlanOpenCandidate } from '~/types/homepage'
+import type { ImportPayload, ImportSzzType } from '~/types/import'
 
 export const HOMEPAGE_NEW_PLAN_NAME_MAX_LENGTH = 120
 const HOMEPAGE_BROWSE_PLANS_PAGE_SIZE = 20
@@ -12,6 +14,7 @@ const HOMEPAGE_BROWSE_PLANS_PAGE_SIZE = 20
 export function useHomepage() {
   const { t } = useI18n()
   const homepageStore = useHomepageStore()
+  const importStore = useImportStore()
   const scheduleDraftStore = useScheduleDraftStore()
 
   const isOpenRecentPlanDialogOpen = ref(false)
@@ -237,6 +240,27 @@ export function useHomepage() {
     }
   }
 
+  function submitCreatePlanImport(options: { payload: ImportPayload; szzType: ImportSzzType }): void {
+    if (isCreatingNewPlan.value || isOpeningRecentPlan.value) {
+      return
+    }
+
+    const validationError = validateNewPlanName(newPlanNameInput.value)
+    if (validationError) {
+      newPlanNameError.value = validationError
+      return
+    }
+
+    isCreatingNewPlan.value = true
+
+    try {
+      importStore.setImportedPlanDraft(newPlanNameInput.value.trim(), options.szzType, options.payload)
+      isCreatePlanNameDialogOpen.value = false
+    } finally {
+      isCreatingNewPlan.value = false
+    }
+  }
+
   async function openPlanById(planId: string): Promise<void> {
     if (isOpeningRecentPlan.value) {
       return
@@ -331,6 +355,7 @@ export function useHomepage() {
     cancelCreatePlanConfirm,
     confirmCreatePlanConfirm,
     cancelCreatePlanNameDialog,
-    submitCreatePlanName
+    submitCreatePlanName,
+    submitCreatePlanImport
   }
 }
