@@ -22,16 +22,18 @@ const props = withDefaults(
     speed: 'slow',
     direction: 'up',
     size: () => ({
-      min: 1,
-      max: 3
+      min: 2,
+      max: 4
     })
   }
 )
 
 const generateStars = (count: number): Star[] => {
+  const yStart = props.direction === 'down' ? -3000 : 0
+
   return Array.from({ length: count }, () => ({
     x: Math.random() * 100,
-    y: Math.floor(Math.random() * 2000),
+    y: yStart + Math.floor(Math.random() * 3000),
     size: Math.random() * (props.size.max - props.size.min) + props.size.min
   }))
 }
