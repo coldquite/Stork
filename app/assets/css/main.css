@@ -4,9 +4,9 @@
 .light {
   --ui-bg: #ffffff;
   --ui-bg-muted: #f8fafc;
-  --ui-bg-elevated: #f1f5f9;
-  --ui-bg-accented: #e8eef5;
-  --ui-border: var(--color-stork-200);
+  --ui-bg-elevated: var(--color-stork-100);
+  --ui-bg-accented: var(--color-stork-200);
+  --ui-border: var(--color-stork-250);
   --ui-border-muted: var(--color-stork-100);
   --ui-border-accented: var(--color-stork-300);
 }
@@ -25,6 +25,7 @@
   --color-stork-50: #f2f8fd;
   --color-stork-100: #e0effa;
   --color-stork-200: #bfdff3;
+  --color-stork-250: #abd3f0;
   --color-stork-300: #96c8ec;
   --color-stork-400: #6aade4;
   --color-stork-500: #0065bd;
