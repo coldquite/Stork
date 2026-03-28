@@ -14,6 +14,6 @@ withDefaults(
     <div
       class="bg-primary/15 absolute inset-x-0 top-0 h-full mask-[radial-gradient(110%_58%_at_50%_0%,black_0%,transparent_45%)]"
     />
-    <LazyStarsBg direction="down" :star-count="starCount" class="editor-stars-bg !z-0 opacity-90" />
+    <LazyCommonStarsBg direction="down" :star-count="starCount" class="editor-stars-bg !z-0 opacity-90" />
   </div>
 </template>

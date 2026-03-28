@@ -38,7 +38,7 @@ async function confirmLogout(): Promise<void> {
       <template #left>
         <div class="flex items-center gap-44">
           <NuxtLink to="/">
-            <AppLogo />
+            <CommonAppLogo />
           </NuxtLink>
 
           <UButton
@@ -81,7 +81,7 @@ async function confirmLogout(): Promise<void> {
     />
 
     <div class="relative">
-      <HeroBackground />
+      <CommonHeroBackground />
       <UMain class="relative z-10">
         <slot />
       </UMain>

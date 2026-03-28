@@ -10,7 +10,7 @@ const currentYear = getYear(new Date())
   <UFooter class="relative overflow-hidden">
     <div aria-hidden="true" class="pointer-events-none absolute inset-x-0 top-0 bottom-0">
       <USeparator />
-      <LazyStarsBg :star-count="2800" class="footer-stars-bg" />
+      <LazyCommonStarsBg :star-count="2800" class="footer-stars-bg" />
     </div>
 
     <div

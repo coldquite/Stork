@@ -14,7 +14,7 @@ const { t } = useI18n()
     <template #title>
       <span class="inline-flex flex-wrap items-center justify-center gap-4">
         <span>{{ t('login.welcomeTitle') }}</span>
-        <AppLogoSimple class="h-[1.15em] w-[1.15em] shrink-0" />
+        <CommonAppLogoSimple class="h-[1.15em] w-[1.15em] shrink-0" />
       </span>
     </template>
   </UPageHero>

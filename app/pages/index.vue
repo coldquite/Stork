@@ -87,7 +87,7 @@ await callOnce('homepage-recent-plans', async () => {
       @confirm="confirmCreatePlanConfirm"
     />
 
-    <CreatePlanNameDialog
+    <CommonCreatePlanNameDialog
       v-model:open="isCreatePlanNameDialogOpen"
       v-model:name="newPlanNameInput"
       :loading="isCreatingNewPlan"
