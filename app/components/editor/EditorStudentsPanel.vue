@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
 import { useSortable } from '@vueuse/integrations/useSortable'
-import type { ScheduleDraftCommittee } from '~/stores/schedule-draft'
 import type { StudentRow } from '~/types/editor'
+import type { ScheduleDraftCommittee } from '~/types/schedule-draft'
 
 const props = defineProps<{
   cardRootClass: string

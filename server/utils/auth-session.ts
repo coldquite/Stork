@@ -1,10 +1,5 @@
 import { createHmac, timingSafeEqual } from 'node:crypto'
-
-export interface AuthSessionPayload {
-  username: string
-  issuedAt: number
-  expiresAt: number
-}
+import type { AuthSessionPayload } from '#server/types/auth-session'
 
 function isAuthSessionPayload(payload: unknown): payload is AuthSessionPayload {
   if (!payload || typeof payload !== 'object') {

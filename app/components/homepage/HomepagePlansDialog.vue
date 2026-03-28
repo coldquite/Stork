@@ -1,22 +1,15 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-
-interface HomepagePlansDialogItem {
-  id: string
-  name: string
-  updatedAt: string
-  committeesCount: number
-  studentsCount: number
-}
+import type { HomepagePlanListItem } from '~/types/homepage'
 
 interface HomepagePlansDialogProps {
-  manualDrafts: HomepagePlansDialogItem[]
-  autoDrafts: HomepagePlansDialogItem[]
+  manualDrafts: HomepagePlanListItem[]
+  autoDrafts: HomepagePlanListItem[]
   isLoading: boolean
 }
 
 defineProps<HomepagePlansDialogProps>()
-const emit = defineEmits<{ openPlan: [plan: HomepagePlansDialogItem] }>()
+const emit = defineEmits<{ openPlan: [plan: HomepagePlanListItem] }>()
 
 const open = defineModel<boolean>('open', { default: false })
 const { t } = useI18n()
@@ -45,7 +38,7 @@ function formatUpdatedAt(value: string): string {
   return dateTimeFormatter.format(date)
 }
 
-function handleOpenPlan(plan: HomepagePlansDialogItem): void {
+function handleOpenPlan(plan: HomepagePlanListItem): void {
   emit('openPlan', plan)
 }
 </script>

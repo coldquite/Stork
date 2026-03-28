@@ -21,8 +21,6 @@
 
 import { addMilliseconds, differenceInMilliseconds, isValid, parseISO } from 'date-fns'
 import type {
-  CommitteeItemDto,
-  CommitteeDto,
   PostCommitteeDto,
   PostCommitteeItemDto,
   PostPauseItemDto,
@@ -34,13 +32,15 @@ import type {
   TimeScheduleDto,
   TimeScheduleTypeDto
 } from '#shared/types/time-schedules'
-
-export interface ScheduleAutoSavePolicy {
-  enabled: boolean
-  debounceMs: number
-  minIntervalMs: number
-  retryAfterErrorMs: number
-}
+import type {
+  DraftCommitteeSource,
+  DraftItemSource,
+  DraftScheduleSource,
+  ScheduleAutoSavePolicy,
+  ScheduleDraft,
+  ScheduleDraftCommittee,
+  ScheduleDraftItem
+} from '~/types/schedule-draft'
 
 const DEFAULT_SCHEDULE_AUTOSAVE_POLICY: Readonly<ScheduleAutoSavePolicy> = Object.freeze({
   enabled: true,
@@ -49,17 +49,6 @@ const DEFAULT_SCHEDULE_AUTOSAVE_POLICY: Readonly<ScheduleAutoSavePolicy> = Objec
   retryAfterErrorMs: 60_000
 })
 const DEFAULT_NEW_SCHEDULE_NAME_PREFIX = 'Nový plán '
-
-export type ScheduleDraft = Omit<PostTimeScheduleRequestDto, 'committees'> & {
-  committees: ScheduleDraftCommittee[]
-}
-
-export type ScheduleDraftCommittee = Omit<PostCommitteeDto, 'items'> & {
-  localId: string
-  items: ScheduleDraftItem[]
-}
-
-export type ScheduleDraftItem = PostCommitteeItemDto & { localId: string }
 
 function createLocalId(): string {
   return crypto.randomUUID()
@@ -86,7 +75,7 @@ function createDefaultNewScheduleName(now: Date = new Date()): string {
   return `${DEFAULT_NEW_SCHEDULE_NAME_PREFIX}${now.toISOString()}`
 }
 
-function toDraftItem(item: CommitteeItemDto | PostCommitteeItemDto): ScheduleDraftItem {
+function toDraftItem(item: DraftItemSource): ScheduleDraftItem {
   if (item.type === 'STUDENT') {
     return {
       localId: createLocalId(),
@@ -106,7 +95,7 @@ function toDraftItem(item: CommitteeItemDto | PostCommitteeItemDto): ScheduleDra
   }
 }
 
-function toDraftCommittee(committee: CommitteeDto | PostCommitteeDto): ScheduleDraftCommittee {
+function toDraftCommittee(committee: DraftCommitteeSource): ScheduleDraftCommittee {
   return {
     localId: createLocalId(),
     name: committee.name,
@@ -133,8 +122,6 @@ function toDraftCommittee(committee: CommitteeDto | PostCommitteeDto): ScheduleD
       .map((item) => toDraftItem(item))
   }
 }
-
-type DraftScheduleSource = Pick<PostTimeScheduleRequestDto, 'name' | 'type' | 'committees'>
 
 function toDraftFromSource(source: DraftScheduleSource): ScheduleDraft {
   const fallbackName = createDefaultNewScheduleName()

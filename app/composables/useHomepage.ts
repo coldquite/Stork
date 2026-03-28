@@ -4,19 +4,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import type { TimeScheduleListItemDto, TimeScheduleTypeDto } from '#shared/types/time-schedules'
 import { useScheduleDraftStore } from '~/stores/schedule-draft'
 import { useHomepageStore } from '~/stores/homepage'
-
-interface HomepageDraftListItem {
-  id: string
-  name: string
-  updatedAt: string
-  committeesCount: number
-  studentsCount: number
-}
-
-interface PlanOpenCandidate {
-  id: string
-  name: string
-}
+import type { HomepagePlanListItem, PlanOpenCandidate } from '~/types/homepage'
 
 export const HOMEPAGE_NEW_PLAN_NAME_MAX_LENGTH = 120
 const HOMEPAGE_BROWSE_PLANS_PAGE_SIZE = 20
@@ -41,8 +29,8 @@ export function useHomepage() {
   const isBrowsePlansLoading = ref(false)
   let browsePlansRequestId = 0
 
-  const manualDrafts = ref<HomepageDraftListItem[]>([])
-  const autoDrafts = ref<HomepageDraftListItem[]>([])
+  const manualDrafts = ref<HomepagePlanListItem[]>([])
+  const autoDrafts = ref<HomepagePlanListItem[]>([])
   const isClientReady = ref(false)
 
   onMounted(() => {
@@ -145,7 +133,7 @@ export function useHomepage() {
     openCreatePlanNameDialog()
   }
 
-  async function fetchDraftsByType(type: TimeScheduleTypeDto): Promise<HomepageDraftListItem[]> {
+  async function fetchDraftsByType(type: TimeScheduleTypeDto): Promise<HomepagePlanListItem[]> {
     const requestFetch = useRequestFetch()
     const plans = await requestFetch<TimeScheduleListItemDto[]>(
       `/api/time-schedules?page=1&pageSize=${HOMEPAGE_BROWSE_PLANS_PAGE_SIZE}&type=${type}`
@@ -290,7 +278,7 @@ export function useHomepage() {
     requestOpenPlan(plan)
   }
 
-  function requestOpenBrowsePlan(plan: HomepageDraftListItem): void {
+  function requestOpenBrowsePlan(plan: HomepagePlanListItem): void {
     requestOpenPlan(plan, true)
   }
 

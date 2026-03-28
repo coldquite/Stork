@@ -1,9 +1,8 @@
 import type { TableColumn } from '@nuxt/ui'
 import { format, isValid, parseISO } from 'date-fns'
-import { computed, ref, watch } from 'vue'
-import type { ScheduleDraftCommittee, ScheduleDraftItem } from '~/stores/schedule-draft'
 import { useScheduleDraftStore } from '~/stores/schedule-draft'
 import type { CommitteeTabItem, StudentRow } from '~/types/editor'
+import type { ScheduleDraftCommittee, ScheduleDraftItem } from '~/types/schedule-draft'
 
 const EDITOR_DRAFT_NAME_MAX_LENGTH = 120
 
