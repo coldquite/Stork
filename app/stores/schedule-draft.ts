@@ -37,6 +37,7 @@ import type {
   DraftItemSource,
   DraftScheduleSource,
   ScheduleAutoSavePolicy,
+  ScheduleDraftOperationErrorCode,
   ScheduleDraft,
   ScheduleDraftCommittee,
   ScheduleDraftItem
@@ -214,12 +215,33 @@ function toPostPayload(
   }
 }
 
-function resolveErrorMessage(error: unknown, fallbackMessage: string): string {
-  if (error instanceof Error && error.message.trim().length > 0) {
-    return error.message
+class ScheduleDraftOperationError extends Error {
+  readonly code: ScheduleDraftOperationErrorCode
+
+  constructor(code: ScheduleDraftOperationErrorCode, options?: ErrorOptions) {
+    super(code, options)
+    this.name = 'ScheduleDraftOperationError'
+    this.code = code
+  }
+}
+
+function createScheduleDraftOperationError(code: ScheduleDraftOperationErrorCode, cause?: unknown): Error {
+  if (cause === undefined) {
+    return new ScheduleDraftOperationError(code)
   }
 
-  return fallbackMessage
+  return new ScheduleDraftOperationError(code, { cause })
+}
+
+function resolveScheduleDraftErrorCode(
+  error: unknown,
+  fallbackCode: ScheduleDraftOperationErrorCode
+): ScheduleDraftOperationErrorCode {
+  if (error instanceof ScheduleDraftOperationError) {
+    return error.code
+  }
+
+  return fallbackCode
 }
 
 export const useScheduleDraftStore = defineStore(
@@ -232,8 +254,9 @@ export const useScheduleDraftStore = defineStore(
     const isManualSaveLoading = ref(false)
     const isAutoSaveRunning = ref(false)
 
-    const manualSaveError = ref<string | null>(null)
-    const autoSaveError = ref<string | null>(null)
+    // Store keeps stable error codes only, UI/composables are responsible for localization.
+    const manualSaveErrorCode = ref<ScheduleDraftOperationErrorCode | null>(null)
+    const autoSaveErrorCode = ref<ScheduleDraftOperationErrorCode | null>(null)
 
     const lastSavedScheduleId = ref<string | null>(null)
     const lastSavedAt = ref<string | null>(null)
@@ -270,14 +293,6 @@ export const useScheduleDraftStore = defineStore(
       nextAutoSaveAt.value = null
     }
 
-    function resolveUnexpectedErrorMessage(): string {
-      return useNuxtApp().$i18n.t('common.errors.unexpected') as string
-    }
-
-    function resolveDraftNotInitializedErrorMessage(): string {
-      return useNuxtApp().$i18n.t('common.errors.draftNotInitialized') as string
-    }
-
     /** Persists the current draft via POST /api/time-schedules
      *
      * To avoid applying outdated save results, it remembers draft state before
@@ -290,7 +305,7 @@ export const useScheduleDraftStore = defineStore(
       explicitName?: string | null
     ): Promise<PostTimeScheduleResponseDto> {
       if (!draft.value) {
-        throw new Error(resolveDraftNotInitializedErrorMessage())
+        throw createScheduleDraftOperationError('DRAFT_NOT_INITIALIZED')
       }
 
       const draftSnapshotBeforeRequest = serializeDraft(draft.value)
@@ -330,8 +345,8 @@ export const useScheduleDraftStore = defineStore(
 
     function replaceDraft(nextDraft: ScheduleDraft): void {
       draft.value = deepClone(nextDraft)
-      manualSaveError.value = null
-      autoSaveError.value = null
+      manualSaveErrorCode.value = null
+      autoSaveErrorCode.value = null
       syncBaseSnapshot()
       clearAutoSaveTimer()
     }
@@ -339,8 +354,8 @@ export const useScheduleDraftStore = defineStore(
     function clearDraft(): void {
       draft.value = null
       baseSnapshot.value = null
-      manualSaveError.value = null
-      autoSaveError.value = null
+      manualSaveErrorCode.value = null
+      autoSaveErrorCode.value = null
       clearAutoSaveTimer()
     }
 
@@ -396,12 +411,12 @@ export const useScheduleDraftStore = defineStore(
       }
 
       isAutoSaveRunning.value = true
-      autoSaveError.value = null
+      autoSaveErrorCode.value = null
 
       try {
         return await persistDraft('AUTO', createAutoScheduleName())
       } catch (error: unknown) {
-        autoSaveError.value = resolveErrorMessage(error, resolveUnexpectedErrorMessage())
+        autoSaveErrorCode.value = resolveScheduleDraftErrorCode(error, 'REQUEST_FAILED')
         scheduleAutoSave(autoSavePolicy.value.retryAfterErrorMs)
         return null
       } finally {
@@ -436,12 +451,12 @@ export const useScheduleDraftStore = defineStore(
 
     async function saveManualDraft(name?: string | null): Promise<PostTimeScheduleResponseDto> {
       isManualSaveLoading.value = true
-      manualSaveError.value = null
+      manualSaveErrorCode.value = null
 
       try {
         return await persistDraft('MANUAL', name)
       } catch (error: unknown) {
-        manualSaveError.value = resolveErrorMessage(error, resolveUnexpectedErrorMessage())
+        manualSaveErrorCode.value = resolveScheduleDraftErrorCode(error, 'REQUEST_FAILED')
         throw error
       } finally {
         isManualSaveLoading.value = false
@@ -474,8 +489,8 @@ export const useScheduleDraftStore = defineStore(
       isDraftLoading,
       isManualSaveLoading,
       isAutoSaveRunning,
-      manualSaveError,
-      autoSaveError,
+      manualSaveErrorCode,
+      autoSaveErrorCode,
       lastSavedScheduleId,
       lastSavedAt,
       lastSavedType,

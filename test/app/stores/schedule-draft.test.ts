@@ -1,40 +1,25 @@
 import { createPinia, setActivePinia } from 'pinia'
 import { mockNuxtImport } from '@nuxt/test-utils/runtime'
-import { nextTick } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type {
   PostTimeScheduleRequestDto,
   PostTimeScheduleResponseDto,
   TimeScheduleDto
 } from '#shared/types/time-schedules'
+import type { ScheduleDraftOperationErrorCode } from '~/types/schedule-draft'
 import { useScheduleDraftStore } from '~/stores/schedule-draft'
 
-const { requestFetchMock, i18nTranslateMock } = vi.hoisted(() => ({
-  requestFetchMock: vi.fn(),
-  i18nTranslateMock: vi.fn((key: string) => {
-    if (key === 'common.errors.unexpected') {
-      return 'Došlo k neočekávané chybě.'
-    }
-
-    if (key === 'common.errors.draftNotInitialized') {
-      return 'Koncept harmonogramu není inicializovaný.'
-    }
-
-    return key
-  })
+const { requestFetchMock } = vi.hoisted(() => ({
+  requestFetchMock: vi.fn()
 }))
 
 mockNuxtImport('useRequestFetch', () => {
   return () => requestFetchMock
 })
 
-mockNuxtImport('useNuxtApp', () => {
-  return () => ({
-    $i18n: {
-      t: i18nTranslateMock
-    }
-  })
-})
+async function expectRejectsWithCode(promise: Promise<unknown>, code: ScheduleDraftOperationErrorCode): Promise<void> {
+  await expect(promise).rejects.toMatchObject({ code })
+}
 
 function createApiSchedule(seed = 'A'): TimeScheduleDto {
   return {
@@ -133,7 +118,6 @@ describe('useScheduleDraftStore', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     requestFetchMock.mockReset()
-    i18nTranslateMock.mockClear()
   })
 
   afterEach(() => {
@@ -274,34 +258,34 @@ describe('useScheduleDraftStore', () => {
     expect(store.lastAutoSaveAt).toBe('2026-06-11T11:00:00.000Z')
   })
 
-  it('returns localized error when saving without initialized draft', async () => {
+  it('returns DRAFT_NOT_INITIALIZED code when saving without initialized draft', async () => {
     const store = useScheduleDraftStore()
 
-    await expect(store.saveManualDraft()).rejects.toThrow('Koncept harmonogramu není inicializovaný.')
-    expect(store.manualSaveError).toBe('Koncept harmonogramu není inicializovaný.')
+    await expectRejectsWithCode(store.saveManualDraft(), 'DRAFT_NOT_INITIALIZED')
+    expect(store.manualSaveErrorCode).toBe('DRAFT_NOT_INITIALIZED')
     expect(store.isManualSaveLoading).toBe(false)
     expect(requestFetchMock).not.toHaveBeenCalled()
   })
 
-  it('keeps explicit backend message for manual save errors', async () => {
+  it('keeps thrown backend error but stores REQUEST_FAILED code for manual save state', async () => {
     const store = useScheduleDraftStore()
     store.initializeFromSource(createApiSchedule('F'))
 
     requestFetchMock.mockRejectedValueOnce(new Error('Dumb error msg'))
 
     await expect(store.saveManualDraft()).rejects.toThrow('Dumb error msg')
-    expect(store.manualSaveError).toBe('Dumb error msg')
+    expect(store.manualSaveErrorCode).toBe('REQUEST_FAILED')
     expect(store.isManualSaveLoading).toBe(false)
   })
 
-  it('uses localized fallback for non-Error manual save failures', async () => {
+  it('stores REQUEST_FAILED code for non-Error manual save failures', async () => {
     const store = useScheduleDraftStore()
     store.initializeFromSource(createApiSchedule('G'))
 
     requestFetchMock.mockRejectedValueOnce('network-down')
 
     await expect(store.saveManualDraft()).rejects.toBe('network-down')
-    expect(store.manualSaveError).toBe('Došlo k neočekávané chybě.')
+    expect(store.manualSaveErrorCode).toBe('REQUEST_FAILED')
     expect(store.isManualSaveLoading).toBe(false)
   })
 
@@ -332,14 +316,14 @@ describe('useScheduleDraftStore', () => {
     await vi.advanceTimersByTimeAsync(60)
 
     expect(requestFetchMock).toHaveBeenCalledTimes(1)
-    expect(store.autoSaveError).toBe('Autosave failed')
+    expect(store.autoSaveErrorCode).toBe('REQUEST_FAILED')
     expect(store.nextAutoSaveAt).not.toBeNull()
     expect(store.isDirty).toBe(true)
 
     await vi.advanceTimersByTimeAsync(220)
 
     expect(requestFetchMock).toHaveBeenCalledTimes(2)
-    expect(store.autoSaveError).toBeNull()
+    expect(store.autoSaveErrorCode).toBeNull()
     expect(store.isDirty).toBe(false)
     expect(store.lastAutoSaveAt).toBe('2026-06-11T12:00:00.000Z')
   })
@@ -470,7 +454,7 @@ describe('useScheduleDraftStore', () => {
     })
 
     expect(store.draft).toBeNull()
-    expect(store.manualSaveError).toBeNull()
+    expect(store.manualSaveErrorCode).toBeNull()
     expect(store.isManualSaveLoading).toBe(false)
     expect(store.lastSavedScheduleId).toBeNull()
   })

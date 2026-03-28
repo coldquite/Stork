@@ -13,6 +13,8 @@ export interface ScheduleAutoSavePolicy {
   retryAfterErrorMs: number
 }
 
+export type ScheduleDraftOperationErrorCode = 'DRAFT_NOT_INITIALIZED' | 'REQUEST_FAILED'
+
 export type ScheduleDraft = Omit<PostTimeScheduleRequestDto, 'committees'> & {
   committees: ScheduleDraftCommittee[]
 }
