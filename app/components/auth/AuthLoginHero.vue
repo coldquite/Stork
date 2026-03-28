@@ -6,6 +6,7 @@ const { t } = useI18n()
   <UPageHero
     :description="t('meta.description')"
     :ui="{
+      container: 'pt-24 pb-0 sm:pt-32 sm:pb-0 lg:pt-60 lg:pb-0',
       title: 'text-6xl sm:text-7xl lg:text-8xl',
       description: 'text-xl sm:text-2xl'
     }"
