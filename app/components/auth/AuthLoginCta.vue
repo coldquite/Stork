@@ -18,7 +18,7 @@ const { t } = useI18n()
   <UPageSection>
     <UPageCTA
       :title="t('login.description')"
-      variant="subtle"
+      variant="outline"
       :ui="{
         title: 'text-base sm:text-2xl'
       }"
