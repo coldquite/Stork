@@ -1,6 +1,11 @@
 <script setup lang="ts">
+import { useAuthStore } from '~/stores/auth'
+
 const { locale, t } = useI18n()
+const authStore = useAuthStore()
 const localeHead = useLocaleHead()
+
+await callOnce('auth-session', () => authStore.fetchSession())
 
 useHead(() => ({
   htmlAttrs: {

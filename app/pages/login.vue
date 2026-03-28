@@ -15,8 +15,6 @@ function isAuthFailureReason(value: string): value is AuthFailureReason {
   return authFailureReasons.some((reason) => reason === value)
 }
 
-await callOnce('auth-session-login', () => authStore.fetchSession())
-
 const hasLoginError = computed(() => route.query.login === 'failed')
 const loginErrorReason = computed<AuthFailureReason | null>(() => {
   if (typeof route.query.reason !== 'string') {

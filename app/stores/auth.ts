@@ -11,6 +11,7 @@ import { useScheduleDraftStore } from '~/stores/schedule-draft'
 export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = ref(false)
   const username = ref<string | null>(null)
+  const isSessionInitialized = ref(false)
   const isSessionLoading = ref(false)
   const isLogoutLoading = ref(false)
 
@@ -38,6 +39,7 @@ export const useAuthStore = defineStore('auth', () => {
     } catch {
       clearSessionState()
     } finally {
+      isSessionInitialized.value = true
       isSessionLoading.value = false
     }
   }
@@ -67,6 +69,7 @@ export const useAuthStore = defineStore('auth', () => {
   return {
     isAuthenticated,
     username,
+    isSessionInitialized,
     isSessionLoading,
     isLogoutLoading,
     fetchSession,
