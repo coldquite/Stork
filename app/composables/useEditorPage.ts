@@ -79,6 +79,9 @@ export function useEditorPage() {
   const isRenameDraftDialogOpen = ref(false)
   const renameDraftName = ref('')
   const renameDraftValidationError = ref<string | null>(null)
+  const isCloudSaveDialogOpen = ref(false)
+  const cloudSaveName = ref('')
+  const cloudSaveValidationError = ref<string | null>(null)
 
   const committees = computed(() => {
     const draftCommittees = scheduleDraftStore.draft?.committees ?? []
@@ -197,6 +200,7 @@ export function useEditorPage() {
   const draftName = computed(() => scheduleDraftStore.draft?.name ?? t('editor.untitled'))
   const studentsCountLabel = computed(() => t('editor.students.count', { count: selectedStudents.value.length }))
   const isPageLoading = computed(() => scheduleDraftStore.isDraftLoading)
+  const isCloudSaveLoading = computed(() => scheduleDraftStore.isManualSaveLoading)
   const renameCommitteeTargetLabel = computed(() => {
     const targetEntry = committees.value.find((entry) => entry.committee.localId === renameCommitteeId.value)
     return targetEntry?.label ?? '-'
@@ -227,6 +231,12 @@ export function useEditorPage() {
   watch(renameDraftName, () => {
     if (renameDraftValidationError.value) {
       renameDraftValidationError.value = null
+    }
+  })
+
+  watch(cloudSaveName, () => {
+    if (cloudSaveValidationError.value) {
+      cloudSaveValidationError.value = null
     }
   })
 
@@ -296,6 +306,27 @@ export function useEditorPage() {
     isRenameDraftDialogOpen.value = false
     renameDraftName.value = ''
     renameDraftValidationError.value = null
+  }
+
+  function openCloudSaveDialog(): void {
+    const draft = scheduleDraftStore.draft
+    if (!draft) {
+      return
+    }
+
+    cloudSaveName.value = draft.name
+    cloudSaveValidationError.value = null
+    isCloudSaveDialogOpen.value = true
+  }
+
+  function closeCloudSaveDialog(): void {
+    if (isCloudSaveLoading.value) {
+      return
+    }
+
+    isCloudSaveDialogOpen.value = false
+    cloudSaveName.value = ''
+    cloudSaveValidationError.value = null
   }
 
   function validateDraftName(nextName: string): string | null {
@@ -464,6 +495,26 @@ export function useEditorPage() {
     committee.secretaryName = nextSecretaryName.length > 0 ? nextSecretaryName : null
   }
 
+  async function submitCloudSave(): Promise<void> {
+    if (isCloudSaveLoading.value || scheduleDraftStore.isAutoSaveRunning) {
+      return
+    }
+
+    const validationError = validateDraftName(cloudSaveName.value)
+    if (validationError) {
+      cloudSaveValidationError.value = validationError
+      return
+    }
+
+    try {
+      await scheduleDraftStore.saveManualDraft(cloudSaveName.value.trim(), true)
+    } catch {
+      return
+    }
+
+    closeCloudSaveDialog()
+  }
+
   return {
     committees,
     selectedCommittee,
@@ -480,12 +531,16 @@ export function useEditorPage() {
     isRenameDraftDialogOpen,
     renameDraftName,
     renameDraftValidationError,
+    isCloudSaveDialogOpen,
+    cloudSaveName,
+    cloudSaveValidationError,
     committeeTabs,
     selectedStudents,
     columns,
     draftName,
     studentsCountLabel,
     isPageLoading,
+    isCloudSaveLoading,
     renameCommitteeDialogDescription,
     deleteCommitteeConfirmDescription,
     openCreateCommitteeDialog,
@@ -496,10 +551,13 @@ export function useEditorPage() {
     closeDeleteCommitteeConfirm,
     openRenameDraftDialog,
     closeRenameDraftDialog,
+    openCloudSaveDialog,
+    closeCloudSaveDialog,
     submitCreateCommittee,
     submitRenameCommittee,
     submitDeleteCommittee,
     submitRenameDraft,
+    submitCloudSave,
     updateSelectedCommitteeRoom,
     updateSelectedCommitteeDate,
     updateSelectedCommitteeSecretary,

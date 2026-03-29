@@ -256,7 +256,7 @@ describe('useScheduleDraftStore', () => {
     expect(payload.name.includes('AUTO-')).toBe(false)
     expect(store.isDirty).toBe(false)
     expect(store.lastSavedType).toBe('AUTO')
-    expect(store.lastAutoSaveAt).toBe('2026-06-11T11:00:00.000Z')
+    expect(store.lastSavedAt).toBe('2026-06-11T11:00:00.000Z')
   })
 
   it('returns DRAFT_NOT_INITIALIZED code when saving without initialized draft', async () => {
@@ -326,7 +326,7 @@ describe('useScheduleDraftStore', () => {
     expect(requestFetchMock).toHaveBeenCalledTimes(2)
     expect(store.autoSaveErrorCode).toBeNull()
     expect(store.isDirty).toBe(false)
-    expect(store.lastAutoSaveAt).toBe('2026-06-11T12:00:00.000Z')
+    expect(store.lastSavedAt).toBe('2026-06-11T12:00:00.000Z')
   })
 
   it('resets isDraftLoading when load by id fails', async () => {
@@ -353,6 +353,55 @@ describe('useScheduleDraftStore', () => {
 
     await expect(store.forceAutoSave()).resolves.toBeNull()
     expect(requestFetchMock).not.toHaveBeenCalled()
+  })
+
+  it('saves manual draft with preserveDraftName and keeps draft name untouched', async () => {
+    const store = useScheduleDraftStore()
+    store.initializeFromSource(createApiSchedule('I2'))
+
+    if (!store.draft) {
+      throw new Error('Expected draft to be initialized')
+    }
+
+    store.draft.name = 'Aktuální draft I2'
+
+    requestFetchMock.mockResolvedValueOnce({
+      id: 'saved-manual-I2',
+      createdAt: '2026-06-11T10:30:00.000Z'
+    })
+
+    await expect(store.saveManualDraft('  Název pouze pro cloud  ', true)).resolves.toEqual({
+      id: 'saved-manual-I2',
+      createdAt: '2026-06-11T10:30:00.000Z'
+    })
+
+    expect(requestFetchMock).toHaveBeenCalledTimes(1)
+    const manualCloudSaveCall = requestFetchMock.mock.calls.at(0)
+    expect(manualCloudSaveCall).toBeDefined()
+    if (!manualCloudSaveCall) {
+      throw new Error('Expected saveManualDraft call payload')
+    }
+
+    const [, requestOptions] = manualCloudSaveCall
+    const body = requestOptions?.body as PostTimeScheduleRequestDto
+    expect(body.name).toBe('Název pouze pro cloud')
+    expect(body.type).toBe('MANUAL')
+    expect(store.draft?.name).toBe('Aktuální draft I2')
+    expect(store.lastSavedType).toBe('MANUAL')
+    expect(store.lastSavedAt).toBe('2026-06-11T10:30:00.000Z')
+    expect(store.isDirty).toBe(false)
+  })
+
+  it('stores manual save error code in preserveDraftName mode', async () => {
+    const store = useScheduleDraftStore()
+    store.initializeFromSource(createApiSchedule('I3'))
+
+    requestFetchMock.mockRejectedValueOnce(new Error('Cloud save failed'))
+
+    await expect(store.saveManualDraft('Cloud fail', true)).rejects.toThrow('Cloud save failed')
+
+    expect(store.manualSaveErrorCode).toBe('REQUEST_FAILED')
+    expect(store.autoSaveErrorCode).toBeNull()
   })
 
   it('clears pending autosave timer when autosave gets disabled', async () => {
@@ -410,7 +459,7 @@ describe('useScheduleDraftStore', () => {
     await vi.advanceTimersByTimeAsync(0)
 
     expect(requestFetchMock).toHaveBeenCalledTimes(1)
-    expect(store.lastAutoSaveAt).toBe('2026-06-11T10:00:00.000Z')
+    expect(store.lastSavedAt).toBe('2026-06-11T10:00:00.000Z')
 
     requestFetchMock.mockResolvedValueOnce({
       id: 'saved-auto-min-2',

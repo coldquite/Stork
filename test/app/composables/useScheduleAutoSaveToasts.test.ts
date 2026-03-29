@@ -22,8 +22,10 @@ mockNuxtImport('useToast', () => {
 })
 
 interface MockScheduleDraftStore {
-  lastAutoSaveAt: string | null
+  lastSavedAt: string | null
+  lastSavedType: 'AUTO' | 'MANUAL' | null
   autoSaveErrorCode: ScheduleDraftOperationErrorCode | null
+  manualSaveErrorCode: ScheduleDraftOperationErrorCode | null
 }
 
 let scheduleDraftStoreMock: MockScheduleDraftStore
@@ -47,8 +49,10 @@ describe('useScheduleAutoSaveToasts', () => {
     toastAddMock.mockReset()
 
     scheduleDraftStoreMock = reactive({
-      lastAutoSaveAt: null,
-      autoSaveErrorCode: null
+      lastSavedAt: null,
+      lastSavedType: null,
+      autoSaveErrorCode: null,
+      manualSaveErrorCode: null
     }) as MockScheduleDraftStore
 
     scope = effectScope()
@@ -64,14 +68,35 @@ describe('useScheduleAutoSaveToasts', () => {
       useScheduleAutoSaveToasts()
     })
 
-    scheduleDraftStoreMock.lastAutoSaveAt = '2026-03-29T11:42:00.000Z'
+    scheduleDraftStoreMock.lastSavedType = 'AUTO'
+    scheduleDraftStoreMock.lastSavedAt = '2026-03-29T11:42:00.000Z'
     await flushWatchers()
 
     expect(toastAddMock).toHaveBeenCalledTimes(1)
     expect(toastAddMock).toHaveBeenCalledWith({
       title: 'editor.autosave.toast.successTitle',
       description: 'editor.autosave.toast.successDescription',
-      color: 'primary',
+      color: 'success',
+      icon: 'i-lucide-cloud-upload',
+      duration: 10000
+    })
+  })
+
+  it('shows success toast when manual save succeeds', async () => {
+    const { useScheduleAutoSaveToasts } = await import('~/composables/useScheduleAutoSaveToasts')
+    scope.run(() => {
+      useScheduleAutoSaveToasts()
+    })
+
+    scheduleDraftStoreMock.lastSavedType = 'MANUAL'
+    scheduleDraftStoreMock.lastSavedAt = '2026-03-29T11:43:00.000Z'
+    await flushWatchers()
+
+    expect(toastAddMock).toHaveBeenCalledTimes(1)
+    expect(toastAddMock).toHaveBeenCalledWith({
+      title: 'editor.plan.cloudSave.toast.successTitle',
+      description: 'editor.plan.cloudSave.toast.successDescription',
+      color: 'success',
       icon: 'i-lucide-cloud-upload',
       duration: 10000
     })
@@ -96,25 +121,47 @@ describe('useScheduleAutoSaveToasts', () => {
     })
   })
 
+  it('shows request-failed toast when manual save request fails', async () => {
+    const { useScheduleAutoSaveToasts } = await import('~/composables/useScheduleAutoSaveToasts')
+    scope.run(() => {
+      useScheduleAutoSaveToasts()
+    })
+
+    scheduleDraftStoreMock.manualSaveErrorCode = 'REQUEST_FAILED'
+    await flushWatchers()
+
+    expect(toastAddMock).toHaveBeenCalledTimes(1)
+    expect(toastAddMock).toHaveBeenCalledWith({
+      title: 'editor.plan.cloudSave.toast.errorTitle',
+      description: 'editor.plan.cloudSave.toast.errorRequestFailedDescription',
+      color: 'error',
+      icon: 'i-lucide-cloud-alert',
+      duration: 10000
+    })
+  })
+
   it('does not show toast for null and unchanged values', async () => {
     const { useScheduleAutoSaveToasts } = await import('~/composables/useScheduleAutoSaveToasts')
     scope.run(() => {
       useScheduleAutoSaveToasts()
     })
 
-    scheduleDraftStoreMock.lastAutoSaveAt = null
+    scheduleDraftStoreMock.lastSavedAt = null
+    scheduleDraftStoreMock.lastSavedType = null
     scheduleDraftStoreMock.autoSaveErrorCode = null
+    scheduleDraftStoreMock.manualSaveErrorCode = null
     await flushWatchers()
 
     expect(toastAddMock).not.toHaveBeenCalled()
 
-    scheduleDraftStoreMock.lastAutoSaveAt = '2026-03-29T11:50:00.000Z'
+    scheduleDraftStoreMock.lastSavedType = 'AUTO'
+    scheduleDraftStoreMock.lastSavedAt = '2026-03-29T11:50:00.000Z'
     await flushWatchers()
 
     expect(toastAddMock).toHaveBeenCalledTimes(1)
     toastAddMock.mockClear()
 
-    scheduleDraftStoreMock.lastAutoSaveAt = '2026-03-29T11:50:00.000Z'
+    scheduleDraftStoreMock.lastSavedAt = '2026-03-29T11:50:00.000Z'
     await flushWatchers()
 
     expect(toastAddMock).not.toHaveBeenCalled()

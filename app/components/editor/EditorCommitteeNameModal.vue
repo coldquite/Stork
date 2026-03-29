@@ -9,9 +9,11 @@ const props = withDefaults(
     hint: string
     submitLabel: string
     cancelLabel: string
+    loading?: boolean
     validationError?: string | null
   }>(),
   {
+    loading: false,
     validationError: null
   }
 )
@@ -27,10 +29,18 @@ function updateName(value: string | number): void {
 }
 
 function submit(): void {
+  if (props.loading) {
+    return
+  }
+
   emit('submit')
 }
 
 function cancel(): void {
+  if (props.loading) {
+    return
+  }
+
   emit('cancel')
 }
 </script>
@@ -40,6 +50,8 @@ function cancel(): void {
     :open="props.open"
     :title="props.title"
     :description="props.description"
+    :dismissible="!props.loading"
+    :close="{ disabled: props.loading }"
     @update:open="emit('update:open', $event)"
   >
     <template #body>
@@ -49,6 +61,7 @@ function cancel(): void {
           class="w-full"
           autofocus
           :placeholder="props.placeholder"
+          :disabled="props.loading"
           @update:model-value="updateName"
           @keydown.enter="submit"
         />
@@ -65,11 +78,11 @@ function cancel(): void {
 
     <template #footer>
       <div class="flex w-full justify-end gap-2">
-        <UButton color="neutral" variant="ghost" @click="cancel">
+        <UButton color="neutral" variant="ghost" :disabled="props.loading" @click="cancel">
           {{ props.cancelLabel }}
         </UButton>
 
-        <UButton color="primary" variant="solid" @click="submit">
+        <UButton color="primary" variant="solid" :loading="props.loading" :disabled="props.loading" @click="submit">
           {{ props.submitLabel }}
         </UButton>
       </div>

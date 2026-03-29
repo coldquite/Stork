@@ -4,14 +4,22 @@ const props = defineProps<{
   draftName: string
   backAriaLabel: string
   renameAriaLabel: string
+  renameLabel: string
+  cloudSaveAriaLabel: string
+  cloudSaveLabel: string
+  cloudSaveLoading: boolean
 }>()
 
 const emit = defineEmits<{
-  (event: 'renameDraft'): void
+  (event: 'renameDraft' | 'saveToCloud'): void
 }>()
 
 function requestRenameDraft(): void {
   emit('renameDraft')
+}
+
+function requestSaveToCloud(): void {
+  emit('saveToCloud')
 }
 </script>
 
@@ -43,10 +51,27 @@ function requestRenameDraft(): void {
             variant="ghost"
             size="md"
             icon="i-lucide-pencil"
+            :label="props.renameLabel"
             :aria-label="props.renameAriaLabel"
-            class="shrink-0 px-2.5"
-            :ui="{ base: 'text-muted ring-[2px] ring-current/45 hover:text-secondary hover:ring-current/80' }"
+            class="ml-4 shrink-0"
+            :ui="{
+              base: 'h-10 bg-default border-2 border-capaccent-300 text-capaccent-800 hover:border-capaccent-500 hover:bg-capaccent-50 dark:border-capaccent-400 dark:bg-default dark:text-capaccent-100 dark:hover:bg-capaccent-500/25'
+            }"
             @click="requestRenameDraft"
+          />
+          <UButton
+            color="neutral"
+            variant="ghost"
+            size="md"
+            icon="i-lucide-cloud-upload"
+            :label="props.cloudSaveLabel"
+            :aria-label="props.cloudSaveAriaLabel"
+            :loading="props.cloudSaveLoading"
+            class="shrink-0"
+            :ui="{
+              base: 'h-10 bg-default border-2 border-success-400 text-success-600 hover:border-success-500 hover:bg-success-50 dark:border-success-400 dark:bg-default dark:text-success-100 dark:hover:bg-success-600/25'
+            }"
+            @click="requestSaveToCloud"
           />
         </div>
       </div>

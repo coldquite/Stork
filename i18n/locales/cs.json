@@ -148,7 +148,25 @@
       }
     },
     "plan": {
+      "cloudSave": {
+        "action": "Uložit do cloudu",
+        "ariaLabel": "Uložit plán {name} do cloudu",
+        "toast": {
+          "successTitle": "Uložení do cloudu proběhlo",
+          "successDescription": "Plán byl úspěšně uložen do cloudu.",
+          "errorTitle": "Uložení do cloudu se nepodařilo",
+          "errorRequestFailedDescription": "Nepodařilo se uložit plán do cloudu. Zkuste to prosím znovu."
+        },
+        "dialog": {
+          "title": "Uložit plán do cloudu",
+          "description": "Zadejte název, pod kterým se plán uloží do cloudu. Název rozpracovaného plánu v editoru se tím nezmění.",
+          "placeholder": "Např. SZZ Informatika - červen 2026",
+          "hint": "Název nesmí začínat ani končit mezerou a může mít maximálně {max} znaků.",
+          "submit": "Uložit do cloudu"
+        }
+      },
       "rename": {
+        "action": "Přejmenovat",
         "title": "Přejmenovat plán",
         "description": "Upravte název aktuálního časového plánu.",
         "placeholder": "Např. SZZ Informatika - červen 2026",

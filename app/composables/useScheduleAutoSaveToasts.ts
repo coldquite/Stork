@@ -6,16 +6,27 @@ export function useScheduleAutoSaveToasts(): void {
   const scheduleDraftStore = useScheduleDraftStore()
 
   watch(
-    () => scheduleDraftStore.lastAutoSaveAt,
-    (nextValue, previousValue) => {
-      if (!nextValue || nextValue === previousValue) {
+    () => [scheduleDraftStore.lastSavedAt, scheduleDraftStore.lastSavedType] as const,
+    ([nextSavedAt, nextSavedType], [previousSavedAt, previousSavedType]) => {
+      if (!nextSavedAt || !nextSavedType) {
         return
       }
 
+      if (nextSavedAt === previousSavedAt && nextSavedType === previousSavedType) {
+        return
+      }
+
+      const successTitleKey =
+        nextSavedType === 'MANUAL' ? 'editor.plan.cloudSave.toast.successTitle' : 'editor.autosave.toast.successTitle'
+      const successDescriptionKey =
+        nextSavedType === 'MANUAL'
+          ? 'editor.plan.cloudSave.toast.successDescription'
+          : 'editor.autosave.toast.successDescription'
+
       toast.add({
-        title: t('editor.autosave.toast.successTitle'),
-        description: t('editor.autosave.toast.successDescription'),
-        color: 'primary',
+        title: t(successTitleKey),
+        description: t(successDescriptionKey),
+        color: 'success',
         icon: 'i-lucide-cloud-upload',
         duration: 10_000
       })
@@ -32,6 +43,23 @@ export function useScheduleAutoSaveToasts(): void {
       toast.add({
         title: t('editor.autosave.toast.errorTitle'),
         description: t('editor.autosave.toast.errorRequestFailedDescription'),
+        color: 'error',
+        icon: 'i-lucide-cloud-alert',
+        duration: 10_000
+      })
+    }
+  )
+
+  watch(
+    () => scheduleDraftStore.manualSaveErrorCode,
+    (nextValue, previousValue) => {
+      if (!nextValue || nextValue === previousValue) {
+        return
+      }
+
+      toast.add({
+        title: t('editor.plan.cloudSave.toast.errorTitle'),
+        description: t('editor.plan.cloudSave.toast.errorRequestFailedDescription'),
         color: 'error',
         icon: 'i-lucide-cloud-alert',
         duration: 10_000

@@ -263,7 +263,6 @@ export const useScheduleDraftStore = defineStore(
     const lastSavedScheduleId = ref<string | null>(null)
     const lastSavedAt = ref<string | null>(null)
     const lastSavedType = ref<TimeScheduleTypeDto | null>(null)
-    const lastAutoSaveAt = ref<string | null>(null)
     const nextAutoSaveAt = ref<string | null>(null)
 
     const autoSavePolicy = ref<ScheduleAutoSavePolicy>({ ...DEFAULT_SCHEDULE_AUTOSAVE_POLICY })
@@ -304,7 +303,8 @@ export const useScheduleDraftStore = defineStore(
      */
     async function persistDraft(
       targetType: TimeScheduleTypeDto,
-      explicitName?: string | null
+      explicitName?: string | null,
+      options: { syncManualDraftName?: boolean } = {}
     ): Promise<PostTimeScheduleResponseDto> {
       if (!draft.value) {
         throw createScheduleDraftOperationError('DRAFT_NOT_INITIALIZED')
@@ -328,7 +328,12 @@ export const useScheduleDraftStore = defineStore(
       }
 
       if (targetType === 'MANUAL') {
-        draft.value.name = payload.name
+        const shouldSyncManualDraftName = options.syncManualDraftName ?? true
+
+        if (shouldSyncManualDraftName) {
+          draft.value.name = payload.name
+        }
+
         draft.value.type = 'MANUAL'
       }
 
@@ -337,10 +342,6 @@ export const useScheduleDraftStore = defineStore(
       lastSavedScheduleId.value = response.id
       lastSavedAt.value = response.createdAt
       lastSavedType.value = targetType
-
-      if (targetType === 'AUTO') {
-        lastAutoSaveAt.value = response.createdAt
-      }
 
       return response
     }
@@ -398,8 +399,8 @@ export const useScheduleDraftStore = defineStore(
         return null
       }
 
-      if (lastAutoSaveAt.value) {
-        const lastAutoSaveDate = parseISO(lastAutoSaveAt.value)
+      if (lastSavedAt.value) {
+        const lastAutoSaveDate = parseISO(lastSavedAt.value)
 
         if (isValid(lastAutoSaveDate)) {
           const elapsedMs = differenceInMilliseconds(new Date(), lastAutoSaveDate)
@@ -451,14 +452,18 @@ export const useScheduleDraftStore = defineStore(
       }
     }
 
-    async function saveManualDraft(name?: string | null): Promise<PostTimeScheduleResponseDto> {
+    async function saveManualDraft(name?: string | null, preserveDraftName = false): Promise<PostTimeScheduleResponseDto> {
       isManualSaveLoading.value = true
       manualSaveErrorCode.value = null
 
       try {
-        return await persistDraft('MANUAL', name)
+        return await persistDraft('MANUAL', name, {
+          syncManualDraftName: !preserveDraftName
+        })
       } catch (error: unknown) {
-        manualSaveErrorCode.value = resolveScheduleDraftErrorCode(error, 'REQUEST_FAILED')
+        const resolvedErrorCode = resolveScheduleDraftErrorCode(error, 'REQUEST_FAILED')
+        manualSaveErrorCode.value = resolvedErrorCode
+
         throw error
       } finally {
         isManualSaveLoading.value = false
@@ -496,7 +501,6 @@ export const useScheduleDraftStore = defineStore(
       lastSavedScheduleId,
       lastSavedAt,
       lastSavedType,
-      lastAutoSaveAt,
       nextAutoSaveAt,
       autoSavePolicy,
       initializeNewDraft,
@@ -517,7 +521,6 @@ export const useScheduleDraftStore = defineStore(
         'lastSavedScheduleId',
         'lastSavedAt',
         'lastSavedType',
-        'lastAutoSaveAt',
         'autoSavePolicy'
       ]
     }

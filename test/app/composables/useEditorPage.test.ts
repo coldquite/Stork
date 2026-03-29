@@ -6,9 +6,16 @@ const { i18nTranslateMock } = vi.hoisted(() => ({
   i18nTranslateMock: vi.fn((key: string) => key)
 }))
 
+const { saveManualDraftMock } = vi.hoisted(() => ({
+  saveManualDraftMock: vi.fn()
+}))
+
 const scheduleDraftStoreMock = reactive({
   draft: null as ScheduleDraft | null,
-  isDraftLoading: false
+  isDraftLoading: false,
+  isManualSaveLoading: false,
+  isAutoSaveRunning: false,
+  saveManualDraft: saveManualDraftMock
 })
 
 mockNuxtImport('useI18n', () => {
@@ -132,7 +139,14 @@ function createDraftWithTwoCommittees(): ScheduleDraft {
 describe('useEditorPage', () => {
   beforeEach(() => {
     i18nTranslateMock.mockClear()
+    saveManualDraftMock.mockReset()
+    saveManualDraftMock.mockResolvedValue({
+      id: 'saved-auto',
+      createdAt: '2026-06-12T09:00:00.000Z'
+    })
     scheduleDraftStoreMock.isDraftLoading = false
+    scheduleDraftStoreMock.isManualSaveLoading = false
+    scheduleDraftStoreMock.isAutoSaveRunning = false
     scheduleDraftStoreMock.draft = createDraftWithTwoCommittees()
   })
 
@@ -226,5 +240,31 @@ describe('useEditorPage', () => {
     expect(scheduleDraftStoreMock.draft?.name).toBe('Plán')
     expect(page.isRenameDraftDialogOpen.value).toBe(true)
     expect(page.renameDraftValidationError.value).toBe('editor.plan.rename.validation.leadingTrailingWhitespace')
+  })
+
+  it('opens cloud save dialog with current draft name prefilled', async () => {
+    const { useEditorPage } = await import('~/composables/useEditorPage')
+    const page = useEditorPage()
+
+    page.openCloudSaveDialog()
+
+    expect(page.isCloudSaveDialogOpen.value).toBe(true)
+    expect(page.cloudSaveName.value).toBe('Plán')
+    expect(page.cloudSaveValidationError.value).toBeNull()
+  })
+
+  it('saves to cloud using modal name and keeps current draft name unchanged', async () => {
+    const { useEditorPage } = await import('~/composables/useEditorPage')
+    const page = useEditorPage()
+
+    page.openCloudSaveDialog()
+    page.cloudSaveName.value = 'Archivní plán SZZ'
+
+    await page.submitCloudSave()
+
+    expect(saveManualDraftMock).toHaveBeenCalledWith('Archivní plán SZZ', true)
+    expect(scheduleDraftStoreMock.draft?.name).toBe('Plán')
+    expect(page.isCloudSaveDialogOpen.value).toBe(false)
+    expect(page.cloudSaveValidationError.value).toBeNull()
   })
 })

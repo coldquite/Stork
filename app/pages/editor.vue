@@ -20,6 +20,9 @@ const {
   isRenameDraftDialogOpen,
   renameDraftName,
   renameDraftValidationError,
+  isCloudSaveDialogOpen,
+  cloudSaveName,
+  cloudSaveValidationError,
   committeeTabs,
   selectedStudents,
   columns,
@@ -27,6 +30,7 @@ const {
   draftNameMaxLength,
   studentsCountLabel,
   isPageLoading,
+  isCloudSaveLoading,
   renameCommitteeDialogDescription,
   deleteCommitteeConfirmDescription,
   openCreateCommitteeDialog,
@@ -37,10 +41,13 @@ const {
   closeDeleteCommitteeConfirm,
   openRenameDraftDialog,
   closeRenameDraftDialog,
+  openCloudSaveDialog,
+  closeCloudSaveDialog,
   submitCreateCommittee,
   submitRenameCommittee,
   submitDeleteCommittee,
   submitRenameDraft,
+  submitCloudSave,
   updateSelectedCommitteeRoom,
   updateSelectedCommitteeDate,
   updateSelectedCommitteeSecretary
@@ -48,6 +55,7 @@ const {
 
 const cardAccentRootClass = 'h-full rounded-none ring-0 shadow-none divide-y-2 divide-default bg-default'
 const draftRenameAriaLabel = computed(() => t('editor.plan.rename.openAriaLabel', { name: draftName.value }))
+const cloudSaveAriaLabel = computed(() => t('editor.plan.cloudSave.ariaLabel', { name: draftName.value }))
 </script>
 
 <template>
@@ -65,7 +73,12 @@ const draftRenameAriaLabel = computed(() => t('editor.plan.rename.openAriaLabel'
         :draft-name="draftName"
         :back-aria-label="t('editor.navigation.backToHomepage')"
         :rename-aria-label="draftRenameAriaLabel"
+        :rename-label="t('editor.plan.rename.action')"
+        :cloud-save-aria-label="cloudSaveAriaLabel"
+        :cloud-save-label="t('editor.plan.cloudSave.action')"
+        :cloud-save-loading="isCloudSaveLoading"
         @rename-draft="openRenameDraftDialog"
+        @save-to-cloud="openCloudSaveDialog"
       />
 
       <div class="ring-default overflow-hidden rounded-lg ring-2">
@@ -141,6 +154,23 @@ const draftRenameAriaLabel = computed(() => t('editor.plan.rename.openAriaLabel'
       @update:name="renameDraftName = $event"
       @cancel="closeRenameDraftDialog"
       @submit="submitRenameDraft"
+    />
+
+    <EditorCommitteeNameModal
+      :open="isCloudSaveDialogOpen"
+      :name="cloudSaveName"
+      :title="t('editor.plan.cloudSave.dialog.title')"
+      :description="t('editor.plan.cloudSave.dialog.description')"
+      :placeholder="t('editor.plan.cloudSave.dialog.placeholder')"
+      :hint="t('editor.plan.cloudSave.dialog.hint', { max: draftNameMaxLength })"
+      :submit-label="t('editor.plan.cloudSave.dialog.submit')"
+      :cancel-label="t('common.confirmDialog.cancel')"
+      :loading="isCloudSaveLoading"
+      :validation-error="cloudSaveValidationError"
+      @update:open="isCloudSaveDialogOpen = $event"
+      @update:name="cloudSaveName = $event"
+      @cancel="closeCloudSaveDialog"
+      @submit="submitCloudSave"
     />
 
     <EditorCommitteeNameModal
