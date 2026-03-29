@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useAuthStore } from '~/stores/auth'
+import { useHomepage } from '~/composables/useHomepage'
 
 const { t } = useI18n()
 const authStore = useAuthStore()
@@ -13,6 +14,30 @@ const usernameLabel = computed(() => authStore.username || '-')
 const isEditorRoute = computed(() => route.path.startsWith('/editor'))
 const headerUi = computed(() => (isEditorRoute.value ? editorHeaderUi : undefined))
 const editorBackToHomepageLabel = computed(() => t('editor.navigation.backToHomepage'))
+const editorOpenSavedPlansLabel = computed(() => t('editor.navigation.openSavedPlansTitle'))
+const headerActionButtonClass = 'hover:bg-primary/20 hover:ring-primary/40'
+
+const {
+  manualDrafts,
+  autoDrafts,
+  isOpenRecentPlanDialogOpen,
+  isOpeningRecentPlan,
+  openRecentPlanDialogDescription,
+  isBrowsePlansDialogOpen,
+  isBrowsePlansLoading,
+  browsePlansSearchQuery,
+  isManualLoadMoreLoading,
+  isAutoLoadMoreLoading,
+  hasMoreManualDrafts,
+  hasMoreAutoDrafts,
+  requestBrowsePlans,
+  requestBrowsePlansSearch,
+  requestOpenBrowsePlan,
+  cancelOpenRecentPlan,
+  confirmOpenRecentPlan,
+  loadMoreManualDrafts,
+  loadMoreAutoDrafts
+} = useHomepage()
 
 const logoutButtonLabel = computed(() => {
   return `${t('dashboard.logoutButton')}: ${usernameLabel.value}`
@@ -41,17 +66,31 @@ async function confirmLogout(): Promise<void> {
             <CommonAppLogo />
           </NuxtLink>
 
-          <UButton
-            v-if="isEditorRoute"
-            to="/"
-            color="primary"
-            variant="subtle"
-            icon="i-lucide-house"
-            :aria-label="editorBackToHomepageLabel"
-            :ui="{ leadingIcon: 'text-toned' }"
-          >
-            {{ editorBackToHomepageLabel }}
-          </UButton>
+          <div v-if="isEditorRoute" class="flex items-center gap-3">
+            <UButton
+              to="/"
+              color="primary"
+              variant="subtle"
+              icon="i-lucide-house"
+              :aria-label="editorBackToHomepageLabel"
+              :class="headerActionButtonClass"
+              :ui="{ leadingIcon: 'text-toned' }"
+            >
+              {{ editorBackToHomepageLabel }}
+            </UButton>
+
+            <UButton
+              color="primary"
+              variant="subtle"
+              icon="i-lucide-folder-open"
+              :aria-label="editorOpenSavedPlansLabel"
+              :class="headerActionButtonClass"
+              :ui="{ leadingIcon: 'text-toned' }"
+              @click="requestBrowsePlans"
+            >
+              {{ editorOpenSavedPlansLabel }}
+            </UButton>
+          </div>
         </div>
       </template>
 
@@ -61,6 +100,7 @@ async function confirmLogout(): Promise<void> {
           variant="subtle"
           icon="i-lucide-log-out"
           :aria-label="logoutButtonLabel"
+          :class="headerActionButtonClass"
           :loading="authStore.isLogoutLoading"
           @click="openLogoutDialog"
         >
@@ -78,6 +118,34 @@ async function confirmLogout(): Promise<void> {
       :description="t('dashboard.logoutConfirmDescription')"
       :loading="authStore.isLogoutLoading"
       @confirm="confirmLogout"
+    />
+
+    <HomepagePlansDialog
+      v-if="isEditorRoute"
+      v-model:open="isBrowsePlansDialogOpen"
+      :manual-drafts="manualDrafts"
+      :auto-drafts="autoDrafts"
+      :is-loading="isBrowsePlansLoading"
+      :search-query="browsePlansSearchQuery"
+      :is-manual-load-more-loading="isManualLoadMoreLoading"
+      :is-auto-load-more-loading="isAutoLoadMoreLoading"
+      :has-more-manual-drafts="hasMoreManualDrafts"
+      :has-more-auto-drafts="hasMoreAutoDrafts"
+      @open-plan="requestOpenBrowsePlan"
+      @search-change="requestBrowsePlansSearch"
+      @load-more-manual="loadMoreManualDrafts"
+      @load-more-auto="loadMoreAutoDrafts"
+    />
+
+    <CommonAppActionConfirmDialog
+      v-if="isEditorRoute"
+      v-model:open="isOpenRecentPlanDialogOpen"
+      :action-label="t('homepage.recent.openPlanAction')"
+      :description="openRecentPlanDialogDescription"
+      :confirm-label="t('homepage.recent.openPlanAction')"
+      :loading="isOpeningRecentPlan"
+      @cancel="cancelOpenRecentPlan"
+      @confirm="confirmOpenRecentPlan"
     />
 
     <div class="relative">

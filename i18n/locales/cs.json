@@ -130,7 +130,8 @@
     "untitled": "Bez názvu",
     "loading": "Načítám editor...",
     "navigation": {
-      "backToHomepage": "Zpět na hlavní stránku"
+      "backToHomepage": "Zpět na hlavní stránku",
+      "openSavedPlansTitle": "Najít uložený plán"
     },
     "plan": {
       "rename": {
