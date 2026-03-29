@@ -19,7 +19,7 @@
  * - Ignores stale save responses if the draft changed while a request was in flight
  */
 
-import { addMilliseconds, differenceInMilliseconds, isValid, parseISO } from 'date-fns'
+import { addMilliseconds, differenceInMilliseconds, format, isValid, parseISO } from 'date-fns'
 import type {
   PostCommitteeDto,
   PostCommitteeItemDto,
@@ -68,8 +68,10 @@ function normalizedName(name: string | null | undefined, fallback = ''): string 
   return normalized.length > 0 ? normalized : fallback
 }
 
-function createAutoScheduleName(now: Date = new Date()): string {
-  return `AUTO-${now.toISOString()}`
+function createAutoScheduleName(draftName: string, now: Date = new Date()): string {
+  const baseName = normalizedName(draftName, createDefaultNewScheduleName(now))
+  const readableTimestamp = format(now, 'dd.MM.yyyy HH:mm')
+  return `${baseName} [${readableTimestamp}]`
 }
 
 function createDefaultNewScheduleName(now: Date = new Date()): string {
@@ -414,7 +416,7 @@ export const useScheduleDraftStore = defineStore(
       autoSaveErrorCode.value = null
 
       try {
-        return await persistDraft('AUTO', createAutoScheduleName())
+        return await persistDraft('AUTO', createAutoScheduleName(draft.value.name))
       } catch (error: unknown) {
         autoSaveErrorCode.value = resolveScheduleDraftErrorCode(error, 'REQUEST_FAILED')
         scheduleAutoSave(autoSavePolicy.value.retryAfterErrorMs)

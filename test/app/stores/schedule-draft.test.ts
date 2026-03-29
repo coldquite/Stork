@@ -252,7 +252,8 @@ describe('useScheduleDraftStore', () => {
     const payload = requestOptions.body as { type: string; name: string }
 
     expect(payload.type).toBe('AUTO')
-    expect(payload.name.startsWith('AUTO-')).toBe(true)
+    expect(payload.name).toMatch(/^Autosave změna \[\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}\]$/)
+    expect(payload.name.includes('AUTO-')).toBe(false)
     expect(store.isDirty).toBe(false)
     expect(store.lastSavedType).toBe('AUTO')
     expect(store.lastAutoSaveAt).toBe('2026-06-11T11:00:00.000Z')
