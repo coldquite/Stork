@@ -3,7 +3,10 @@ import { HOMEPAGE_NEW_PLAN_NAME_MAX_LENGTH } from '~/composables/useHomepage'
 
 const { t } = useI18n()
 const {
-  homepageStore,
+  recentPlans,
+  isRecentPlansLoading,
+  hasRecentPlansError,
+  fetchRecentPlans,
   manualDrafts,
   autoDrafts,
   restoreDraftLine,
@@ -34,9 +37,7 @@ const {
   submitCreatePlanImport
 } = useHomepage()
 
-await callOnce('homepage-recent-plans', async () => {
-  await homepageStore.fetchRecentPlans()
-})
+await fetchRecentPlans()
 </script>
 
 <template>
@@ -60,9 +61,9 @@ await callOnce('homepage-recent-plans', async () => {
     />
 
     <HomepageRecentPlansCard
-      :recent-plans="homepageStore.recentPlans"
-      :is-recent-plans-loading="homepageStore.isRecentPlansLoading"
-      :has-recent-plans-error="homepageStore.hasRecentPlansError"
+      :recent-plans="recentPlans"
+      :is-recent-plans-loading="isRecentPlansLoading"
+      :has-recent-plans-error="hasRecentPlansError"
       :recent-plan-open-error="recentPlanOpenError"
       @open-plan="requestOpenRecentPlan"
     />

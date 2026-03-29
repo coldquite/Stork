@@ -3,7 +3,6 @@ import { cs } from 'date-fns/locale'
 import { computed, onMounted, ref, watch } from 'vue'
 import type { TimeScheduleListItemDto, TimeScheduleTypeDto } from '#shared/types/time-schedules'
 import { useScheduleDraftStore } from '~/stores/schedule-draft'
-import { useHomepageStore } from '~/stores/homepage'
 import { useImportStore } from '~/stores/import'
 import type { HomepagePlanListItem, PlanOpenCandidate } from '~/types/homepage'
 import type { ImportPayload, ImportSzzType } from '~/types/import'
@@ -13,9 +12,12 @@ const HOMEPAGE_BROWSE_PLANS_PAGE_SIZE = 20
 
 export function useHomepage() {
   const { t } = useI18n()
-  const homepageStore = useHomepageStore()
   const importStore = useImportStore()
   const scheduleDraftStore = useScheduleDraftStore()
+
+  const recentPlans = ref<TimeScheduleListItemDto[]>([])
+  const isRecentPlansLoading = ref(false)
+  const hasRecentPlansError = ref(false)
 
   const isOpenRecentPlanDialogOpen = ref(false)
   const isOpeningRecentPlan = ref(false)
@@ -134,6 +136,25 @@ export function useHomepage() {
     }
 
     openCreatePlanNameDialog()
+  }
+
+  async function fetchRecentPlans(limit = 7): Promise<void> {
+    if (isRecentPlansLoading.value) {
+      return
+    }
+
+    isRecentPlansLoading.value = true
+    hasRecentPlansError.value = false
+
+    try {
+      const requestFetch = useRequestFetch()
+      recentPlans.value = await requestFetch<TimeScheduleListItemDto[]>(`/api/time-schedules?page=1&pageSize=${limit}`)
+    } catch {
+      hasRecentPlansError.value = true
+      recentPlans.value = []
+    } finally {
+      isRecentPlansLoading.value = false
+    }
   }
 
   async function fetchDraftsByType(type: TimeScheduleTypeDto): Promise<HomepagePlanListItem[]> {
@@ -328,7 +349,10 @@ export function useHomepage() {
   }
 
   return {
-    homepageStore,
+    recentPlans,
+    isRecentPlansLoading,
+    hasRecentPlansError,
+    fetchRecentPlans,
     manualDrafts,
     autoDrafts,
     restoreDraftLine,

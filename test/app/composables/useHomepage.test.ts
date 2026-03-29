@@ -2,16 +2,10 @@ import { mockNuxtImport } from '@nuxt/test-utils/runtime'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ImportPayload } from '~/types/import'
 
-const { i18nTranslateMock, importStoreMock, homepageStoreMock, scheduleDraftStoreMock } = vi.hoisted(() => ({
+const { i18nTranslateMock, importStoreMock, scheduleDraftStoreMock } = vi.hoisted(() => ({
   i18nTranslateMock: vi.fn((key: string) => key),
   importStoreMock: {
     setImportedPlanDraft: vi.fn()
-  },
-  homepageStoreMock: {
-    recentPlans: [],
-    isRecentPlansLoading: false,
-    hasRecentPlansError: false,
-    fetchRecentPlans: vi.fn()
   },
   scheduleDraftStoreMock: {
     hasDraft: false,
@@ -31,12 +25,6 @@ mockNuxtImport('useI18n', () => {
 vi.mock('~/stores/import', () => {
   return {
     useImportStore: () => importStoreMock
-  }
-})
-
-vi.mock('~/stores/homepage', () => {
-  return {
-    useHomepageStore: () => homepageStoreMock
   }
 })
 
@@ -74,7 +62,6 @@ describe('useHomepage submitCreatePlanImport', () => {
   beforeEach(() => {
     i18nTranslateMock.mockClear()
     importStoreMock.setImportedPlanDraft.mockReset()
-    homepageStoreMock.fetchRecentPlans.mockReset()
     scheduleDraftStoreMock.initializeNewDraft.mockReset()
     scheduleDraftStoreMock.loadDraftByScheduleId.mockReset()
   })
