@@ -72,6 +72,23 @@ function parseTypeQuery(value: string | undefined): TimeScheduleTypeDto | null {
   return value as TimeScheduleTypeDto
 }
 
+function parseSearchQuery(value: string | undefined): string | null {
+  if (value === undefined) {
+    return null
+  }
+
+  const normalizedValue = value.trim()
+  if (normalizedValue.length === 0) {
+    return null
+  }
+
+  return normalizedValue
+}
+
+function escapeLikePattern(value: string): string {
+  return value.replace(/\\/g, '\\\\').replace(/%/g, '\\%').replace(/_/g, '\\_')
+}
+
 export default defineEventHandler(async (event): Promise<TimeScheduleListItemDto[]> => {
   requireAuthenticatedUser(event)
 
@@ -83,9 +100,17 @@ export default defineEventHandler(async (event): Promise<TimeScheduleListItemDto
     DEFAULT_PAGE_SIZE
   )
   const type = parseTypeQuery(parseSingleQueryValue(query.type, 'type'))
+  const search = parseSearchQuery(parseSingleQueryValue(query.search, 'search'))
 
   const offset = (page - 1) * pageSize
-  const whereClause = type ? Prisma.sql`WHERE ts."type" = ${type}::"TimeScheduleType"` : Prisma.empty
+  const likePattern = search ? `%${escapeLikePattern(search)}%` : null
+  const whereClause = type
+    ? likePattern
+      ? Prisma.sql`WHERE ts."type" = ${type}::"TimeScheduleType" AND ts."name" ILIKE ${likePattern} ESCAPE '\\'`
+      : Prisma.sql`WHERE ts."type" = ${type}::"TimeScheduleType"`
+    : likePattern
+      ? Prisma.sql`WHERE ts."name" ILIKE ${likePattern} ESCAPE '\\'`
+      : Prisma.empty
 
   const scheduleRows = await prisma.$queryRaw<TimeScheduleListRow[]>(Prisma.sql`
     SELECT ts.id,

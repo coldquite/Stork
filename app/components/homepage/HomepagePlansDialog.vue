@@ -1,20 +1,21 @@
 <script setup lang="ts">
-import { computed } from 'vue'
 import type { HomepagePlanListItem } from '~/types/homepage'
 
 interface HomepagePlansDialogProps {
   manualDrafts: HomepagePlanListItem[]
   autoDrafts: HomepagePlanListItem[]
   isLoading: boolean
+  searchQuery: string
   hasMoreManualDrafts: boolean
   hasMoreAutoDrafts: boolean
   isManualLoadMoreLoading: boolean
   isAutoLoadMoreLoading: boolean
 }
 
-defineProps<HomepagePlansDialogProps>()
+const props = defineProps<HomepagePlansDialogProps>()
 const emit = defineEmits<{
   openPlan: [plan: HomepagePlanListItem]
+  searchChange: [query: string]
   loadMoreManual: []
   loadMoreAuto: []
 }>()
@@ -36,6 +37,20 @@ const tabs = computed(() => [
   { key: 'manual', label: t('homepage.plansModal.tabs.manual'), slot: 'manual' },
   { key: 'auto', label: t('homepage.plansModal.tabs.auto'), slot: 'auto' }
 ])
+const searchInputValue = ref(props.searchQuery)
+
+watch(
+  () => props.searchQuery,
+  (nextSearchQuery) => {
+    if (searchInputValue.value !== nextSearchQuery) {
+      searchInputValue.value = nextSearchQuery
+    }
+  }
+)
+
+watch(searchInputValue, (nextSearchQuery) => {
+  emit('searchChange', nextSearchQuery)
+})
 
 function formatUpdatedAt(value: string): string {
   const date = new Date(value)
@@ -68,6 +83,19 @@ function handleLoadMoreAuto(): void {
     }"
   >
     <template #body>
+      <div class="mb-5 w-full">
+        <p class="text-highlighted mb-2 text-base font-medium">
+          {{ t('homepage.plansModal.searchPlaceholder') }}
+        </p>
+        <UInput
+          v-model="searchInputValue"
+          icon="i-lucide-search"
+          size="xl"
+          class="w-full"
+          :placeholder="t('homepage.plansModal.searchPlaceholder')"
+        />
+      </div>
+
       <div v-if="isLoading" class="flex min-h-90 flex-col items-center justify-center gap-3">
         <UIcon name="i-lucide-loader-circle" class="text-primary size-10 animate-spin" />
         <p class="text-muted text-sm">
@@ -85,7 +113,7 @@ function handleLoadMoreAuto(): void {
             />
           </div>
 
-          <div v-else class="box-border max-h-[80vh] space-y-3 overflow-y-auto px-1 py-1 pr-3">
+          <div v-else class="box-border max-h-[56vh] space-y-3 overflow-y-auto px-1 py-1 pr-3">
             <UCard
               v-for="draft in manualDrafts"
               :key="draft.id"
@@ -115,8 +143,8 @@ function handleLoadMoreAuto(): void {
               <UButton
                 color="primary"
                 variant="solid"
-                size="sm"
-                class="min-w-44 justify-center"
+                size="lg"
+                class="min-w-50 justify-center px-4"
                 :loading="isManualLoadMoreLoading"
                 :disabled="isManualLoadMoreLoading"
                 @click="handleLoadMoreManual"
@@ -136,7 +164,7 @@ function handleLoadMoreAuto(): void {
             />
           </div>
 
-          <div v-else class="box-border max-h-[80vh] space-y-3 overflow-y-auto px-2 py-1 pr-3">
+          <div v-else class="box-border max-h-[56vh] space-y-3 overflow-y-auto px-2 py-1 pr-3">
             <UCard
               v-for="draft in autoDrafts"
               :key="draft.id"
@@ -171,8 +199,8 @@ function handleLoadMoreAuto(): void {
               <UButton
                 color="primary"
                 variant="solid"
-                size="sm"
-                class="min-w-44 justify-center"
+                size="lg"
+                class="min-w-56 justify-center px-6"
                 :loading="isAutoLoadMoreLoading"
                 :disabled="isAutoLoadMoreLoading"
                 @click="handleLoadMoreAuto"

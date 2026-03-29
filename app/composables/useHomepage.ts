@@ -1,6 +1,5 @@
 import { differenceInSeconds, formatDistanceToNowStrict, isValid, parseISO } from 'date-fns'
 import { cs } from 'date-fns/locale'
-import { computed, onMounted, ref, watch } from 'vue'
 import type { TimeScheduleListItemDto, TimeScheduleTypeDto } from '#shared/types/time-schedules'
 import { useScheduleDraftStore } from '~/stores/schedule-draft'
 import { useImportStore } from '~/stores/import'
@@ -9,6 +8,7 @@ import type { ImportPayload, ImportSzzType } from '~/types/import'
 
 export const HOMEPAGE_NEW_PLAN_NAME_MAX_LENGTH = 120
 const HOMEPAGE_BROWSE_PLANS_PAGE_SIZE = 20
+const HOMEPAGE_BROWSE_SEARCH_DEBOUNCE_MS = 250 // To avoid the server burnout, I want to say hi to the BI-TWA ultimate tutors team. I still remember how they showed it :)
 
 type BrowsePlansTabKey = 'manual' | 'auto'
 
@@ -34,6 +34,7 @@ export function useHomepage() {
 
   const isBrowsePlansDialogOpen = ref(false)
   const isBrowsePlansLoading = ref(false)
+  const browsePlansSearchQuery = ref('')
   const isManualLoadMoreLoading = ref(false)
   const isAutoLoadMoreLoading = ref(false)
 
@@ -47,6 +48,7 @@ export function useHomepage() {
 
   let manualBrowseRequestId = 0
   let autoBrowseRequestId = 0
+  let browseSearchDebounceTimer: ReturnType<typeof setTimeout> | null = null
 
   onMounted(() => {
     isClientReady.value = true
@@ -243,10 +245,15 @@ export function useHomepage() {
     return tab === 'manual' ? 'MANUAL' : 'AUTO'
   }
 
-  async function fetchDraftsByType(type: TimeScheduleTypeDto, page: number): Promise<HomepagePlanListItem[]> {
+  async function fetchDraftsByType(
+    type: TimeScheduleTypeDto,
+    page: number,
+    searchQuery: string
+  ): Promise<HomepagePlanListItem[]> {
     const requestFetch = useRequestFetch()
+    const encodedSearchQuery = encodeURIComponent(searchQuery)
     const plans = await requestFetch<TimeScheduleListItemDto[]>(
-      `/api/time-schedules?page=${page}&pageSize=${HOMEPAGE_BROWSE_PLANS_PAGE_SIZE}&type=${type}`
+      `/api/time-schedules?page=${page}&pageSize=${HOMEPAGE_BROWSE_PLANS_PAGE_SIZE}&type=${type}&search=${encodedSearchQuery}`
     )
 
     return plans.map((plan) => toHomepagePlanListItem(plan))
@@ -267,7 +274,10 @@ export function useHomepage() {
     const autoRequestId = nextTabRequestId('auto')
 
     try {
-      const [manualPlans, autoPlans] = await Promise.all([fetchDraftsByType('MANUAL', 1), fetchDraftsByType('AUTO', 1)])
+      const [manualPlans, autoPlans] = await Promise.all([
+        fetchDraftsByType('MANUAL', 1, browsePlansSearchQuery.value),
+        fetchDraftsByType('AUTO', 1, browsePlansSearchQuery.value)
+      ])
 
       if (!isTabRequestCurrent('manual', manualRequestId) || !isTabRequestCurrent('auto', autoRequestId)) {
         return
@@ -311,7 +321,7 @@ export function useHomepage() {
     setTabLoadMoreLoading(tab, true)
 
     try {
-      const plans = await fetchDraftsByType(resolveScheduleTypeByTab(tab), nextPage)
+      const plans = await fetchDraftsByType(resolveScheduleTypeByTab(tab), nextPage, browsePlansSearchQuery.value)
       if (!isTabRequestCurrent(tab, requestId)) {
         return
       }
@@ -331,8 +341,29 @@ export function useHomepage() {
   }
 
   function requestBrowsePlans(): void {
+    if (browseSearchDebounceTimer) {
+      clearTimeout(browseSearchDebounceTimer)
+      browseSearchDebounceTimer = null
+    }
+
     isBrowsePlansDialogOpen.value = true
     void refreshBrowsePlans()
+  }
+
+  function requestBrowsePlansSearch(nextSearchQuery: string): void {
+    browsePlansSearchQuery.value = nextSearchQuery
+    if (!isBrowsePlansDialogOpen.value) {
+      return
+    }
+
+    if (browseSearchDebounceTimer) {
+      clearTimeout(browseSearchDebounceTimer)
+    }
+
+    browseSearchDebounceTimer = setTimeout(() => {
+      browseSearchDebounceTimer = null
+      void refreshBrowsePlans()
+    }, HOMEPAGE_BROWSE_SEARCH_DEBOUNCE_MS)
   }
 
   function loadMoreManualDrafts(): void {
@@ -508,6 +539,7 @@ export function useHomepage() {
     isCreatingNewPlan,
     isBrowsePlansDialogOpen,
     isBrowsePlansLoading,
+    browsePlansSearchQuery,
     isManualLoadMoreLoading,
     isAutoLoadMoreLoading,
     hasMoreManualDrafts,
@@ -516,6 +548,7 @@ export function useHomepage() {
     newPlanNameError,
     requestCreatePlan,
     requestBrowsePlans,
+    requestBrowsePlansSearch,
     loadMoreManualDrafts,
     loadMoreAutoDrafts,
     requestRestoreDraft,

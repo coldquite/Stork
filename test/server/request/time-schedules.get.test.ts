@@ -325,13 +325,49 @@ describe('GET /api/time-schedules (integration)', () => {
     expect(autoIds).not.toContain(manualScheduleId)
   })
 
+  it('supports optional searching by schedule name', async () => {
+    const authCookie = createAuthCookie()
+    const suffix = createUniqueSuffix()
+
+    const matchingScheduleId = await createScheduleViaPost(
+      {
+        name: `Searchable Plan Alpha ${suffix}`,
+        type: 'MANUAL',
+        committees: []
+      },
+      authCookie
+    )
+
+    const nonMatchingScheduleId = await createScheduleViaPost(
+      {
+        name: `Different Plan ${suffix}`,
+        type: 'MANUAL',
+        committees: []
+      },
+      authCookie
+    )
+
+    const response = await fetch(apiUrl(`/api/time-schedules?search=alpha%20${suffix}&page=1&pageSize=100`), {
+      headers: { cookie: authCookie }
+    })
+
+    expect(response.status).toBe(200)
+
+    const payload = (await response.json()) as TimeScheduleListItemDto[]
+    const returnedIds = payload.map((schedule) => schedule.id)
+
+    expect(returnedIds).toContain(matchingScheduleId)
+    expect(returnedIds).not.toContain(nonMatchingScheduleId)
+  })
+
   it.each([
     '/api/time-schedules?page=0',
     '/api/time-schedules?page=-1',
     '/api/time-schedules?page=abc',
     '/api/time-schedules?pageSize=0',
     '/api/time-schedules?type=INVALID',
-    '/api/time-schedules?page=1&page=2'
+    '/api/time-schedules?page=1&page=2',
+    '/api/time-schedules?search=a&search=b'
   ])('returns 400 for invalid query: %s', async (path) => {
     const response = await fetch(apiUrl(path), {
       headers: {

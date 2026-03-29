@@ -25,6 +25,7 @@ const {
   isCreatingNewPlan,
   isBrowsePlansDialogOpen,
   isBrowsePlansLoading,
+  browsePlansSearchQuery,
   isManualLoadMoreLoading,
   isAutoLoadMoreLoading,
   hasMoreManualDrafts,
@@ -33,6 +34,7 @@ const {
   newPlanNameError,
   requestCreatePlan,
   requestBrowsePlans,
+  requestBrowsePlansSearch,
   loadMoreManualDrafts,
   loadMoreAutoDrafts,
   requestRestoreDraft,
@@ -110,11 +112,13 @@ await fetchRecentPlans()
       :manual-drafts="manualDrafts"
       :auto-drafts="autoDrafts"
       :is-loading="isBrowsePlansLoading"
+      :search-query="browsePlansSearchQuery"
       :is-manual-load-more-loading="isManualLoadMoreLoading"
       :is-auto-load-more-loading="isAutoLoadMoreLoading"
       :has-more-manual-drafts="hasMoreManualDrafts"
       :has-more-auto-drafts="hasMoreAutoDrafts"
       @open-plan="requestOpenBrowsePlan"
+      @search-change="requestBrowsePlansSearch"
       @load-more-manual="loadMoreManualDrafts"
       @load-more-auto="loadMoreAutoDrafts"
     />

@@ -64,6 +64,11 @@ function createImportPayload(): ImportPayload {
   }
 }
 
+async function flushPromises(): Promise<void> {
+  await Promise.resolve()
+  await Promise.resolve()
+}
+
 function createTimeScheduleListItem(index: number, type: 'MANUAL' | 'AUTO'): TimeScheduleListItemDto {
   return {
     id: `${type.toLowerCase()}-${index}`,
@@ -219,5 +224,48 @@ describe('useHomepage browse plans pagination', () => {
     expect(loadMoreRequest).toContain('page=2')
     expect(homepage.hasMoreManualDrafts.value).toBe(false)
     expect(homepage.isManualLoadMoreLoading.value).toBe(false)
+  })
+
+  it('refreshes browse plans with debounced search query', async () => {
+    requestFetchMock.mockImplementation(async (url: string) => {
+      if (url.includes('type=MANUAL')) {
+        return [createTimeScheduleListItem(1, 'MANUAL')]
+      }
+
+      if (url.includes('type=AUTO')) {
+        return [createTimeScheduleListItem(1, 'AUTO')]
+      }
+
+      throw new Error(`Unexpected request URL: ${url}`)
+    })
+
+    vi.useFakeTimers()
+    try {
+      const { useHomepage } = await import('~/composables/useHomepage')
+      const homepage = useHomepage()
+
+      homepage.requestBrowsePlans()
+      await flushPromises()
+
+      expect(requestFetchMock).toHaveBeenCalledTimes(2)
+
+      homepage.requestBrowsePlansSearch('alpha query')
+      vi.advanceTimersByTime(200)
+      await flushPromises()
+
+      expect(requestFetchMock).toHaveBeenCalledTimes(2)
+
+      vi.advanceTimersByTime(50)
+      await flushPromises()
+
+      expect(requestFetchMock).toHaveBeenCalledTimes(4)
+
+      const manualSearchCall = requestFetchMock.mock.calls[2]?.[0] as string
+      const autoSearchCall = requestFetchMock.mock.calls[3]?.[0] as string
+      expect(manualSearchCall).toContain('search=alpha%20query')
+      expect(autoSearchCall).toContain('search=alpha%20query')
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })
