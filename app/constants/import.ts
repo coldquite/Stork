@@ -73,7 +73,9 @@ export const IMPORT_SCHEMAS: ImportSchemaMap = {
     'Kód studijního plánu',
     'VŠKP-typ A: Název práce',
     'VŠKP-typ A: Vedoucí práce 1',
+    'VŠKP-typ A: Vedoucí práce 2',
     'VŠKP-typ A: Oponent práce 1',
+    'VŠKP-typ A: Oponent práce 2',
     'VŠKP-typ A: Datum obhajoby',
     'Email studenta',
     'Studijní program (název)',
@@ -116,9 +118,8 @@ export const IMPORT_SCHEMAS: ImportSchemaMap = {
     'Předmět 1 - 2.term. datum'
   ],
   committees: [
-    'St. program (kód, název)',
+    'Název komise',
     'Název studijního programu',
-    'Obor/specializace',
     'Název oboru/specializace',
     'Správce',
     'Kat',
