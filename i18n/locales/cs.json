@@ -132,7 +132,8 @@
     "loading": "Načítám editor...",
     "navigation": {
       "backToHomepage": "Zpět na hlavní stránku",
-      "openSavedPlansTitle": "Najít uložený plán"
+      "openSavedPlansTitle": "Najít uložený plán",
+      "createPlanFromImportTitle": "Vytvořit nový plán z importu"
     },
     "plan": {
       "rename": {

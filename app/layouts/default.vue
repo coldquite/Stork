@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useAuthStore } from '~/stores/auth'
-import { useHomepage } from '~/composables/useHomepage'
+import { HOMEPAGE_NEW_PLAN_NAME_MAX_LENGTH, useHomepage } from '~/composables/useHomepage'
 
 const { t } = useI18n()
 const authStore = useAuthStore()
@@ -15,6 +15,7 @@ const isEditorRoute = computed(() => route.path.startsWith('/editor'))
 const headerUi = computed(() => (isEditorRoute.value ? editorHeaderUi : undefined))
 const editorBackToHomepageLabel = computed(() => t('editor.navigation.backToHomepage'))
 const editorOpenSavedPlansLabel = computed(() => t('editor.navigation.openSavedPlansTitle'))
+const editorCreatePlanFromImportLabel = computed(() => t('editor.navigation.createPlanFromImportTitle'))
 const headerActionButtonClass = 'hover:bg-primary/20 hover:ring-primary/40'
 
 const {
@@ -23,6 +24,9 @@ const {
   isOpenRecentPlanDialogOpen,
   isOpeningRecentPlan,
   openRecentPlanDialogDescription,
+  isCreatePlanConfirmDialogOpen,
+  isCreatePlanNameDialogOpen,
+  isCreatingNewPlan,
   isBrowsePlansDialogOpen,
   isBrowsePlansLoading,
   browsePlansSearchQuery,
@@ -30,11 +34,19 @@ const {
   isAutoLoadMoreLoading,
   hasMoreManualDrafts,
   hasMoreAutoDrafts,
+  newPlanNameInput,
+  newPlanNameError,
+  requestCreatePlan,
   requestBrowsePlans,
   requestBrowsePlansSearch,
   requestOpenBrowsePlan,
+  cancelCreatePlanConfirm,
   cancelOpenRecentPlan,
+  confirmCreatePlanConfirm,
   confirmOpenRecentPlan,
+  cancelCreatePlanNameDialog,
+  submitCreatePlanName,
+  submitCreatePlanImport,
   loadMoreManualDrafts,
   loadMoreAutoDrafts
 } = useHomepage()
@@ -77,6 +89,18 @@ async function confirmLogout(): Promise<void> {
               :ui="{ leadingIcon: 'text-toned' }"
             >
               {{ editorBackToHomepageLabel }}
+            </UButton>
+
+            <UButton
+              color="primary"
+              variant="subtle"
+              icon="i-lucide-circle-plus"
+              :aria-label="editorCreatePlanFromImportLabel"
+              :class="headerActionButtonClass"
+              :ui="{ leadingIcon: 'text-toned' }"
+              @click="requestCreatePlan"
+            >
+              {{ editorCreatePlanFromImportLabel }}
             </UButton>
 
             <UButton
@@ -146,6 +170,29 @@ async function confirmLogout(): Promise<void> {
       :loading="isOpeningRecentPlan"
       @cancel="cancelOpenRecentPlan"
       @confirm="confirmOpenRecentPlan"
+    />
+
+    <CommonAppActionConfirmDialog
+      v-if="isEditorRoute"
+      v-model:open="isCreatePlanConfirmDialogOpen"
+      :action-label="t('homepage.actions.create.confirmAction')"
+      :description="t('homepage.actions.create.confirmDescription')"
+      :confirm-label="t('homepage.actions.create.confirmAction')"
+      :loading="isCreatingNewPlan"
+      @cancel="cancelCreatePlanConfirm"
+      @confirm="confirmCreatePlanConfirm"
+    />
+
+    <CommonCreatePlanNameDialog
+      v-if="isEditorRoute"
+      v-model:open="isCreatePlanNameDialogOpen"
+      v-model:name="newPlanNameInput"
+      :loading="isCreatingNewPlan"
+      :max-length="HOMEPAGE_NEW_PLAN_NAME_MAX_LENGTH"
+      :validation-error="newPlanNameError"
+      @cancel="cancelCreatePlanNameDialog"
+      @submit="submitCreatePlanName"
+      @submit-import="submitCreatePlanImport"
     />
 
     <div class="relative">
