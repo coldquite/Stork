@@ -42,13 +42,14 @@ const { t } = useI18n()
             color="neutral"
             variant="solid"
             size="lg"
-            class="bg-black text-white ring-1 ring-black hover:bg-black/90 dark:bg-white dark:text-black dark:ring-white dark:hover:bg-white/90"
+            class="cursor-pointer bg-black text-white ring-1 ring-black hover:bg-black/90 dark:bg-white dark:text-black dark:ring-white dark:hover:bg-white/90"
           />
 
           <UButton
             icon="i-lucide-log-in"
             color="primary"
             size="lg"
+            class="cursor-pointer"
             :loading="isSessionLoading"
             @click="emit('start-login')"
           >

@@ -51,11 +51,17 @@ function handleConfirm(): void {
   >
     <template #footer>
       <div class="flex w-full justify-end gap-2">
-        <UButton color="neutral" variant="ghost" :disabled="props.loading" @click="handleCancel">
+        <UButton color="neutral" variant="ghost" class="cursor-pointer" :disabled="props.loading" @click="handleCancel">
           {{ resolvedCancelLabel }}
         </UButton>
 
-        <UButton :color="props.confirmColor" variant="solid" :loading="props.loading" @click="handleConfirm">
+        <UButton
+          :color="props.confirmColor"
+          variant="solid"
+          class="cursor-pointer"
+          :loading="props.loading"
+          @click="handleConfirm"
+        >
           {{ resolvedConfirmLabel }}
         </UButton>
       </div>

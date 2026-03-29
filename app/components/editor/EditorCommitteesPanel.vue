@@ -48,7 +48,7 @@ function requestCreateCommittee(): void {
           variant="outline"
           size="lg"
           leading-icon="i-lucide-scale"
-          class="bg-default self-stretch px-2.5 text-base font-semibold !text-capaccent-800 ring-[2px] ring-capaccent-300/80 dark:!text-capaccent-100 dark:ring-capaccent-400/80"
+          class="bg-default !text-capaccent-800 ring-capaccent-300/80 dark:!text-capaccent-100 dark:ring-capaccent-400/80 self-stretch px-2.5 text-base font-semibold ring-[2px]"
         >
           {{ props.committeesCount }}
         </UBadge>
@@ -65,7 +65,7 @@ function requestCreateCommittee(): void {
             block
             role="option"
             :aria-selected="item.value === selectedCommitteeIdModel"
-            class="focus-visible:ring-primary/50 w-full justify-between rounded-none px-3 py-3 text-base font-semibold ring-0 focus-visible:ring-2 focus-visible:ring-inset"
+            class="focus-visible:ring-primary/50 w-full cursor-pointer justify-between rounded-none px-3 py-3 text-base font-semibold ring-0 focus-visible:ring-2 focus-visible:ring-inset"
             :class="item.value === selectedCommitteeIdModel ? 'ring-primary/50 ring-2 ring-inset' : 'hover:bg-accented'"
             @click="selectCommittee(item.value)"
           >
@@ -94,7 +94,7 @@ function requestCreateCommittee(): void {
         size="lg"
         icon="i-lucide-plus"
         block
-        class="ring-primary/35 hover:ring-primary/55 font-semibold ring-2"
+        class="ring-primary/35 hover:ring-primary/55 cursor-pointer font-semibold ring-2"
         @click="requestCreateCommittee"
       >
         {{ props.createActionLabel }}

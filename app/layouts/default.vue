@@ -16,7 +16,7 @@ const headerUi = computed(() => (isEditorRoute.value ? editorHeaderUi : undefine
 const editorBackToHomepageLabel = computed(() => t('editor.navigation.backToHomepage'))
 const editorOpenSavedPlansLabel = computed(() => t('editor.navigation.openSavedPlansTitle'))
 const editorCreatePlanFromImportLabel = computed(() => t('editor.navigation.createPlanFromImportTitle'))
-const headerActionButtonClass = 'hover:bg-primary/20 hover:ring-primary/40'
+const headerActionButtonClass = 'cursor-pointer hover:bg-primary/20 hover:ring-primary/40'
 const editorHeaderActionButtonClass = `${headerActionButtonClass} whitespace-nowrap shrink-0`
 
 const {
@@ -133,7 +133,7 @@ async function confirmLogout(): Promise<void> {
           <span class="text-toned">{{ usernameLabel }}</span>
         </UButton>
 
-        <UColorModeButton />
+        <UColorModeButton class="cursor-pointer" />
       </template>
     </UHeader>
 

@@ -452,7 +452,10 @@ export const useScheduleDraftStore = defineStore(
       }
     }
 
-    async function saveManualDraft(name?: string | null, preserveDraftName = false): Promise<PostTimeScheduleResponseDto> {
+    async function saveManualDraft(
+      name?: string | null,
+      preserveDraftName = false
+    ): Promise<PostTimeScheduleResponseDto> {
       isManualSaveLoading.value = true
       manualSaveErrorCode.value = null
 
@@ -515,14 +518,7 @@ export const useScheduleDraftStore = defineStore(
   {
     persist: {
       storage: piniaPluginPersistedstate.localStorage(),
-      pick: [
-        'draft',
-        'baseSnapshot',
-        'lastSavedScheduleId',
-        'lastSavedAt',
-        'lastSavedType',
-        'autoSavePolicy'
-      ]
+      pick: ['draft', 'baseSnapshot', 'lastSavedScheduleId', 'lastSavedAt', 'lastSavedType', 'autoSavePolicy']
     }
   }
 )

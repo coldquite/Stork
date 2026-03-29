@@ -32,7 +32,7 @@ function requestSaveToCloud(): void {
         variant="ghost"
         icon="i-lucide-undo-2"
         :aria-label="props.backAriaLabel"
-        class="aspect-square shrink-0 justify-center self-stretch p-0"
+        class="aspect-square shrink-0 cursor-pointer justify-center self-stretch p-0"
         :ui="{
           base: 'h-full text-muted ring-[2px] ring-current/45 hover:text-muted hover:ring-current/45 hover:bg-stork-50 dark:hover:bg-default'
         }"
@@ -53,7 +53,7 @@ function requestSaveToCloud(): void {
             icon="i-lucide-pencil"
             :label="props.renameLabel"
             :aria-label="props.renameAriaLabel"
-            class="ml-4 shrink-0"
+            class="ml-4 shrink-0 cursor-pointer"
             :ui="{
               base: 'h-10 bg-default border-2 border-capaccent-300 text-capaccent-800 hover:border-capaccent-500 hover:bg-capaccent-50 dark:border-capaccent-400 dark:bg-default dark:text-capaccent-100 dark:hover:bg-capaccent-900/50'
             }"
@@ -67,7 +67,7 @@ function requestSaveToCloud(): void {
             :label="props.cloudSaveLabel"
             :aria-label="props.cloudSaveAriaLabel"
             :loading="props.cloudSaveLoading"
-            class="shrink-0"
+            class="shrink-0 cursor-pointer"
             :ui="{
               base: 'h-10 bg-default border-2 border-success-400 text-success-600 hover:border-success-500 hover:bg-success-50 dark:border-success-400 dark:bg-default dark:text-success-100 dark:hover:bg-success-600/25'
             }"

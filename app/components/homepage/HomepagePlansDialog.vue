@@ -103,7 +103,7 @@ function handleLoadMoreAuto(): void {
         </p>
       </div>
 
-      <UTabs v-else :items="tabs" class="border-default mb-2 border-b pb-3">
+      <UTabs v-else :items="tabs" class="homepage-plans-tabs border-default mb-2 border-b pb-3">
         <template #manual>
           <div v-if="manualDrafts.length === 0" class="py-6">
             <UEmpty
@@ -144,7 +144,7 @@ function handleLoadMoreAuto(): void {
                 color="primary"
                 variant="solid"
                 size="lg"
-                class="min-w-50 justify-center px-4"
+                class="min-w-50 cursor-pointer justify-center px-4"
                 :loading="isManualLoadMoreLoading"
                 :disabled="isManualLoadMoreLoading"
                 @click="handleLoadMoreManual"
@@ -200,7 +200,7 @@ function handleLoadMoreAuto(): void {
                 color="primary"
                 variant="solid"
                 size="lg"
-                class="min-w-56 justify-center px-6"
+                class="min-w-56 cursor-pointer justify-center px-6"
                 :loading="isAutoLoadMoreLoading"
                 :disabled="isAutoLoadMoreLoading"
                 @click="handleLoadMoreAuto"
@@ -214,3 +214,9 @@ function handleLoadMoreAuto(): void {
     </template>
   </UModal>
 </template>
+
+<style scoped>
+.homepage-plans-tabs :deep([role='tab']) {
+  cursor: pointer;
+}
+</style>

@@ -135,7 +135,7 @@ function handleClearImportFiles(): void {
     }"
   >
     <template #body>
-      <UTabs v-model="activeTab" :items="tabs">
+      <UTabs v-model="activeTab" :items="tabs" class="create-plan-tabs">
         <template #import>
           <div class="w-full space-y-4">
             <div class="space-y-2">
@@ -163,7 +163,7 @@ function handleClearImportFiles(): void {
                   {{ $t('homepage.actions.create.import.szzTypeLabel') }}
                 </p>
 
-                <UTabs v-model="importSzzType" :items="importSzzTypeTabs">
+                <UTabs v-model="importSzzType" :items="importSzzTypeTabs" class="create-plan-szz-tabs">
                   <template #bachelor />
                   <template #master />
                   <template #mixed />
@@ -269,6 +269,7 @@ function handleClearImportFiles(): void {
           color="neutral"
           variant="outline"
           icon="i-lucide-trash-2"
+          class="cursor-pointer"
           :disabled="props.loading || !hasImportStateValues"
           @click="handleClearImportFiles"
         >
@@ -276,7 +277,13 @@ function handleClearImportFiles(): void {
         </UButton>
 
         <div class="ml-auto flex gap-2">
-          <UButton color="neutral" variant="ghost" :disabled="props.loading" @click="handleCancel">
+          <UButton
+            color="neutral"
+            variant="ghost"
+            class="cursor-pointer"
+            :disabled="props.loading"
+            @click="handleCancel"
+          >
             {{ $t('common.confirmDialog.cancel') }}
           </UButton>
 
@@ -284,6 +291,7 @@ function handleClearImportFiles(): void {
             v-if="isEmptyPlanTabActive"
             color="primary"
             variant="solid"
+            class="cursor-pointer"
             :loading="props.loading"
             @click="handleSubmit"
           >
@@ -294,6 +302,8 @@ function handleClearImportFiles(): void {
             v-if="isImportTabActive"
             color="primary"
             variant="solid"
+            class="cursor-pointer"
+            :loading="props.loading"
             :disabled="isImportSubmitDisabled || props.loading"
             @click="handleImportSubmit"
           >
@@ -304,3 +314,10 @@ function handleClearImportFiles(): void {
     </template>
   </UModal>
 </template>
+
+<style scoped>
+.create-plan-tabs :deep([role='tab']),
+.create-plan-szz-tabs :deep([role='tab']) {
+  cursor: pointer;
+}
+</style>

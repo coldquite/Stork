@@ -78,11 +78,18 @@ function cancel(): void {
 
     <template #footer>
       <div class="flex w-full justify-end gap-2">
-        <UButton color="neutral" variant="ghost" :disabled="props.loading" @click="cancel">
+        <UButton color="neutral" variant="ghost" class="cursor-pointer" :disabled="props.loading" @click="cancel">
           {{ props.cancelLabel }}
         </UButton>
 
-        <UButton color="primary" variant="solid" :loading="props.loading" :disabled="props.loading" @click="submit">
+        <UButton
+          color="primary"
+          variant="solid"
+          class="cursor-pointer"
+          :loading="props.loading"
+          :disabled="props.loading"
+          @click="submit"
+        >
           {{ props.submitLabel }}
         </UButton>
       </div>
