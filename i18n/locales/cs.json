@@ -68,13 +68,16 @@
           "noFileSelected": "Soubor zatím není vybrán",
           "filesHint": "Jsou povoleny pouze soubory .csv v kódování UTF-8 a oddělené středníkem ( ; ), což je výchozí nastavení IS KOS.",
           "filesAutoMappingHint": "IS ČÁP automaticky rozpozná typ nahraného souboru a přiřadí jej do správného pole.",
+          "clearFilesAction": "Vyčistit soubory",
           "submitAction": "Nahrát soubory",
           "validation": {
             "validating": "Kontroluji soubor...",
             "invalidExtension": "Povolen je pouze soubor s příponou .csv.",
             "invalidEncoding": "Soubor musí být v kódování UTF-8.",
             "invalidStructure": "Soubor neodpovídá podporované struktuře exportu z IS KOS.",
-            "invalidProgramType": "Soubor nelze zařadit na bakalářské nebo magisterské podle očekávaného sloupce."
+            "invalidProgramType": "Soubor nelze zařadit na bakalářské nebo magisterské podle očekávaného sloupce.",
+            "levelSwitchBlockedBachelor": "Nahraný soubor odpovídá bakalářskému typu SZZ. Aktuálně jsou ale v importu nahrané soubory pro magisterský typ. Nahrajte odpovídající soubor nebo změňte typ SZZ a nahrajte soubory znovu.",
+            "levelSwitchBlockedMaster": "Nahraný soubor odpovídá magisterskému typu SZZ. Aktuálně jsou ale v importu nahrané soubory pro bakalářský typ. Nahrajte odpovídající soubor nebo změňte typ SZZ a nahrajte soubory znovu."
           }
         },
         "nameDialogTitle": "Název nového plánu",

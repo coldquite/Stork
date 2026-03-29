@@ -6,8 +6,23 @@
 // - expose submit readiness and build normalized import payload only when all required inputs are ready.
 
 import { getImportFormFieldsBySzzType } from '~/constants/import'
-import { decodeUtf8File, isCsvFile, parseImportCsvText, resolveImportTargetFieldKey } from '~/utils/import'
-import type { ImportCsvRow, ImportDataset, ImportFieldKey, ImportPayload, ImportSzzType } from '~/types/import'
+import {
+  decodeUtf8File,
+  isCsvFile,
+  parseImportCsvText,
+  resolveImportTargetFieldKey,
+  resolveStudyLevelFromStudentsCap,
+  resolveStudyLevelFromStudentsCommittees
+} from '~/utils/import'
+import type {
+  ImportCsvRow,
+  ImportDataset,
+  ImportDatasetKey,
+  ImportFieldKey,
+  ImportPayload,
+  ImportStudyLevel,
+  ImportSzzType
+} from '~/types/import'
 
 interface ImportFieldState {
   file: File | null // Raw file chosen in the input
@@ -30,6 +45,8 @@ const IMPORT_FIELD_KEYS: ImportFieldKey[] = [
   'studentsCommitteesMaster',
   'committees'
 ]
+const SINGLE_MODE_FIELD_KEYS: ImportFieldKey[] = ['studentsCapSingle', 'studentsCommitteesSingle', 'committees']
+const SINGLE_MODE_STUDENT_FIELD_KEYS: ImportFieldKey[] = ['studentsCapSingle', 'studentsCommitteesSingle']
 
 type ImportPayloadLevelKey = keyof ImportPayload['studentsCap']
 
@@ -68,6 +85,18 @@ function cloneDataset(fieldState: ImportFieldState): ImportDataset {
     headers: [...fieldState.headers!],
     rows: fieldState.rows!.map((row) => ({ ...row }))
   }
+}
+
+function resolveStudyLevelFromDataset(datasetKey: ImportDatasetKey, rows: ImportCsvRow[]): ImportStudyLevel | null {
+  if (datasetKey === 'studentsCap') {
+    return resolveStudyLevelFromStudentsCap(rows)
+  }
+
+  if (datasetKey === 'studentsCommittees') {
+    return resolveStudyLevelFromStudentsCommittees(rows)
+  }
+
+  return null
 }
 
 export function useImportForm(selectedSzzType: Ref<ImportSzzType>) {
@@ -178,13 +207,59 @@ export function useImportForm(selectedSzzType: Ref<ImportSzzType>) {
     }
   }
 
+  function countReadySingleModeFieldsExcluding(sourceKey: ImportFieldKey): number {
+    return SINGLE_MODE_FIELD_KEYS.filter((key) => key !== sourceKey).filter((key) =>
+      isFieldStateReady(importFileStates.value[key])
+    ).length
+  }
+
+  function hasConflictingSingleModeStudentFile(
+    sourceKey: ImportFieldKey,
+    targetStudyLevel: ImportStudyLevel
+  ): boolean {
+    for (const key of SINGLE_MODE_STUDENT_FIELD_KEYS) {
+      if (key === sourceKey) {
+        continue
+      }
+
+      const state = importFileStates.value[key]
+      if (!isFieldStateReady(state) || !state.rows) {
+        continue
+      }
+
+      const datasetKey: ImportDatasetKey = key === 'studentsCapSingle' ? 'studentsCap' : 'studentsCommittees'
+      const detectedLevel = resolveStudyLevelFromDataset(datasetKey, state.rows)
+      if (!detectedLevel || detectedLevel !== targetStudyLevel) {
+        return true
+      }
+    }
+
+    return false
+  }
+
+  function isSingleModeLevelSwitchBlocked(sourceKey: ImportFieldKey, targetStudyLevel: ImportStudyLevel): boolean {
+    if (countReadySingleModeFieldsExcluding(sourceKey) >= 2) {
+      return true
+    }
+
+    return hasConflictingSingleModeStudentFile(sourceKey, targetStudyLevel)
+  }
+
+  function resolveLevelSwitchBlockedMessageKey(targetStudyLevel: ImportStudyLevel): string {
+    if (targetStudyLevel === 'BACHELOR') {
+      return 'homepage.actions.create.import.validation.levelSwitchBlockedBachelor'
+    }
+
+    return 'homepage.actions.create.import.validation.levelSwitchBlockedMaster'
+  }
+
   // Handles file input change end-to-end for one import field:
   // 1) resets/validates basic file constraints (.csv),
   // 2) runs async UTF-8 decode and ignores stale async results via requestId,
   // 3) parses and validates CSV schema,
-  // 4) resolves the correct target field by detected dataset/study level,
-  // 5) moves parsed data into target field state (or sets translated validation error),
-  // so the UI always reflects a consistent, race-safe import state (at least I hope it does :D)
+  // 4) for single-mode imports, auto-switches SZZ type when uploaded student file indicates opposite level,
+  //    unless other loaded files already lock the form to current level,
+  // 5) resolves target field by dataset/study level and stores parsed data or translated validation error.
   async function handleImportFileChange(event: Event, sourceKey: ImportFieldKey): Promise<void> {
     const input = event.target as HTMLInputElement | null
     const selectedFile = input?.files?.[0] ?? null
@@ -223,6 +298,25 @@ export function useImportForm(selectedSzzType: Ref<ImportSzzType>) {
       setFieldError(sourceKey, t('homepage.actions.create.import.validation.invalidStructure'))
       clearInputFileValue(input)
       return
+    }
+
+    if (selectedSzzType.value !== 'MIXED' && parsedImport.datasetKey !== 'committees') {
+      const uploadedStudyLevel = resolveStudyLevelFromDataset(parsedImport.datasetKey, parsedImport.rows)
+      if (!uploadedStudyLevel) {
+        setFieldError(sourceKey, t('homepage.actions.create.import.validation.invalidProgramType'))
+        clearInputFileValue(input)
+        return
+      }
+
+      if (uploadedStudyLevel !== selectedSzzType.value) {
+        if (isSingleModeLevelSwitchBlocked(sourceKey, uploadedStudyLevel)) {
+          setFieldError(sourceKey, t(resolveLevelSwitchBlockedMessageKey(uploadedStudyLevel)))
+          clearInputFileValue(input)
+          return
+        }
+
+        selectedSzzType.value = uploadedStudyLevel
+      }
     }
 
     const targetFieldKey = resolveImportTargetFieldKey(

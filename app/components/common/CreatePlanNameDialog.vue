@@ -67,6 +67,12 @@ const importSzzTypeTabs = computed(() => {
 
 const isEmptyPlanTabActive = computed(() => activeTab.value === 'empty')
 const isImportTabActive = computed(() => activeTab.value === 'import')
+const hasImportStateValues = computed(() => {
+  return importFileFields.value.some(({ key }) => {
+    const state = importFileStates.value[key]
+    return Boolean(state.file || state.error || state.isValidating || state.headers || state.rows)
+  })
+})
 
 const modalDescription = computed(() => {
   if (activeTab.value === 'import') {
@@ -110,6 +116,10 @@ function handleImportSubmit(): void {
     payload: importPayload,
     szzType: importSzzType.value
   })
+}
+
+function handleClearImportFiles(): void {
+  resetImportState()
 }
 </script>
 
@@ -253,30 +263,43 @@ function handleImportSubmit(): void {
     </template>
 
     <template #footer>
-      <div class="flex w-full justify-end gap-2">
-        <UButton color="neutral" variant="ghost" :disabled="props.loading" @click="handleCancel">
-          {{ $t('common.confirmDialog.cancel') }}
-        </UButton>
-
-        <UButton
-          v-if="isEmptyPlanTabActive"
-          color="primary"
-          variant="solid"
-          :loading="props.loading"
-          @click="handleSubmit"
-        >
-          {{ $t('homepage.actions.create.submitAction') }}
-        </UButton>
-
+      <div class="flex w-full items-center">
         <UButton
           v-if="isImportTabActive"
-          color="primary"
-          variant="solid"
-          :disabled="isImportSubmitDisabled || props.loading"
-          @click="handleImportSubmit"
+          color="neutral"
+          variant="outline"
+          icon="i-lucide-trash-2"
+          :disabled="props.loading || !hasImportStateValues"
+          @click="handleClearImportFiles"
         >
-          {{ $t('homepage.actions.create.import.submitAction') }}
+          {{ $t('homepage.actions.create.import.clearFilesAction') }}
         </UButton>
+
+        <div class="ml-auto flex gap-2">
+          <UButton color="neutral" variant="ghost" :disabled="props.loading" @click="handleCancel">
+            {{ $t('common.confirmDialog.cancel') }}
+          </UButton>
+
+          <UButton
+            v-if="isEmptyPlanTabActive"
+            color="primary"
+            variant="solid"
+            :loading="props.loading"
+            @click="handleSubmit"
+          >
+            {{ $t('homepage.actions.create.submitAction') }}
+          </UButton>
+
+          <UButton
+            v-if="isImportTabActive"
+            color="primary"
+            variant="solid"
+            :disabled="isImportSubmitDisabled || props.loading"
+            @click="handleImportSubmit"
+          >
+            {{ $t('homepage.actions.create.import.submitAction') }}
+          </UButton>
+        </div>
       </div>
     </template>
   </UModal>

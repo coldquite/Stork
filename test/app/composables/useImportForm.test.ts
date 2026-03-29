@@ -178,6 +178,48 @@ describe('useImportForm', () => {
     expect(payload?.studentsCommittees.bachelor).toBeUndefined()
   })
 
+  it('auto-switches single-mode SZZ type when uploaded student file belongs to opposite level', async () => {
+    const selectedSzzType = ref<ImportSzzType>('BACHELOR')
+    const { importFileStates, handleImportFileChange } = useImportForm(selectedSzzType)
+
+    await handleImportFileChange(
+      createFileChangeEvent(
+        createCsvFile('studentsCap', 'studenti-cap-mgr.csv', { 'Studijní plán (název)': 'Mgr. Informatika' })
+      ),
+      'studentsCapSingle'
+    )
+
+    expect(selectedSzzType.value).toBe('MASTER')
+    expect(importFileStates.value.studentsCapSingle.file?.name).toBe('studenti-cap-mgr.csv')
+    expect(importFileStates.value.studentsCapSingle.error).toBeNull()
+  })
+
+  it('blocks single-mode level auto-switch when two other fields are already loaded', async () => {
+    const selectedSzzType = ref<ImportSzzType>('BACHELOR')
+    const { importFileStates, handleImportFileChange } = useImportForm(selectedSzzType)
+
+    await handleImportFileChange(
+      createFileChangeEvent(createCsvFile('studentsCommittees', 'studenti-komise-bc.csv', { 'St. program - typ': 'B' })),
+      'studentsCommitteesSingle'
+    )
+    await handleImportFileChange(createFileChangeEvent(createCsvFile('committees', 'komise.csv')), 'committees')
+
+    await handleImportFileChange(
+      createFileChangeEvent(
+        createCsvFile('studentsCap', 'studenti-cap-mgr.csv', { 'Studijní plán (název)': 'Mgr. Informatika' })
+      ),
+      'studentsCapSingle'
+    )
+
+    expect(selectedSzzType.value).toBe('BACHELOR')
+    expect(importFileStates.value.studentsCapSingle.file).toBeNull()
+    expect(importFileStates.value.studentsCapSingle.error).toBe(
+      'homepage.actions.create.import.validation.levelSwitchBlockedMaster'
+    )
+    expect(importFileStates.value.studentsCommitteesSingle.file?.name).toBe('studenti-komise-bc.csv')
+    expect(importFileStates.value.committees.file?.name).toBe('komise.csv')
+  })
+
   it('requires five files and builds mixed payload with both levels', async () => {
     const selectedSzzType = ref<ImportSzzType>('MIXED')
     const { handleImportFileChange, buildImportPayload, isImportSubmitDisabled, importFileStates } =
