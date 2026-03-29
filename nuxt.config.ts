@@ -3,6 +3,7 @@ import { buildLicensesReport, generatedLicensesOutputPath } from './non_dependec
 
 const shouldDisableSentrySourceMapsUpload =
   process.env.CI === 'true' && process.env.SENTRY_DISABLE_SOURCEMAPS_UPLOAD === '1'
+const isProduction = process.env.NODE_ENV === 'production'
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -118,6 +119,7 @@ export default defineNuxtConfig({
   },
 
   sentry: {
+    enabled: isProduction,
     org: process.env.SENTRY_ORG ?? 'stork',
     project: process.env.SENTRY_PROJECT ?? 'stork-app',
     sentryUrl: process.env.SENTRY_URL ?? 'https://sentry.ksi.fit.cvut.cz',
