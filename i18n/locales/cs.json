@@ -67,6 +67,7 @@
           "chooseFileAction": "Vybrat soubor",
           "noFileSelected": "Soubor zatím není vybrán",
           "filesHint": "Jsou povoleny pouze soubory .csv v kódování UTF-8 a oddělené středníkem ( ; ), což je výchozí nastavení IS KOS.",
+          "filesAutoMappingHint": "IS ČÁP automaticky rozpozná typ nahraného souboru a přiřadí jej do správného pole.",
           "submitAction": "Nahrát soubory",
           "validation": {
             "validating": "Kontroluji soubor...",

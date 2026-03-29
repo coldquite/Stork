@@ -160,9 +160,15 @@ function handleImportSubmit(): void {
                 </UTabs>
               </div>
 
-              <p class="text-muted text-sm">
-                {{ $t('homepage.actions.create.import.filesHint') }}
-              </p>
+              <div class="space-y-1">
+                <p class="text-muted text-sm">
+                  {{ $t('homepage.actions.create.import.filesHint') }}
+                </p>
+
+                <p class="text-muted text-sm">
+                  {{ $t('homepage.actions.create.import.filesAutoMappingHint') }}
+                </p>
+              </div>
 
               <div
                 v-for="field in importFileFields"
