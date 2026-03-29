@@ -152,7 +152,7 @@ function handleClearImportFiles(): void {
                 :maxlength="props.maxLength"
               />
 
-              <p v-if="props.validationError" class="text-error text-base">
+              <p v-if="props.validationError" class="text-error text-sm">
                 {{ props.validationError }}
               </p>
             </div>
@@ -254,7 +254,7 @@ function handleClearImportFiles(): void {
               @keydown.enter="handleSubmit"
             />
 
-            <p v-if="props.validationError" class="text-error text-base">
+            <p v-if="props.validationError" class="text-error text-sm">
               {{ props.validationError }}
             </p>
           </div>
