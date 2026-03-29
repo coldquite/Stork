@@ -34,7 +34,7 @@ function requestSaveToCloud(): void {
         :aria-label="props.backAriaLabel"
         class="aspect-square shrink-0 justify-center self-stretch p-0"
         :ui="{
-          base: 'h-full text-muted ring-[2px] ring-current/45 hover:text-stork-600 hover:ring-stork-500/70 hover:bg-stork-50 dark:hover:bg-stork-900/20'
+          base: 'h-full text-muted ring-[2px] ring-current/45 hover:text-muted hover:ring-current/45 hover:bg-stork-50 dark:hover:bg-default'
         }"
       />
 
