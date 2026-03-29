@@ -5,6 +5,10 @@ const { locale, t } = useI18n()
 const authStore = useAuthStore()
 const localeHead = useLocaleHead()
 
+if (import.meta.client) {
+  useScheduleAutoSaveToasts()
+}
+
 await callOnce('auth-session', () => authStore.fetchSession())
 
 useHead(() => ({

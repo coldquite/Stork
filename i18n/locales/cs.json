@@ -135,6 +135,14 @@
       "openSavedPlansTitle": "Najít uložený plán",
       "createPlanFromImportTitle": "Vytvořit nový plán z importu"
     },
+    "autosave": {
+      "toast": {
+        "successTitle": "Automatické uložení proběhlo",
+        "successDescription": "Rozpracovaný plán byl úspěšně uložen.",
+        "errorTitle": "Automatické uložení se nepodařilo",
+        "errorRequestFailedDescription": "Nepodařilo se uložit změny. Automatické uložení to za chvíli zkusí znovu."
+      }
+    },
     "plan": {
       "rename": {
         "title": "Přejmenovat plán",
