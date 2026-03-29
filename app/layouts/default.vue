@@ -30,6 +30,13 @@ const {
   isCreatePlanConfirmDialogOpen,
   isCreatePlanNameDialogOpen,
   isCreatingNewPlan,
+  isImportMappingErrorDialogOpen,
+  importMappingError,
+  isTeachersDictionaryResolutionDialogOpen,
+  teachersDictionaryResolutionEntries,
+  teachersDictionaryResolutionFieldErrors,
+  teachersDictionaryResolutionError,
+  isTeachersDictionaryResolutionSubmitDisabled,
   isBrowsePlansDialogOpen,
   isBrowsePlansLoading,
   browsePlansSearchQuery,
@@ -50,6 +57,9 @@ const {
   cancelCreatePlanNameDialog,
   submitCreatePlanName,
   submitCreatePlanImport,
+  cancelTeachersDictionaryResolution,
+  submitTeachersDictionaryResolution,
+  updateTeachersDictionaryResolutionEntry,
   loadMoreManualDrafts,
   loadMoreAutoDrafts
 } = useHomepage()
@@ -223,6 +233,25 @@ async function confirmLogout(): Promise<void> {
       @cancel="cancelCreatePlanNameDialog"
       @submit="submitCreatePlanName"
       @submit-import="submitCreatePlanImport"
+    />
+
+    <CommonImportMappingErrorDialog
+      v-if="isEditorRoute"
+      v-model:open="isImportMappingErrorDialogOpen"
+      :error="importMappingError"
+    />
+
+    <CommonImportTeachersDictionaryResolutionDialog
+      v-if="isEditorRoute"
+      v-model:open="isTeachersDictionaryResolutionDialogOpen"
+      :loading="isCreatingNewPlan"
+      :entries="teachersDictionaryResolutionEntries"
+      :field-errors="teachersDictionaryResolutionFieldErrors"
+      :error="teachersDictionaryResolutionError"
+      :submit-disabled="isTeachersDictionaryResolutionSubmitDisabled"
+      @cancel="cancelTeachersDictionaryResolution"
+      @submit="submitTeachersDictionaryResolution"
+      @update-canonical-name="updateTeachersDictionaryResolutionEntry"
     />
 
     <div class="relative">

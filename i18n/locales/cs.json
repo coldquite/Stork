@@ -78,6 +78,75 @@
             "invalidProgramType": "Soubor nelze zařadit na bakalářské nebo magisterské podle očekávaného sloupce.",
             "levelSwitchBlockedBachelor": "Nahraný soubor odpovídá bakalářskému typu SZZ. Aktuálně jsou ale v importu nahrané soubory pro magisterský typ. Nahrajte odpovídající soubor nebo změňte typ SZZ a nahrajte soubory znovu.",
             "levelSwitchBlockedMaster": "Nahraný soubor odpovídá magisterskému typu SZZ. Aktuálně jsou ale v importu nahrané soubory pro bakalářský typ. Nahrajte odpovídající soubor nebo změňte typ SZZ a nahrajte soubory znovu."
+          },
+          "mappingError": {
+            "title": "Nepodařilo se namapovat importované soubory",
+            "description": "Mapování bylo zastaveno na první chybě. Opravte problém a spusťte import znovu.",
+            "reasonLabel": "Důvod chyby",
+            "fileLabel": "Soubor",
+            "rowLabel": "Řádek",
+            "columnLabel": "Sloupec",
+            "contextLabel": "Technický kontext",
+            "missingValue": "neuvedeno",
+            "closeAction": "Zavřít",
+            "contextKeys": {
+              "reason": "Důvod",
+              "stage": "Fáze",
+              "message": "Detail"
+            },
+            "contextReasons": {
+              "required_value_is_empty": "Povinná hodnota v povinném sloupci je prázdná.",
+              "students_committees_row_reused": "Jeden řádek ve studenti-komise byl použit pro více studentů.",
+              "students_committees_row_without_matching_students_cap": "Ve studenti-komise je řádek bez odpovídajícího studenta v studenti-CAP."
+            },
+            "contextValues": {
+              "stage": {
+                "seed": "Uložení jmen ze studenti-CAP do slovníku",
+                "fetch": "Načtení slovníku učitelů"
+              }
+            },
+            "reasons": {
+              "missingDataset": "Chybí povinný vstupní dataset.",
+              "missingRequiredValue": "Povinná hodnota je prázdná.",
+              "invalidCommitteeName": "Název komise nelze po předzpracování použít.",
+              "duplicateCommitteeName": "Název komise je v souboru komise duplicitní.",
+              "committeeNotFoundInStudents": "Komise ze souboru komise nemá odpovídající záznam ve studenti-komise.",
+              "committeeNotFoundInCommittees": "Komise ze souboru studenti-komise neexistuje v souboru komise.",
+              "committeeGroupInconsistent": "V rámci jedné komise jsou ve studenti-komise nekonzistentní hodnoty.",
+              "committeeFieldMismatch": "Hodnoty mezi komise a studenti-komise se neshodují.",
+              "committeeSzzTypeMismatch": "Typ studia komise neodpovídá vybranému typu SZZ.",
+              "invalidCommitteeDate": "Datum komise není ve formátu DD.MM.YYYY nebo je neplatné.",
+              "invalidStudyProgramType": "Typ studijního programu nelze určit z importovaných dat.",
+              "invalidLanguage": "Hodnota jazyka není podporovaná (jazyk výuky: CZ/EN, jazyk práce: CZ/EN/SL).",
+              "studentMatchNotFound": "Studenta z jednoho souboru nelze jednoznačně najít v druhém souboru.",
+              "studentMatchAmbiguous": "Pro studenta bylo nalezeno více kandidátů, mapování není jednoznačné.",
+              "studentCommitteeNotFound": "Student odkazuje na komisi, která v importu neexistuje.",
+              "studentValueMismatch": "Hodnoty studenta mezi soubory se neshodují.",
+              "invalidThesisSubmissionDate": "Termín odevzdání práce není validní datum.",
+              "studentCommitteeMismatch": "Studijní údaje studenta neodpovídají namapované komisi.",
+              "teachersDictionaryRequestFailed": "Nepodařilo se synchronizovat import se slovníkem učitelů.",
+              "unknown": "Nastala neznámá chyba mapování."
+            }
+          },
+          "teachersDictionaryResolution": {
+            "title": "Doplňte chybějící záznamy slovníku učitelů",
+            "description": "Některá jména se nepodařilo najít ve slovníku. Doplňte správnou podobu jména s tituly pro každý záznam.",
+            "descriptionUsermapPrefix": "Pokud jde o zaměstnance fakulty, doporučujeme při doplňování využít",
+            "descriptionUsermapLinkLabel": "Usermap",
+            "descriptionUsermapSuffix": ".",
+            "hintTitle": "Hromadné ruční doplnění před pokračováním importu",
+            "hintDescription": "Po potvrzení se nové záznamy uloží do perzistentního slovníku pro účely budoucích importů jako ručně zadané a import bude pokračovat.",
+            "sourceValueLabel": "Původní hodnota z importu",
+            "example": {
+              "sourceValue": "Blizničenko Jan Ing. Ph.D. (Vzorec)",
+              "canonicalValue": "Ing. Jan Blizničenko Ph.D."
+            },
+            "inputPlaceholder": "Zadejte jméno s tituly ve správném pořadí (tituly před jménem + jméno + příjmení + tituly za jménem)",
+            "invalidCommaFormat": "Neplatný formát zadané hodnoty (pravděpodobně vloženo z výsledků vyhledávače Usermap, nikoliv z profilu osoby).",
+            "submitAction": "Uložit a pokračovat",
+            "errorTitle": "Doplnění slovníku se nepodařilo",
+            "submitErrorFallback": "Nepodařilo se uložit doplněné záznamy slovníku. Zkuste to prosím znovu.",
+            "unresolvedError": "Ani po doplnění se některé hodnoty nepodařilo přiřadit. Zkontrolujte zadaná jména a zkuste to znovu."
           }
         },
         "nameDialogTitle": "Název nového plánu",

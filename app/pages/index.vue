@@ -23,6 +23,13 @@ const {
   isCreatePlanConfirmDialogOpen,
   isCreatePlanNameDialogOpen,
   isCreatingNewPlan,
+  isImportMappingErrorDialogOpen,
+  importMappingError,
+  isTeachersDictionaryResolutionDialogOpen,
+  teachersDictionaryResolutionEntries,
+  teachersDictionaryResolutionFieldErrors,
+  teachersDictionaryResolutionError,
+  isTeachersDictionaryResolutionSubmitDisabled,
   isBrowsePlansDialogOpen,
   isBrowsePlansLoading,
   browsePlansSearchQuery,
@@ -42,7 +49,10 @@ const {
   confirmCreatePlanConfirm,
   cancelCreatePlanNameDialog,
   submitCreatePlanName,
-  submitCreatePlanImport
+  submitCreatePlanImport,
+  cancelTeachersDictionaryResolution,
+  submitTeachersDictionaryResolution,
+  updateTeachersDictionaryResolutionEntry
 } = useHomepage()
 
 await fetchRecentPlans()
@@ -113,6 +123,20 @@ await fetchRecentPlans()
       @cancel="cancelCreatePlanNameDialog"
       @submit="submitCreatePlanName"
       @submit-import="submitCreatePlanImport"
+    />
+
+    <CommonImportMappingErrorDialog v-model:open="isImportMappingErrorDialogOpen" :error="importMappingError" />
+
+    <CommonImportTeachersDictionaryResolutionDialog
+      v-model:open="isTeachersDictionaryResolutionDialogOpen"
+      :loading="isCreatingNewPlan"
+      :entries="teachersDictionaryResolutionEntries"
+      :field-errors="teachersDictionaryResolutionFieldErrors"
+      :error="teachersDictionaryResolutionError"
+      :submit-disabled="isTeachersDictionaryResolutionSubmitDisabled"
+      @cancel="cancelTeachersDictionaryResolution"
+      @submit="submitTeachersDictionaryResolution"
+      @update-canonical-name="updateTeachersDictionaryResolutionEntry"
     />
 
     <HomepagePlansDialog

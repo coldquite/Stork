@@ -28,7 +28,9 @@ const reasonTranslationKeyByCode: Record<ImportMappingErrorCode, string> = {
   STUDENT_COMMITTEE_NOT_FOUND: 'homepage.actions.create.import.mappingError.reasons.studentCommitteeNotFound',
   STUDENT_VALUE_MISMATCH: 'homepage.actions.create.import.mappingError.reasons.studentValueMismatch',
   INVALID_THESIS_SUBMISSION_DATE: 'homepage.actions.create.import.mappingError.reasons.invalidThesisSubmissionDate',
-  STUDENT_COMMITTEE_MISMATCH: 'homepage.actions.create.import.mappingError.reasons.studentCommitteeMismatch'
+  STUDENT_COMMITTEE_MISMATCH: 'homepage.actions.create.import.mappingError.reasons.studentCommitteeMismatch',
+  TEACHERS_DICTIONARY_REQUEST_FAILED:
+    'homepage.actions.create.import.mappingError.reasons.teachersDictionaryRequestFailed'
 }
 
 const reasonText = computed(() => {
@@ -51,6 +53,11 @@ function formatContextValue(key: string, value: string | number | boolean): stri
     if (te(translationKey)) {
       return t(translationKey)
     }
+  }
+
+  const directTranslationKey = `homepage.actions.create.import.mappingError.contextValues.${key}.${value}`
+  if (te(directTranslationKey)) {
+    return t(directTranslationKey)
   }
 
   return String(value)

@@ -3,17 +3,23 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { TimeScheduleListItemDto } from '#shared/types/time-schedules'
 import type { ImportPayload } from '~/types/import'
 
-const { i18nTranslateMock, importStoreMock, scheduleDraftStoreMock, requestFetchMock } = vi.hoisted(() => ({
+const {
+  i18nTranslateMock,
+  scheduleDraftStoreMock,
+  requestFetchMock,
+  navigateToMock,
+  mapImportPayloadToDraftSourceMock
+} = vi.hoisted(() => ({
   i18nTranslateMock: vi.fn((key: string) => key),
-  importStoreMock: {
-    setImportedPlanDraft: vi.fn()
-  },
   requestFetchMock: vi.fn(),
+  navigateToMock: vi.fn(async () => {}),
+  mapImportPayloadToDraftSourceMock: vi.fn(),
   scheduleDraftStoreMock: {
     hasDraft: false,
     draft: null,
     lastSavedAt: null,
     initializeNewDraft: vi.fn(),
+    initializeFromSource: vi.fn(),
     loadDraftByScheduleId: vi.fn()
   }
 }))
@@ -28,9 +34,13 @@ mockNuxtImport('useRequestFetch', () => {
   return () => requestFetchMock
 })
 
-vi.mock('~/stores/import', () => {
+mockNuxtImport('navigateTo', () => {
+  return navigateToMock
+})
+
+vi.mock('~/utils/import-mapper', () => {
   return {
-    useImportStore: () => importStoreMock
+    mapImportPayloadToDraftSource: mapImportPayloadToDraftSourceMock
   }
 })
 
@@ -87,47 +97,110 @@ function createTimeScheduleListItem(index: number, type: 'MANUAL' | 'AUTO'): Tim
 describe('useHomepage submitCreatePlanImport', () => {
   beforeEach(() => {
     i18nTranslateMock.mockClear()
-    importStoreMock.setImportedPlanDraft.mockReset()
     requestFetchMock.mockReset()
+    requestFetchMock.mockImplementation(async (url: string) => {
+      if (url.startsWith('/api/teachers-dictionary/bulk')) {
+        return {
+          processed: 0,
+          created: 0,
+          updated: 0
+        }
+      }
+
+      if (url === '/api/teachers-dictionary') {
+        return []
+      }
+
+      throw new Error(`Unexpected request URL: ${url}`)
+    })
+    navigateToMock.mockReset()
+    mapImportPayloadToDraftSourceMock.mockReset()
     scheduleDraftStoreMock.initializeNewDraft.mockReset()
+    scheduleDraftStoreMock.initializeFromSource.mockReset()
     scheduleDraftStoreMock.loadDraftByScheduleId.mockReset()
   })
 
-  it('stores import draft and closes create-plan dialog for valid input', async () => {
+  it('maps import payload, initializes draft and navigates to editor for valid input', async () => {
     const { useHomepage } = await import('~/composables/useHomepage')
     const homepage = useHomepage()
     const payload = createImportPayload()
 
+    mapImportPayloadToDraftSourceMock.mockReturnValue({
+      ok: true,
+      draft: {
+        name: 'SZZ plán',
+        type: 'MANUAL',
+        committees: []
+      }
+    })
+
     homepage.isCreatePlanNameDialogOpen.value = true
     homepage.newPlanNameInput.value = 'SZZ plán'
-    homepage.submitCreatePlanImport({
+    await homepage.submitCreatePlanImport({
       payload,
       szzType: 'BACHELOR'
     })
 
-    expect(importStoreMock.setImportedPlanDraft).toHaveBeenCalledTimes(1)
-    expect(importStoreMock.setImportedPlanDraft).toHaveBeenCalledWith('SZZ plán', 'BACHELOR', payload)
+    expect(mapImportPayloadToDraftSourceMock).toHaveBeenCalledTimes(1)
+    const firstMappingCall = mapImportPayloadToDraftSourceMock.mock.calls[0]?.[0]
+    expect(firstMappingCall?.planName).toBe('SZZ plán')
+    expect(firstMappingCall?.szzType).toBe('BACHELOR')
+    expect(firstMappingCall?.payload).toBeTruthy()
+    expect(firstMappingCall?.payload).not.toBe(payload)
+    expect(scheduleDraftStoreMock.initializeFromSource).toHaveBeenCalledTimes(1)
     expect(homepage.isCreatePlanNameDialogOpen.value).toBe(false)
     expect(homepage.newPlanNameError.value).toBeNull()
     expect(homepage.isCreatingNewPlan.value).toBe(false)
+    expect(homepage.isImportMappingErrorDialogOpen.value).toBe(false)
+    expect(navigateToMock).toHaveBeenCalledWith('/editor')
   })
 
-  it('does not store import draft when plan name is invalid', async () => {
+  it('does not map import payload when plan name is invalid', async () => {
     const { useHomepage } = await import('~/composables/useHomepage')
     const homepage = useHomepage()
     const payload = createImportPayload()
 
     homepage.isCreatePlanNameDialogOpen.value = true
     homepage.newPlanNameInput.value = '   '
-    homepage.submitCreatePlanImport({
+    await homepage.submitCreatePlanImport({
       payload,
       szzType: 'MASTER'
     })
 
-    expect(importStoreMock.setImportedPlanDraft).not.toHaveBeenCalled()
-    expect(homepage.newPlanNameError.value).toBe('homepage.actions.create.validation.required')
+    expect(mapImportPayloadToDraftSourceMock).not.toHaveBeenCalled()
+    expect(scheduleDraftStoreMock.initializeFromSource).not.toHaveBeenCalled()
     expect(homepage.isCreatePlanNameDialogOpen.value).toBe(true)
     expect(homepage.isCreatingNewPlan.value).toBe(false)
+  })
+
+  it('opens mapping error dialog when mapping fails', async () => {
+    const { useHomepage } = await import('~/composables/useHomepage')
+    const homepage = useHomepage()
+    const payload = createImportPayload()
+
+    mapImportPayloadToDraftSourceMock.mockReturnValue({
+      ok: false,
+      error: {
+        code: 'STUDENT_MATCH_NOT_FOUND',
+        datasetKey: 'studentsCap',
+        fileName: 'studenti-cap-bc.csv',
+        rowNumber: 12,
+        column: 'Email studenta',
+        context: {}
+      }
+    })
+
+    homepage.isCreatePlanNameDialogOpen.value = true
+    homepage.newPlanNameInput.value = 'SZZ plán'
+    await homepage.submitCreatePlanImport({
+      payload,
+      szzType: 'BACHELOR'
+    })
+
+    expect(scheduleDraftStoreMock.initializeFromSource).not.toHaveBeenCalled()
+    expect(homepage.isImportMappingErrorDialogOpen.value).toBe(true)
+    expect(homepage.importMappingError.value?.code).toBe('STUDENT_MATCH_NOT_FOUND')
+    expect(navigateToMock).not.toHaveBeenCalled()
   })
 
   it('ignores import submit while another open-plan operation is running', async () => {
@@ -139,12 +212,12 @@ describe('useHomepage submitCreatePlanImport', () => {
     homepage.newPlanNameInput.value = 'SZZ plán'
     homepage.isOpeningRecentPlan.value = true
 
-    homepage.submitCreatePlanImport({
+    await homepage.submitCreatePlanImport({
       payload,
       szzType: 'BACHELOR'
     })
 
-    expect(importStoreMock.setImportedPlanDraft).not.toHaveBeenCalled()
+    expect(mapImportPayloadToDraftSourceMock).not.toHaveBeenCalled()
     expect(homepage.isCreatePlanNameDialogOpen.value).toBe(true)
     expect(homepage.isCreatingNewPlan.value).toBe(false)
   })
