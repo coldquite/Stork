@@ -17,6 +17,7 @@ const editorBackToHomepageLabel = computed(() => t('editor.navigation.backToHome
 const editorOpenSavedPlansLabel = computed(() => t('editor.navigation.openSavedPlansTitle'))
 const editorCreatePlanFromImportLabel = computed(() => t('editor.navigation.createPlanFromImportTitle'))
 const headerActionButtonClass = 'hover:bg-primary/20 hover:ring-primary/40'
+const editorHeaderActionButtonClass = `${headerActionButtonClass} whitespace-nowrap shrink-0`
 
 const {
   manualDrafts,
@@ -85,7 +86,7 @@ async function confirmLogout(): Promise<void> {
               variant="subtle"
               icon="i-lucide-house"
               :aria-label="editorBackToHomepageLabel"
-              :class="headerActionButtonClass"
+              :class="editorHeaderActionButtonClass"
               :ui="{ leadingIcon: 'text-toned' }"
             >
               {{ editorBackToHomepageLabel }}
@@ -96,7 +97,7 @@ async function confirmLogout(): Promise<void> {
               variant="subtle"
               icon="i-lucide-circle-plus"
               :aria-label="editorCreatePlanFromImportLabel"
-              :class="headerActionButtonClass"
+              :class="editorHeaderActionButtonClass"
               :ui="{ leadingIcon: 'text-toned' }"
               @click="requestCreatePlan"
             >
@@ -108,7 +109,7 @@ async function confirmLogout(): Promise<void> {
               variant="subtle"
               icon="i-lucide-folder-open"
               :aria-label="editorOpenSavedPlansLabel"
-              :class="headerActionButtonClass"
+              :class="editorHeaderActionButtonClass"
               :ui="{ leadingIcon: 'text-toned' }"
               @click="requestBrowsePlans"
             >
