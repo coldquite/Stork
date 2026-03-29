@@ -16,7 +16,8 @@ export function useScheduleAutoSaveToasts(): void {
         title: t('editor.autosave.toast.successTitle'),
         description: t('editor.autosave.toast.successDescription'),
         color: 'primary',
-        icon: 'i-lucide-cloud-upload'
+        icon: 'i-lucide-cloud-upload',
+        duration: 10_000
       })
     }
   )
@@ -32,7 +33,8 @@ export function useScheduleAutoSaveToasts(): void {
         title: t('editor.autosave.toast.errorTitle'),
         description: t('editor.autosave.toast.errorRequestFailedDescription'),
         color: 'error',
-        icon: 'i-lucide-cloud-alert'
+        icon: 'i-lucide-cloud-alert',
+        duration: 10_000
       })
     }
   )

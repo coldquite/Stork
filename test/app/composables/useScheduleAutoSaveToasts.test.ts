@@ -72,7 +72,8 @@ describe('useScheduleAutoSaveToasts', () => {
       title: 'editor.autosave.toast.successTitle',
       description: 'editor.autosave.toast.successDescription',
       color: 'primary',
-      icon: 'i-lucide-check-circle'
+      icon: 'i-lucide-cloud-upload',
+      duration: 10000
     })
   })
 
@@ -90,7 +91,8 @@ describe('useScheduleAutoSaveToasts', () => {
       title: 'editor.autosave.toast.errorTitle',
       description: 'editor.autosave.toast.errorRequestFailedDescription',
       color: 'error',
-      icon: 'i-lucide-circle-alert'
+      icon: 'i-lucide-cloud-alert',
+      duration: 10000
     })
   })
 

@@ -199,7 +199,9 @@ describe('useImportForm', () => {
     const { importFileStates, handleImportFileChange } = useImportForm(selectedSzzType)
 
     await handleImportFileChange(
-      createFileChangeEvent(createCsvFile('studentsCommittees', 'studenti-komise-bc.csv', { 'St. program - typ': 'B' })),
+      createFileChangeEvent(
+        createCsvFile('studentsCommittees', 'studenti-komise-bc.csv', { 'St. program - typ': 'B' })
+      ),
       'studentsCommitteesSingle'
     )
     await handleImportFileChange(createFileChangeEvent(createCsvFile('committees', 'komise.csv')), 'committees')

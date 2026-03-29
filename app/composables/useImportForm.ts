@@ -213,10 +213,7 @@ export function useImportForm(selectedSzzType: Ref<ImportSzzType>) {
     ).length
   }
 
-  function hasConflictingSingleModeStudentFile(
-    sourceKey: ImportFieldKey,
-    targetStudyLevel: ImportStudyLevel
-  ): boolean {
+  function hasConflictingSingleModeStudentFile(sourceKey: ImportFieldKey, targetStudyLevel: ImportStudyLevel): boolean {
     for (const key of SINGLE_MODE_STUDENT_FIELD_KEYS) {
       if (key === sourceKey) {
         continue
