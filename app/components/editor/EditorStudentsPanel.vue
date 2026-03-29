@@ -40,10 +40,11 @@ const localStudents = ref<StudentRow[]>([])
 const roomInputValue = ref('')
 const secretaryInputValue = ref('')
 const calendarModelValue = ref<unknown>(undefined)
-const actionButtonClass = 'shrink-0 px-2'
-const actionButtonUi = {
-  base: 'text-muted ring-[2px] ring-current/45 hover:text-secondary hover:ring-current/80'
+const renameActionButtonClass = 'shrink-0 px-2'
+const renameActionButtonUi = {
+  base: '!text-capaccent-800 ring-[2px] ring-capaccent-300/80 hover:!text-capaccent-800 hover:ring-capaccent-500 hover:bg-capaccent-50 dark:!text-capaccent-100 dark:ring-capaccent-400/80 dark:hover:!text-capaccent-100 dark:hover:bg-capaccent-500/25'
 }
+const actionButtonClass = 'shrink-0 px-2'
 const deleteActionButtonUi = {
   base: 'text-error/80 ring-[2px] ring-current/45 hover:text-error hover:ring-current/80'
 }
@@ -191,8 +192,8 @@ if (import.meta.client) {
                 size="sm"
                 icon="i-lucide-pencil"
                 :aria-label="props.renameCommitteeAriaLabel"
-                :class="actionButtonClass"
-                :ui="actionButtonUi"
+                :class="renameActionButtonClass"
+                :ui="renameActionButtonUi"
                 @click="requestRenameCommittee"
               />
 

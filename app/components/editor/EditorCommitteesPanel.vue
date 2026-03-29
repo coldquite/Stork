@@ -44,11 +44,11 @@ function requestCreateCommittee(): void {
           </p>
         </div>
         <UBadge
-          color="secondary"
+          color="neutral"
           variant="outline"
           size="lg"
           leading-icon="i-lucide-scale"
-          class="bg-default self-stretch px-2.5 text-base font-semibold ring-[2px] ring-current/45"
+          class="bg-default self-stretch px-2.5 text-base font-semibold !text-capaccent-800 ring-[2px] ring-capaccent-300/80 dark:!text-capaccent-100 dark:ring-capaccent-400/80"
         >
           {{ props.committeesCount }}
         </UBadge>
