@@ -6,10 +6,18 @@ interface HomepagePlansDialogProps {
   manualDrafts: HomepagePlanListItem[]
   autoDrafts: HomepagePlanListItem[]
   isLoading: boolean
+  hasMoreManualDrafts: boolean
+  hasMoreAutoDrafts: boolean
+  isManualLoadMoreLoading: boolean
+  isAutoLoadMoreLoading: boolean
 }
 
 defineProps<HomepagePlansDialogProps>()
-const emit = defineEmits<{ openPlan: [plan: HomepagePlanListItem] }>()
+const emit = defineEmits<{
+  openPlan: [plan: HomepagePlanListItem]
+  loadMoreManual: []
+  loadMoreAuto: []
+}>()
 
 const open = defineModel<boolean>('open', { default: false })
 const { t } = useI18n()
@@ -40,6 +48,14 @@ function formatUpdatedAt(value: string): string {
 
 function handleOpenPlan(plan: HomepagePlanListItem): void {
   emit('openPlan', plan)
+}
+
+function handleLoadMoreManual(): void {
+  emit('loadMoreManual')
+}
+
+function handleLoadMoreAuto(): void {
+  emit('loadMoreAuto')
 }
 </script>
 
@@ -94,6 +110,20 @@ function handleOpenPlan(plan: HomepagePlanListItem): void {
                 </div>
               </div>
             </UCard>
+
+            <div v-if="hasMoreManualDrafts" class="flex justify-center pt-2">
+              <UButton
+                color="primary"
+                variant="solid"
+                size="sm"
+                class="min-w-44 justify-center"
+                :loading="isManualLoadMoreLoading"
+                :disabled="isManualLoadMoreLoading"
+                @click="handleLoadMoreManual"
+              >
+                {{ t('homepage.plansModal.loadMore') }}
+              </UButton>
+            </div>
           </div>
         </template>
 
@@ -136,6 +166,20 @@ function handleOpenPlan(plan: HomepagePlanListItem): void {
                 </div>
               </div>
             </UCard>
+
+            <div v-if="hasMoreAutoDrafts" class="flex justify-center pt-2">
+              <UButton
+                color="primary"
+                variant="solid"
+                size="sm"
+                class="min-w-44 justify-center"
+                :loading="isAutoLoadMoreLoading"
+                :disabled="isAutoLoadMoreLoading"
+                @click="handleLoadMoreAuto"
+              >
+                {{ t('homepage.plansModal.loadMore') }}
+              </UButton>
+            </div>
           </div>
         </template>
       </UTabs>

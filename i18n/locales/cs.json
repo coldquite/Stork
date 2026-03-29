@@ -105,6 +105,7 @@
       },
       "updatedAt": "Aktualizováno:",
       "loading": "Načítám uložené plány...",
+      "loadMore": "Načíst dalších 20",
       "autoBadge": "Auto uložení",
       "emptyTitle": "Zatím zde nejsou žádné plány",
       "emptyDescription": "Jakmile uložíte plán, zobrazí se na tomto místě."

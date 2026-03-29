@@ -25,10 +25,16 @@ const {
   isCreatingNewPlan,
   isBrowsePlansDialogOpen,
   isBrowsePlansLoading,
+  isManualLoadMoreLoading,
+  isAutoLoadMoreLoading,
+  hasMoreManualDrafts,
+  hasMoreAutoDrafts,
   newPlanNameInput,
   newPlanNameError,
   requestCreatePlan,
   requestBrowsePlans,
+  loadMoreManualDrafts,
+  loadMoreAutoDrafts,
   requestRestoreDraft,
   cancelCreatePlanConfirm,
   confirmCreatePlanConfirm,
@@ -104,7 +110,13 @@ await fetchRecentPlans()
       :manual-drafts="manualDrafts"
       :auto-drafts="autoDrafts"
       :is-loading="isBrowsePlansLoading"
+      :is-manual-load-more-loading="isManualLoadMoreLoading"
+      :is-auto-load-more-loading="isAutoLoadMoreLoading"
+      :has-more-manual-drafts="hasMoreManualDrafts"
+      :has-more-auto-drafts="hasMoreAutoDrafts"
       @open-plan="requestOpenBrowsePlan"
+      @load-more-manual="loadMoreManualDrafts"
+      @load-more-auto="loadMoreAutoDrafts"
     />
   </UContainer>
 </template>

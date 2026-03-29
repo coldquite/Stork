@@ -10,6 +10,8 @@ import type { ImportPayload, ImportSzzType } from '~/types/import'
 export const HOMEPAGE_NEW_PLAN_NAME_MAX_LENGTH = 120
 const HOMEPAGE_BROWSE_PLANS_PAGE_SIZE = 20
 
+type BrowsePlansTabKey = 'manual' | 'auto'
+
 export function useHomepage() {
   const { t } = useI18n()
   const importStore = useImportStore()
@@ -32,11 +34,19 @@ export function useHomepage() {
 
   const isBrowsePlansDialogOpen = ref(false)
   const isBrowsePlansLoading = ref(false)
-  let browsePlansRequestId = 0
+  const isManualLoadMoreLoading = ref(false)
+  const isAutoLoadMoreLoading = ref(false)
 
   const manualDrafts = ref<HomepagePlanListItem[]>([])
   const autoDrafts = ref<HomepagePlanListItem[]>([])
+  const hasMoreManualDrafts = ref(false)
+  const hasMoreAutoDrafts = ref(false)
+  const manualDraftsPage = ref(0)
+  const autoDraftsPage = ref(0)
   const isClientReady = ref(false)
+
+  let manualBrowseRequestId = 0
+  let autoBrowseRequestId = 0
 
   onMounted(() => {
     isClientReady.value = true
@@ -157,46 +167,165 @@ export function useHomepage() {
     }
   }
 
-  async function fetchDraftsByType(type: TimeScheduleTypeDto): Promise<HomepagePlanListItem[]> {
-    const requestFetch = useRequestFetch()
-    const plans = await requestFetch<TimeScheduleListItemDto[]>(
-      `/api/time-schedules?page=1&pageSize=${HOMEPAGE_BROWSE_PLANS_PAGE_SIZE}&type=${type}`
-    )
-
-    return plans.map((plan) => ({
+  function toHomepagePlanListItem(plan: TimeScheduleListItemDto): HomepagePlanListItem {
+    return {
       id: plan.id,
       name: plan.name,
       updatedAt: plan.createdAt,
       committeesCount: plan.counts.committees,
       studentsCount: plan.counts.students
-    }))
+    }
+  }
+
+  function getTabRequestIdRef(tab: BrowsePlansTabKey): number {
+    return tab === 'manual' ? manualBrowseRequestId : autoBrowseRequestId
+  }
+
+  function nextTabRequestId(tab: BrowsePlansTabKey): number {
+    if (tab === 'manual') {
+      manualBrowseRequestId += 1
+      return manualBrowseRequestId
+    }
+
+    autoBrowseRequestId += 1
+    return autoBrowseRequestId
+  }
+
+  function isTabRequestCurrent(tab: BrowsePlansTabKey, requestId: number): boolean {
+    return getTabRequestIdRef(tab) === requestId
+  }
+
+  function setTabLoadMoreLoading(tab: BrowsePlansTabKey, loading: boolean): void {
+    if (tab === 'manual') {
+      isManualLoadMoreLoading.value = loading
+      return
+    }
+
+    isAutoLoadMoreLoading.value = loading
+  }
+
+  function updateTabDraftPage(tab: BrowsePlansTabKey, page: number): void {
+    if (tab === 'manual') {
+      manualDraftsPage.value = page
+      return
+    }
+
+    autoDraftsPage.value = page
+  }
+
+  function getTabDraftPage(tab: BrowsePlansTabKey): number {
+    return tab === 'manual' ? manualDraftsPage.value : autoDraftsPage.value
+  }
+
+  function getTabHasMore(tab: BrowsePlansTabKey): boolean {
+    return tab === 'manual' ? hasMoreManualDrafts.value : hasMoreAutoDrafts.value
+  }
+
+  function setTabHasMore(tab: BrowsePlansTabKey, hasMore: boolean): void {
+    if (tab === 'manual') {
+      hasMoreManualDrafts.value = hasMore
+      return
+    }
+
+    hasMoreAutoDrafts.value = hasMore
+  }
+
+  function appendTabDrafts(tab: BrowsePlansTabKey, drafts: HomepagePlanListItem[]): void {
+    if (tab === 'manual') {
+      manualDrafts.value = [...manualDrafts.value, ...drafts]
+      return
+    }
+
+    autoDrafts.value = [...autoDrafts.value, ...drafts]
+  }
+
+  function resolveScheduleTypeByTab(tab: BrowsePlansTabKey): TimeScheduleTypeDto {
+    return tab === 'manual' ? 'MANUAL' : 'AUTO'
+  }
+
+  async function fetchDraftsByType(type: TimeScheduleTypeDto, page: number): Promise<HomepagePlanListItem[]> {
+    const requestFetch = useRequestFetch()
+    const plans = await requestFetch<TimeScheduleListItemDto[]>(
+      `/api/time-schedules?page=${page}&pageSize=${HOMEPAGE_BROWSE_PLANS_PAGE_SIZE}&type=${type}`
+    )
+
+    return plans.map((plan) => toHomepagePlanListItem(plan))
   }
 
   async function refreshBrowsePlans(): Promise<void> {
-    const requestId = ++browsePlansRequestId
     isBrowsePlansLoading.value = true
+    isManualLoadMoreLoading.value = false
+    isAutoLoadMoreLoading.value = false
     manualDrafts.value = []
     autoDrafts.value = []
+    hasMoreManualDrafts.value = false
+    hasMoreAutoDrafts.value = false
+    manualDraftsPage.value = 0
+    autoDraftsPage.value = 0
+
+    const manualRequestId = nextTabRequestId('manual')
+    const autoRequestId = nextTabRequestId('auto')
 
     try {
-      const [manualPlans, autoPlans] = await Promise.all([fetchDraftsByType('MANUAL'), fetchDraftsByType('AUTO')])
+      const [manualPlans, autoPlans] = await Promise.all([fetchDraftsByType('MANUAL', 1), fetchDraftsByType('AUTO', 1)])
 
-      if (requestId !== browsePlansRequestId) {
+      if (!isTabRequestCurrent('manual', manualRequestId) || !isTabRequestCurrent('auto', autoRequestId)) {
         return
       }
 
       manualDrafts.value = manualPlans
       autoDrafts.value = autoPlans
+      manualDraftsPage.value = 1
+      autoDraftsPage.value = 1
+      hasMoreManualDrafts.value = manualPlans.length === HOMEPAGE_BROWSE_PLANS_PAGE_SIZE
+      hasMoreAutoDrafts.value = autoPlans.length === HOMEPAGE_BROWSE_PLANS_PAGE_SIZE
     } catch {
-      if (requestId !== browsePlansRequestId) {
+      if (!isTabRequestCurrent('manual', manualRequestId) || !isTabRequestCurrent('auto', autoRequestId)) {
         return
       }
 
       manualDrafts.value = []
       autoDrafts.value = []
+      hasMoreManualDrafts.value = false
+      hasMoreAutoDrafts.value = false
+      manualDraftsPage.value = 0
+      autoDraftsPage.value = 0
     } finally {
-      if (requestId === browsePlansRequestId) {
+      if (isTabRequestCurrent('manual', manualRequestId) && isTabRequestCurrent('auto', autoRequestId)) {
         isBrowsePlansLoading.value = false
+      }
+    }
+  }
+
+  async function loadMoreBrowsePlans(tab: BrowsePlansTabKey): Promise<void> {
+    if (isBrowsePlansLoading.value || !getTabHasMore(tab)) {
+      return
+    }
+
+    if ((tab === 'manual' && isManualLoadMoreLoading.value) || (tab === 'auto' && isAutoLoadMoreLoading.value)) {
+      return
+    }
+
+    const nextPage = getTabDraftPage(tab) + 1
+    const requestId = nextTabRequestId(tab)
+    setTabLoadMoreLoading(tab, true)
+
+    try {
+      const plans = await fetchDraftsByType(resolveScheduleTypeByTab(tab), nextPage)
+      if (!isTabRequestCurrent(tab, requestId)) {
+        return
+      }
+
+      appendTabDrafts(tab, plans)
+      updateTabDraftPage(tab, nextPage)
+      setTabHasMore(tab, plans.length === HOMEPAGE_BROWSE_PLANS_PAGE_SIZE)
+    } catch {
+      if (!isTabRequestCurrent(tab, requestId)) {
+        return
+      }
+    } finally {
+      if (isTabRequestCurrent(tab, requestId)) {
+        setTabLoadMoreLoading(tab, false)
       }
     }
   }
@@ -204,6 +333,14 @@ export function useHomepage() {
   function requestBrowsePlans(): void {
     isBrowsePlansDialogOpen.value = true
     void refreshBrowsePlans()
+  }
+
+  function loadMoreManualDrafts(): void {
+    void loadMoreBrowsePlans('manual')
+  }
+
+  function loadMoreAutoDrafts(): void {
+    void loadMoreBrowsePlans('auto')
   }
 
   function requestRestoreDraft(): void {
@@ -371,10 +508,16 @@ export function useHomepage() {
     isCreatingNewPlan,
     isBrowsePlansDialogOpen,
     isBrowsePlansLoading,
+    isManualLoadMoreLoading,
+    isAutoLoadMoreLoading,
+    hasMoreManualDrafts,
+    hasMoreAutoDrafts,
     newPlanNameInput,
     newPlanNameError,
     requestCreatePlan,
     requestBrowsePlans,
+    loadMoreManualDrafts,
+    loadMoreAutoDrafts,
     requestRestoreDraft,
     cancelCreatePlanConfirm,
     confirmCreatePlanConfirm,
