@@ -50,6 +50,14 @@ await fetchRecentPlans()
 
 <template>
   <UContainer class="max-w-5xl py-14">
+    <div v-if="isOpeningRecentPlan" class="bg-default/70 fixed inset-0 z-50 backdrop-blur-[1px]">
+      <CommonAppLoadingState
+        :label="t('homepage.recent.openingPlan')"
+        min-height-class="min-h-screen"
+        container-class="px-4"
+      />
+    </div>
+
     <header class="mb-12 text-center">
       <h1 class="mx-auto mb-3 max-w-[20ch]">
         {{ t('homepage.title') }}

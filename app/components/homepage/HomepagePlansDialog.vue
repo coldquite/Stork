@@ -96,12 +96,7 @@ function handleLoadMoreAuto(): void {
         />
       </div>
 
-      <div v-if="isLoading" class="flex min-h-90 flex-col items-center justify-center gap-3">
-        <UIcon name="i-lucide-loader-circle" class="text-primary size-10 animate-spin" />
-        <p class="text-muted text-sm">
-          {{ t('homepage.plansModal.loading') }}
-        </p>
-      </div>
+      <CommonAppLoadingState v-if="isLoading" :label="t('homepage.plansModal.loading')" min-height-class="min-h-90" />
 
       <UTabs v-else :items="tabs" class="homepage-plans-tabs border-default mb-2 border-b pb-3">
         <template #manual>

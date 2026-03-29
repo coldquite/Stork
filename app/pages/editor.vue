@@ -60,12 +60,7 @@ const cloudSaveAriaLabel = computed(() => t('editor.plan.cloudSave.ariaLabel', {
 
 <template>
   <UContainer class="w-[99vw] max-w-none py-10">
-    <div v-if="isPageLoading" class="flex min-h-[60vh] flex-col items-center justify-center gap-3">
-      <UIcon name="i-lucide-loader-circle" class="text-primary size-10 animate-spin" />
-      <p class="text-muted text-sm">
-        {{ t('editor.loading') }}
-      </p>
-    </div>
+    <CommonAppLoadingState v-if="isPageLoading" :label="t('editor.loading')" />
 
     <div v-else class="space-y-6">
       <EditorPageHeader
