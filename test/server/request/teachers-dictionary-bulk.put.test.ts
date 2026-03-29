@@ -3,7 +3,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { prisma } from '#server/utils/db'
 import type { PutTeachersDictionaryBulkResponseDto } from '#shared/types/teachers-dictionary'
-import { buildTeachersDictionaryLookupKey } from '#server/utils/teachers-dictionary/lookup-key'
+import { buildTeachersDictionaryLookupKey } from '#shared/utils/teachers-dictionary'
 import { apiUrl, createAuthCookie } from './_helpers'
 
 type UpsertEntry = {

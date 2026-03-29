@@ -2,7 +2,7 @@
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { prisma } from '#server/utils/db'
-import { buildTeachersDictionaryLookupKey } from '#server/utils/teachers-dictionary/lookup-key'
+import { buildTeachersDictionaryLookupKey } from '#shared/utils/teachers-dictionary'
 import { apiUrl, createAuthCookie } from './_helpers'
 
 const DELETE_TEST_CANONICAL_NAME = 'Ing. Marek Suchánek Ph.D. et Ph.D.'

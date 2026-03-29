@@ -5,7 +5,7 @@ import type {
   PutTeachersDictionaryBulkRequestDto,
   PutTeachersDictionaryBulkResponseDto
 } from '#shared/types/teachers-dictionary'
-import { buildTeachersDictionaryLookupKey } from '#server/utils/teachers-dictionary/lookup-key'
+import { buildTeachersDictionaryLookupKey } from '#shared/utils/teachers-dictionary'
 
 function normalizeWriteError(error: unknown): never {
   if (isError(error)) {

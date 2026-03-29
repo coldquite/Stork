@@ -1,7 +1,7 @@
 import { createError } from 'h3'
 import { z } from 'zod'
 import type { PutTeachersDictionaryBulkRequestDto } from '#shared/types/teachers-dictionary'
-import { buildTeachersDictionaryLookupKey } from '#server/utils/teachers-dictionary/lookup-key'
+import { buildTeachersDictionaryLookupKey } from '#shared/utils/teachers-dictionary'
 
 const nonEmptyTrimmedStringSchema = z.string().trim().min(1, {
   message: 'must have at least 1 non-whitespace character'

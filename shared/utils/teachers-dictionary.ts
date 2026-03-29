@@ -3,8 +3,12 @@ const LOOKUP_KEY_NON_BREAKING_SPACES_PATTERN = /[\u00A0\u202F]/g
 const LOOKUP_KEY_SPLIT_PATTERN = /\s+/g
 const LOOKUP_KEY_LOCALE = 'cs-CZ'
 
+export function normalizeTeachersDictionaryCanonicalName(value: string): string {
+  return value.replace(/\s+/g, ' ').trim()
+}
+
 export function buildTeachersDictionaryLookupKey(canonicalName: string): string {
-  const tokens = canonicalName
+  const tokens = normalizeTeachersDictionaryCanonicalName(canonicalName)
     .normalize('NFKC')
     .replace(LOOKUP_KEY_NON_BREAKING_SPACES_PATTERN, ' ')
     .replace(/\./g, '')

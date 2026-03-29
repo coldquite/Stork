@@ -1,7 +1,7 @@
 // @vitest-environment node
 
 import { describe, expect, it } from 'vitest'
-import { buildTeachersDictionaryLookupKey } from '#server/utils/teachers-dictionary/lookup-key'
+import { buildTeachersDictionaryLookupKey } from '#shared/utils/teachers-dictionary'
 
 const MAREK_SUCHANEK_KEY = 'et ing marek phd phd suchánek'
 const MAREK_SUCHANEK_NO_ET_KEY = 'ing marek phd suchánek'

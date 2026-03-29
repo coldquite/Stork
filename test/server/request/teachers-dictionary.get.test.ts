@@ -2,8 +2,8 @@
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import type { GetTeachersDictionaryResponseDto } from '#shared/types/teachers-dictionary'
+import { buildTeachersDictionaryLookupKey } from '#shared/utils/teachers-dictionary'
 import { prisma } from '#server/utils/db'
-import { buildTeachersDictionaryLookupKey } from '#server/utils/teachers-dictionary/lookup-key'
 import { apiUrl, createAuthCookie } from './_helpers'
 
 type UpsertEntry = {
