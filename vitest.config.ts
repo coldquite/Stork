@@ -6,6 +6,7 @@ export default defineVitestConfig({
     include: ['test/**/*.test.ts'],
     fileParallelism: false,
     passWithNoTests: true,
+    setupFiles: ['./test/setup/vitest.setup.ts'],
     environmentOptions: {
       nuxt: {
         domEnvironment: 'happy-dom'

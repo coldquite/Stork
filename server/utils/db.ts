@@ -1,8 +1,36 @@
-import { PrismaPg } from '@prisma/adapter-pg'
+import { createRequire } from 'node:module'
 import { PrismaClient } from '~~/prisma/generated/client/client'
 
+const require = createRequire(import.meta.url)
+const { PrismaPg } = require('@prisma/adapter-pg') as typeof import('@prisma/adapter-pg')
+
+function resolveDatabaseUrl(): string {
+  const databaseUrl = process.env.DATABASE_URL
+  if (!databaseUrl || databaseUrl.trim().length === 0) {
+    throw new Error('Missing DATABASE_URL environment variable')
+  }
+
+  try {
+    const parsedUrl = new URL(databaseUrl)
+    const isPostgresProtocol = parsedUrl.protocol === 'postgres:' || parsedUrl.protocol === 'postgresql:'
+    if (isPostgresProtocol && parsedUrl.password.length === 0) {
+      throw new Error(
+        'DATABASE_URL contains an empty password. Set POSTGRES_PASSWORD and ensure special characters are URL-encoded.'
+      )
+    }
+  } catch (error: unknown) {
+    if (error instanceof TypeError) {
+      throw new Error('DATABASE_URL is not a valid URL')
+    }
+
+    throw error
+  }
+
+  return databaseUrl
+}
+
 const prismaClientSingleton = () => {
-  const pool = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
+  const pool = new PrismaPg({ connectionString: resolveDatabaseUrl() })
   return new PrismaClient({ adapter: pool })
 }
 
