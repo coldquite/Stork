@@ -1,0 +1,73 @@
+import { createError } from 'h3'
+import { z } from 'zod'
+import type { PutTeachersDictionaryBulkRequestDto } from '#shared/types/teachers-dictionary'
+import { buildTeachersDictionaryLookupKey } from '#server/utils/teachers-dictionary/lookup-key'
+
+const nonEmptyTrimmedStringSchema = z.string().trim().min(1, {
+  message: 'must have at least 1 non-whitespace character'
+})
+
+const upsertTeachersDictionaryEntrySchema = z.object({
+  canonicalName: nonEmptyTrimmedStringSchema,
+  isCustom: z.boolean().optional().default(false)
+})
+
+const putTeachersDictionaryBulkPayloadSchema = z
+  .array(upsertTeachersDictionaryEntrySchema)
+  .superRefine((entries, context) => {
+    entries.forEach((entry, index) => {
+      const normalizedLookupKey = buildTeachersDictionaryLookupKey(entry.canonicalName)
+      if (normalizedLookupKey.length === 0) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: [index, 'canonicalName'],
+          message: 'must contain at least 1 token after lookup key normalization'
+        })
+      }
+    })
+  })
+
+function formatIssuePath(path: readonly PropertyKey[]): string {
+  if (path.length === 0) {
+    return 'payload'
+  }
+
+  let result = 'payload'
+  for (const segment of path) {
+    if (typeof segment === 'number') {
+      result += `[${segment}]`
+      continue
+    }
+
+    if (typeof segment === 'symbol') {
+      result += '.[symbol]'
+      continue
+    }
+
+    result += `.${segment}`
+  }
+
+  return result
+}
+
+function invalidPayload(reason: string): never {
+  throw createError({
+    statusCode: 400,
+    statusMessage: `Invalid teachers dictionary payload: ${reason}`
+  })
+}
+
+export function parsePutTeachersDictionaryBulkPayload(payload: unknown): PutTeachersDictionaryBulkRequestDto {
+  const parseResult = putTeachersDictionaryBulkPayloadSchema.safeParse(payload)
+
+  if (!parseResult.success) {
+    const firstIssue = parseResult.error.issues[0]
+    if (!firstIssue) {
+      invalidPayload('unknown validation error')
+    }
+
+    invalidPayload(`${formatIssuePath(firstIssue.path)} ${firstIssue.message}`)
+  }
+
+  return parseResult.data as PutTeachersDictionaryBulkRequestDto
+}
