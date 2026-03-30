@@ -147,3 +147,17 @@ model PauseItem {
   label           String
   durationMinutes Int    @default(20)
 }
+
+model TeachersDictionary {
+  id String @id @default(cuid())
+
+  // Canonical display value, for example: "Ing. Marek Suchánek Ph.D. et Ph.D."
+  canonicalName       String
+  // Lookup key generated via token normalization and sorting for order-independent matching
+  normalizedLookupKey String @unique
+
+  // true for entries created manually in the app, false for imported records.
+  isCustom Boolean @default(false)
+
+  @@index([isCustom])
+}
