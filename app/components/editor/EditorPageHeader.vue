@@ -26,17 +26,7 @@ function requestSaveToCloud(): void {
 <template>
   <div class="flex flex-col gap-3 sm:flex-row sm:items-stretch">
     <div class="flex min-w-0 flex-1 items-stretch gap-3">
-      <UButton
-        to="/"
-        color="neutral"
-        variant="ghost"
-        icon="i-lucide-undo-2"
-        :aria-label="props.backAriaLabel"
-        class="aspect-square shrink-0 cursor-pointer justify-center self-stretch p-0"
-        :ui="{
-          base: 'h-full text-muted ring-[2px] ring-current/45 hover:text-muted hover:ring-current/45 hover:bg-stork-50 dark:hover:bg-default'
-        }"
-      />
+      <CommonAppBackToHomepageIconButton :aria-label="props.backAriaLabel" />
 
       <div class="min-w-0 flex-1">
         <p class="text-muted text-xl font-medium">
