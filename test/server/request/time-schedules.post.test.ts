@@ -1,32 +1,31 @@
 // @vitest-environment node
 
-import { describe, expect, it } from 'vitest'
-import type {
-  PostTimeScheduleRequestDto,
-  PostTimeScheduleResponseDto,
-  TimeScheduleDto
-} from '#shared/types/time-schedules'
-import { apiUrl, createAuthCookie, createUniqueSuffix } from './_helpers'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { prisma } from '#server/utils/db'
+import type { PostTimeScheduleRequestDto, PostTimeScheduleResponseDto } from '#shared/types/time-schedules'
+import { apiUrl, createAuthCookie } from './_helpers'
 
-function createPostPayload(suffix: string): PostTimeScheduleRequestDto {
+const TEST_NAME_PREFIX = '__IT_TIME_SCHEDULE_POST__'
+
+function createPostPayload(nameSuffix: string): PostTimeScheduleRequestDto {
   return {
-    name: `Nový plán ${suffix}`,
+    name: `${TEST_NAME_PREFIX} Nový plán ${nameSuffix}`,
     type: 'MANUAL',
     committees: [
       {
-        name: `1-NI-SI-${suffix}`,
+        name: `1-NI-SI-${nameSuffix}`,
         startMinute: 525,
         date: '2026-06-10T00:00:00.000Z',
         room: 'TH:A-1435',
         secretaryName: 'Sekretář 1',
         invigilators: ['Dozor A', 'Dozor B'],
         language: 'CZECH',
-        studyProgramName: `Study program ${suffix}`,
+        studyProgramName: `Study program ${nameSuffix}`,
         studyProgramType: 'BACHELOR',
-        specializationName: `Specialization ${suffix}`,
-        specializationCode: `SPEC-${suffix}`,
-        defenseDepartmentCode: `KAT-${suffix}`,
-        defenseDepartmentName: `Department ${suffix}`,
+        specializationName: `Specialization ${nameSuffix}`,
+        specializationCode: `SPEC-${nameSuffix}`,
+        defenseDepartmentCode: `KAT-${nameSuffix}`,
+        defenseDepartmentName: `Department ${nameSuffix}`,
         chairName: 'Předseda',
         viceChairName: 'Místopředseda',
         member1Name: 'Člen 1',
@@ -37,24 +36,24 @@ function createPostPayload(suffix: string): PostTimeScheduleRequestDto {
             type: 'STUDENT' as const,
             position: 0,
             student: {
-              personalNumber: `A${suffix}`,
+              personalNumber: `A${nameSuffix}`,
               firstName: 'Jan',
               lastName: 'Novák',
               titlesBefore: 'Bc.',
               titlesAfter: null,
-              thesisTitleLocal: `Lokální název ${suffix}`,
-              thesisTitleEn: `English title ${suffix}`,
+              thesisTitleLocal: `Lokální název ${nameSuffix}`,
+              thesisTitleEn: `English title ${nameSuffix}`,
               thesisLanguage: 'CZECH' as const,
               supervisorName: 'Vedoucí',
               reviewerName: 'Oponent',
               additionalSupervisorName: null,
               additionalReviewerName: null,
-              studyProgramName: `Study program ${suffix}`,
+              studyProgramName: `Study program ${nameSuffix}`,
               studyProgramType: 'BACHELOR' as const,
-              specializationName: `Specialization ${suffix}`,
-              specializationCode: `SPEC-${suffix}`,
-              defenseDepartmentCode: `KAT-${suffix}`,
-              defenseDepartmentName: `Department ${suffix}`,
+              specializationName: `Specialization ${nameSuffix}`,
+              specializationCode: `SPEC-${nameSuffix}`,
+              defenseDepartmentCode: `KAT-${nameSuffix}`,
+              defenseDepartmentName: `Department ${nameSuffix}`,
               studyLanguage: 'CZECH' as const,
               thesisSubmissionAt: '2026-06-10T12:15:00.000Z',
               repeatType: 'NONE' as const,
@@ -98,6 +97,16 @@ async function postTimeSchedule(payload: unknown, authCookie?: string): Promise<
   })
 }
 
+async function cleanupFixture(): Promise<void> {
+  await prisma.timeSchedule.deleteMany({
+    where: {
+      name: {
+        startsWith: TEST_NAME_PREFIX
+      }
+    }
+  })
+}
+
 async function readErrorMessage(response: Response): Promise<string> {
   try {
     const payload = (await response.json()) as { statusMessage?: string; message?: string }
@@ -108,15 +117,23 @@ async function readErrorMessage(response: Response): Promise<string> {
 }
 
 describe('POST /api/time-schedules (integration)', () => {
+  beforeEach(async () => {
+    await cleanupFixture()
+  })
+
+  afterEach(async () => {
+    await cleanupFixture()
+  })
+
   it('returns 401 without authentication cookie', async () => {
-    const response = await postTimeSchedule(createPostPayload(createUniqueSuffix()))
+    const response = await postTimeSchedule(createPostPayload('UNAUTH'))
 
     expect(response.status).toBe(401)
   })
 
-  it('creates schedule and returns metadata; created tree is retrievable via GET by id', async () => {
+  it('creates schedule and returns metadata; persisted tree is stored in database', async () => {
     const authCookie = createAuthCookie()
-    const payloadSeed = createUniqueSuffix()
+    const payloadSeed = 'PRIMARY'
     const response = await postTimeSchedule(createPostPayload(payloadSeed), authCookie)
 
     expect(response.status).toBe(201)
@@ -125,21 +142,43 @@ describe('POST /api/time-schedules (integration)', () => {
     expect(payload.id.length).toBeGreaterThan(0)
     expect(Number.isNaN(Date.parse(payload.createdAt))).toBe(false)
 
-    const getResponse = await fetch(apiUrl(`/api/time-schedules/${payload.id}`), {
-      headers: {
-        cookie: authCookie
+    const persistedSchedule = await prisma.timeSchedule.findUnique({
+      where: {
+        id: payload.id
+      },
+      include: {
+        committees: {
+          orderBy: [{ date: 'asc' }, { startMinute: 'asc' }, { id: 'asc' }],
+          include: {
+            items: {
+              orderBy: {
+                position: 'asc'
+              },
+              include: {
+                student: true,
+                pause: true
+              }
+            }
+          }
+        }
       }
     })
 
-    expect(getResponse.status).toBe(200)
-    const persistedSchedule = (await getResponse.json()) as TimeScheduleDto
+    expect(persistedSchedule).toBeTruthy()
+    if (!persistedSchedule) {
+      throw new Error('Expected persisted schedule in database')
+    }
 
     expect(persistedSchedule.id).toBe(payload.id)
-    expect(persistedSchedule.name).toBe(`Nový plán ${payloadSeed}`)
+    expect(persistedSchedule.name).toBe(`${TEST_NAME_PREFIX} Nový plán ${payloadSeed}`)
     expect(persistedSchedule.type).toBe('MANUAL')
     expect(persistedSchedule.committees).toHaveLength(1)
 
-    const committee = persistedSchedule.committees[0] as TimeScheduleDto['committees'][number]
+    const committee = persistedSchedule.committees[0]
+    expect(committee).toBeDefined()
+    if (!committee) {
+      throw new Error('Expected persisted committee in database')
+    }
 
     expect(committee.name).toBe(`1-NI-SI-${payloadSeed}`)
     expect(committee.language).toBe('CZECH')
@@ -151,19 +190,20 @@ describe('POST /api/time-schedules (integration)', () => {
     expect(studentItem).toBeDefined()
     expect(pauseItem).toBeDefined()
 
-    expect(studentItem!.id.length).toBeGreaterThan(0)
-    expect(studentItem!.student).not.toBeNull()
-    expect(studentItem!.student!.firstName).toBe('Jan')
+    expect(studentItem?.id.length).toBeGreaterThan(0)
+    expect(studentItem?.student).not.toBeNull()
+    expect(studentItem?.student?.firstName).toBe('Jan')
+    expect(studentItem?.student?.thesisSubmissionAt?.toISOString()).toBe('2026-06-10T00:00:00.000Z')
 
-    expect(pauseItem!.id.length).toBeGreaterThan(0)
-    expect(pauseItem!.pause).not.toBeNull()
-    expect(pauseItem!.pause!.label).toBe('Přestávka')
+    expect(pauseItem?.id.length).toBeGreaterThan(0)
+    expect(pauseItem?.pause).not.toBeNull()
+    expect(pauseItem?.pause?.label).toBe('Přestávka')
   })
 
   it('keeps provided schedule name for AUTO payloads', async () => {
     const authCookie = createAuthCookie()
-    const payloadSeed = createUniqueSuffix()
-    const providedName = `User Provided Name ${payloadSeed}`
+    const payloadSeed = 'AUTO'
+    const providedName = `${TEST_NAME_PREFIX} User Provided Name ${payloadSeed}`
     const response = await postTimeSchedule(
       {
         ...createPostPayload(payloadSeed),
@@ -176,22 +216,24 @@ describe('POST /api/time-schedules (integration)', () => {
     expect(response.status).toBe(201)
     const payload = (await response.json()) as PostTimeScheduleResponseDto
 
-    const getResponse = await fetch(apiUrl(`/api/time-schedules/${payload.id}`), {
-      headers: {
-        cookie: authCookie
+    const persistedSchedule = await prisma.timeSchedule.findUnique({
+      where: {
+        id: payload.id
+      },
+      select: {
+        name: true,
+        type: true
       }
     })
 
-    expect(getResponse.status).toBe(200)
-    const persistedSchedule = (await getResponse.json()) as TimeScheduleDto
-
-    expect(persistedSchedule.type).toBe('AUTO')
-    expect(persistedSchedule.name).toBe(providedName)
+    expect(persistedSchedule).toMatchObject({
+      type: 'AUTO',
+      name: providedName
+    })
   })
 
   it('returns 409 on unique-constraint conflict from database', async () => {
-    const suffix = createUniqueSuffix()
-    const payload = createPostPayload(suffix)
+    const payload = createPostPayload('CONFLICT')
     const firstCommittee = payload.committees[0] as PostCommitteeDraft
 
     payload.committees = [
@@ -564,8 +606,7 @@ describe('POST /api/time-schedules (integration)', () => {
       }
     }
   ])('returns 400 when $name', async ({ mutate }) => {
-    const suffix = createUniqueSuffix()
-    const payload = createPostPayload(suffix)
+    const payload = createPostPayload('INVALID')
     const invalidPayload = mutate(payload)
 
     const response = await postTimeSchedule(invalidPayload, createAuthCookie())

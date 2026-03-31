@@ -1,26 +1,37 @@
 // @vitest-environment node
 
-import { describe, expect, it } from 'vitest'
-import type { PostTimeScheduleResponseDto, TimeScheduleListItemDto } from '#shared/types/time-schedules'
-import { apiUrl, createAuthCookie, createUniqueSuffix } from './_helpers'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { prisma } from '#server/utils/db'
+import type {
+  PostCommitteeItemDto,
+  PostTimeScheduleRequestDto,
+  TimeScheduleListItemDto
+} from '#shared/types/time-schedules'
+import { apiUrl, createAuthCookie } from './_helpers'
 
-function createStudentDraft(suffix: string) {
+const TEST_NAME_PREFIX = '__IT_TIME_SCHEDULE_GET__'
+
+function buildScheduleName(name: string): string {
+  return `${TEST_NAME_PREFIX} ${name}`
+}
+
+function createStudentDraft(index: string) {
   return {
-    personalNumber: `A${suffix}`,
+    personalNumber: `A${index}`,
     firstName: 'Andrii',
     lastName: 'Pihal',
     titlesBefore: 'Bc.',
     titlesAfter: null,
-    studyProgramName: `Study program ${suffix}`,
+    studyProgramName: `Study program ${index}`,
     studyProgramType: 'BACHELOR' as const,
     specializationName: 'Softwarové inženýrství',
-    specializationCode: `SP-${suffix}`,
-    defenseDepartmentCode: `KAT-${suffix}`,
-    defenseDepartmentName: `Department ${suffix}`,
+    specializationCode: `SP-${index}`,
+    defenseDepartmentCode: `KAT-${index}`,
+    defenseDepartmentName: `Department ${index}`,
     studyLanguage: 'CZECH' as const,
     thesisSubmissionAt: '2026-06-10T08:30:00.000Z',
-    thesisTitleLocal: `Lokální název ${suffix}`,
-    thesisTitleEn: `English title ${suffix}`,
+    thesisTitleLocal: `Lokální název ${index}`,
+    thesisTitleEn: `English title ${index}`,
     thesisLanguage: 'CZECH' as const,
     supervisorName: 'Vedoucí',
     reviewerName: 'Oponent',
@@ -33,22 +44,113 @@ function createStudentDraft(suffix: string) {
   }
 }
 
-async function createScheduleViaPost(payload: unknown, authCookie: string): Promise<string> {
-  const createResponse = await fetch(apiUrl('/api/time-schedules'), {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      cookie: authCookie
+function mapCommitteeItemToCreateData(item: PostCommitteeItemDto) {
+  if (item.type === 'STUDENT') {
+    return {
+      type: 'STUDENT' as const,
+      position: item.position,
+      student: {
+        create: {
+          personalNumber: item.student.personalNumber,
+          firstName: item.student.firstName,
+          lastName: item.student.lastName,
+          titlesBefore: item.student.titlesBefore,
+          titlesAfter: item.student.titlesAfter,
+          thesisTitleLocal: item.student.thesisTitleLocal,
+          thesisTitleEn: item.student.thesisTitleEn,
+          thesisLanguage: item.student.thesisLanguage,
+          supervisorName: item.student.supervisorName,
+          reviewerName: item.student.reviewerName,
+          additionalSupervisorName: item.student.additionalSupervisorName,
+          additionalReviewerName: item.student.additionalReviewerName,
+          studyProgramName: item.student.studyProgramName,
+          studyProgramType: item.student.studyProgramType,
+          specializationName: item.student.specializationName,
+          specializationCode: item.student.specializationCode,
+          defenseDepartmentCode: item.student.defenseDepartmentCode,
+          defenseDepartmentName: item.student.defenseDepartmentName,
+          studyLanguage: item.student.studyLanguage,
+          thesisSubmissionAt:
+            item.student.thesisSubmissionAt !== null ? new Date(item.student.thesisSubmissionAt) : null,
+          repeatType: item.student.repeatType,
+          elsa: item.student.elsa,
+          prepareMinutes: item.student.prepareMinutes,
+          examMinutes: item.student.examMinutes
+        }
+      }
+    }
+  }
+
+  return {
+    type: 'PAUSE' as const,
+    position: item.position,
+    pause: {
+      create: {
+        label: item.pause.label,
+        durationMinutes: item.pause.durationMinutes
+      }
+    }
+  }
+}
+
+async function createScheduleInDb(payload: PostTimeScheduleRequestDto): Promise<string> {
+  const createdSchedule = await prisma.timeSchedule.create({
+    data: {
+      name: payload.name,
+      type: payload.type,
+      committees: {
+        create: payload.committees.map((committee) => ({
+          name: committee.name,
+          startMinute: committee.startMinute,
+          date: new Date(committee.date),
+          room: committee.room,
+          secretaryName: committee.secretaryName,
+          invigilators: committee.invigilators,
+          language: committee.language,
+          studyProgramName: committee.studyProgramName,
+          studyProgramType: committee.studyProgramType,
+          specializationName: committee.specializationName,
+          specializationCode: committee.specializationCode,
+          defenseDepartmentCode: committee.defenseDepartmentCode,
+          defenseDepartmentName: committee.defenseDepartmentName,
+          chairName: committee.chairName,
+          viceChairName: committee.viceChairName,
+          member1Name: committee.member1Name,
+          member2Name: committee.member2Name,
+          member3Name: committee.member3Name,
+          items: {
+            create: committee.items.map((item) => mapCommitteeItemToCreateData(item))
+          }
+        }))
+      }
     },
-    body: JSON.stringify(payload)
+    select: {
+      id: true
+    }
   })
 
-  expect(createResponse.status).toBe(201)
-  const created = (await createResponse.json()) as PostTimeScheduleResponseDto
-  return created.id
+  return createdSchedule.id
+}
+
+async function cleanupTimeSchedulesFixture(): Promise<void> {
+  await prisma.timeSchedule.deleteMany({
+    where: {
+      name: {
+        startsWith: TEST_NAME_PREFIX
+      }
+    }
+  })
 }
 
 describe('GET /api/time-schedules (integration)', () => {
+  beforeEach(async () => {
+    await cleanupTimeSchedulesFixture()
+  })
+
+  afterEach(async () => {
+    await cleanupTimeSchedulesFixture()
+  })
+
   it('returns 401 without authentication cookie', async () => {
     const response = await fetch(apiUrl('/api/time-schedules'))
 
@@ -58,130 +160,124 @@ describe('GET /api/time-schedules (integration)', () => {
   it('returns schedules with aggregated counts from database', async () => {
     const authCookie = createAuthCookie()
 
-    const suffixA = createUniqueSuffix()
-    const suffixB = createUniqueSuffix()
+    const scheduleAName = buildScheduleName('Schedule A')
+    const scheduleBName = buildScheduleName('Schedule B')
 
-    const scheduleAId = await createScheduleViaPost(
-      {
-        name: `Schedule A ${suffixA}`,
-        type: 'MANUAL',
-        committees: [
-          {
-            name: `A1-${suffixA}`,
-            startMinute: 525,
-            date: '2026-06-10T00:00:00.000Z',
-            room: 'TH:A-1435',
-            secretaryName: 'Sekretář A1',
-            invigilators: ['Dozor A1'],
-            language: 'CZECH',
-            studyProgramName: `Study A1 ${suffixA}`,
-            studyProgramType: 'BACHELOR',
-            specializationName: `Specialization A1 ${suffixA}`,
-            specializationCode: `SP-A1-${suffixA}`,
-            defenseDepartmentCode: `KAT-A1-${suffixA}`,
-            defenseDepartmentName: `Department A1 ${suffixA}`,
-            chairName: 'Předseda A1',
-            viceChairName: 'Místopředseda A1',
-            member1Name: 'Člen A1-1',
-            member2Name: 'Člen A1-2',
-            member3Name: 'Člen A1-3',
-            items: [
-              {
-                type: 'STUDENT',
-                position: 0,
-                student: createStudentDraft(`${suffixA}-001`),
-                pause: null
-              },
-              {
-                type: 'PAUSE',
-                position: 1,
-                student: null,
-                pause: {
-                  label: 'Přestávka A1',
-                  durationMinutes: 20
-                }
+    const scheduleAId = await createScheduleInDb({
+      name: scheduleAName,
+      type: 'MANUAL',
+      committees: [
+        {
+          name: 'A1',
+          startMinute: 525,
+          date: '2026-06-10T00:00:00.000Z',
+          room: 'TH:A-1435',
+          secretaryName: 'Sekretář A1',
+          invigilators: ['Dozor A1'],
+          language: 'CZECH',
+          studyProgramName: 'Study A1',
+          studyProgramType: 'BACHELOR',
+          specializationName: 'Specialization A1',
+          specializationCode: 'SP-A1',
+          defenseDepartmentCode: 'KAT-A1',
+          defenseDepartmentName: 'Department A1',
+          chairName: 'Předseda A1',
+          viceChairName: 'Místopředseda A1',
+          member1Name: 'Člen A1-1',
+          member2Name: 'Člen A1-2',
+          member3Name: 'Člen A1-3',
+          items: [
+            {
+              type: 'STUDENT',
+              position: 0,
+              student: createStudentDraft('GET-A-001'),
+              pause: null
+            },
+            {
+              type: 'PAUSE',
+              position: 1,
+              student: null,
+              pause: {
+                label: 'Přestávka A1',
+                durationMinutes: 20
               }
-            ]
-          },
-          {
-            name: `A2-${suffixA}`,
-            startMinute: 600,
-            date: '2026-06-11T00:00:00.000Z',
-            room: 'TH:A-1280',
-            secretaryName: 'Sekretář A2',
-            invigilators: ['Dozor A2'],
-            language: 'ENGLISH',
-            studyProgramName: `Study A2 ${suffixA}`,
-            studyProgramType: 'MASTER',
-            specializationName: `Specialization A2 ${suffixA}`,
-            specializationCode: `SP-A2-${suffixA}`,
-            defenseDepartmentCode: `KAT-A2-${suffixA}`,
-            defenseDepartmentName: `Department A2 ${suffixA}`,
-            chairName: 'Chair A2',
-            viceChairName: 'Vice chair A2',
-            member1Name: 'Member A2-1',
-            member2Name: 'Member A2-2',
-            member3Name: 'Member A2-3',
-            items: [
-              {
-                type: 'STUDENT',
-                position: 0,
-                student: createStudentDraft(`${suffixA}-002`),
-                pause: null
-              },
-              {
-                type: 'PAUSE',
-                position: 1,
-                student: null,
-                pause: {
-                  label: 'Přestávka A2',
-                  durationMinutes: 15
-                }
+            }
+          ]
+        },
+        {
+          name: 'A2',
+          startMinute: 600,
+          date: '2026-06-11T00:00:00.000Z',
+          room: 'TH:A-1280',
+          secretaryName: 'Sekretář A2',
+          invigilators: ['Dozor A2'],
+          language: 'ENGLISH',
+          studyProgramName: 'Study A2',
+          studyProgramType: 'MASTER',
+          specializationName: 'Specialization A2',
+          specializationCode: 'SP-A2',
+          defenseDepartmentCode: 'KAT-A2',
+          defenseDepartmentName: 'Department A2',
+          chairName: 'Chair A2',
+          viceChairName: 'Vice chair A2',
+          member1Name: 'Member A2-1',
+          member2Name: 'Member A2-2',
+          member3Name: 'Member A2-3',
+          items: [
+            {
+              type: 'STUDENT',
+              position: 0,
+              student: createStudentDraft('GET-A-002'),
+              pause: null
+            },
+            {
+              type: 'PAUSE',
+              position: 1,
+              student: null,
+              pause: {
+                label: 'Přestávka A2',
+                durationMinutes: 15
               }
-            ]
-          }
-        ]
-      },
-      authCookie
-    )
+            }
+          ]
+        }
+      ]
+    })
 
-    const scheduleBId = await createScheduleViaPost(
-      {
-        name: `Schedule B ${suffixB}`,
-        type: 'AUTO',
-        committees: [
-          {
-            name: `B1-${suffixB}`,
-            startMinute: 540,
-            date: '2026-06-12T00:00:00.000Z',
-            room: null,
-            secretaryName: null,
-            invigilators: [],
-            language: 'CZECH',
-            studyProgramName: `Study B1 ${suffixB}`,
-            studyProgramType: 'BACHELOR',
-            specializationName: `Specialization B1 ${suffixB}`,
-            specializationCode: `SP-B1-${suffixB}`,
-            defenseDepartmentCode: `KAT-B1-${suffixB}`,
-            defenseDepartmentName: `Department B1 ${suffixB}`,
-            chairName: 'Předseda B1',
-            viceChairName: 'Místopředseda B1',
-            member1Name: 'Člen B1-1',
-            member2Name: 'Člen B1-2',
-            member3Name: 'Člen B1-3',
-            items: [
-              {
-                type: 'STUDENT',
-                position: 0,
-                student: createStudentDraft(`${suffixB}-001`),
-                pause: null
-              }
-            ]
-          }
-        ]
-      },
-      authCookie
-    )
+    const scheduleBId = await createScheduleInDb({
+      name: scheduleBName,
+      type: 'AUTO',
+      committees: [
+        {
+          name: 'B1',
+          startMinute: 540,
+          date: '2026-06-12T00:00:00.000Z',
+          room: null,
+          secretaryName: null,
+          invigilators: [],
+          language: 'CZECH',
+          studyProgramName: 'Study B1',
+          studyProgramType: 'BACHELOR',
+          specializationName: 'Specialization B1',
+          specializationCode: 'SP-B1',
+          defenseDepartmentCode: 'KAT-B1',
+          defenseDepartmentName: 'Department B1',
+          chairName: 'Předseda B1',
+          viceChairName: 'Místopředseda B1',
+          member1Name: 'Člen B1-1',
+          member2Name: 'Člen B1-2',
+          member3Name: 'Člen B1-3',
+          items: [
+            {
+              type: 'STUDENT',
+              position: 0,
+              student: createStudentDraft('GET-B-001'),
+              pause: null
+            }
+          ]
+        }
+      ]
+    })
 
     const response = await fetch(apiUrl('/api/time-schedules'), {
       headers: {
@@ -197,7 +293,7 @@ describe('GET /api/time-schedules (integration)', () => {
 
     expect(rowA).toMatchObject({
       id: scheduleAId,
-      name: `Schedule A ${suffixA}`,
+      name: scheduleAName,
       type: 'MANUAL',
       counts: {
         committees: 2,
@@ -208,7 +304,7 @@ describe('GET /api/time-schedules (integration)', () => {
     })
     expect(rowB).toMatchObject({
       id: scheduleBId,
-      name: `Schedule B ${suffixB}`,
+      name: scheduleBName,
       type: 'AUTO',
       counts: {
         committees: 1,
@@ -221,38 +317,33 @@ describe('GET /api/time-schedules (integration)', () => {
 
   it('supports pagination via page and pageSize query parameters', async () => {
     const authCookie = createAuthCookie()
-    const suffix = createUniqueSuffix()
+    const pagedNamePrefix = buildScheduleName('Paged')
 
     const createdIds = await Promise.all([
-      createScheduleViaPost(
-        {
-          name: `Paged Schedule 1 ${suffix}`,
-          type: 'MANUAL',
-          committees: []
-        },
-        authCookie
-      ),
-      createScheduleViaPost(
-        {
-          name: `Paged Schedule 2 ${suffix}`,
-          type: 'MANUAL',
-          committees: []
-        },
-        authCookie
-      ),
-      createScheduleViaPost(
-        {
-          name: `Paged Schedule 3 ${suffix}`,
-          type: 'MANUAL',
-          committees: []
-        },
-        authCookie
-      )
+      createScheduleInDb({
+        name: `${pagedNamePrefix} Schedule 1`,
+        type: 'MANUAL',
+        committees: []
+      }),
+      createScheduleInDb({
+        name: `${pagedNamePrefix} Schedule 2`,
+        type: 'MANUAL',
+        committees: []
+      }),
+      createScheduleInDb({
+        name: `${pagedNamePrefix} Schedule 3`,
+        type: 'MANUAL',
+        committees: []
+      })
     ])
 
-    const allManualResponse = await fetch(apiUrl('/api/time-schedules?type=MANUAL&page=1&pageSize=100'), {
-      headers: { cookie: authCookie }
-    })
+    const encodedSearch = encodeURIComponent(pagedNamePrefix)
+    const allManualResponse = await fetch(
+      apiUrl(`/api/time-schedules?type=MANUAL&search=${encodedSearch}&page=1&pageSize=100`),
+      {
+        headers: { cookie: authCookie }
+      }
+    )
 
     expect(allManualResponse.status).toBe(200)
     const allManual = (await allManualResponse.json()) as TimeScheduleListItemDto[]
@@ -260,12 +351,18 @@ describe('GET /api/time-schedules (integration)', () => {
 
     expect(allManualIds).toEqual(expect.arrayContaining(createdIds))
 
-    const pageOneResponse = await fetch(apiUrl('/api/time-schedules?type=MANUAL&page=1&pageSize=2'), {
-      headers: { cookie: authCookie }
-    })
-    const pageTwoResponse = await fetch(apiUrl('/api/time-schedules?type=MANUAL&page=2&pageSize=2'), {
-      headers: { cookie: authCookie }
-    })
+    const pageOneResponse = await fetch(
+      apiUrl(`/api/time-schedules?type=MANUAL&search=${encodedSearch}&page=1&pageSize=2`),
+      {
+        headers: { cookie: authCookie }
+      }
+    )
+    const pageTwoResponse = await fetch(
+      apiUrl(`/api/time-schedules?type=MANUAL&search=${encodedSearch}&page=2&pageSize=2`),
+      {
+        headers: { cookie: authCookie }
+      }
+    )
 
     expect(pageOneResponse.status).toBe(200)
     expect(pageTwoResponse.status).toBe(200)
@@ -282,32 +379,32 @@ describe('GET /api/time-schedules (integration)', () => {
 
   it('supports optional filtering by schedule type', async () => {
     const authCookie = createAuthCookie()
-    const suffix = createUniqueSuffix()
 
-    const manualScheduleId = await createScheduleViaPost(
-      {
-        name: `Manual Filter Schedule ${suffix}`,
-        type: 'MANUAL',
-        committees: []
-      },
-      authCookie
-    )
-
-    const autoScheduleId = await createScheduleViaPost(
-      {
-        name: `Auto Filter Schedule ${suffix}`,
-        type: 'AUTO',
-        committees: []
-      },
-      authCookie
-    )
-
-    const manualResponse = await fetch(apiUrl('/api/time-schedules?type=MANUAL&page=1&pageSize=100'), {
-      headers: { cookie: authCookie }
+    const manualScheduleId = await createScheduleInDb({
+      name: buildScheduleName('Manual Filter Schedule'),
+      type: 'MANUAL',
+      committees: []
     })
-    const autoResponse = await fetch(apiUrl('/api/time-schedules?type=AUTO&page=1&pageSize=100'), {
-      headers: { cookie: authCookie }
+
+    const autoScheduleId = await createScheduleInDb({
+      name: buildScheduleName('Auto Filter Schedule'),
+      type: 'AUTO',
+      committees: []
     })
+
+    const encodedPrefix = encodeURIComponent(TEST_NAME_PREFIX)
+    const manualResponse = await fetch(
+      apiUrl(`/api/time-schedules?type=MANUAL&search=${encodedPrefix}&page=1&pageSize=100`),
+      {
+        headers: { cookie: authCookie }
+      }
+    )
+    const autoResponse = await fetch(
+      apiUrl(`/api/time-schedules?type=AUTO&search=${encodedPrefix}&page=1&pageSize=100`),
+      {
+        headers: { cookie: authCookie }
+      }
+    )
 
     expect(manualResponse.status).toBe(200)
     expect(autoResponse.status).toBe(200)
@@ -327,27 +424,20 @@ describe('GET /api/time-schedules (integration)', () => {
 
   it('supports optional searching by schedule name', async () => {
     const authCookie = createAuthCookie()
-    const suffix = createUniqueSuffix()
 
-    const matchingScheduleId = await createScheduleViaPost(
-      {
-        name: `Searchable Plan Alpha ${suffix}`,
-        type: 'MANUAL',
-        committees: []
-      },
-      authCookie
-    )
+    const matchingScheduleId = await createScheduleInDb({
+      name: buildScheduleName('Searchable Plan Alpha'),
+      type: 'MANUAL',
+      committees: []
+    })
 
-    const nonMatchingScheduleId = await createScheduleViaPost(
-      {
-        name: `Different Plan ${suffix}`,
-        type: 'MANUAL',
-        committees: []
-      },
-      authCookie
-    )
+    const nonMatchingScheduleId = await createScheduleInDb({
+      name: buildScheduleName('Different Plan'),
+      type: 'MANUAL',
+      committees: []
+    })
 
-    const response = await fetch(apiUrl(`/api/time-schedules?search=alpha%20${suffix}&page=1&pageSize=100`), {
+    const response = await fetch(apiUrl('/api/time-schedules?search=alpha&page=1&pageSize=100'), {
       headers: { cookie: authCookie }
     })
 
