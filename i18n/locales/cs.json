@@ -229,6 +229,58 @@
       "thesisTitle": "Téma práce"
     }
   },
+  "teachersDictionary": {
+    "navigation": {
+      "openPage": "Slovník učitelů"
+    },
+    "page": {
+      "title": "Slovník učitelů",
+      "descriptionParagraph1": "V exportech IS KOS jsou u členů komisí, tajemníků a dalších osob jména s tituly často v pořadí, ze kterého nelze spolehlivě obnovit původní podobu. Aplikace ČÁP proto vede vlastní slovník těchto záznamů.",
+      "descriptionParagraph2": "Aplikace umožňuje rychlý hromadný import záznamů pomocí formuláře „89004 - soupis a editace učitelů“. Záznamy přidané prostřednictvím tohoto souboru se na této stránce nezobrazují a aplikace je neumožňuje ručně upravovat ani mazat bez zásahu administrátora do databáze. Platí však pravidlo, že novější pravidlo odvozené ze souboru přepíše starší záznam.",
+      "descriptionParagraph3": "Bohužel ani tento soupis z KOS negarantuje, že pro každou osobu budou k dispozici data pro obnovu správné formy jména s tituly, typicky jde o tajemníky a externí vedoucí nebo oponenty. Pokud proto při vytváření nového časového plánu z exportů KOS aplikace ČÁP narazí na osobu, jejíž správně formátované jméno s tituly nedokáže obnovit, požádá vás o ruční doplnění správné podoby. Ta se následně uloží do perzistentního slovníku a použije se při automatickém parsování dalších výskytů. Ručně přidané záznamy si můžete na této stránce zobrazit a případně je smazat. Nové ruční záznamy lze vytvářet pouze v rámci procesu vytváření nového plánu, a to jen tehdy, když je systém potřebuje."
+    },
+    "loading": "Načítám slovník učitelů...",
+    "loadErrorTitle": "Slovník učitelů se nepodařilo načíst",
+    "loadErrorDescription": "Zkuste načtení opakovat.",
+    "import": {
+      "title": "Hromadný import slovníku osob z CSV podle formuláře „89004 - soupis a editace učitelů“",
+      "description": "Nahrajte export a aktualizujte záznamy slovníku osob najednou.",
+      "fileLabel": "Nahrajte soubor se záznamy osob",
+      "chooseFileAction": "Vybrat soubor",
+      "noFileSelected": "Soubor zatím není vybrán",
+      "clearFilesAction": "Vyčistit soubor",
+      "submitAction": "Nahrát soubor",
+      "submitSuccessTitle": "Import slovníku dokončen",
+      "submitSuccessDescription": "Zpracováno: {processed}. Vytvořeno: {created}. Aktualizováno: {updated}.",
+      "validation": {
+        "validating": "Kontroluji soubor...",
+        "invalidStructure": "Soubor neodpovídá očekávané CSV struktuře.",
+        "noRows": "Soubor neobsahuje žádné použitelné řádky pro import.",
+        "missingColumns": "V souboru chybí povinné sloupce: {columns}.",
+        "submitErrorTitle": "Import slovníku se nepodařilo dokončit",
+        "submitFailed": "Nepodařilo se uložit záznamy slovníku. Zkuste to prosím znovu."
+      }
+    },
+    "actions": {
+      "retry": "Zkusit znovu"
+    },
+    "table": {
+      "title": "Ručně evidované osoby",
+      "columns": {
+        "canonicalName": "Jméno osoby s tituly pro použití v časovém plánu (ručně zadané)",
+        "normalizedLookupKey": "Interní normalizovaný klíč (generovaný systémem)"
+      },
+      "delete": {
+        "openAriaLabel": "Smazat záznam osoby {name}",
+        "confirmAction": "Smazat záznam",
+        "confirmDescription": "Opravdu chcete smazat záznam osoby „{name}“? Tato akce je nevratná.",
+        "errorTitle": "Záznam se nepodařilo smazat",
+        "errorRequestFailedDescription": "Nepodařilo se smazat vybraný záznam. Zkuste to prosím znovu."
+      },
+      "emptyTitle": "Zatím nejsou k dispozici žádné osoby",
+      "emptyDescription": "Jakmile budou během vytváření plánu přidány ruční záznamy, zobrazí se zde."
+    }
+  },
   "dashboard": {
     "logoutButton": "Odhlásit se",
     "logoutConfirmDescription": "Opravdu se chcete odhlásit? Ztratíte všechna neuložená rozpracovaná data."

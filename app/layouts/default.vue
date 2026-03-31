@@ -16,8 +16,10 @@ const headerUi = computed(() => (isEditorRoute.value ? editorHeaderUi : undefine
 const editorBackToHomepageLabel = computed(() => t('editor.navigation.backToHomepage'))
 const editorOpenSavedPlansLabel = computed(() => t('editor.navigation.openSavedPlansTitle'))
 const editorCreatePlanFromImportLabel = computed(() => t('editor.navigation.createPlanFromImportTitle'))
+const teachersDictionaryPageLabel = computed(() => t('teachersDictionary.navigation.openPage'))
 const headerActionButtonClass = 'cursor-pointer hover:bg-primary/20 hover:ring-primary/40'
 const editorHeaderActionButtonClass = `${headerActionButtonClass} whitespace-nowrap shrink-0`
+const teachersDictionaryHeaderButtonClass = `${editorHeaderActionButtonClass} bg-secondary/20 ring-secondary/30 hover:bg-secondary/30 hover:ring-secondary/70`
 
 const {
   manualDrafts,
@@ -115,23 +117,50 @@ async function confirmLogout(): Promise<void> {
             >
               {{ editorOpenSavedPlansLabel }}
             </UButton>
+
+            <UButton
+              to="/teachers-dictionary"
+              color="secondary"
+              variant="subtle"
+              icon="i-lucide-book-user"
+              :aria-label="teachersDictionaryPageLabel"
+              :class="teachersDictionaryHeaderButtonClass"
+              :ui="{ leadingIcon: 'text-toned' }"
+            >
+              <span class="text-default">{{ teachersDictionaryPageLabel }}</span>
+            </UButton>
           </div>
         </div>
       </template>
 
       <template #right>
-        <UButton
-          color="primary"
-          variant="subtle"
-          icon="i-lucide-log-out"
-          :aria-label="logoutButtonLabel"
-          :class="headerActionButtonClass"
-          :loading="authStore.isLogoutLoading"
-          @click="openLogoutDialog"
-        >
-          <span>{{ `${t('dashboard.logoutButton')}:` }}</span>
-          <span class="text-toned">{{ usernameLabel }}</span>
-        </UButton>
+        <div class="flex items-center gap-3">
+          <UButton
+            v-if="!isEditorRoute"
+            to="/teachers-dictionary"
+            color="secondary"
+            variant="subtle"
+            icon="i-lucide-book-user"
+            :aria-label="teachersDictionaryPageLabel"
+            :class="teachersDictionaryHeaderButtonClass"
+            :ui="{ leadingIcon: 'text-toned' }"
+          >
+            <span class="text-default">{{ teachersDictionaryPageLabel }}</span>
+          </UButton>
+
+          <UButton
+            color="primary"
+            variant="subtle"
+            icon="i-lucide-log-out"
+            :aria-label="logoutButtonLabel"
+            :class="headerActionButtonClass"
+            :loading="authStore.isLogoutLoading"
+            @click="openLogoutDialog"
+          >
+            <span>{{ `${t('dashboard.logoutButton')}:` }}</span>
+            <span class="text-toned">{{ usernameLabel }}</span>
+          </UButton>
+        </div>
 
         <UColorModeButton class="cursor-pointer" />
       </template>
