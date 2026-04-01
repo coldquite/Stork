@@ -6,8 +6,13 @@ interface CsvIngestBaseResult {
   status: CsvIngestStatus
 }
 
-interface CsvIngestErrorResult extends CsvIngestBaseResult {
-  status: 'invalid_extension' | 'invalid_encoding'
+interface CsvIngestInvalidExtensionResult extends CsvIngestBaseResult {
+  status: 'invalid_extension'
+  input: HTMLInputElement | null
+}
+
+interface CsvIngestInvalidEncodingResult extends CsvIngestBaseResult {
+  status: 'invalid_encoding'
   input: HTMLInputElement | null
 }
 
@@ -35,7 +40,8 @@ interface CsvIngestStaleResult extends CsvIngestBaseResult {
 export type IngestCsvInputFileResult<ParsedResult, ParsedSuccessResult extends ParsedResult> =
   | CsvIngestNoFileResult
   | CsvIngestStaleResult
-  | CsvIngestErrorResult
+  | CsvIngestInvalidExtensionResult
+  | CsvIngestInvalidEncodingResult
   | CsvIngestParseErrorResult<ParsedResult>
   | CsvIngestSuccessResult<ParsedSuccessResult>
 

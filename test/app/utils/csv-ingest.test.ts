@@ -110,7 +110,7 @@ describe('csv-ingest utils', () => {
       isValidationRequestStale: (requestId) => requestId !== currentRequestId,
       setValidatingState: vi.fn(),
       resetStateOnNoFile: vi.fn(),
-      parseCsvText: vi.fn(() => ({ ok: true as const })),
+      parseCsvText: () => ({ ok: true as const }),
       isParsedResultSuccess: (parsedResult): parsedResult is { ok: true } => parsedResult.ok
     })
 
@@ -124,6 +124,7 @@ describe('csv-ingest utils', () => {
   it('returns parse_error and clears input when parser result is rejected by success guard', async () => {
     const event = createFileChangeEvent(createCsvFile())
     const input = event.target as HTMLInputElement
+    type ParseResult = { ok: true } | { ok: false; reason: 'schema_mismatch' }
 
     const result = await ingestCsvInputFile({
       event,
@@ -131,13 +132,13 @@ describe('csv-ingest utils', () => {
       isValidationRequestStale: () => false,
       setValidatingState: vi.fn(),
       resetStateOnNoFile: vi.fn(),
-      parseCsvText: () => ({ ok: false as const, reason: 'schema_mismatch' as const }),
+      parseCsvText: (): ParseResult => ({ ok: false, reason: 'schema_mismatch' }),
       isParsedResultSuccess: (parsedResult): parsedResult is { ok: true } => parsedResult.ok
     })
 
     expect(result.status).toBe('parse_error')
     expect(input.value).toBe('')
-    if (result.status === 'parse_error') {
+    if (result.status === 'parse_error' && 'reason' in result.parsedResult) {
       expect(result.parsedResult.reason).toBe('schema_mismatch')
     }
   })

@@ -266,26 +266,26 @@ export function useImportForm(selectedSzzType: Ref<ImportSzzType>) {
         importFileStates.value[sourceKey] = createInitialImportFieldState()
       },
       parseCsvText: parseImportCsvText,
-      isParsedResultSuccess: (parsedImport) => parsedImport.ok
+      isParsedResultSuccess: (
+        parsedImport
+      ): parsedImport is Extract<ReturnType<typeof parseImportCsvText>, { ok: true }> => parsedImport.ok
     })
 
-    if (ingestResult.status === 'no_file' || ingestResult.status === 'stale') {
-      return
-    }
-
-    if (ingestResult.status === 'invalid_extension') {
-      setFieldError(sourceKey, t('homepage.actions.create.import.validation.invalidExtension'))
-      return
-    }
-
-    if (ingestResult.status === 'invalid_encoding') {
-      setFieldError(sourceKey, t('homepage.actions.create.import.validation.invalidEncoding'))
-      return
-    }
-
-    if (ingestResult.status === 'parse_error') {
-      setFieldError(sourceKey, t('homepage.actions.create.import.validation.invalidStructure'))
-      return
+    switch (ingestResult.status) {
+      case 'no_file':
+      case 'stale':
+        return
+      case 'invalid_extension':
+        setFieldError(sourceKey, t('homepage.actions.create.import.validation.invalidExtension'))
+        return
+      case 'invalid_encoding':
+        setFieldError(sourceKey, t('homepage.actions.create.import.validation.invalidEncoding'))
+        return
+      case 'parse_error':
+        setFieldError(sourceKey, t('homepage.actions.create.import.validation.invalidStructure'))
+        return
+      case 'success':
+        break
     }
 
     const selectedFile = ingestResult.file

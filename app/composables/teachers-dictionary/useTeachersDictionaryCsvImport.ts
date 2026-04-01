@@ -95,26 +95,26 @@ export function useTeachersDictionaryCsvImport() {
         importState.value = createInitialImportState()
       },
       parseCsvText: parseTeachersDictionaryCsvText,
-      isParsedResultSuccess: (parsedCsv) => parsedCsv.ok
+      isParsedResultSuccess: (
+        parsedCsv
+      ): parsedCsv is Extract<ReturnType<typeof parseTeachersDictionaryCsvText>, { ok: true }> => parsedCsv.ok
     })
 
-    if (ingestResult.status === 'no_file' || ingestResult.status === 'stale') {
-      return
-    }
-
-    if (ingestResult.status === 'invalid_extension') {
-      setFileError(t('homepage.actions.create.import.validation.invalidExtension'))
-      return
-    }
-
-    if (ingestResult.status === 'invalid_encoding') {
-      setFileError(t('homepage.actions.create.import.validation.invalidEncoding'))
-      return
-    }
-
-    if (ingestResult.status === 'parse_error') {
-      setFileError(resolveParseErrorMessage(ingestResult.parsedResult))
-      return
+    switch (ingestResult.status) {
+      case 'no_file':
+      case 'stale':
+        return
+      case 'invalid_extension':
+        setFileError(t('homepage.actions.create.import.validation.invalidExtension'))
+        return
+      case 'invalid_encoding':
+        setFileError(t('homepage.actions.create.import.validation.invalidEncoding'))
+        return
+      case 'parse_error':
+        setFileError(resolveParseErrorMessage(ingestResult.parsedResult))
+        return
+      case 'success':
+        break
     }
 
     importState.value = {
