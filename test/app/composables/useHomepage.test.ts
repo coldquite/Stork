@@ -121,7 +121,7 @@ describe('useHomepage submitCreateScheduleImport', () => {
   })
 
   it('maps import payload, initializes draft and navigates to editor for valid input', async () => {
-    const { useHomepage } = await import('~/composables/useHomepage')
+    const { useHomepage } = await import('~/composables/homepage/useHomepage')
     const homepage = useHomepage()
     const payload = createImportPayload()
 
@@ -156,7 +156,7 @@ describe('useHomepage submitCreateScheduleImport', () => {
   })
 
   it('does not map import payload when schedule name is invalid', async () => {
-    const { useHomepage } = await import('~/composables/useHomepage')
+    const { useHomepage } = await import('~/composables/homepage/useHomepage')
     const homepage = useHomepage()
     const payload = createImportPayload()
 
@@ -174,7 +174,7 @@ describe('useHomepage submitCreateScheduleImport', () => {
   })
 
   it('opens mapping error dialog when mapping fails', async () => {
-    const { useHomepage } = await import('~/composables/useHomepage')
+    const { useHomepage } = await import('~/composables/homepage/useHomepage')
     const homepage = useHomepage()
     const payload = createImportPayload()
 
@@ -204,7 +204,7 @@ describe('useHomepage submitCreateScheduleImport', () => {
   })
 
   it('ignores import submit while another open-schedule operation is running', async () => {
-    const { useHomepage } = await import('~/composables/useHomepage')
+    const { useHomepage } = await import('~/composables/homepage/useHomepage')
     const homepage = useHomepage()
     const payload = createImportPayload()
 
@@ -241,7 +241,7 @@ describe('useHomepage browse schedules pagination', () => {
       throw new Error(`Unexpected request URL: ${url}`)
     })
 
-    const { useHomepage } = await import('~/composables/useHomepage')
+    const { useHomepage } = await import('~/composables/homepage/useHomepage')
     const homepage = useHomepage()
 
     homepage.requestBrowseSchedules()
@@ -275,7 +275,7 @@ describe('useHomepage browse schedules pagination', () => {
       throw new Error(`Unexpected request URL: ${url}`)
     })
 
-    const { useHomepage } = await import('~/composables/useHomepage')
+    const { useHomepage } = await import('~/composables/homepage/useHomepage')
     const homepage = useHomepage()
 
     homepage.requestBrowseSchedules()
@@ -314,7 +314,7 @@ describe('useHomepage browse schedules pagination', () => {
 
     vi.useFakeTimers()
     try {
-      const { useHomepage } = await import('~/composables/useHomepage')
+      const { useHomepage } = await import('~/composables/homepage/useHomepage')
       const homepage = useHomepage()
 
       homepage.requestBrowseSchedules()

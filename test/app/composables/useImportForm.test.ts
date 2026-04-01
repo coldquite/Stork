@@ -1,7 +1,7 @@
 import { mockNuxtImport } from '@nuxt/test-utils/runtime'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { IMPORT_SCHEMAS } from '~/constants/import'
-import { useImportForm } from '~/composables/useImportForm'
+import { useImportForm } from '~/composables/schedule-creation/useImportForm'
 import type { ImportDatasetKey, ImportFieldKey, ImportSzzType } from '~/types/import'
 
 const { i18nTranslateMock } = vi.hoisted(() => ({

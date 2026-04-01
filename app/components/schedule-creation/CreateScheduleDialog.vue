@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useImportForm } from '~/composables/schedule-creation/useImportForm'
 import type { ImportPayload, ImportSzzType } from '~/types/import'
 
 interface CreateScheduleDialogProps {

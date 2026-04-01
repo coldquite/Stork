@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useScheduleAutoSaveToasts } from '~/composables/editor/useScheduleAutoSaveToasts'
 import { useAuthStore } from '~/stores/auth'
 
 const { locale, t } = useI18n()

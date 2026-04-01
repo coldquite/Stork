@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { PutTeachersDictionaryBulkResponseDto } from '#shared/types/teachers-dictionary'
+import { useTeachersDictionaryCsvImport } from '~/composables/teachers-dictionary/useTeachersDictionaryCsvImport'
 
 const { t } = useI18n()
 const {

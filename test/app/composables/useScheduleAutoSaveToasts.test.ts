@@ -63,7 +63,7 @@ describe('useScheduleAutoSaveToasts', () => {
   })
 
   it('shows success toast when autosave succeeds', async () => {
-    const { useScheduleAutoSaveToasts } = await import('~/composables/useScheduleAutoSaveToasts')
+    const { useScheduleAutoSaveToasts } = await import('~/composables/editor/useScheduleAutoSaveToasts')
     scope.run(() => {
       useScheduleAutoSaveToasts()
     })
@@ -83,7 +83,7 @@ describe('useScheduleAutoSaveToasts', () => {
   })
 
   it('shows success toast when manual save succeeds', async () => {
-    const { useScheduleAutoSaveToasts } = await import('~/composables/useScheduleAutoSaveToasts')
+    const { useScheduleAutoSaveToasts } = await import('~/composables/editor/useScheduleAutoSaveToasts')
     scope.run(() => {
       useScheduleAutoSaveToasts()
     })
@@ -103,7 +103,7 @@ describe('useScheduleAutoSaveToasts', () => {
   })
 
   it('shows request-failed toast when autosave request fails', async () => {
-    const { useScheduleAutoSaveToasts } = await import('~/composables/useScheduleAutoSaveToasts')
+    const { useScheduleAutoSaveToasts } = await import('~/composables/editor/useScheduleAutoSaveToasts')
     scope.run(() => {
       useScheduleAutoSaveToasts()
     })
@@ -122,7 +122,7 @@ describe('useScheduleAutoSaveToasts', () => {
   })
 
   it('shows request-failed toast when manual save request fails', async () => {
-    const { useScheduleAutoSaveToasts } = await import('~/composables/useScheduleAutoSaveToasts')
+    const { useScheduleAutoSaveToasts } = await import('~/composables/editor/useScheduleAutoSaveToasts')
     scope.run(() => {
       useScheduleAutoSaveToasts()
     })
@@ -141,7 +141,7 @@ describe('useScheduleAutoSaveToasts', () => {
   })
 
   it('does not show toast for null and unchanged values', async () => {
-    const { useScheduleAutoSaveToasts } = await import('~/composables/useScheduleAutoSaveToasts')
+    const { useScheduleAutoSaveToasts } = await import('~/composables/editor/useScheduleAutoSaveToasts')
     scope.run(() => {
       useScheduleAutoSaveToasts()
     })

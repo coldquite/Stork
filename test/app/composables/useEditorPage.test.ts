@@ -151,7 +151,7 @@ describe('useEditorPage', () => {
   })
 
   it('reorders only student items and keeps pauses in place', async () => {
-    const { useEditorPage } = await import('~/composables/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
     const page = useEditorPage()
 
     expect(page.selectedCommittee.value?.localId).toBe('committee-early')
@@ -170,7 +170,7 @@ describe('useEditorPage', () => {
   })
 
   it('creates committee with trimmed name and selects it', async () => {
-    const { useEditorPage } = await import('~/composables/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
     const page = useEditorPage()
 
     page.openCreateCommitteeDialog()
@@ -188,7 +188,7 @@ describe('useEditorPage', () => {
   })
 
   it('shows duplicate validation when renaming committee to existing name', async () => {
-    const { useEditorPage } = await import('~/composables/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
     const page = useEditorPage()
 
     page.openRenameCommitteeDialog('committee-early')
@@ -203,7 +203,7 @@ describe('useEditorPage', () => {
   })
 
   it('deletes selected committee and switches selection to next available tab', async () => {
-    const { useEditorPage } = await import('~/composables/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
     const page = useEditorPage()
 
     expect(page.selectedCommitteeId.value).toBe('committee-early')
@@ -217,7 +217,7 @@ describe('useEditorPage', () => {
   })
 
   it('renames draft with trimmed value', async () => {
-    const { useEditorPage } = await import('~/composables/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
     const page = useEditorPage()
 
     page.openRenameDraftDialog()
@@ -230,7 +230,7 @@ describe('useEditorPage', () => {
   })
 
   it('rejects draft rename with leading or trailing whitespace', async () => {
-    const { useEditorPage } = await import('~/composables/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
     const page = useEditorPage()
 
     page.openRenameDraftDialog()
@@ -243,7 +243,7 @@ describe('useEditorPage', () => {
   })
 
   it('opens cloud save dialog with current draft name prefilled', async () => {
-    const { useEditorPage } = await import('~/composables/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
     const page = useEditorPage()
 
     page.openCloudSaveDialog()
@@ -254,7 +254,7 @@ describe('useEditorPage', () => {
   })
 
   it('saves to cloud using modal name and keeps current draft name unchanged', async () => {
-    const { useEditorPage } = await import('~/composables/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
     const page = useEditorPage()
 
     page.openCloudSaveDialog()

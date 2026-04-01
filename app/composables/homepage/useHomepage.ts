@@ -1,6 +1,6 @@
 import type { HomepageScheduleListItem } from '~/types/homepage'
+import { useHomepageCreateAndImport } from '~/composables/schedule-creation/useHomepageCreateAndImport'
 import { useHomepageBrowseSchedules } from '~/composables/homepage/useHomepageBrowseSchedules'
-import { useHomepageCreateAndImport } from '~/composables/homepage/useHomepageCreateAndImport'
 import { useHomepageScheduleOpening } from '~/composables/homepage/useHomepageScheduleOpening'
 
 export const HOMEPAGE_NEW_SCHEDULE_NAME_MAX_LENGTH = 120

@@ -2,7 +2,7 @@
 import CreateScheduleDialog from '~/components/schedule-creation/CreateScheduleDialog.vue'
 import ImportMappingErrorDialog from '~/components/schedule-creation/ImportMappingErrorDialog.vue'
 import ImportTeachersDictionaryResolutionDialog from '~/components/schedule-creation/ImportTeachersDictionaryResolutionDialog.vue'
-import { HOMEPAGE_NEW_SCHEDULE_NAME_MAX_LENGTH } from '~/composables/useHomepage'
+import { HOMEPAGE_NEW_SCHEDULE_NAME_MAX_LENGTH, useHomepage } from '~/composables/homepage/useHomepage'
 
 const { t } = useI18n()
 const {
