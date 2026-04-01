@@ -100,7 +100,7 @@ function createValidPayload(): ImportPayload {
 describe('mapImportPayloadToDraftSource', () => {
   it('maps valid bachelor import payload to manual draft source', () => {
     const result = mapImportPayloadToDraftSource({
-      planName: 'SZZ červen 2025',
+      scheduleName: 'SZZ červen 2025',
       szzType: 'BACHELOR',
       payload: createValidPayload()
     })
@@ -145,7 +145,7 @@ describe('mapImportPayloadToDraftSource', () => {
     })
 
     const result = mapImportPayloadToDraftSource({
-      planName: 'SZZ červen 2025',
+      scheduleName: 'SZZ červen 2025',
       szzType: 'BACHELOR',
       payload
     })
@@ -189,7 +189,7 @@ describe('mapImportPayloadToDraftSource', () => {
     })
 
     const result = mapImportPayloadToDraftSource({
-      planName: 'SZZ červen 2025',
+      scheduleName: 'SZZ červen 2025',
       szzType: 'BACHELOR',
       payload
     })
@@ -217,7 +217,7 @@ describe('mapImportPayloadToDraftSource', () => {
     })
 
     const result = mapImportPayloadToDraftSource({
-      planName: 'SZZ červen 2025',
+      scheduleName: 'SZZ červen 2025',
       szzType: 'BACHELOR',
       payload
     })
@@ -245,7 +245,7 @@ describe('mapImportPayloadToDraftSource', () => {
     })
 
     const result = mapImportPayloadToDraftSource({
-      planName: 'SZZ červen 2025',
+      scheduleName: 'SZZ červen 2025',
       szzType: 'BACHELOR',
       payload
     })
@@ -273,7 +273,7 @@ describe('mapImportPayloadToDraftSource', () => {
     })
 
     const result = mapImportPayloadToDraftSource({
-      planName: 'SZZ červen 2025',
+      scheduleName: 'SZZ červen 2025',
       szzType: 'BACHELOR',
       payload
     })
@@ -299,7 +299,7 @@ describe('mapImportPayloadToDraftSource', () => {
     })
 
     const result = mapImportPayloadToDraftSource({
-      planName: 'SZZ červen 2025',
+      scheduleName: 'SZZ červen 2025',
       szzType: 'BACHELOR',
       payload
     })
@@ -318,7 +318,7 @@ describe('mapImportPayloadToDraftSource', () => {
     payload.studentsCap.bachelor = undefined
 
     const result = mapImportPayloadToDraftSource({
-      planName: 'SZZ červen 2025',
+      scheduleName: 'SZZ červen 2025',
       szzType: 'BACHELOR',
       payload
     })
@@ -338,7 +338,7 @@ describe('mapImportPayloadToDraftSource', () => {
     payload.committees.rows.push(createCommitteesRow())
 
     const result = mapImportPayloadToDraftSource({
-      planName: 'SZZ červen 2025',
+      scheduleName: 'SZZ červen 2025',
       szzType: 'BACHELOR',
       payload
     })
@@ -359,7 +359,7 @@ describe('mapImportPayloadToDraftSource', () => {
     })
 
     const result = mapImportPayloadToDraftSource({
-      planName: 'SZZ červen 2025',
+      scheduleName: 'SZZ červen 2025',
       szzType: 'BACHELOR',
       payload
     })
@@ -386,7 +386,7 @@ describe('mapImportPayloadToDraftSource', () => {
     )
 
     const result = mapImportPayloadToDraftSource({
-      planName: 'SZZ červen 2025',
+      scheduleName: 'SZZ červen 2025',
       szzType: 'BACHELOR',
       payload
     })
@@ -406,7 +406,7 @@ describe('mapImportPayloadToDraftSource', () => {
     })
 
     const result = mapImportPayloadToDraftSource({
-      planName: 'SZZ červen 2025',
+      scheduleName: 'SZZ červen 2025',
       szzType: 'BACHELOR',
       payload
     })
@@ -430,7 +430,7 @@ describe('mapImportPayloadToDraftSource', () => {
     })
 
     const result = mapImportPayloadToDraftSource({
-      planName: 'SZZ červen 2025',
+      scheduleName: 'SZZ červen 2025',
       szzType: 'BACHELOR',
       payload
     })
@@ -459,7 +459,7 @@ describe('mapImportPayloadToDraftSource', () => {
     })
 
     const result = mapImportPayloadToDraftSource({
-      planName: 'SZZ červen 2025',
+      scheduleName: 'SZZ červen 2025',
       szzType: 'BACHELOR',
       payload
     })
@@ -488,7 +488,7 @@ describe('mapImportPayloadToDraftSource', () => {
     })
 
     const result = mapImportPayloadToDraftSource({
-      planName: 'SZZ červen 2025',
+      scheduleName: 'SZZ červen 2025',
       szzType: 'BACHELOR',
       payload
     })
@@ -517,7 +517,7 @@ describe('mapImportPayloadToDraftSource', () => {
     })
 
     const result = mapImportPayloadToDraftSource({
-      planName: 'SZZ červen 2025',
+      scheduleName: 'SZZ červen 2025',
       szzType: 'BACHELOR',
       payload
     })
@@ -547,7 +547,7 @@ describe('mapImportPayloadToDraftSource', () => {
     })
 
     const result = mapImportPayloadToDraftSource({
-      planName: 'SZZ červen 2025',
+      scheduleName: 'SZZ červen 2025',
       szzType: 'BACHELOR',
       payload
     })
@@ -574,7 +574,7 @@ describe('mapImportPayloadToDraftSource', () => {
     })
 
     const result = mapImportPayloadToDraftSource({
-      planName: 'SZZ červen 2025',
+      scheduleName: 'SZZ červen 2025',
       szzType: 'BACHELOR',
       payload
     })
@@ -623,7 +623,7 @@ describe('mapImportPayloadToDraftSource', () => {
     }
 
     const result = mapImportPayloadToDraftSource({
-      planName: 'SZZ červen 2025',
+      scheduleName: 'SZZ červen 2025',
       szzType: 'MIXED',
       payload
     })

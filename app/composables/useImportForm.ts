@@ -1,4 +1,4 @@
-// Composable that owns client-side CSV import workflow for plan creation
+// Composable that owns client-side CSV import workflow for schedule creation
 // Business logic:
 // - manage per-field file states (file, parsed data, errors, validation status),
 // - validate selected files (extension, UTF-8, CSV schema),

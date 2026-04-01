@@ -239,7 +239,7 @@ describe('useEditorPage', () => {
 
     expect(scheduleDraftStoreMock.draft?.name).toBe('Plán')
     expect(page.isRenameDraftDialogOpen.value).toBe(true)
-    expect(page.renameDraftValidationError.value).toBe('editor.plan.rename.validation.leadingTrailingWhitespace')
+    expect(page.renameDraftValidationError.value).toBe('editor.schedule.rename.validation.leadingTrailingWhitespace')
   })
 
   it('opens cloud save dialog with current draft name prefilled', async () => {

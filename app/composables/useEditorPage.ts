@@ -333,15 +333,15 @@ export function useEditorPage() {
     const normalizedName = nextName.trim()
 
     if (normalizedName.length < 1) {
-      return t('editor.plan.rename.validation.required')
+      return t('editor.schedule.rename.validation.required')
     }
 
     if (nextName !== normalizedName) {
-      return t('editor.plan.rename.validation.leadingTrailingWhitespace')
+      return t('editor.schedule.rename.validation.leadingTrailingWhitespace')
     }
 
     if (normalizedName.length > EDITOR_DRAFT_NAME_MAX_LENGTH) {
-      return t('editor.plan.rename.validation.maxLength', { max: EDITOR_DRAFT_NAME_MAX_LENGTH })
+      return t('editor.schedule.rename.validation.maxLength', { max: EDITOR_DRAFT_NAME_MAX_LENGTH })
     }
 
     return null

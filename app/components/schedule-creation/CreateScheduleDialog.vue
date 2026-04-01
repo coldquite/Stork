@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import type { ImportPayload, ImportSzzType } from '~/types/import'
 
-interface CreatePlanNameDialogProps {
+interface CreateScheduleDialogProps {
   loading: boolean
   maxLength: number
   validationError: string | null
 }
 
-const props = defineProps<CreatePlanNameDialogProps>()
+const props = defineProps<CreateScheduleDialogProps>()
 const { t } = useI18n()
 
 const open = defineModel<boolean>('open', { default: false })
@@ -65,7 +65,7 @@ const importSzzTypeTabs = computed(() => {
   ]
 })
 
-const isEmptyPlanTabActive = computed(() => activeTab.value === 'empty')
+const isEmptyScheduleTabActive = computed(() => activeTab.value === 'empty')
 const isImportTabActive = computed(() => activeTab.value === 'import')
 const hasImportStateValues = computed(() => {
   return importFileFields.value.some(({ key }) => {
@@ -95,7 +95,7 @@ function handleCancel(): void {
 }
 
 function handleSubmit(): void {
-  if (!isEmptyPlanTabActive.value) {
+  if (!isEmptyScheduleTabActive.value) {
     return
   }
 
@@ -135,7 +135,7 @@ function handleClearImportFiles(): void {
     }"
   >
     <template #body>
-      <UTabs v-model="activeTab" :items="tabs" class="create-plan-tabs">
+      <UTabs v-model="activeTab" :items="tabs" class="create-schedule-tabs">
         <template #import>
           <div class="w-full space-y-4">
             <div class="space-y-2">
@@ -163,7 +163,7 @@ function handleClearImportFiles(): void {
                   {{ $t('homepage.actions.create.import.szzTypeLabel') }}
                 </p>
 
-                <UTabs v-model="importSzzType" :items="importSzzTypeTabs" class="create-plan-szz-tabs">
+                <UTabs v-model="importSzzType" :items="importSzzTypeTabs" class="create-schedule-szz-tabs">
                   <template #bachelor />
                   <template #master />
                   <template #mixed />
@@ -247,7 +247,7 @@ function handleClearImportFiles(): void {
             <UInput
               v-model="name"
               class="w-full"
-              :autofocus="isEmptyPlanTabActive"
+              :autofocus="isEmptyScheduleTabActive"
               :placeholder="$t('homepage.actions.create.namePlaceholder')"
               :disabled="props.loading"
               :maxlength="props.maxLength"
@@ -288,7 +288,7 @@ function handleClearImportFiles(): void {
           </UButton>
 
           <UButton
-            v-if="isEmptyPlanTabActive"
+            v-if="isEmptyScheduleTabActive"
             color="primary"
             variant="solid"
             class="cursor-pointer"
@@ -316,8 +316,8 @@ function handleClearImportFiles(): void {
 </template>
 
 <style scoped>
-.create-plan-tabs :deep([role='tab']),
-.create-plan-szz-tabs :deep([role='tab']) {
+.create-schedule-tabs :deep([role='tab']),
+.create-schedule-szz-tabs :deep([role='tab']) {
   cursor: pointer;
 }
 </style>

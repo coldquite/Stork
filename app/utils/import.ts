@@ -151,13 +151,13 @@ export function resolveStudyLevelFromStudentsCommittees(rows: ImportCsvRow[]): I
 }
 
 export function resolveStudyLevelFromStudentsCap(rows: ImportCsvRow[]): ImportStudyLevel | null {
-  const studyPlanName = rows[0]?.['Studijní plán (název)']?.trim().toLowerCase() ?? ''
+  const studyScheduleName = rows[0]?.['Studijní plán (název)']?.trim().toLowerCase() ?? ''
 
-  if (startsWithAnyPrefix(studyPlanName, ['bc.', 'bachelor', 'bakalářsk'])) {
+  if (startsWithAnyPrefix(studyScheduleName, ['bc.', 'bachelor', 'bakalářsk'])) {
     return 'BACHELOR'
   }
 
-  if (startsWithAnyPrefix(studyPlanName, ['mgr.', 'master', 'magister', 'navazující'])) {
+  if (startsWithAnyPrefix(studyScheduleName, ['mgr.', 'master', 'magister', 'navazující'])) {
     return 'MASTER'
   }
 

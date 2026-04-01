@@ -36,26 +36,26 @@ describe('useImportStore', () => {
     const store = useImportStore()
     const payload = createImportPayload()
 
-    store.setImportedPlanDraft('SZZ plan', 'BACHELOR', payload)
+    store.setImportedScheduleDraft('SZZ schedule', 'BACHELOR', payload)
 
-    expect(store.hasImportedPlanDraft).toBe(true)
-    expect(store.importedPlanDraft?.planName).toBe('SZZ plan')
-    expect(store.importedPlanDraft?.szzType).toBe('BACHELOR')
-    expect(store.importedPlanDraft?.payload.committees.fileName).toBe('komise.csv')
+    expect(store.hasImportedScheduleDraft).toBe(true)
+    expect(store.importedScheduleDraft?.scheduleName).toBe('SZZ schedule')
+    expect(store.importedScheduleDraft?.szzType).toBe('BACHELOR')
+    expect(store.importedScheduleDraft?.payload.committees.fileName).toBe('komise.csv')
 
-    store.clearImportedPlanDraft()
+    store.clearImportedScheduleDraft()
 
-    expect(store.hasImportedPlanDraft).toBe(false)
-    expect(store.importedPlanDraft).toBeNull()
+    expect(store.hasImportedScheduleDraft).toBe(false)
+    expect(store.importedScheduleDraft).toBeNull()
   })
 
   it('deep-clones payload when saving draft', () => {
     const store = useImportStore()
     const payload = createImportPayload()
 
-    store.setImportedPlanDraft('Draft', 'BACHELOR', payload)
+    store.setImportedScheduleDraft('Draft', 'BACHELOR', payload)
     payload.committees.rows[0]!.Místo = 'CHANGED'
 
-    expect(store.importedPlanDraft?.payload.committees.rows[0]!.Místo).toBe('TH:A-1435')
+    expect(store.importedScheduleDraft?.payload.committees.rows[0]!.Místo).toBe('TH:A-1435')
   })
 })

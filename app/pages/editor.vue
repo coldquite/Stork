@@ -54,8 +54,8 @@ const {
 } = useEditorPage()
 
 const cardAccentRootClass = 'h-full rounded-none ring-0 shadow-none divide-y-2 divide-default bg-default'
-const draftRenameAriaLabel = computed(() => t('editor.plan.rename.openAriaLabel', { name: draftName.value }))
-const cloudSaveAriaLabel = computed(() => t('editor.plan.cloudSave.ariaLabel', { name: draftName.value }))
+const draftRenameAriaLabel = computed(() => t('editor.schedule.rename.openAriaLabel', { name: draftName.value }))
+const cloudSaveAriaLabel = computed(() => t('editor.schedule.cloudSave.ariaLabel', { name: draftName.value }))
 </script>
 
 <template>
@@ -68,9 +68,9 @@ const cloudSaveAriaLabel = computed(() => t('editor.plan.cloudSave.ariaLabel', {
         :draft-name="draftName"
         :back-aria-label="t('editor.navigation.backToHomepage')"
         :rename-aria-label="draftRenameAriaLabel"
-        :rename-label="t('editor.plan.rename.action')"
+        :rename-label="t('editor.schedule.rename.action')"
         :cloud-save-aria-label="cloudSaveAriaLabel"
-        :cloud-save-label="t('editor.plan.cloudSave.action')"
+        :cloud-save-label="t('editor.schedule.cloudSave.action')"
         :cloud-save-loading="isCloudSaveLoading"
         @rename-draft="openRenameDraftDialog"
         @save-to-cloud="openCloudSaveDialog"
@@ -138,11 +138,11 @@ const cloudSaveAriaLabel = computed(() => t('editor.plan.cloudSave.ariaLabel', {
     <EditorCommitteeNameModal
       :open="isRenameDraftDialogOpen"
       :name="renameDraftName"
-      :title="t('editor.plan.rename.title')"
-      :description="t('editor.plan.rename.description')"
-      :placeholder="t('editor.plan.rename.placeholder')"
-      :hint="t('editor.plan.rename.hint', { max: draftNameMaxLength })"
-      :submit-label="t('editor.plan.rename.submit')"
+      :title="t('editor.schedule.rename.title')"
+      :description="t('editor.schedule.rename.description')"
+      :placeholder="t('editor.schedule.rename.placeholder')"
+      :hint="t('editor.schedule.rename.hint', { max: draftNameMaxLength })"
+      :submit-label="t('editor.schedule.rename.submit')"
       :cancel-label="t('common.confirmDialog.cancel')"
       :validation-error="renameDraftValidationError"
       @update:open="isRenameDraftDialogOpen = $event"
@@ -154,11 +154,11 @@ const cloudSaveAriaLabel = computed(() => t('editor.plan.cloudSave.ariaLabel', {
     <EditorCommitteeNameModal
       :open="isCloudSaveDialogOpen"
       :name="cloudSaveName"
-      :title="t('editor.plan.cloudSave.dialog.title')"
-      :description="t('editor.plan.cloudSave.dialog.description')"
-      :placeholder="t('editor.plan.cloudSave.dialog.placeholder')"
-      :hint="t('editor.plan.cloudSave.dialog.hint', { max: draftNameMaxLength })"
-      :submit-label="t('editor.plan.cloudSave.dialog.submit')"
+      :title="t('editor.schedule.cloudSave.dialog.title')"
+      :description="t('editor.schedule.cloudSave.dialog.description')"
+      :placeholder="t('editor.schedule.cloudSave.dialog.placeholder')"
+      :hint="t('editor.schedule.cloudSave.dialog.hint', { max: draftNameMaxLength })"
+      :submit-label="t('editor.schedule.cloudSave.dialog.submit')"
       :cancel-label="t('common.confirmDialog.cancel')"
       :loading="isCloudSaveLoading"
       :validation-error="cloudSaveValidationError"

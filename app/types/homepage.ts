@@ -1,4 +1,4 @@
-export interface HomepagePlanListItem {
+export interface HomepageScheduleListItem {
   id: string
   name: string
   updatedAt: string
@@ -6,4 +6,4 @@ export interface HomepagePlanListItem {
   studentsCount: number
 }
 
-export type PlanOpenCandidate = Pick<HomepagePlanListItem, 'id' | 'name'>
+export type ScheduleOpenCandidate = Pick<HomepageScheduleListItem, 'id' | 'name'>

@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import type { TimeScheduleListItemDto } from '#shared/types/time-schedules'
 
-interface HomepageRecentPlansCardProps {
-  recentPlans: TimeScheduleListItemDto[]
-  isRecentPlansLoading: boolean
-  hasRecentPlansError: boolean
-  recentPlanOpenError: string | null
+interface HomepageRecentSchedulesCardProps {
+  recentSchedules: TimeScheduleListItemDto[]
+  isRecentSchedulesLoading: boolean
+  hasRecentSchedulesError: boolean
+  recentScheduleOpenError: string | null
 }
 
-defineProps<HomepageRecentPlansCardProps>()
-const emit = defineEmits<{ openPlan: [plan: TimeScheduleListItemDto] }>()
+defineProps<HomepageRecentSchedulesCardProps>()
+const emit = defineEmits<{ openSchedule: [schedule: TimeScheduleListItemDto] }>()
 
 const dateFormatter = new Intl.DateTimeFormat('cs-CZ', {
   timeZone: 'Europe/Prague',
@@ -27,12 +27,12 @@ function formatDateInPrague(iso: string): string {
   return dateFormatter.format(date)
 }
 
-function formatPlanDate(value: string): string {
+function formatScheduleDate(value: string): string {
   return formatDateInPrague(value)
 }
 
-function handleOpenPlan(plan: TimeScheduleListItemDto): void {
-  emit('openPlan', plan)
+function handleOpenSchedule(schedule: TimeScheduleListItemDto): void {
+  emit('openSchedule', schedule)
 }
 </script>
 
@@ -51,12 +51,12 @@ function handleOpenPlan(plan: TimeScheduleListItemDto): void {
         </div>
       </template>
 
-      <div v-if="isRecentPlansLoading" class="space-y-3">
+      <div v-if="isRecentSchedulesLoading" class="space-y-3">
         <USkeleton v-for="skeletonIndex in 7" :key="skeletonIndex" class="h-16 w-full rounded-lg" />
       </div>
 
       <UAlert
-        v-else-if="hasRecentPlansError"
+        v-else-if="hasRecentSchedulesError"
         color="error"
         variant="soft"
         icon="i-lucide-triangle-alert"
@@ -66,17 +66,17 @@ function handleOpenPlan(plan: TimeScheduleListItemDto): void {
 
       <template v-else>
         <UAlert
-          v-if="recentPlanOpenError"
+          v-if="recentScheduleOpenError"
           class="mb-4"
           color="error"
           variant="soft"
           icon="i-lucide-triangle-alert"
-          :title="$t('homepage.recent.openPlanErrorTitle')"
-          :description="recentPlanOpenError"
+          :title="$t('homepage.recent.openScheduleErrorTitle')"
+          :description="recentScheduleOpenError"
         />
 
         <UEmpty
-          v-if="recentPlans.length === 0"
+          v-if="recentSchedules.length === 0"
           icon="i-lucide-calendar"
           :title="$t('homepage.recent.emptyTitle')"
           :description="$t('homepage.recent.emptyDescription')"
@@ -84,10 +84,10 @@ function handleOpenPlan(plan: TimeScheduleListItemDto): void {
 
         <div v-else class="space-y-2">
           <div
-            v-for="plan in recentPlans"
-            :key="plan.id"
+            v-for="schedule in recentSchedules"
+            :key="schedule.id"
             class="group hover:bg-primary/10 flex w-full cursor-pointer items-center justify-between rounded-lg p-3 transition-colors"
-            @click="handleOpenPlan(plan)"
+            @click="handleOpenSchedule(schedule)"
           >
             <div class="flex min-w-0 items-center gap-4">
               <div class="bg-primary/10 flex size-10 items-center justify-center rounded-lg">
@@ -96,19 +96,19 @@ function handleOpenPlan(plan: TimeScheduleListItemDto): void {
               <div class="min-w-0">
                 <div class="flex items-center gap-2">
                   <p class="truncate font-medium">
-                    {{ plan.name }}
+                    {{ schedule.name }}
                   </p>
                   <UBadge
-                    v-if="plan.type === 'AUTO'"
+                    v-if="schedule.type === 'AUTO'"
                     color="secondary"
                     variant="soft"
                     class="auto-save-badge shrink-0 text-[11px]"
                   >
-                    {{ $t('homepage.plansModal.autoBadge') }}
+                    {{ $t('homepage.schedulesModal.autoBadge') }}
                   </UBadge>
                 </div>
                 <p class="text-muted text-sm">
-                  {{ formatPlanDate(plan.createdAt) }}
+                  {{ formatScheduleDate(schedule.createdAt) }}
                 </p>
               </div>
             </div>
@@ -117,9 +117,9 @@ function handleOpenPlan(plan: TimeScheduleListItemDto): void {
               <div class="text-muted flex items-center gap-4 text-sm">
                 <span class="flex items-center gap-1">
                   <UIcon name="i-lucide-users" class="size-4" />
-                  {{ $t('homepage.recent.committees', { count: plan.counts.committees }) }}
+                  {{ $t('homepage.recent.committees', { count: schedule.counts.committees }) }}
                 </span>
-                <span>{{ $t('homepage.recent.students', { count: plan.counts.students }) }}</span>
+                <span>{{ $t('homepage.recent.students', { count: schedule.counts.students }) }}</span>
               </div>
               <UIcon
                 name="i-lucide-chevron-right"

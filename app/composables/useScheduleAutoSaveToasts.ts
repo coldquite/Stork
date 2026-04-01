@@ -17,10 +17,12 @@ export function useScheduleAutoSaveToasts(): void {
       }
 
       const successTitleKey =
-        nextSavedType === 'MANUAL' ? 'editor.plan.cloudSave.toast.successTitle' : 'editor.autosave.toast.successTitle'
+        nextSavedType === 'MANUAL'
+          ? 'editor.schedule.cloudSave.toast.successTitle'
+          : 'editor.autosave.toast.successTitle'
       const successDescriptionKey =
         nextSavedType === 'MANUAL'
-          ? 'editor.plan.cloudSave.toast.successDescription'
+          ? 'editor.schedule.cloudSave.toast.successDescription'
           : 'editor.autosave.toast.successDescription'
 
       toast.add({
@@ -58,8 +60,8 @@ export function useScheduleAutoSaveToasts(): void {
       }
 
       toast.add({
-        title: t('editor.plan.cloudSave.toast.errorTitle'),
-        description: t('editor.plan.cloudSave.toast.errorRequestFailedDescription'),
+        title: t('editor.schedule.cloudSave.toast.errorTitle'),
+        description: t('editor.schedule.cloudSave.toast.errorRequestFailedDescription'),
         color: 'error',
         icon: 'i-lucide-cloud-alert',
         duration: 10_000

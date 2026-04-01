@@ -1,51 +1,51 @@
-import type { HomepagePlanListItem } from '~/types/homepage'
-import { useHomepageBrowsePlans } from '~/composables/homepage/useHomepageBrowsePlans'
+import type { HomepageScheduleListItem } from '~/types/homepage'
+import { useHomepageBrowseSchedules } from '~/composables/homepage/useHomepageBrowseSchedules'
 import { useHomepageCreateAndImport } from '~/composables/homepage/useHomepageCreateAndImport'
-import { useHomepagePlanOpening } from '~/composables/homepage/useHomepagePlanOpening'
+import { useHomepageScheduleOpening } from '~/composables/homepage/useHomepageScheduleOpening'
 
-export const HOMEPAGE_NEW_PLAN_NAME_MAX_LENGTH = 120
+export const HOMEPAGE_NEW_SCHEDULE_NAME_MAX_LENGTH = 120
 
 export function useHomepage() {
-  const isCreatingNewPlan = ref(false)
-  const isOpeningRecentPlan = ref(false)
+  const isCreatingNewSchedule = ref(false)
+  const isOpeningRecentSchedule = ref(false)
 
-  const browsePlans = useHomepageBrowsePlans()
+  const browseSchedules = useHomepageBrowseSchedules()
   const createAndImport = useHomepageCreateAndImport({
-    isCreatingNewPlan,
-    isOpeningRecentPlan,
-    planNameMaxLength: HOMEPAGE_NEW_PLAN_NAME_MAX_LENGTH
+    isCreatingNewSchedule,
+    isOpeningRecentSchedule,
+    scheduleNameMaxLength: HOMEPAGE_NEW_SCHEDULE_NAME_MAX_LENGTH
   })
-  const planOpening = useHomepagePlanOpening({
-    isCreatingNewPlan,
-    isOpeningRecentPlan
+  const scheduleOpening = useHomepageScheduleOpening({
+    isCreatingNewSchedule,
+    isOpeningRecentSchedule
   })
 
-  function requestOpenBrowsePlan(plan: HomepagePlanListItem): void {
-    browsePlans.isBrowsePlansDialogOpen.value = false
-    planOpening.requestOpenPlan(plan)
+  function requestOpenBrowseSchedule(schedule: HomepageScheduleListItem): void {
+    browseSchedules.isBrowseSchedulesDialogOpen.value = false
+    scheduleOpening.requestOpenSchedule(schedule)
   }
 
   return {
-    recentPlans: planOpening.recentPlans,
-    isRecentPlansLoading: planOpening.isRecentPlansLoading,
-    hasRecentPlansError: planOpening.hasRecentPlansError,
-    fetchRecentPlans: planOpening.fetchRecentPlans,
-    manualDrafts: browsePlans.manualDrafts,
-    autoDrafts: browsePlans.autoDrafts,
-    restoreDraftLine: planOpening.restoreDraftLine,
-    restoreDraftUpdatedLine: planOpening.restoreDraftUpdatedLine,
-    showRestoreCard: planOpening.showRestoreCard,
-    isOpenRecentPlanDialogOpen: planOpening.isOpenRecentPlanDialogOpen,
-    isOpeningRecentPlan,
-    recentPlanOpenError: planOpening.recentPlanOpenError,
-    openRecentPlanDialogDescription: planOpening.openRecentPlanDialogDescription,
-    requestOpenRecentPlan: planOpening.requestOpenRecentPlan,
-    requestOpenBrowsePlan,
-    cancelOpenRecentPlan: planOpening.cancelOpenRecentPlan,
-    confirmOpenRecentPlan: planOpening.confirmOpenRecentPlan,
-    isCreatePlanConfirmDialogOpen: createAndImport.isCreatePlanConfirmDialogOpen,
-    isCreatePlanNameDialogOpen: createAndImport.isCreatePlanNameDialogOpen,
-    isCreatingNewPlan,
+    recentSchedules: scheduleOpening.recentSchedules,
+    isRecentSchedulesLoading: scheduleOpening.isRecentSchedulesLoading,
+    hasRecentSchedulesError: scheduleOpening.hasRecentSchedulesError,
+    fetchRecentSchedules: scheduleOpening.fetchRecentSchedules,
+    manualSchedules: browseSchedules.manualSchedules,
+    autoSchedules: browseSchedules.autoSchedules,
+    restoreDraftLine: scheduleOpening.restoreDraftLine,
+    restoreDraftUpdatedLine: scheduleOpening.restoreDraftUpdatedLine,
+    showRestoreCard: scheduleOpening.showRestoreCard,
+    isOpenRecentScheduleDialogOpen: scheduleOpening.isOpenRecentScheduleDialogOpen,
+    isOpeningRecentSchedule,
+    recentScheduleOpenError: scheduleOpening.recentScheduleOpenError,
+    openRecentScheduleDialogDescription: scheduleOpening.openRecentScheduleDialogDescription,
+    requestOpenRecentSchedule: scheduleOpening.requestOpenRecentSchedule,
+    requestOpenBrowseSchedule,
+    cancelOpenRecentSchedule: scheduleOpening.cancelOpenRecentSchedule,
+    confirmOpenRecentSchedule: scheduleOpening.confirmOpenRecentSchedule,
+    isCreateScheduleConfirmDialogOpen: createAndImport.isCreateScheduleConfirmDialogOpen,
+    isCreateScheduleDialogOpen: createAndImport.isCreateScheduleDialogOpen,
+    isCreatingNewSchedule,
     isImportMappingErrorDialogOpen: createAndImport.isImportMappingErrorDialogOpen,
     importMappingError: createAndImport.importMappingError,
     isTeachersDictionaryResolutionDialogOpen: createAndImport.isTeachersDictionaryResolutionDialogOpen,
@@ -53,26 +53,26 @@ export function useHomepage() {
     teachersDictionaryResolutionError: createAndImport.teachersDictionaryResolutionError,
     teachersDictionaryResolutionFieldErrors: createAndImport.teachersDictionaryResolutionFieldErrors,
     isTeachersDictionaryResolutionSubmitDisabled: createAndImport.isTeachersDictionaryResolutionSubmitDisabled,
-    isBrowsePlansDialogOpen: browsePlans.isBrowsePlansDialogOpen,
-    isBrowsePlansLoading: browsePlans.isBrowsePlansLoading,
-    browsePlansSearchQuery: browsePlans.browsePlansSearchQuery,
-    isManualLoadMoreLoading: browsePlans.isManualLoadMoreLoading,
-    isAutoLoadMoreLoading: browsePlans.isAutoLoadMoreLoading,
-    hasMoreManualDrafts: browsePlans.hasMoreManualDrafts,
-    hasMoreAutoDrafts: browsePlans.hasMoreAutoDrafts,
-    newPlanNameInput: createAndImport.newPlanNameInput,
-    newPlanNameError: createAndImport.newPlanNameError,
-    requestCreatePlan: createAndImport.requestCreatePlan,
-    requestBrowsePlans: browsePlans.requestBrowsePlans,
-    requestBrowsePlansSearch: browsePlans.requestBrowsePlansSearch,
-    loadMoreManualDrafts: browsePlans.loadMoreManualDrafts,
-    loadMoreAutoDrafts: browsePlans.loadMoreAutoDrafts,
-    requestRestoreDraft: planOpening.requestRestoreDraft,
-    cancelCreatePlanConfirm: createAndImport.cancelCreatePlanConfirm,
-    confirmCreatePlanConfirm: createAndImport.confirmCreatePlanConfirm,
-    cancelCreatePlanNameDialog: createAndImport.cancelCreatePlanNameDialog,
-    submitCreatePlanName: createAndImport.submitCreatePlanName,
-    submitCreatePlanImport: createAndImport.submitCreatePlanImport,
+    isBrowseSchedulesDialogOpen: browseSchedules.isBrowseSchedulesDialogOpen,
+    isBrowseSchedulesLoading: browseSchedules.isBrowseSchedulesLoading,
+    browseSchedulesSearchQuery: browseSchedules.browseSchedulesSearchQuery,
+    isManualLoadMoreLoading: browseSchedules.isManualLoadMoreLoading,
+    isAutoLoadMoreLoading: browseSchedules.isAutoLoadMoreLoading,
+    hasMoreManualSchedules: browseSchedules.hasMoreManualSchedules,
+    hasMoreAutoSchedules: browseSchedules.hasMoreAutoSchedules,
+    newScheduleNameInput: createAndImport.newScheduleNameInput,
+    newScheduleNameError: createAndImport.newScheduleNameError,
+    requestCreateSchedule: createAndImport.requestCreateSchedule,
+    requestBrowseSchedules: browseSchedules.requestBrowseSchedules,
+    requestBrowseSchedulesSearch: browseSchedules.requestBrowseSchedulesSearch,
+    loadMoreManualSchedules: browseSchedules.loadMoreManualSchedules,
+    loadMoreAutoSchedules: browseSchedules.loadMoreAutoSchedules,
+    requestRestoreDraft: scheduleOpening.requestRestoreDraft,
+    cancelCreateScheduleConfirm: createAndImport.cancelCreateScheduleConfirm,
+    confirmCreateScheduleConfirm: createAndImport.confirmCreateScheduleConfirm,
+    cancelCreateScheduleDialog: createAndImport.cancelCreateScheduleDialog,
+    submitCreateSchedule: createAndImport.submitCreateSchedule,
+    submitCreateScheduleImport: createAndImport.submitCreateScheduleImport,
     cancelTeachersDictionaryResolution: createAndImport.cancelTeachersDictionaryResolution,
     submitTeachersDictionaryResolution: createAndImport.submitTeachersDictionaryResolution,
     updateTeachersDictionaryResolutionEntry: createAndImport.updateTeachersDictionaryResolutionEntry

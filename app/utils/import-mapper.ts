@@ -1067,13 +1067,13 @@ function appendStudentsToCommittees(
   }
 }
 
-function normalizePlanName(value: string): string {
+function normalizeScheduleName(value: string): string {
   return normalizeWhitespace(value)
 }
 
 export function mapImportPayloadToDraftSource(input: MapImportPayloadToDraftInput): MapImportPayloadToDraftResult {
   try {
-    const planName = normalizePlanName(input.planName)
+    const scheduleName = normalizeScheduleName(input.scheduleName)
     const studentsDatasets = collectStudentDatasets(input.payload, input.szzType)
     const committeesMappingResult = mapCommittees(
       input.szzType,
@@ -1089,7 +1089,7 @@ export function mapImportPayloadToDraftSource(input: MapImportPayloadToDraftInpu
     )
 
     const draft: DraftScheduleSource = {
-      name: planName,
+      name: scheduleName,
       type: 'MANUAL',
       committees: committeesMappingResult.committees
     }

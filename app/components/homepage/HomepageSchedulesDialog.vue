@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import type { HomepagePlanListItem } from '~/types/homepage'
+import type { HomepageScheduleListItem } from '~/types/homepage'
 
-interface HomepagePlansDialogProps {
-  manualDrafts: HomepagePlanListItem[]
-  autoDrafts: HomepagePlanListItem[]
+interface HomepageSchedulesDialogProps {
+  manualSchedules: HomepageScheduleListItem[]
+  autoSchedules: HomepageScheduleListItem[]
   isLoading: boolean
   searchQuery: string
-  hasMoreManualDrafts: boolean
-  hasMoreAutoDrafts: boolean
+  hasMoreManualSchedules: boolean
+  hasMoreAutoSchedules: boolean
   isManualLoadMoreLoading: boolean
   isAutoLoadMoreLoading: boolean
 }
 
-const props = defineProps<HomepagePlansDialogProps>()
+const props = defineProps<HomepageSchedulesDialogProps>()
 const emit = defineEmits<{
-  openPlan: [plan: HomepagePlanListItem]
+  openSchedule: [schedule: HomepageScheduleListItem]
   searchChange: [query: string]
   loadMoreManual: []
   loadMoreAuto: []
@@ -34,8 +34,8 @@ const dateTimeFormatter = new Intl.DateTimeFormat('cs-CZ', {
 })
 
 const tabs = computed(() => [
-  { key: 'manual', label: t('homepage.plansModal.tabs.manual'), slot: 'manual' },
-  { key: 'auto', label: t('homepage.plansModal.tabs.auto'), slot: 'auto' }
+  { key: 'manual', label: t('homepage.schedulesModal.tabs.manual'), slot: 'manual' },
+  { key: 'auto', label: t('homepage.schedulesModal.tabs.auto'), slot: 'auto' }
 ])
 const searchInputValue = ref(props.searchQuery)
 
@@ -61,8 +61,8 @@ function formatUpdatedAt(value: string): string {
   return dateTimeFormatter.format(date)
 }
 
-function handleOpenPlan(plan: HomepagePlanListItem): void {
-  emit('openPlan', plan)
+function handleOpenSchedule(schedule: HomepageScheduleListItem): void {
+  emit('openSchedule', schedule)
 }
 
 function handleLoadMoreManual(): void {
@@ -77,7 +77,7 @@ function handleLoadMoreAuto(): void {
 <template>
   <UModal
     v-model:open="open"
-    :title="t('homepage.plansModal.title')"
+    :title="t('homepage.schedulesModal.title')"
     :ui="{
       content: 'sm:max-w-5xl'
     }"
@@ -85,35 +85,39 @@ function handleLoadMoreAuto(): void {
     <template #body>
       <div class="mb-5 w-full">
         <p class="text-highlighted mb-2 text-base font-medium">
-          {{ t('homepage.plansModal.searchPlaceholder') }}
+          {{ t('homepage.schedulesModal.searchPlaceholder') }}
         </p>
         <UInput
           v-model="searchInputValue"
           icon="i-lucide-search"
           size="xl"
           class="w-full"
-          :placeholder="t('homepage.plansModal.searchPlaceholder')"
+          :placeholder="t('homepage.schedulesModal.searchPlaceholder')"
         />
       </div>
 
-      <CommonAppLoadingState v-if="isLoading" :label="t('homepage.plansModal.loading')" min-height-class="min-h-90" />
+      <CommonAppLoadingState
+        v-if="isLoading"
+        :label="t('homepage.schedulesModal.loading')"
+        min-height-class="min-h-90"
+      />
 
-      <UTabs v-else :items="tabs" class="homepage-plans-tabs border-default mb-2 border-b pb-3">
+      <UTabs v-else :items="tabs" class="homepage-schedules-tabs border-default mb-2 border-b pb-3">
         <template #manual>
-          <div v-if="manualDrafts.length === 0" class="py-6">
+          <div v-if="manualSchedules.length === 0" class="py-6">
             <UEmpty
               icon="i-lucide-folder-open"
-              :title="t('homepage.plansModal.emptyTitle')"
-              :description="t('homepage.plansModal.emptyDescription')"
+              :title="t('homepage.schedulesModal.emptyTitle')"
+              :description="t('homepage.schedulesModal.emptyDescription')"
             />
           </div>
 
           <div v-else class="box-border max-h-[56vh] space-y-3 overflow-y-auto px-1 py-1 pr-3">
             <UCard
-              v-for="draft in manualDrafts"
+              v-for="draft in manualSchedules"
               :key="draft.id"
               class="hover:bg-primary/5 w-full cursor-pointer transition-colors"
-              @click="handleOpenPlan(draft)"
+              @click="handleOpenSchedule(draft)"
             >
               <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div class="min-w-0">
@@ -121,7 +125,7 @@ function handleLoadMoreAuto(): void {
                     {{ draft.name }}
                   </h3>
                   <p class="text-muted text-xs">
-                    {{ t('homepage.plansModal.updatedAt') }} {{ formatUpdatedAt(draft.updatedAt) }}
+                    {{ t('homepage.schedulesModal.updatedAt') }} {{ formatUpdatedAt(draft.updatedAt) }}
                   </p>
                 </div>
                 <div class="text-muted flex shrink-0 items-center gap-4 text-xs">
@@ -134,7 +138,7 @@ function handleLoadMoreAuto(): void {
               </div>
             </UCard>
 
-            <div v-if="hasMoreManualDrafts" class="flex justify-center pt-2">
+            <div v-if="hasMoreManualSchedules" class="flex justify-center pt-2">
               <UButton
                 color="primary"
                 variant="solid"
@@ -144,27 +148,27 @@ function handleLoadMoreAuto(): void {
                 :disabled="isManualLoadMoreLoading"
                 @click="handleLoadMoreManual"
               >
-                {{ t('homepage.plansModal.loadMore') }}
+                {{ t('homepage.schedulesModal.loadMore') }}
               </UButton>
             </div>
           </div>
         </template>
 
         <template #auto>
-          <div v-if="autoDrafts.length === 0" class="py-6">
+          <div v-if="autoSchedules.length === 0" class="py-6">
             <UEmpty
               icon="i-lucide-folder-open"
-              :title="t('homepage.plansModal.emptyTitle')"
-              :description="t('homepage.plansModal.emptyDescription')"
+              :title="t('homepage.schedulesModal.emptyTitle')"
+              :description="t('homepage.schedulesModal.emptyDescription')"
             />
           </div>
 
           <div v-else class="box-border max-h-[56vh] space-y-3 overflow-y-auto px-2 py-1 pr-3">
             <UCard
-              v-for="draft in autoDrafts"
+              v-for="draft in autoSchedules"
               :key="draft.id"
               class="hover:bg-warning/10 w-full cursor-pointer transition-colors"
-              @click="handleOpenPlan(draft)"
+              @click="handleOpenSchedule(draft)"
             >
               <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div class="min-w-0 space-y-1">
@@ -173,11 +177,11 @@ function handleLoadMoreAuto(): void {
                       {{ draft.name }}
                     </h3>
                     <UBadge color="secondary" variant="soft" class="auto-save-badge text-[11px]">
-                      {{ t('homepage.plansModal.autoBadge') }}
+                      {{ t('homepage.schedulesModal.autoBadge') }}
                     </UBadge>
                   </div>
                   <p class="text-muted text-xs">
-                    {{ t('homepage.plansModal.updatedAt') }} {{ formatUpdatedAt(draft.updatedAt) }}
+                    {{ t('homepage.schedulesModal.updatedAt') }} {{ formatUpdatedAt(draft.updatedAt) }}
                   </p>
                 </div>
                 <div class="text-muted flex shrink-0 items-center gap-4 text-xs">
@@ -190,7 +194,7 @@ function handleLoadMoreAuto(): void {
               </div>
             </UCard>
 
-            <div v-if="hasMoreAutoDrafts" class="flex justify-center pt-2">
+            <div v-if="hasMoreAutoSchedules" class="flex justify-center pt-2">
               <UButton
                 color="primary"
                 variant="solid"
@@ -200,7 +204,7 @@ function handleLoadMoreAuto(): void {
                 :disabled="isAutoLoadMoreLoading"
                 @click="handleLoadMoreAuto"
               >
-                {{ t('homepage.plansModal.loadMore') }}
+                {{ t('homepage.schedulesModal.loadMore') }}
               </UButton>
             </div>
           </div>
@@ -211,7 +215,7 @@ function handleLoadMoreAuto(): void {
 </template>
 
 <style scoped>
-.homepage-plans-tabs :deep([role='tab']) {
+.homepage-schedules-tabs :deep([role='tab']) {
   cursor: pointer;
 }
 </style>

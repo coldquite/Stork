@@ -170,7 +170,7 @@
         "justNow": "právě teď"
       }
     },
-    "plansModal": {
+    "schedulesModal": {
       "title": "Uložené plány",
       "tabs": {
         "manual": "Manuální uložení",
@@ -189,11 +189,11 @@
       "description": "Rychlý přístup k posledním 7 plánům",
       "errorTitle": "Plány se nepodařilo načíst",
       "errorDescription": "Zkuste stránku obnovit a akci opakovat.",
-      "openPlanAction": "Otevřít plán",
-      "openPlanConfirmDescription": "Opravdu chcete otevřít plán „{name}“? Aktuální rozpracovaný časový plán bude ztracen.",
-      "openPlanErrorTitle": "Plán se nepodařilo otevřít",
-      "openPlanErrorDescription": "Nepodařilo se načíst vybraný plán. Zkuste akci opakovat.",
-      "openingPlan": "Načítám plán…",
+      "openScheduleAction": "Otevřít plán",
+      "openScheduleConfirmDescription": "Opravdu chcete otevřít plán „{name}“? Aktuální rozpracovaný časový plán bude ztracen.",
+      "openScheduleErrorTitle": "Plán se nepodařilo otevřít",
+      "openScheduleErrorDescription": "Nepodařilo se načíst vybraný plán. Zkuste akci opakovat.",
+      "openingSchedule": "Načítám plán…",
       "emptyTitle": "Zatím není k dispozici žádný plán",
       "emptyDescription": "Jakmile vytvoříte nebo uložíte plán, zobrazí se na tomto místě.",
       "committees": "{count} komisí",
@@ -206,8 +206,8 @@
     "loading": "Načítám editor...",
     "navigation": {
       "backToHomepage": "Zpět na hlavní stránku",
-      "openSavedPlansTitle": "Najít uložený plán",
-      "createPlanFromImportTitle": "Vytvořit nový plán z importu"
+      "openSavedSchedulesTitle": "Najít uložený plán",
+      "createScheduleFromImportTitle": "Vytvořit nový plán z importu"
     },
     "autosave": {
       "toast": {
@@ -217,7 +217,7 @@
         "errorRequestFailedDescription": "Nepodařilo se uložit změny. Automatické uložení to za chvíli zkusí znovu."
       }
     },
-    "plan": {
+    "schedule": {
       "cloudSave": {
         "action": "Uložit do cloudu",
         "ariaLabel": "Uložit plán {name} do cloudu",

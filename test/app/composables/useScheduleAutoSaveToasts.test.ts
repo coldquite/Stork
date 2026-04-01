@@ -94,8 +94,8 @@ describe('useScheduleAutoSaveToasts', () => {
 
     expect(toastAddMock).toHaveBeenCalledTimes(1)
     expect(toastAddMock).toHaveBeenCalledWith({
-      title: 'editor.plan.cloudSave.toast.successTitle',
-      description: 'editor.plan.cloudSave.toast.successDescription',
+      title: 'editor.schedule.cloudSave.toast.successTitle',
+      description: 'editor.schedule.cloudSave.toast.successDescription',
       color: 'success',
       icon: 'i-lucide-cloud-upload',
       duration: 10000
@@ -132,8 +132,8 @@ describe('useScheduleAutoSaveToasts', () => {
 
     expect(toastAddMock).toHaveBeenCalledTimes(1)
     expect(toastAddMock).toHaveBeenCalledWith({
-      title: 'editor.plan.cloudSave.toast.errorTitle',
-      description: 'editor.plan.cloudSave.toast.errorRequestFailedDescription',
+      title: 'editor.schedule.cloudSave.toast.errorTitle',
+      description: 'editor.schedule.cloudSave.toast.errorRequestFailedDescription',
       color: 'error',
       icon: 'i-lucide-cloud-alert',
       duration: 10000

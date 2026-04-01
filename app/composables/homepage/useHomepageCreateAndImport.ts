@@ -20,26 +20,26 @@ interface TeachersDictionaryResolutionEntry extends MissingTeachersDictionaryEnt
 }
 
 interface PendingTeachersDictionaryResolutionContext {
-  planName: string
+  scheduleName: string
   szzType: ImportSzzType
   payload: ImportPayload
   dictionaryByLookupKey: Map<string, string>
 }
 
 interface UseHomepageCreateAndImportOptions {
-  isCreatingNewPlan: Ref<boolean>
-  isOpeningRecentPlan: Readonly<Ref<boolean>>
-  planNameMaxLength: number
+  isCreatingNewSchedule: Ref<boolean>
+  isOpeningRecentSchedule: Readonly<Ref<boolean>>
+  scheduleNameMaxLength: number
 }
 
 export function useHomepageCreateAndImport(options: UseHomepageCreateAndImportOptions) {
   const { t } = useI18n()
   const scheduleDraftStore = useScheduleDraftStore()
 
-  const isCreatePlanConfirmDialogOpen = ref(false)
-  const isCreatePlanNameDialogOpen = ref(false)
-  const newPlanNameInput = ref('')
-  const newPlanNameError = ref<string | null>(null)
+  const isCreateScheduleConfirmDialogOpen = ref(false)
+  const isCreateScheduleDialogOpen = ref(false)
+  const newScheduleNameInput = ref('')
+  const newScheduleNameError = ref<string | null>(null)
 
   const isImportMappingErrorDialogOpen = ref(false)
   const importMappingError = ref<ImportMappingError | null>(null)
@@ -51,7 +51,7 @@ export function useHomepageCreateAndImport(options: UseHomepageCreateAndImportOp
   const pendingTeachersDictionaryResolutionContext = ref<PendingTeachersDictionaryResolutionContext | null>(null)
 
   const isTeachersDictionaryResolutionSubmitDisabled = computed(() => {
-    if (options.isCreatingNewPlan.value || teachersDictionaryResolutionEntries.value.length === 0) {
+    if (options.isCreatingNewSchedule.value || teachersDictionaryResolutionEntries.value.length === 0) {
       return true
     }
 
@@ -60,16 +60,16 @@ export function useHomepageCreateAndImport(options: UseHomepageCreateAndImportOp
     })
   })
 
-  watch(newPlanNameInput, () => {
-    if (newPlanNameError.value) {
-      newPlanNameError.value = null
+  watch(newScheduleNameInput, () => {
+    if (newScheduleNameError.value) {
+      newScheduleNameError.value = null
     }
   })
 
-  watch(isCreatePlanNameDialogOpen, (isOpen) => {
-    if (!isOpen && !options.isCreatingNewPlan.value) {
-      newPlanNameInput.value = ''
-      newPlanNameError.value = null
+  watch(isCreateScheduleDialogOpen, (isOpen) => {
+    if (!isOpen && !options.isCreatingNewSchedule.value) {
+      newScheduleNameInput.value = ''
+      newScheduleNameError.value = null
       clearTeachersDictionaryResolutionState()
     }
   })
@@ -106,7 +106,7 @@ export function useHomepageCreateAndImport(options: UseHomepageCreateAndImportOp
     return fieldErrors
   }
 
-  function validateNewPlanName(name: string): string | null {
+  function validateNewScheduleName(name: string): string | null {
     const trimmedName = name.trim()
 
     if (trimmedName.length < 1) {
@@ -117,77 +117,77 @@ export function useHomepageCreateAndImport(options: UseHomepageCreateAndImportOp
       return t('homepage.actions.create.validation.leadingTrailingWhitespace')
     }
 
-    if (trimmedName.length > options.planNameMaxLength) {
-      return t('homepage.actions.create.validation.maxLength', { max: options.planNameMaxLength })
+    if (trimmedName.length > options.scheduleNameMaxLength) {
+      return t('homepage.actions.create.validation.maxLength', { max: options.scheduleNameMaxLength })
     }
 
     return null
   }
 
-  function openCreatePlanNameDialog(): void {
+  function openCreateScheduleDialog(): void {
     clearImportMappingError()
     clearTeachersDictionaryResolutionState()
-    isCreatePlanNameDialogOpen.value = true
+    isCreateScheduleDialogOpen.value = true
   }
 
-  function requestCreatePlan(): void {
-    if (options.isCreatingNewPlan.value || options.isOpeningRecentPlan.value) {
+  function requestCreateSchedule(): void {
+    if (options.isCreatingNewSchedule.value || options.isOpeningRecentSchedule.value) {
       return
     }
 
     if (scheduleDraftStore.hasDraft) {
-      isCreatePlanConfirmDialogOpen.value = true
+      isCreateScheduleConfirmDialogOpen.value = true
       return
     }
 
-    openCreatePlanNameDialog()
+    openCreateScheduleDialog()
   }
 
-  function cancelCreatePlanConfirm(): void {
-    if (options.isCreatingNewPlan.value) {
+  function cancelCreateScheduleConfirm(): void {
+    if (options.isCreatingNewSchedule.value) {
       return
     }
 
-    isCreatePlanConfirmDialogOpen.value = false
+    isCreateScheduleConfirmDialogOpen.value = false
   }
 
-  function confirmCreatePlanConfirm(): void {
-    if (options.isCreatingNewPlan.value) {
+  function confirmCreateScheduleConfirm(): void {
+    if (options.isCreatingNewSchedule.value) {
       return
     }
 
-    isCreatePlanConfirmDialogOpen.value = false
-    openCreatePlanNameDialog()
+    isCreateScheduleConfirmDialogOpen.value = false
+    openCreateScheduleDialog()
   }
 
-  function cancelCreatePlanNameDialog(): void {
-    if (options.isCreatingNewPlan.value) {
+  function cancelCreateScheduleDialog(): void {
+    if (options.isCreatingNewSchedule.value) {
       return
     }
 
-    isCreatePlanNameDialogOpen.value = false
+    isCreateScheduleDialogOpen.value = false
   }
 
-  async function submitCreatePlanName(): Promise<void> {
-    if (options.isCreatingNewPlan.value || options.isOpeningRecentPlan.value) {
+  async function submitCreateSchedule(): Promise<void> {
+    if (options.isCreatingNewSchedule.value || options.isOpeningRecentSchedule.value) {
       return
     }
 
-    const validationError = validateNewPlanName(newPlanNameInput.value)
+    const validationError = validateNewScheduleName(newScheduleNameInput.value)
     if (validationError) {
-      newPlanNameError.value = validationError
+      newScheduleNameError.value = validationError
       return
     }
 
-    options.isCreatingNewPlan.value = true
+    options.isCreatingNewSchedule.value = true
 
     try {
-      scheduleDraftStore.initializeNewDraft({ name: newPlanNameInput.value.trim() })
-      isCreatePlanNameDialogOpen.value = false
+      scheduleDraftStore.initializeNewDraft({ name: newScheduleNameInput.value.trim() })
+      isCreateScheduleDialogOpen.value = false
       clearImportMappingError()
       await navigateTo('/editor')
     } finally {
-      options.isCreatingNewPlan.value = false
+      options.isCreatingNewSchedule.value = false
     }
   }
 
@@ -227,11 +227,11 @@ export function useHomepageCreateAndImport(options: UseHomepageCreateAndImportOp
 
   async function mapPreparedImportPayload(optionsForMapping: {
     payload: ImportPayload
-    planName: string
+    scheduleName: string
     szzType: ImportSzzType
   }): Promise<void> {
     const mappingResult = mapImportPayloadToDraftSource({
-      planName: optionsForMapping.planName,
+      scheduleName: optionsForMapping.scheduleName,
       szzType: optionsForMapping.szzType,
       payload: optionsForMapping.payload
     })
@@ -243,7 +243,7 @@ export function useHomepageCreateAndImport(options: UseHomepageCreateAndImportOp
     }
 
     scheduleDraftStore.initializeFromSource(mappingResult.draft)
-    isCreatePlanNameDialogOpen.value = false
+    isCreateScheduleDialogOpen.value = false
     clearTeachersDictionaryResolutionState()
     clearImportMappingError()
     await navigateTo('/editor')
@@ -264,7 +264,7 @@ export function useHomepageCreateAndImport(options: UseHomepageCreateAndImportOp
   }
 
   function cancelTeachersDictionaryResolution(): void {
-    if (options.isCreatingNewPlan.value) {
+    if (options.isCreatingNewSchedule.value) {
       return
     }
 
@@ -293,7 +293,7 @@ export function useHomepageCreateAndImport(options: UseHomepageCreateAndImportOp
   }
 
   async function submitTeachersDictionaryResolution(): Promise<void> {
-    if (options.isCreatingNewPlan.value || isTeachersDictionaryResolutionSubmitDisabled.value) {
+    if (options.isCreatingNewSchedule.value || isTeachersDictionaryResolutionSubmitDisabled.value) {
       return
     }
 
@@ -310,7 +310,7 @@ export function useHomepageCreateAndImport(options: UseHomepageCreateAndImportOp
 
     teachersDictionaryResolutionFieldErrors.value = {}
 
-    options.isCreatingNewPlan.value = true
+    options.isCreatingNewSchedule.value = true
     teachersDictionaryResolutionError.value = null
     clearImportMappingError()
 
@@ -355,7 +355,7 @@ export function useHomepageCreateAndImport(options: UseHomepageCreateAndImportOp
 
       await mapPreparedImportPayload({
         payload: pendingContext.payload,
-        planName: pendingContext.planName,
+        scheduleName: pendingContext.scheduleName,
         szzType: pendingContext.szzType
       })
       if (isImportMappingErrorDialogOpen.value) {
@@ -366,25 +366,25 @@ export function useHomepageCreateAndImport(options: UseHomepageCreateAndImportOp
         resolveRequestErrorMessage(error) ??
         t('homepage.actions.create.import.teachersDictionaryResolution.submitErrorFallback')
     } finally {
-      options.isCreatingNewPlan.value = false
+      options.isCreatingNewSchedule.value = false
     }
   }
 
-  async function submitCreatePlanImport(optionsForImport: {
+  async function submitCreateScheduleImport(optionsForImport: {
     payload: ImportPayload
     szzType: ImportSzzType
   }): Promise<void> {
-    if (options.isCreatingNewPlan.value || options.isOpeningRecentPlan.value) {
+    if (options.isCreatingNewSchedule.value || options.isOpeningRecentSchedule.value) {
       return
     }
 
-    const validationError = validateNewPlanName(newPlanNameInput.value)
+    const validationError = validateNewScheduleName(newScheduleNameInput.value)
     if (validationError) {
-      newPlanNameError.value = validationError
+      newScheduleNameError.value = validationError
       return
     }
 
-    options.isCreatingNewPlan.value = true
+    options.isCreatingNewSchedule.value = true
 
     try {
       // Ensure loading state is rendered before synchronous mapping starts.
@@ -424,7 +424,7 @@ export function useHomepageCreateAndImport(options: UseHomepageCreateAndImportOp
       if (missingEntries.length > 0) {
         openTeachersDictionaryResolutionDialog(
           {
-            planName: newPlanNameInput.value.trim(),
+            scheduleName: newScheduleNameInput.value.trim(),
             szzType: optionsForImport.szzType,
             payload,
             dictionaryByLookupKey
@@ -436,19 +436,19 @@ export function useHomepageCreateAndImport(options: UseHomepageCreateAndImportOp
 
       await mapPreparedImportPayload({
         payload,
-        planName: newPlanNameInput.value.trim(),
+        scheduleName: newScheduleNameInput.value.trim(),
         szzType: optionsForImport.szzType
       })
     } finally {
-      options.isCreatingNewPlan.value = false
+      options.isCreatingNewSchedule.value = false
     }
   }
 
   return {
-    isCreatePlanConfirmDialogOpen,
-    isCreatePlanNameDialogOpen,
-    newPlanNameInput,
-    newPlanNameError,
+    isCreateScheduleConfirmDialogOpen,
+    isCreateScheduleDialogOpen,
+    newScheduleNameInput,
+    newScheduleNameError,
     isImportMappingErrorDialogOpen,
     importMappingError,
     isTeachersDictionaryResolutionDialogOpen,
@@ -456,12 +456,12 @@ export function useHomepageCreateAndImport(options: UseHomepageCreateAndImportOp
     teachersDictionaryResolutionError,
     teachersDictionaryResolutionFieldErrors,
     isTeachersDictionaryResolutionSubmitDisabled,
-    requestCreatePlan,
-    cancelCreatePlanConfirm,
-    confirmCreatePlanConfirm,
-    cancelCreatePlanNameDialog,
-    submitCreatePlanName,
-    submitCreatePlanImport,
+    requestCreateSchedule,
+    cancelCreateScheduleConfirm,
+    confirmCreateScheduleConfirm,
+    cancelCreateScheduleDialog,
+    submitCreateSchedule,
+    submitCreateScheduleImport,
     cancelTeachersDictionaryResolution,
     submitTeachersDictionaryResolution,
     updateTeachersDictionaryResolutionEntry

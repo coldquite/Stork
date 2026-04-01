@@ -32,7 +32,7 @@ export interface ImportMappingError {
 }
 
 export interface MapImportPayloadToDraftInput {
-  planName: string
+  scheduleName: string
   szzType: ImportSzzType
   payload: ImportPayload
 }

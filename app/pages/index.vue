@@ -1,31 +1,31 @@
 <script setup lang="ts">
-import CreatePlanNameDialog from '~/components/schedule-creation/CreatePlanNameDialog.vue'
+import CreateScheduleDialog from '~/components/schedule-creation/CreateScheduleDialog.vue'
 import ImportMappingErrorDialog from '~/components/schedule-creation/ImportMappingErrorDialog.vue'
 import ImportTeachersDictionaryResolutionDialog from '~/components/schedule-creation/ImportTeachersDictionaryResolutionDialog.vue'
-import { HOMEPAGE_NEW_PLAN_NAME_MAX_LENGTH } from '~/composables/useHomepage'
+import { HOMEPAGE_NEW_SCHEDULE_NAME_MAX_LENGTH } from '~/composables/useHomepage'
 
 const { t } = useI18n()
 const {
-  recentPlans,
-  isRecentPlansLoading,
-  hasRecentPlansError,
-  fetchRecentPlans,
-  manualDrafts,
-  autoDrafts,
+  recentSchedules,
+  isRecentSchedulesLoading,
+  hasRecentSchedulesError,
+  fetchRecentSchedules,
+  manualSchedules,
+  autoSchedules,
   restoreDraftLine,
   restoreDraftUpdatedLine,
   showRestoreCard,
-  isOpenRecentPlanDialogOpen,
-  isOpeningRecentPlan,
-  recentPlanOpenError,
-  openRecentPlanDialogDescription,
-  requestOpenRecentPlan,
-  requestOpenBrowsePlan,
-  cancelOpenRecentPlan,
-  confirmOpenRecentPlan,
-  isCreatePlanConfirmDialogOpen,
-  isCreatePlanNameDialogOpen,
-  isCreatingNewPlan,
+  isOpenRecentScheduleDialogOpen,
+  isOpeningRecentSchedule,
+  recentScheduleOpenError,
+  openRecentScheduleDialogDescription,
+  requestOpenRecentSchedule,
+  requestOpenBrowseSchedule,
+  cancelOpenRecentSchedule,
+  confirmOpenRecentSchedule,
+  isCreateScheduleConfirmDialogOpen,
+  isCreateScheduleDialogOpen,
+  isCreatingNewSchedule,
   isImportMappingErrorDialogOpen,
   importMappingError,
   isTeachersDictionaryResolutionDialogOpen,
@@ -33,39 +33,39 @@ const {
   teachersDictionaryResolutionFieldErrors,
   teachersDictionaryResolutionError,
   isTeachersDictionaryResolutionSubmitDisabled,
-  isBrowsePlansDialogOpen,
-  isBrowsePlansLoading,
-  browsePlansSearchQuery,
+  isBrowseSchedulesDialogOpen,
+  isBrowseSchedulesLoading,
+  browseSchedulesSearchQuery,
   isManualLoadMoreLoading,
   isAutoLoadMoreLoading,
-  hasMoreManualDrafts,
-  hasMoreAutoDrafts,
-  newPlanNameInput,
-  newPlanNameError,
-  requestCreatePlan,
-  requestBrowsePlans,
-  requestBrowsePlansSearch,
-  loadMoreManualDrafts,
-  loadMoreAutoDrafts,
+  hasMoreManualSchedules,
+  hasMoreAutoSchedules,
+  newScheduleNameInput,
+  newScheduleNameError,
+  requestCreateSchedule,
+  requestBrowseSchedules,
+  requestBrowseSchedulesSearch,
+  loadMoreManualSchedules,
+  loadMoreAutoSchedules,
   requestRestoreDraft,
-  cancelCreatePlanConfirm,
-  confirmCreatePlanConfirm,
-  cancelCreatePlanNameDialog,
-  submitCreatePlanName,
-  submitCreatePlanImport,
+  cancelCreateScheduleConfirm,
+  confirmCreateScheduleConfirm,
+  cancelCreateScheduleDialog,
+  submitCreateSchedule,
+  submitCreateScheduleImport,
   cancelTeachersDictionaryResolution,
   submitTeachersDictionaryResolution,
   updateTeachersDictionaryResolutionEntry
 } = useHomepage()
 
-await fetchRecentPlans()
+await fetchRecentSchedules()
 </script>
 
 <template>
   <UContainer class="max-w-5xl py-14">
-    <div v-if="isOpeningRecentPlan" class="bg-default/70 fixed inset-0 z-50 backdrop-blur-[1px]">
+    <div v-if="isOpeningRecentSchedule" class="bg-default/70 fixed inset-0 z-50 backdrop-blur-[1px]">
       <CommonAppLoadingState
-        :label="t('homepage.recent.openingPlan')"
+        :label="t('homepage.recent.openingSchedule')"
         min-height-class="min-h-screen"
         container-class="px-4"
       />
@@ -84,55 +84,55 @@ await fetchRecentPlans()
       :restore-draft-line="restoreDraftLine"
       :restore-draft-updated-line="restoreDraftUpdatedLine"
       :show-restore-card="showRestoreCard"
-      @create-click="requestCreatePlan"
-      @browse-click="requestBrowsePlans"
+      @create-click="requestCreateSchedule"
+      @browse-click="requestBrowseSchedules"
       @restore-click="requestRestoreDraft"
     />
 
-    <HomepageRecentPlansCard
-      :recent-plans="recentPlans"
-      :is-recent-plans-loading="isRecentPlansLoading"
-      :has-recent-plans-error="hasRecentPlansError"
-      :recent-plan-open-error="recentPlanOpenError"
-      @open-plan="requestOpenRecentPlan"
+    <HomepageRecentSchedulesCard
+      :recent-schedules="recentSchedules"
+      :is-recent-schedules-loading="isRecentSchedulesLoading"
+      :has-recent-schedules-error="hasRecentSchedulesError"
+      :recent-schedule-open-error="recentScheduleOpenError"
+      @open-schedule="requestOpenRecentSchedule"
     />
 
     <CommonAppActionConfirmDialog
-      v-model:open="isOpenRecentPlanDialogOpen"
-      :action-label="t('homepage.recent.openPlanAction')"
-      :description="openRecentPlanDialogDescription"
-      :confirm-label="t('homepage.recent.openPlanAction')"
-      :loading="isOpeningRecentPlan"
-      @cancel="cancelOpenRecentPlan"
-      @confirm="confirmOpenRecentPlan"
+      v-model:open="isOpenRecentScheduleDialogOpen"
+      :action-label="t('homepage.recent.openScheduleAction')"
+      :description="openRecentScheduleDialogDescription"
+      :confirm-label="t('homepage.recent.openScheduleAction')"
+      :loading="isOpeningRecentSchedule"
+      @cancel="cancelOpenRecentSchedule"
+      @confirm="confirmOpenRecentSchedule"
     />
 
     <CommonAppActionConfirmDialog
-      v-model:open="isCreatePlanConfirmDialogOpen"
+      v-model:open="isCreateScheduleConfirmDialogOpen"
       :action-label="t('homepage.actions.create.confirmAction')"
       :description="t('homepage.actions.create.confirmDescription')"
       :confirm-label="t('homepage.actions.create.confirmAction')"
-      :loading="isCreatingNewPlan"
-      @cancel="cancelCreatePlanConfirm"
-      @confirm="confirmCreatePlanConfirm"
+      :loading="isCreatingNewSchedule"
+      @cancel="cancelCreateScheduleConfirm"
+      @confirm="confirmCreateScheduleConfirm"
     />
 
-    <CreatePlanNameDialog
-      v-model:open="isCreatePlanNameDialogOpen"
-      v-model:name="newPlanNameInput"
-      :loading="isCreatingNewPlan"
-      :max-length="HOMEPAGE_NEW_PLAN_NAME_MAX_LENGTH"
-      :validation-error="newPlanNameError"
-      @cancel="cancelCreatePlanNameDialog"
-      @submit="submitCreatePlanName"
-      @submit-import="submitCreatePlanImport"
+    <CreateScheduleDialog
+      v-model:open="isCreateScheduleDialogOpen"
+      v-model:name="newScheduleNameInput"
+      :loading="isCreatingNewSchedule"
+      :max-length="HOMEPAGE_NEW_SCHEDULE_NAME_MAX_LENGTH"
+      :validation-error="newScheduleNameError"
+      @cancel="cancelCreateScheduleDialog"
+      @submit="submitCreateSchedule"
+      @submit-import="submitCreateScheduleImport"
     />
 
     <ImportMappingErrorDialog v-model:open="isImportMappingErrorDialogOpen" :error="importMappingError" />
 
     <ImportTeachersDictionaryResolutionDialog
       v-model:open="isTeachersDictionaryResolutionDialogOpen"
-      :loading="isCreatingNewPlan"
+      :loading="isCreatingNewSchedule"
       :entries="teachersDictionaryResolutionEntries"
       :field-errors="teachersDictionaryResolutionFieldErrors"
       :error="teachersDictionaryResolutionError"
@@ -142,20 +142,20 @@ await fetchRecentPlans()
       @update-canonical-name="updateTeachersDictionaryResolutionEntry"
     />
 
-    <HomepagePlansDialog
-      v-model:open="isBrowsePlansDialogOpen"
-      :manual-drafts="manualDrafts"
-      :auto-drafts="autoDrafts"
-      :is-loading="isBrowsePlansLoading"
-      :search-query="browsePlansSearchQuery"
+    <HomepageSchedulesDialog
+      v-model:open="isBrowseSchedulesDialogOpen"
+      :manual-schedules="manualSchedules"
+      :auto-schedules="autoSchedules"
+      :is-loading="isBrowseSchedulesLoading"
+      :search-query="browseSchedulesSearchQuery"
       :is-manual-load-more-loading="isManualLoadMoreLoading"
       :is-auto-load-more-loading="isAutoLoadMoreLoading"
-      :has-more-manual-drafts="hasMoreManualDrafts"
-      :has-more-auto-drafts="hasMoreAutoDrafts"
-      @open-plan="requestOpenBrowsePlan"
-      @search-change="requestBrowsePlansSearch"
-      @load-more-manual="loadMoreManualDrafts"
-      @load-more-auto="loadMoreAutoDrafts"
+      :has-more-manual-schedules="hasMoreManualSchedules"
+      :has-more-auto-schedules="hasMoreAutoSchedules"
+      @open-schedule="requestOpenBrowseSchedule"
+      @search-change="requestBrowseSchedulesSearch"
+      @load-more-manual="loadMoreManualSchedules"
+      @load-more-auto="loadMoreAutoSchedules"
     />
   </UContainer>
 </template>

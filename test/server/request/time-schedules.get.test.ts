@@ -426,13 +426,13 @@ describe('GET /api/time-schedules (integration)', () => {
     const authCookie = createAuthCookie()
 
     const matchingScheduleId = await createScheduleInDb({
-      name: buildScheduleName('Searchable Plan Alpha'),
+      name: buildScheduleName('Searchable Schedule Alpha'),
       type: 'MANUAL',
       committees: []
     })
 
     const nonMatchingScheduleId = await createScheduleInDb({
-      name: buildScheduleName('Different Plan'),
+      name: buildScheduleName('Different Schedule'),
       type: 'MANUAL',
       committees: []
     })

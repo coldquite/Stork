@@ -94,7 +94,7 @@ function createTimeScheduleListItem(index: number, type: 'MANUAL' | 'AUTO'): Tim
   }
 }
 
-describe('useHomepage submitCreatePlanImport', () => {
+describe('useHomepage submitCreateScheduleImport', () => {
   beforeEach(() => {
     i18nTranslateMock.mockClear()
     requestFetchMock.mockReset()
@@ -134,43 +134,43 @@ describe('useHomepage submitCreatePlanImport', () => {
       }
     })
 
-    homepage.isCreatePlanNameDialogOpen.value = true
-    homepage.newPlanNameInput.value = 'SZZ plán'
-    await homepage.submitCreatePlanImport({
+    homepage.isCreateScheduleDialogOpen.value = true
+    homepage.newScheduleNameInput.value = 'SZZ plán'
+    await homepage.submitCreateScheduleImport({
       payload,
       szzType: 'BACHELOR'
     })
 
     expect(mapImportPayloadToDraftSourceMock).toHaveBeenCalledTimes(1)
     const firstMappingCall = mapImportPayloadToDraftSourceMock.mock.calls[0]?.[0]
-    expect(firstMappingCall?.planName).toBe('SZZ plán')
+    expect(firstMappingCall?.scheduleName).toBe('SZZ plán')
     expect(firstMappingCall?.szzType).toBe('BACHELOR')
     expect(firstMappingCall?.payload).toBeTruthy()
     expect(firstMappingCall?.payload).not.toBe(payload)
     expect(scheduleDraftStoreMock.initializeFromSource).toHaveBeenCalledTimes(1)
-    expect(homepage.isCreatePlanNameDialogOpen.value).toBe(false)
-    expect(homepage.newPlanNameError.value).toBeNull()
-    expect(homepage.isCreatingNewPlan.value).toBe(false)
+    expect(homepage.isCreateScheduleDialogOpen.value).toBe(false)
+    expect(homepage.newScheduleNameError.value).toBeNull()
+    expect(homepage.isCreatingNewSchedule.value).toBe(false)
     expect(homepage.isImportMappingErrorDialogOpen.value).toBe(false)
     expect(navigateToMock).toHaveBeenCalledWith('/editor')
   })
 
-  it('does not map import payload when plan name is invalid', async () => {
+  it('does not map import payload when schedule name is invalid', async () => {
     const { useHomepage } = await import('~/composables/useHomepage')
     const homepage = useHomepage()
     const payload = createImportPayload()
 
-    homepage.isCreatePlanNameDialogOpen.value = true
-    homepage.newPlanNameInput.value = '   '
-    await homepage.submitCreatePlanImport({
+    homepage.isCreateScheduleDialogOpen.value = true
+    homepage.newScheduleNameInput.value = '   '
+    await homepage.submitCreateScheduleImport({
       payload,
       szzType: 'MASTER'
     })
 
     expect(mapImportPayloadToDraftSourceMock).not.toHaveBeenCalled()
     expect(scheduleDraftStoreMock.initializeFromSource).not.toHaveBeenCalled()
-    expect(homepage.isCreatePlanNameDialogOpen.value).toBe(true)
-    expect(homepage.isCreatingNewPlan.value).toBe(false)
+    expect(homepage.isCreateScheduleDialogOpen.value).toBe(true)
+    expect(homepage.isCreatingNewSchedule.value).toBe(false)
   })
 
   it('opens mapping error dialog when mapping fails', async () => {
@@ -190,9 +190,9 @@ describe('useHomepage submitCreatePlanImport', () => {
       }
     })
 
-    homepage.isCreatePlanNameDialogOpen.value = true
-    homepage.newPlanNameInput.value = 'SZZ plán'
-    await homepage.submitCreatePlanImport({
+    homepage.isCreateScheduleDialogOpen.value = true
+    homepage.newScheduleNameInput.value = 'SZZ plán'
+    await homepage.submitCreateScheduleImport({
       payload,
       szzType: 'BACHELOR'
     })
@@ -203,32 +203,32 @@ describe('useHomepage submitCreatePlanImport', () => {
     expect(navigateToMock).not.toHaveBeenCalled()
   })
 
-  it('ignores import submit while another open-plan operation is running', async () => {
+  it('ignores import submit while another open-schedule operation is running', async () => {
     const { useHomepage } = await import('~/composables/useHomepage')
     const homepage = useHomepage()
     const payload = createImportPayload()
 
-    homepage.isCreatePlanNameDialogOpen.value = true
-    homepage.newPlanNameInput.value = 'SZZ plán'
-    homepage.isOpeningRecentPlan.value = true
+    homepage.isCreateScheduleDialogOpen.value = true
+    homepage.newScheduleNameInput.value = 'SZZ plán'
+    homepage.isOpeningRecentSchedule.value = true
 
-    await homepage.submitCreatePlanImport({
+    await homepage.submitCreateScheduleImport({
       payload,
       szzType: 'BACHELOR'
     })
 
     expect(mapImportPayloadToDraftSourceMock).not.toHaveBeenCalled()
-    expect(homepage.isCreatePlanNameDialogOpen.value).toBe(true)
-    expect(homepage.isCreatingNewPlan.value).toBe(false)
+    expect(homepage.isCreateScheduleDialogOpen.value).toBe(true)
+    expect(homepage.isCreatingNewSchedule.value).toBe(false)
   })
 })
 
-describe('useHomepage browse plans pagination', () => {
+describe('useHomepage browse schedules pagination', () => {
   beforeEach(() => {
     requestFetchMock.mockReset()
   })
 
-  it('loads first page for manual and auto plans when browse dialog opens', async () => {
+  it('loads first page for manual and auto schedules when browse dialog opens', async () => {
     requestFetchMock.mockImplementation(async (url: string) => {
       if (url.includes('type=MANUAL') && url.includes('page=1')) {
         return Array.from({ length: 20 }, (_, index) => createTimeScheduleListItem(index + 1, 'MANUAL'))
@@ -244,21 +244,21 @@ describe('useHomepage browse plans pagination', () => {
     const { useHomepage } = await import('~/composables/useHomepage')
     const homepage = useHomepage()
 
-    homepage.requestBrowsePlans()
+    homepage.requestBrowseSchedules()
 
     await vi.waitFor(() => {
       expect(requestFetchMock).toHaveBeenCalledTimes(2)
-      expect(homepage.isBrowsePlansLoading.value).toBe(false)
+      expect(homepage.isBrowseSchedulesLoading.value).toBe(false)
     })
 
-    expect(homepage.isBrowsePlansDialogOpen.value).toBe(true)
-    expect(homepage.manualDrafts.value).toHaveLength(20)
-    expect(homepage.autoDrafts.value).toHaveLength(4)
-    expect(homepage.hasMoreManualDrafts.value).toBe(true)
-    expect(homepage.hasMoreAutoDrafts.value).toBe(false)
+    expect(homepage.isBrowseSchedulesDialogOpen.value).toBe(true)
+    expect(homepage.manualSchedules.value).toHaveLength(20)
+    expect(homepage.autoSchedules.value).toHaveLength(4)
+    expect(homepage.hasMoreManualSchedules.value).toBe(true)
+    expect(homepage.hasMoreAutoSchedules.value).toBe(false)
   })
 
-  it('appends next manual page when loading more plans', async () => {
+  it('appends next manual page when loading more schedules', async () => {
     requestFetchMock.mockImplementation(async (url: string) => {
       if (url.includes('type=MANUAL') && url.includes('page=1')) {
         return Array.from({ length: 20 }, (_, index) => createTimeScheduleListItem(index + 1, 'MANUAL'))
@@ -278,28 +278,28 @@ describe('useHomepage browse plans pagination', () => {
     const { useHomepage } = await import('~/composables/useHomepage')
     const homepage = useHomepage()
 
-    homepage.requestBrowsePlans()
+    homepage.requestBrowseSchedules()
 
     await vi.waitFor(() => {
-      expect(homepage.hasMoreManualDrafts.value).toBe(true)
-      expect(homepage.manualDrafts.value).toHaveLength(20)
+      expect(homepage.hasMoreManualSchedules.value).toBe(true)
+      expect(homepage.manualSchedules.value).toHaveLength(20)
     })
 
-    homepage.loadMoreManualDrafts()
+    homepage.loadMoreManualSchedules()
 
     await vi.waitFor(() => {
       expect(requestFetchMock).toHaveBeenCalledTimes(3)
-      expect(homepage.manualDrafts.value).toHaveLength(23)
+      expect(homepage.manualSchedules.value).toHaveLength(23)
     })
 
     const loadMoreRequest = requestFetchMock.mock.calls[2]?.[0] as string
     expect(loadMoreRequest).toContain('type=MANUAL')
     expect(loadMoreRequest).toContain('page=2')
-    expect(homepage.hasMoreManualDrafts.value).toBe(false)
+    expect(homepage.hasMoreManualSchedules.value).toBe(false)
     expect(homepage.isManualLoadMoreLoading.value).toBe(false)
   })
 
-  it('refreshes browse plans with debounced search query', async () => {
+  it('refreshes browse schedules with debounced search query', async () => {
     requestFetchMock.mockImplementation(async (url: string) => {
       if (url.includes('type=MANUAL')) {
         return [createTimeScheduleListItem(1, 'MANUAL')]
@@ -317,12 +317,12 @@ describe('useHomepage browse plans pagination', () => {
       const { useHomepage } = await import('~/composables/useHomepage')
       const homepage = useHomepage()
 
-      homepage.requestBrowsePlans()
+      homepage.requestBrowseSchedules()
       await flushPromises()
 
       expect(requestFetchMock).toHaveBeenCalledTimes(2)
 
-      homepage.requestBrowsePlansSearch('alpha query')
+      homepage.requestBrowseSchedulesSearch('alpha query')
       vi.advanceTimersByTime(200)
       await flushPromises()
 

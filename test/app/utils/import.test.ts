@@ -116,7 +116,7 @@ describe('import utils', () => {
     expect(resolveStudyLevelFromStudentsCommittees(studentsCommitteesMasterRows)).toBe('MASTER')
   })
 
-  it('returns null for unsupported students-cap study plan prefixes', () => {
+  it('returns null for unsupported students-cap study schedule prefixes', () => {
     const rows: ImportCsvRow[] = [{ 'Studijní plán (název)': 'NMgr. Informatika' }]
     expect(resolveStudyLevelFromStudentsCap(rows)).toBeNull()
   })
