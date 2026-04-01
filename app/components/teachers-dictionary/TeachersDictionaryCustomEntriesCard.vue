@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
 import type { GetTeachersDictionaryResponseDto, TeachersDictionaryEntryDto } from '#shared/types/teachers-dictionary'
+import { extractHttpErrorMessage } from '~/utils/http-error'
 
 const { t } = useI18n()
 const requestFetch = useRequestFetch()
@@ -48,25 +49,6 @@ async function retryLoad(): Promise<void> {
   await refresh()
 }
 
-function resolveDeleteErrorMessage(error: unknown): string | null {
-  if (!error || typeof error !== 'object') {
-    return null
-  }
-
-  const candidate = error as {
-    data?: {
-      statusMessage?: string
-      message?: string
-    }
-    statusMessage?: string
-    message?: string
-  }
-
-  return (
-    candidate.data?.statusMessage ?? candidate.data?.message ?? candidate.statusMessage ?? candidate.message ?? null
-  )
-}
-
 function requestDeleteEntry(entry: TeachersDictionaryEntryDto): void {
   if (isDeletingEntry.value) {
     return
@@ -105,7 +87,7 @@ async function confirmDeleteEntry(): Promise<void> {
     await refresh()
   } catch (error: unknown) {
     deleteError.value =
-      resolveDeleteErrorMessage(error) ?? t('teachersDictionary.table.delete.errorRequestFailedDescription')
+      extractHttpErrorMessage(error) ?? t('teachersDictionary.table.delete.errorRequestFailedDescription')
   } finally {
     isDeletingEntry.value = false
   }

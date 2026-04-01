@@ -12,6 +12,7 @@ import {
   createTeachersDictionaryLookupMap,
   type MissingTeachersDictionaryEntry
 } from '~/utils/import-teachers-dictionary'
+import { extractHttpErrorMessage } from '~/utils/http-error'
 
 type TeachersDictionaryRequestStage = 'seed' | 'fetch'
 
@@ -191,25 +192,6 @@ export function useHomepageCreateAndImport(options: UseHomepageCreateAndImportOp
     }
   }
 
-  function resolveRequestErrorMessage(error: unknown): string | null {
-    if (!error || typeof error !== 'object') {
-      return null
-    }
-
-    const candidate = error as {
-      data?: {
-        statusMessage?: string
-        message?: string
-      }
-      statusMessage?: string
-      message?: string
-    }
-
-    return (
-      candidate.data?.statusMessage ?? candidate.data?.message ?? candidate.statusMessage ?? candidate.message ?? null
-    )
-  }
-
   function openTeachersDictionaryRequestError(stage: TeachersDictionaryRequestStage, error: unknown): void {
     importMappingError.value = {
       code: 'TEACHERS_DICTIONARY_REQUEST_FAILED',
@@ -219,7 +201,7 @@ export function useHomepageCreateAndImport(options: UseHomepageCreateAndImportOp
       column: null,
       context: {
         stage,
-        message: resolveRequestErrorMessage(error) ?? t('common.errors.unexpected')
+        message: extractHttpErrorMessage(error) ?? t('common.errors.unexpected')
       }
     }
     isImportMappingErrorDialogOpen.value = true
@@ -363,7 +345,7 @@ export function useHomepageCreateAndImport(options: UseHomepageCreateAndImportOp
       }
     } catch (error: unknown) {
       teachersDictionaryResolutionError.value =
-        resolveRequestErrorMessage(error) ??
+        extractHttpErrorMessage(error) ??
         t('homepage.actions.create.import.teachersDictionaryResolution.submitErrorFallback')
     } finally {
       options.isCreatingNewSchedule.value = false

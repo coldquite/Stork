@@ -2,6 +2,7 @@ import type {
   PutTeachersDictionaryBulkResponseDto,
   UpsertTeachersDictionaryEntryDto
 } from '#shared/types/teachers-dictionary'
+import { extractHttpErrorMessage } from '~/utils/http-error'
 import { decodeUtf8File, isCsvFile } from '~/utils/import'
 import { parseTeachersDictionaryCsvText } from '~/utils/teachers-dictionary-import'
 
@@ -30,25 +31,6 @@ function clearInputFileValue(input: HTMLInputElement | null): void {
   if (input) {
     input.value = ''
   }
-}
-
-function resolveSubmitErrorMessage(error: unknown): string | null {
-  if (!error || typeof error !== 'object') {
-    return null
-  }
-
-  const candidate = error as {
-    data?: {
-      statusMessage?: string
-      message?: string
-    }
-    statusMessage?: string
-    message?: string
-  }
-
-  return (
-    candidate.data?.statusMessage ?? candidate.data?.message ?? candidate.statusMessage ?? candidate.message ?? null
-  )
 }
 
 export function useTeachersDictionaryCsvImport() {
@@ -173,7 +155,7 @@ export function useTeachersDictionaryCsvImport() {
         response
       }
     } catch (error: unknown) {
-      submitError.value = resolveSubmitErrorMessage(error) ?? t('teachersDictionary.import.validation.submitFailed')
+      submitError.value = extractHttpErrorMessage(error) ?? t('teachersDictionary.import.validation.submitFailed')
 
       return {
         ok: false,
