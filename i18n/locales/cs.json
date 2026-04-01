@@ -171,6 +171,7 @@
     },
     "schedulesModal": {
       "title": "Uložené plány",
+      "description": "Vyhledejte a otevřete existující plán ze seznamu uložených plánů.",
       "tabs": {
         "manual": "Manuální uložení",
         "auto": "Automatické uložení"

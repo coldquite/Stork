@@ -78,6 +78,7 @@ function handleLoadMoreAuto(): void {
   <UModal
     v-model:open="open"
     :title="t('homepage.schedulesModal.title')"
+    :description="t('homepage.schedulesModal.description')"
     :ui="{
       content: 'sm:max-w-5xl'
     }"

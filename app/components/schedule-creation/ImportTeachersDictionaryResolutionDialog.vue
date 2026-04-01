@@ -62,6 +62,7 @@ function handleSubmit(): void {
   <UModal
     v-model:open="open"
     :title="$t('homepage.actions.create.import.teachersDictionaryResolution.title')"
+    :description="$t('homepage.actions.create.import.teachersDictionaryResolution.description')"
     :dismissible="!props.loading"
     :close="{ disabled: props.loading }"
     :ui="{ content: 'sm:max-w-3xl' }"
