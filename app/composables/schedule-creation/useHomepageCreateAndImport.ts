@@ -2,14 +2,14 @@ import type { Ref } from 'vue'
 import type { GetTeachersDictionaryResponseDto } from '#shared/types/teachers-dictionary'
 import { normalizeTeachersDictionaryName } from '#shared/utils/teachers-dictionary'
 import { useScheduleDraftStore } from '~/stores/schedule-draft'
-import type { ImportPayload, ImportSzzType } from '~/types/import'
+import type { ImportPayload, ImportSzzType, PreparedImportPayload } from '~/types/import'
 import { mapImportPayloadToDraftSource } from '~/utils/import-mapper'
 import type { ImportMappingError } from '~/types/import-mapper'
 import {
-  applyTeachersDictionaryToStudentsCommittees,
   cloneImportPayload,
   collectTeachersDictionarySeedEntries,
   createTeachersDictionaryLookupMap,
+  prepareImportPayloadForMapping,
   type MissingTeachersDictionaryEntry
 } from '~/utils/import-teachers-dictionary'
 import { extractHttpErrorMessage } from '~/utils/http-error'
@@ -208,7 +208,7 @@ export function useHomepageCreateAndImport(options: UseHomepageCreateAndImportOp
   }
 
   async function mapPreparedImportPayload(optionsForMapping: {
-    payload: ImportPayload
+    payload: PreparedImportPayload
     scheduleName: string
     szzType: ImportSzzType
   }): Promise<void> {
@@ -319,12 +319,9 @@ export function useHomepageCreateAndImport(options: UseHomepageCreateAndImportOp
         pendingContext.dictionaryByLookupKey.set(entry.lookupKey, entry.canonicalName)
       }
 
-      const unresolvedEntries = applyTeachersDictionaryToStudentsCommittees(
-        pendingContext.payload,
-        pendingContext.dictionaryByLookupKey
-      )
-      if (unresolvedEntries.length > 0) {
-        teachersDictionaryResolutionEntries.value = unresolvedEntries.map((entry) => ({
+      const prepareResult = prepareImportPayloadForMapping(pendingContext.payload, pendingContext.dictionaryByLookupKey)
+      if (!prepareResult.ok) {
+        teachersDictionaryResolutionEntries.value = prepareResult.unresolvedEntries.map((entry) => ({
           ...entry,
           canonicalName: ''
         }))
@@ -336,7 +333,7 @@ export function useHomepageCreateAndImport(options: UseHomepageCreateAndImportOp
       }
 
       await mapPreparedImportPayload({
-        payload: pendingContext.payload,
+        payload: prepareResult.preparedPayload,
         scheduleName: pendingContext.scheduleName,
         szzType: pendingContext.szzType
       })
@@ -402,8 +399,8 @@ export function useHomepageCreateAndImport(options: UseHomepageCreateAndImportOp
       }
 
       const dictionaryByLookupKey = createTeachersDictionaryLookupMap(dictionaryEntries)
-      const missingEntries = applyTeachersDictionaryToStudentsCommittees(payload, dictionaryByLookupKey)
-      if (missingEntries.length > 0) {
+      const prepareResult = prepareImportPayloadForMapping(payload, dictionaryByLookupKey)
+      if (!prepareResult.ok) {
         openTeachersDictionaryResolutionDialog(
           {
             scheduleName: newScheduleNameInput.value.trim(),
@@ -411,13 +408,13 @@ export function useHomepageCreateAndImport(options: UseHomepageCreateAndImportOp
             payload,
             dictionaryByLookupKey
           },
-          missingEntries
+          prepareResult.unresolvedEntries
         )
         return
       }
 
       await mapPreparedImportPayload({
-        payload,
+        payload: prepareResult.preparedPayload,
         scheduleName: newScheduleNameInput.value.trim(),
         szzType: optionsForImport.szzType
       })

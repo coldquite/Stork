@@ -32,3 +32,13 @@ export interface ImportPayload {
     master?: ImportDataset
   }
 }
+
+declare const preparedImportPayloadBrand: unique symbol
+
+/**
+ * Branded payload that can be passed to the mapper only after teacher-name
+ * normalization + dictionary resolution pipeline succeeds.
+ */
+export type PreparedImportPayload = ImportPayload & {
+  readonly [preparedImportPayloadBrand]: true
+}

@@ -1,5 +1,5 @@
 import type { DraftScheduleSource } from '~/types/schedule-draft'
-import type { ImportDatasetKey, ImportPayload, ImportSzzType } from '~/types/import'
+import type { ImportDatasetKey, ImportSzzType, PreparedImportPayload } from '~/types/import'
 
 export type ImportMappingErrorCode =
   | 'MISSING_DATASET'
@@ -36,7 +36,7 @@ export interface ImportMappingError {
 export interface MapImportPayloadToDraftInput {
   scheduleName: string
   szzType: ImportSzzType
-  payload: ImportPayload
+  payload: PreparedImportPayload
 }
 
 export type MapImportPayloadToDraftResult =

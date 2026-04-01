@@ -23,7 +23,7 @@ import type {
   UpsertTeachersDictionaryEntryDto
 } from '#shared/types/teachers-dictionary'
 import { buildTeachersDictionaryLookupKey, normalizeTeachersDictionaryName } from '#shared/utils/teachers-dictionary'
-import type { ImportCsvRow, ImportPayload } from '~/types/import'
+import type { ImportCsvRow, ImportPayload, PreparedImportPayload } from '~/types/import'
 
 type ImportPayloadLevel = keyof ImportPayload['studentsStork']
 
@@ -31,6 +31,16 @@ export interface MissingTeachersDictionaryEntry {
   lookupKey: string
   sourceValue: string
 }
+
+export type PrepareImportPayloadForMappingResult =
+  | {
+      ok: true
+      preparedPayload: PreparedImportPayload
+    }
+  | {
+      ok: false
+      unresolvedEntries: MissingTeachersDictionaryEntry[]
+    }
 
 const IMPORT_LEVEL_KEYS: readonly ImportPayloadLevel[] = ['bachelor', 'master']
 
@@ -226,4 +236,26 @@ export function applyTeachersDictionaryToStudentsCommittees(
   }
 
   return Array.from(missingByLookupKey.values())
+}
+
+/**
+ * Final step before mapper: apply dictionary normalization and return an opaque
+ * "prepared" payload only when all teacher values are fully resolved.
+ */
+export function prepareImportPayloadForMapping(
+  payload: ImportPayload,
+  dictionaryByLookupKey: ReadonlyMap<string, string>
+): PrepareImportPayloadForMappingResult {
+  const unresolvedEntries = applyTeachersDictionaryToStudentsCommittees(payload, dictionaryByLookupKey)
+  if (unresolvedEntries.length > 0) {
+    return {
+      ok: false,
+      unresolvedEntries
+    }
+  }
+
+  return {
+    ok: true,
+    preparedPayload: payload as PreparedImportPayload
+  }
 }
