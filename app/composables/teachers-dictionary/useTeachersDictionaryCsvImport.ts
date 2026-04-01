@@ -3,7 +3,7 @@ import type {
   UpsertTeachersDictionaryEntryDto
 } from '#shared/types/teachers-dictionary'
 import { extractHttpErrorMessage } from '~/utils/http-error'
-import { decodeUtf8File, isCsvFile } from '~/utils/import'
+import { ingestCsvInputFile } from '~/utils/csv-ingest'
 import { parseTeachersDictionaryCsvText } from '~/utils/teachers-dictionary-import'
 
 interface TeachersDictionaryImportState {
@@ -24,12 +24,6 @@ function createInitialImportState(): TeachersDictionaryImportState {
     error: null,
     entries: null,
     isValidating: false
-  }
-}
-
-function clearInputFileValue(input: HTMLInputElement | null): void {
-  if (input) {
-    input.value = ''
   }
 }
 
@@ -83,50 +77,50 @@ export function useTeachersDictionaryCsvImport() {
   }
 
   async function handleImportFileChange(event: Event): Promise<void> {
-    const input = event.target as HTMLInputElement | null
-    const selectedFile = input?.files?.[0] ?? null
-    validationRequestId.value += 1
-    const currentRequestId = validationRequestId.value
     submitError.value = null
+    const ingestResult = await ingestCsvInputFile({
+      event,
+      beginValidationRequest: () => {
+        validationRequestId.value += 1
+        return validationRequestId.value
+      },
+      isValidationRequestStale: (requestId) => requestId !== validationRequestId.value,
+      setValidatingState: () => {
+        importState.value = {
+          ...createInitialImportState(),
+          isValidating: true
+        }
+      },
+      resetStateOnNoFile: () => {
+        importState.value = createInitialImportState()
+      },
+      parseCsvText: parseTeachersDictionaryCsvText,
+      isParsedResultSuccess: (parsedCsv) => parsedCsv.ok
+    })
 
-    if (!selectedFile) {
-      importState.value = createInitialImportState()
+    if (ingestResult.status === 'no_file' || ingestResult.status === 'stale') {
       return
     }
 
-    if (!isCsvFile(selectedFile)) {
+    if (ingestResult.status === 'invalid_extension') {
       setFileError(t('homepage.actions.create.import.validation.invalidExtension'))
-      clearInputFileValue(input)
       return
     }
 
-    importState.value = {
-      ...createInitialImportState(),
-      isValidating: true
-    }
-
-    const decodedContent = await decodeUtf8File(selectedFile)
-    if (currentRequestId !== validationRequestId.value) {
-      return
-    }
-
-    if (!decodedContent) {
+    if (ingestResult.status === 'invalid_encoding') {
       setFileError(t('homepage.actions.create.import.validation.invalidEncoding'))
-      clearInputFileValue(input)
       return
     }
 
-    const parsedCsv = parseTeachersDictionaryCsvText(decodedContent)
-    if (!parsedCsv.ok) {
-      setFileError(resolveParseErrorMessage(parsedCsv))
-      clearInputFileValue(input)
+    if (ingestResult.status === 'parse_error') {
+      setFileError(resolveParseErrorMessage(ingestResult.parsedResult))
       return
     }
 
     importState.value = {
-      file: selectedFile,
+      file: ingestResult.file,
       error: null,
-      entries: parsedCsv.entries,
+      entries: ingestResult.parsedResult.entries,
       isValidating: false
     }
   }

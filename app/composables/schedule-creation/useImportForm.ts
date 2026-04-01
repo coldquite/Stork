@@ -7,13 +7,12 @@
 
 import { getImportFormFieldsBySzzType } from '~/constants/import'
 import {
-  decodeUtf8File,
-  isCsvFile,
   parseImportCsvText,
   resolveImportTargetFieldKey,
   resolveStudyLevelFromStudentsStork,
   resolveStudyLevelFromStudentsCommittees
 } from '~/utils/import'
+import { clearInputFileValue, ingestCsvInputFile } from '~/utils/csv-ingest'
 import type {
   ImportCsvRow,
   ImportDataset,
@@ -194,12 +193,6 @@ export function useImportForm(selectedSzzType: Ref<ImportSzzType>) {
     return importValidationRequestIds.value[key]
   }
 
-  function clearInputFileValue(input: HTMLInputElement | null): void {
-    if (input) {
-      input.value = ''
-    }
-  }
-
   function setFieldError(key: ImportFieldKey, message: string): void {
     importFileStates.value[key] = {
       ...createInitialImportFieldState(),
@@ -258,57 +251,58 @@ export function useImportForm(selectedSzzType: Ref<ImportSzzType>) {
   //    unless other loaded files already lock the form to current level,
   // 5) resolves target field by dataset/study level and stores parsed data or translated validation error.
   async function handleImportFileChange(event: Event, sourceKey: ImportFieldKey): Promise<void> {
-    const input = event.target as HTMLInputElement | null
-    const selectedFile = input?.files?.[0] ?? null
     const previousSourceState = { ...importFileStates.value[sourceKey] }
-    const requestId = incrementValidationRequestId(sourceKey)
+    const ingestResult = await ingestCsvInputFile({
+      event,
+      beginValidationRequest: () => incrementValidationRequestId(sourceKey),
+      isValidationRequestStale: (requestId) => importValidationRequestIds.value[sourceKey] !== requestId,
+      setValidatingState: () => {
+        importFileStates.value[sourceKey] = {
+          ...createInitialImportFieldState(),
+          isValidating: true
+        }
+      },
+      resetStateOnNoFile: () => {
+        importFileStates.value[sourceKey] = createInitialImportFieldState()
+      },
+      parseCsvText: parseImportCsvText,
+      isParsedResultSuccess: (parsedImport) => parsedImport.ok
+    })
 
-    if (!selectedFile) {
-      importFileStates.value[sourceKey] = createInitialImportFieldState()
+    if (ingestResult.status === 'no_file' || ingestResult.status === 'stale') {
       return
     }
 
-    if (!isCsvFile(selectedFile)) {
+    if (ingestResult.status === 'invalid_extension') {
       setFieldError(sourceKey, t('homepage.actions.create.import.validation.invalidExtension'))
-      clearInputFileValue(input)
       return
     }
 
-    importFileStates.value[sourceKey] = {
-      ...createInitialImportFieldState(),
-      isValidating: true
-    }
-
-    const decodedContent = await decodeUtf8File(selectedFile)
-    if (importValidationRequestIds.value[sourceKey] !== requestId) {
-      return
-    }
-
-    if (!decodedContent) {
+    if (ingestResult.status === 'invalid_encoding') {
       setFieldError(sourceKey, t('homepage.actions.create.import.validation.invalidEncoding'))
-      clearInputFileValue(input)
       return
     }
 
-    const parsedImport = parseImportCsvText(decodedContent)
-    if (!parsedImport.ok) {
+    if (ingestResult.status === 'parse_error') {
       setFieldError(sourceKey, t('homepage.actions.create.import.validation.invalidStructure'))
-      clearInputFileValue(input)
       return
     }
+
+    const selectedFile = ingestResult.file
+    const parsedImport = ingestResult.parsedResult
 
     if (selectedSzzType.value !== 'MIXED' && parsedImport.datasetKey !== 'committees') {
       const uploadedStudyLevel = resolveStudyLevelFromDataset(parsedImport.datasetKey, parsedImport.rows)
       if (!uploadedStudyLevel) {
         setFieldError(sourceKey, t('homepage.actions.create.import.validation.invalidProgramType'))
-        clearInputFileValue(input)
+        clearInputFileValue(ingestResult.input)
         return
       }
 
       if (uploadedStudyLevel !== selectedSzzType.value) {
         if (isSingleModeLevelSwitchBlocked(sourceKey, uploadedStudyLevel)) {
           setFieldError(sourceKey, t(resolveLevelSwitchBlockedMessageKey(uploadedStudyLevel)))
-          clearInputFileValue(input)
+          clearInputFileValue(ingestResult.input)
           return
         }
 
@@ -323,7 +317,7 @@ export function useImportForm(selectedSzzType: Ref<ImportSzzType>) {
     )
     if (!targetFieldKey) {
       setFieldError(sourceKey, t('homepage.actions.create.import.validation.invalidProgramType'))
-      clearInputFileValue(input)
+      clearInputFileValue(ingestResult.input)
       return
     }
 
@@ -335,7 +329,7 @@ export function useImportForm(selectedSzzType: Ref<ImportSzzType>) {
           }
         : createInitialImportFieldState()
 
-      clearInputFileValue(input)
+      clearInputFileValue(ingestResult.input)
     }
 
     importFileStates.value[targetFieldKey] = {
