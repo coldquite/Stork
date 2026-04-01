@@ -1,9 +1,8 @@
 import type { HomepageScheduleListItem } from '~/types/homepage'
+import { NEW_SCHEDULE_NAME_MAX_LENGTH } from '~/constants/schedule'
 import { useHomepageCreateAndImport } from '~/composables/schedule-creation/useHomepageCreateAndImport'
 import { useHomepageBrowseSchedules } from '~/composables/homepage/useHomepageBrowseSchedules'
 import { useHomepageScheduleOpening } from '~/composables/homepage/useHomepageScheduleOpening'
-
-export const HOMEPAGE_NEW_SCHEDULE_NAME_MAX_LENGTH = 120
 
 export function useHomepage() {
   const isCreatingNewSchedule = ref(false)
@@ -13,7 +12,7 @@ export function useHomepage() {
   const createAndImport = useHomepageCreateAndImport({
     isCreatingNewSchedule,
     isOpeningRecentSchedule,
-    scheduleNameMaxLength: HOMEPAGE_NEW_SCHEDULE_NAME_MAX_LENGTH
+    scheduleNameMaxLength: NEW_SCHEDULE_NAME_MAX_LENGTH
   })
   const scheduleOpening = useHomepageScheduleOpening({
     isCreatingNewSchedule,

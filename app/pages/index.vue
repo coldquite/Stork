@@ -2,7 +2,8 @@
 import CreateScheduleDialog from '~/components/schedule-creation/CreateScheduleDialog.vue'
 import ImportMappingErrorDialog from '~/components/schedule-creation/ImportMappingErrorDialog.vue'
 import ImportTeachersDictionaryResolutionDialog from '~/components/schedule-creation/ImportTeachersDictionaryResolutionDialog.vue'
-import { HOMEPAGE_NEW_SCHEDULE_NAME_MAX_LENGTH, useHomepage } from '~/composables/homepage/useHomepage'
+import { NEW_SCHEDULE_NAME_MAX_LENGTH } from '~/constants/schedule'
+import { useHomepage } from '~/composables/homepage/useHomepage'
 
 const { t } = useI18n()
 const {
@@ -121,7 +122,7 @@ await fetchRecentSchedules()
       v-model:open="isCreateScheduleDialogOpen"
       v-model:name="newScheduleNameInput"
       :loading="isCreatingNewSchedule"
-      :max-length="HOMEPAGE_NEW_SCHEDULE_NAME_MAX_LENGTH"
+      :max-length="NEW_SCHEDULE_NAME_MAX_LENGTH"
       :validation-error="newScheduleNameError"
       @cancel="cancelCreateScheduleDialog"
       @submit="submitCreateSchedule"

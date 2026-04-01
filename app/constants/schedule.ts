@@ -1,0 +1,1 @@
+export const NEW_SCHEDULE_NAME_MAX_LENGTH = 120

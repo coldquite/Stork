@@ -3,7 +3,8 @@ import CreateScheduleDialog from '~/components/schedule-creation/CreateScheduleD
 import ImportMappingErrorDialog from '~/components/schedule-creation/ImportMappingErrorDialog.vue'
 import ImportTeachersDictionaryResolutionDialog from '~/components/schedule-creation/ImportTeachersDictionaryResolutionDialog.vue'
 import { useAuthStore } from '~/stores/auth'
-import { HOMEPAGE_NEW_SCHEDULE_NAME_MAX_LENGTH, useHomepage } from '~/composables/homepage/useHomepage'
+import { NEW_SCHEDULE_NAME_MAX_LENGTH } from '~/constants/schedule'
+import { useEditorHeaderScheduleActions } from '~/composables/editor/useEditorHeaderScheduleActions'
 
 const { t } = useI18n()
 const authStore = useAuthStore()
@@ -65,7 +66,7 @@ const {
   updateTeachersDictionaryResolutionEntry,
   loadMoreManualSchedules,
   loadMoreAutoSchedules
-} = useHomepage()
+} = useEditorHeaderScheduleActions()
 
 const logoutButtonLabel = computed(() => {
   return `${t('dashboard.logoutButton')}: ${usernameLabel.value}`
@@ -231,7 +232,7 @@ async function confirmLogout(): Promise<void> {
       v-model:open="isCreateScheduleDialogOpen"
       v-model:name="newScheduleNameInput"
       :loading="isCreatingNewSchedule"
-      :max-length="HOMEPAGE_NEW_SCHEDULE_NAME_MAX_LENGTH"
+      :max-length="NEW_SCHEDULE_NAME_MAX_LENGTH"
       :validation-error="newScheduleNameError"
       @cancel="cancelCreateScheduleDialog"
       @submit="submitCreateSchedule"
