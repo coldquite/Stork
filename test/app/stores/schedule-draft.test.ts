@@ -203,6 +203,52 @@ describe('useScheduleDraftStore', () => {
     expect(store.lastSavedType).toBe('MANUAL')
   })
 
+  it('resets last saved metadata when replacing draft source', async () => {
+    const store = useScheduleDraftStore()
+    store.setAutoSavePolicy({ enabled: false })
+    store.initializeFromSource(createApiSchedule('D1'))
+
+    requestFetchMock.mockResolvedValueOnce({
+      id: 'saved-manual-D1',
+      createdAt: '2026-06-11T10:45:00.000Z'
+    })
+
+    await store.saveManualDraft('Uložení D1')
+
+    expect(store.lastSavedScheduleId).toBe('saved-manual-D1')
+    expect(store.lastSavedAt).toBe('2026-06-11T10:45:00.000Z')
+    expect(store.lastSavedType).toBe('MANUAL')
+
+    store.initializeFromSource(createApiSchedule('D2'))
+
+    expect(store.lastSavedScheduleId).toBeNull()
+    expect(store.lastSavedAt).toBeNull()
+    expect(store.lastSavedType).toBeNull()
+  })
+
+  it('clears last saved metadata when clearing draft', async () => {
+    const store = useScheduleDraftStore()
+    store.setAutoSavePolicy({ enabled: false })
+    store.initializeFromSource(createApiSchedule('D3'))
+
+    requestFetchMock.mockResolvedValueOnce({
+      id: 'saved-manual-D3',
+      createdAt: '2026-06-11T10:50:00.000Z'
+    })
+
+    await store.saveManualDraft('Uložení D3')
+
+    expect(store.lastSavedScheduleId).toBe('saved-manual-D3')
+    expect(store.lastSavedAt).toBe('2026-06-11T10:50:00.000Z')
+    expect(store.lastSavedType).toBe('MANUAL')
+
+    store.clearDraft()
+
+    expect(store.lastSavedScheduleId).toBeNull()
+    expect(store.lastSavedAt).toBeNull()
+    expect(store.lastSavedType).toBeNull()
+  })
+
   it('runs autosave with AUTO type based on policy debounce', async () => {
     vi.useFakeTimers()
 
@@ -507,6 +553,8 @@ describe('useScheduleDraftStore', () => {
     expect(store.manualSaveErrorCode).toBeNull()
     expect(store.isManualSaveLoading).toBe(false)
     expect(store.lastSavedScheduleId).toBeNull()
+    expect(store.lastSavedAt).toBeNull()
+    expect(store.lastSavedType).toBeNull()
   })
 
   it('ignores stale manual save response after switching to another source', async () => {
@@ -535,5 +583,7 @@ describe('useScheduleDraftStore', () => {
     expect(store.draft?.committees[0]?.name).toBe('1-NI-SI-M2')
     expect(store.isDirty).toBe(false)
     expect(store.lastSavedScheduleId).toBeNull()
+    expect(store.lastSavedAt).toBeNull()
+    expect(store.lastSavedType).toBeNull()
   })
 })

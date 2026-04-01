@@ -294,6 +294,12 @@ export const useScheduleDraftStore = defineStore(
       nextAutoSaveAt.value = null
     }
 
+    function clearLastSavedMetadata(): void {
+      lastSavedScheduleId.value = null
+      lastSavedAt.value = null
+      lastSavedType.value = null
+    }
+
     /** Persists the current draft via POST /api/time-schedules
      *
      * To avoid applying outdated save results, it remembers draft state before
@@ -350,6 +356,7 @@ export const useScheduleDraftStore = defineStore(
       draft.value = deepClone(nextDraft)
       manualSaveErrorCode.value = null
       autoSaveErrorCode.value = null
+      clearLastSavedMetadata()
       syncBaseSnapshot()
       clearAutoSaveTimer()
     }
@@ -359,6 +366,7 @@ export const useScheduleDraftStore = defineStore(
       baseSnapshot.value = null
       manualSaveErrorCode.value = null
       autoSaveErrorCode.value = null
+      clearLastSavedMetadata()
       clearAutoSaveTimer()
     }
 
