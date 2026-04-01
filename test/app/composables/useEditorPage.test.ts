@@ -57,7 +57,6 @@ function createStudentItem(localId: string, position: number, firstName: string)
       studyLanguage: 'CZECH',
       thesisSubmissionAt: null,
       repeatType: 'NONE',
-      elsa: false,
       prepareMinutes: 45,
       examMinutes: 30
     },

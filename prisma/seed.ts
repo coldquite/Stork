@@ -98,7 +98,6 @@ function buildStudentDraft(
     supervisorName: `Dumb supervisor name ${committeeSortOrder}-${studentOrder}`,
     reviewerName: `Dumb reviewer name ${committeeSortOrder}-${studentOrder}`,
     repeatType: row.repeatType,
-    elsa: studentOrder % 2 === 1,
     prepareMinutes: 45 + (matrixIndex % 2) * 5,
     examMinutes: 30 + (matrixIndex % 3) * 5
   }

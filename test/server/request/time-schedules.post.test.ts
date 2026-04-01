@@ -57,7 +57,6 @@ function createPostPayload(nameSuffix: string): PostTimeScheduleRequestDto {
               studyLanguage: 'CZECH' as const,
               thesisSubmissionAt: '2026-06-10T12:15:00.000Z',
               repeatType: 'NONE' as const,
-              elsa: false,
               prepareMinutes: 45,
               examMinutes: 30
             },
@@ -522,31 +521,6 @@ describe('POST /api/time-schedules (integration)', () => {
                   student: {
                     ...studentItem.student,
                     repeatType: 'INVALID_REPEAT'
-                  }
-                }
-              ]
-            }
-          ]
-        }
-      }
-    },
-    {
-      name: 'student elsa has invalid type',
-      mutate: (payload: PostTimeScheduleRequestDto) => {
-        const firstCommittee = payload.committees[0] as PostCommitteeDraft
-        const studentItem = firstCommittee.items[0] as Extract<PostCommitteeItemDraft, { type: 'STUDENT' }>
-
-        return {
-          ...payload,
-          committees: [
-            {
-              ...firstCommittee,
-              items: [
-                {
-                  ...studentItem,
-                  student: {
-                    ...studentItem.student,
-                    elsa: 'false'
                   }
                 }
               ]

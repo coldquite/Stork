@@ -35,12 +35,11 @@ export interface StudentItemDto {
   studyProgramType: StudyProgramTypeDto
   specializationName: string
   specializationCode: string
-  defenseDepartmentCode: string
-  defenseDepartmentName: string
+  defenseDepartmentCode: string | null
+  defenseDepartmentName: string | null
   studyLanguage: StudyLanguageDto
   thesisSubmissionAt: string | null
   repeatType: RepeatTypeDto
-  elsa: boolean
   prepareMinutes: number
   examMinutes: number
 }
@@ -85,8 +84,8 @@ export interface CommitteeDto {
   studyProgramType: StudyProgramTypeDto
   specializationName: string
   specializationCode: string
-  defenseDepartmentCode: string
-  defenseDepartmentName: string
+  defenseDepartmentCode: string | null
+  defenseDepartmentName: string | null
   chairName: string
   viceChairName: string
   member1Name: string

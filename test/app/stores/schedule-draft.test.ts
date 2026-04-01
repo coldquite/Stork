@@ -78,7 +78,6 @@ function createApiSchedule(seed = 'A'): TimeScheduleDto {
               studyLanguage: 'CZECH',
               thesisSubmissionAt: '2026-06-10T12:15:00.000Z',
               repeatType: 'NONE',
-              elsa: false,
               prepareMinutes: 45,
               examMinutes: 30
             },

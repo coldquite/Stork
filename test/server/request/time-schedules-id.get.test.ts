@@ -31,7 +31,6 @@ function createStudentDraft() {
     additionalSupervisorName: null,
     additionalReviewerName: null,
     repeatType: 'NONE' as const,
-    elsa: false,
     prepareMinutes: 45,
     examMinutes: 30
   }
@@ -93,7 +92,6 @@ async function createScheduleFixtureInDb(): Promise<string> {
                       studyLanguage: studentDraft.studyLanguage,
                       thesisSubmissionAt: new Date(studentDraft.thesisSubmissionAt),
                       repeatType: studentDraft.repeatType,
-                      elsa: studentDraft.elsa,
                       prepareMinutes: studentDraft.prepareMinutes,
                       examMinutes: studentDraft.examMinutes
                     }

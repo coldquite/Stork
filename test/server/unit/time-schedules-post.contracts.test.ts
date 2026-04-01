@@ -55,7 +55,6 @@ function createPayload(): PostTimeScheduleRequestDto {
               studyLanguage: 'CZECH',
               thesisSubmissionAt: '2026-06-10T23:30:00.000Z',
               repeatType: 'NONE',
-              elsa: false,
               prepareMinutes: 45,
               examMinutes: 30
             },

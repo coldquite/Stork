@@ -64,7 +64,6 @@ function mapItemCreateData(item: PostCommitteeItemDto): Prisma.CommitteeItemCrea
               ? normalizeDateTimeToPragueDayStart(item.student.thesisSubmissionAt)
               : null,
           repeatType: item.student.repeatType,
-          elsa: item.student.elsa,
           prepareMinutes: item.student.prepareMinutes,
           examMinutes: item.student.examMinutes
         }

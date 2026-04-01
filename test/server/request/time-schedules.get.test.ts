@@ -38,7 +38,6 @@ function createStudentDraft(index: string) {
     additionalSupervisorName: null,
     additionalReviewerName: null,
     repeatType: 'NONE' as const,
-    elsa: false,
     prepareMinutes: 45,
     examMinutes: 30
   }
@@ -73,7 +72,6 @@ function mapCommitteeItemToCreateData(item: PostCommitteeItemDto) {
           thesisSubmissionAt:
             item.student.thesisSubmissionAt !== null ? new Date(item.student.thesisSubmissionAt) : null,
           repeatType: item.student.repeatType,
-          elsa: item.student.elsa,
           prepareMinutes: item.student.prepareMinutes,
           examMinutes: item.student.examMinutes
         }

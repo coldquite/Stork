@@ -74,8 +74,8 @@ model Committee {
   specializationName String // studenti-komise: Obor/spec - název + komise: Název oboru/specializace [e.g. Softwarové inženýrství 2021]
   specializationCode String // studenti-komise: Obor/spec - kód + komise: St. program (kód, název) [e.g. BI-SI21]
 
-  defenseDepartmentCode String // null for Double Degree students, studenti-komise: VŠKP-typ A: Katedra obhajoby - kod + komise: Kat
-  defenseDepartmentName String // null for Double Degree students, studenti-komise: VŠKP-typ A: Katedra obhajoby - název
+  defenseDepartmentCode String? // null for Double Degree students, studenti-komise: VŠKP-typ A: Katedra obhajoby - kod + komise: Kat
+  defenseDepartmentName String? // null for Double Degree students, studenti-komise: VŠKP-typ A: Katedra obhajoby - název
 
   chairName     String // studenti-komise: Komise - předseda (preprocess)
   viceChairName String // studenti-komise: Komise - místopředseda (preprocess)
@@ -127,17 +127,16 @@ model StudentItem {
   specializationName String // studenti-CAP: Obor/spec - název (Information Security 2021 (Bachelor in English))
   specializationCode String // studenti-CAP: Kód studijního plánu (BIE-IB.21)
 
-  defenseDepartmentCode String // studenti-CAP: Katedra studenta (kód)
-  defenseDepartmentName String // studenti-CAP: Katedra studenta (název)
+  defenseDepartmentCode String? // studenti-CAP: Katedra studenta (kód)
+  defenseDepartmentName String? // studenti-CAP: Katedra studenta (název)
 
   studyLanguage      StudyLanguage // studenti-komise: Jazyk výuky
   thesisSubmissionAt DateTime? // studenti-CAP: VŠKP-typ A: Termín odevzdání práce
 
-  repeatType RepeatType @default(NONE)
-  elsa       Boolean    @default(false)
+  repeatType RepeatType
 
-  prepareMinutes Int @default(45)
-  examMinutes    Int @default(30)
+  prepareMinutes Int
+  examMinutes    Int
 }
 
 model PauseItem {
@@ -145,7 +144,7 @@ model PauseItem {
   item   CommitteeItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
 
   label           String
-  durationMinutes Int    @default(20)
+  durationMinutes Int
 }
 
 model TeachersDictionary {

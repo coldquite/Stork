@@ -675,7 +675,7 @@ describe('mapImportPayloadToDraftSource', () => {
     }
 
     expect(result.draft.committees[0]?.defenseDepartmentCode).toBe('KSI')
-    expect(result.draft.committees[0]?.defenseDepartmentName).toBe('')
+    expect(result.draft.committees[0]?.defenseDepartmentName).toBeNull()
   })
 
   it('returns MISSING_DATASET with correct datasetKey when required file is missing', () => {

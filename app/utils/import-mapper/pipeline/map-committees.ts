@@ -140,7 +140,7 @@ export function mapCommittees(
       representativeStudentsRow,
       'VŠKP-typ A: Katedra obhajoby - kod'
     )
-    const committeesDefenseDepartmentCode = readRequiredValue(committeeRow, 'Kat')
+    const committeesDefenseDepartmentCode = readOptionalValue(committeeRow, 'Kat')
     if (studentsDefenseDepartmentCode) {
       assertFieldEquality(
         committeeName,
@@ -152,7 +152,7 @@ export function mapCommittees(
         {
           source: committeeRow,
           column: 'Kat',
-          value: committeesDefenseDepartmentCode
+          value: committeesDefenseDepartmentCode ?? ''
         },
         'COMMITTEE_FIELD_MISMATCH'
       )
@@ -224,7 +224,7 @@ export function mapCommittees(
       specializationName: committeesSpecializationName,
       specializationCode: normalizeSpecializationCode(readRequiredValue(representativeStudentsRow, 'Obor/spec - kód')),
       defenseDepartmentCode: studentsDefenseDepartmentCode ?? committeesDefenseDepartmentCode,
-      defenseDepartmentName: studentsDefenseDepartmentName ?? '',
+      defenseDepartmentName: studentsDefenseDepartmentName ?? null,
       chairName: readRequiredValue(representativeStudentsRow, 'Komise - předseda'),
       viceChairName: readRequiredValue(representativeStudentsRow, 'Komise - místopředseda'),
       member1Name: readRequiredValue(representativeStudentsRow, 'Komise - člen 1'),
