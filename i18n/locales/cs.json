@@ -6,8 +6,7 @@
       "confirm": "Potvrdit"
     },
     "errors": {
-      "unexpected": "Došlo k neočekávané chybě.",
-      "draftNotInitialized": "Koncept harmonogramu není inicializovaný."
+      "unexpected": "Došlo k neočekávané chybě."
     }
   },
   "meta": {
