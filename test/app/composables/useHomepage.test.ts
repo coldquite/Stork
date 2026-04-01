@@ -651,4 +651,91 @@ describe('useHomepage browse schedules pagination', () => {
       vi.useRealTimers()
     }
   })
+
+  it('deletes manual schedule from current list without reloading manual/auto tabs', async () => {
+    requestFetchMock.mockImplementation(async (url: string, options?: { method?: string }) => {
+      if (url.includes('type=MANUAL') && url.includes('page=1')) {
+        return [createTimeScheduleListItem(1, 'MANUAL')]
+      }
+
+      if (url.includes('type=AUTO') && url.includes('page=1')) {
+        return [createTimeScheduleListItem(1, 'AUTO')]
+      }
+
+      if (url === '/api/time-schedules/manual-1' && options?.method === 'DELETE') {
+        return undefined
+      }
+
+      throw new Error(`Unexpected request URL: ${url}`)
+    })
+
+    const { useHomepage } = await import('~/composables/homepage/useHomepage')
+    const homepage = useHomepage()
+
+    homepage.requestBrowseSchedules()
+
+    await vi.waitFor(() => {
+      expect(homepage.manualSchedules.value).toHaveLength(1)
+      expect(homepage.autoSchedules.value).toHaveLength(1)
+    })
+
+    const scheduleToDelete = homepage.manualSchedules.value[0]
+    expect(scheduleToDelete).toBeTruthy()
+    if (!scheduleToDelete) {
+      throw new Error('Expected manual schedule to delete')
+    }
+
+    homepage.requestDeleteBrowseSchedule(scheduleToDelete)
+
+    await vi.waitFor(() => {
+      expect(requestFetchMock).toHaveBeenCalledTimes(3)
+      expect(homepage.manualSchedules.value).toHaveLength(0)
+      expect(homepage.autoSchedules.value).toHaveLength(1)
+      expect(homepage.isDeletingManualSchedule.value).toBe(false)
+    })
+
+    expect(homepage.manualScheduleDeleteError.value).toBeNull()
+  })
+
+  it('stores delete error when manual schedule delete request fails', async () => {
+    requestFetchMock.mockImplementation(async (url: string, options?: { method?: string }) => {
+      if (url.includes('type=MANUAL') && url.includes('page=1')) {
+        return [createTimeScheduleListItem(1, 'MANUAL')]
+      }
+
+      if (url.includes('type=AUTO') && url.includes('page=1')) {
+        return []
+      }
+
+      if (url === '/api/time-schedules/manual-1' && options?.method === 'DELETE') {
+        throw new Error('delete failed')
+      }
+
+      throw new Error(`Unexpected request URL: ${url}`)
+    })
+
+    const { useHomepage } = await import('~/composables/homepage/useHomepage')
+    const homepage = useHomepage()
+
+    homepage.requestBrowseSchedules()
+
+    await vi.waitFor(() => {
+      expect(homepage.manualSchedules.value).toHaveLength(1)
+    })
+
+    const scheduleToDelete = homepage.manualSchedules.value[0]
+    expect(scheduleToDelete).toBeTruthy()
+    if (!scheduleToDelete) {
+      throw new Error('Expected manual schedule to delete')
+    }
+
+    homepage.requestDeleteBrowseSchedule(scheduleToDelete)
+
+    await vi.waitFor(() => {
+      expect(homepage.isDeletingManualSchedule.value).toBe(false)
+    })
+
+    expect(homepage.manualScheduleDeleteError.value).toBe('delete failed')
+    expect(homepage.manualSchedules.value).toHaveLength(1)
+  })
 })

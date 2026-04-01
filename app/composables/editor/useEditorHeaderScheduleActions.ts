@@ -24,6 +24,10 @@ export function useEditorHeaderScheduleActions() {
     scheduleOpening.requestOpenSchedule(schedule)
   }
 
+  function requestDeleteBrowseSchedule(schedule: HomepageScheduleListItem): void {
+    void browseSchedules.deleteManualSchedule(schedule)
+  }
+
   return {
     manualSchedules: browseSchedules.manualSchedules,
     autoSchedules: browseSchedules.autoSchedules,
@@ -45,6 +49,8 @@ export function useEditorHeaderScheduleActions() {
     browseSchedulesSearchQuery: browseSchedules.browseSchedulesSearchQuery,
     isManualLoadMoreLoading: browseSchedules.isManualLoadMoreLoading,
     isAutoLoadMoreLoading: browseSchedules.isAutoLoadMoreLoading,
+    isDeletingManualSchedule: browseSchedules.isDeletingManualSchedule,
+    manualScheduleDeleteError: browseSchedules.manualScheduleDeleteError,
     hasMoreManualSchedules: browseSchedules.hasMoreManualSchedules,
     hasMoreAutoSchedules: browseSchedules.hasMoreAutoSchedules,
     newScheduleNameInput: createAndImport.newScheduleNameInput,
@@ -53,6 +59,7 @@ export function useEditorHeaderScheduleActions() {
     requestBrowseSchedules: browseSchedules.requestBrowseSchedules,
     requestBrowseSchedulesSearch: browseSchedules.requestBrowseSchedulesSearch,
     requestOpenBrowseSchedule,
+    requestDeleteBrowseSchedule,
     createImportWorkflowStage: createAndImport.createImportWorkflowStage,
     cancelCreateScheduleConfirm: createAndImport.cancelCreateScheduleConfirm,
     cancelOpenRecentSchedule: scheduleOpening.cancelOpenRecentSchedule,

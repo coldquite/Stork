@@ -10,11 +10,14 @@ interface HomepageSchedulesDialogProps {
   hasMoreAutoSchedules: boolean
   isManualLoadMoreLoading: boolean
   isAutoLoadMoreLoading: boolean
+  isDeletingManualSchedule: boolean
+  manualScheduleDeleteError: string | null
 }
 
 const props = defineProps<HomepageSchedulesDialogProps>()
 const emit = defineEmits<{
   openSchedule: [schedule: HomepageScheduleListItem]
+  deleteManualSchedule: [schedule: HomepageScheduleListItem]
   searchChange: [query: string]
   loadMoreManual: []
   loadMoreAuto: []
@@ -38,6 +41,17 @@ const tabs = computed(() => [
   { key: 'auto', label: t('homepage.schedulesModal.tabs.auto'), slot: 'auto' }
 ])
 const searchInputValue = ref(props.searchQuery)
+const isDeleteConfirmOpen = ref(false)
+const pendingDeleteSchedule = ref<HomepageScheduleListItem | null>(null)
+const deleteActionButtonClass = 'shrink-0 px-2 cursor-pointer'
+const deleteActionButtonUi = {
+  base: 'text-error/80 ring-[2px] ring-current/45 hover:text-error hover:ring-current/80'
+}
+const deleteConfirmDescription = computed(() => {
+  return t('homepage.schedulesModal.delete.confirmDescription', {
+    name: pendingDeleteSchedule.value?.name ?? '-'
+  })
+})
 
 watch(
   () => props.searchQuery,
@@ -63,6 +77,35 @@ function formatUpdatedAt(value: string): string {
 
 function handleOpenSchedule(schedule: HomepageScheduleListItem): void {
   emit('openSchedule', schedule)
+}
+
+function requestDeleteManualSchedule(schedule: HomepageScheduleListItem): void {
+  if (props.isDeletingManualSchedule) {
+    return
+  }
+
+  pendingDeleteSchedule.value = schedule
+  isDeleteConfirmOpen.value = true
+}
+
+function cancelDeleteManualSchedule(): void {
+  if (props.isDeletingManualSchedule) {
+    return
+  }
+
+  isDeleteConfirmOpen.value = false
+  pendingDeleteSchedule.value = null
+}
+
+function confirmDeleteManualSchedule(): void {
+  const schedule = pendingDeleteSchedule.value
+  if (!schedule || props.isDeletingManualSchedule) {
+    return
+  }
+
+  isDeleteConfirmOpen.value = false
+  pendingDeleteSchedule.value = null
+  emit('deleteManualSchedule', schedule)
 }
 
 function handleLoadMoreManual(): void {
@@ -114,6 +157,15 @@ function handleLoadMoreAuto(): void {
           </div>
 
           <div v-else class="box-border max-h-[56vh] space-y-3 overflow-y-auto px-1 py-1 pr-3">
+            <UAlert
+              v-if="manualScheduleDeleteError"
+              color="error"
+              variant="soft"
+              icon="i-lucide-triangle-alert"
+              :title="t('homepage.schedulesModal.delete.errorTitle')"
+              :description="manualScheduleDeleteError"
+            />
+
             <UCard
               v-for="draft in manualSchedules"
               :key="draft.id"
@@ -135,6 +187,18 @@ function handleLoadMoreAuto(): void {
                     {{ t('homepage.recent.committees', { count: draft.committeesCount }) }}
                   </span>
                   <span>{{ t('homepage.recent.students', { count: draft.studentsCount }) }}</span>
+                  <UButton
+                    color="error"
+                    variant="ghost"
+                    size="sm"
+                    icon="i-lucide-trash-2"
+                    :aria-label="t('homepage.schedulesModal.delete.openAriaLabel', { name: draft.name })"
+                    :class="deleteActionButtonClass"
+                    :disabled="isDeletingManualSchedule"
+                    :loading="isDeletingManualSchedule"
+                    :ui="deleteActionButtonUi"
+                    @click.stop="requestDeleteManualSchedule(draft)"
+                  />
                 </div>
               </div>
             </UCard>
@@ -213,6 +277,16 @@ function handleLoadMoreAuto(): void {
       </UTabs>
     </template>
   </UModal>
+
+  <CommonAppActionConfirmDialog
+    v-model:open="isDeleteConfirmOpen"
+    :action-label="t('homepage.schedulesModal.delete.confirmAction')"
+    :description="deleteConfirmDescription"
+    :confirm-label="t('homepage.schedulesModal.delete.confirmAction')"
+    :loading="isDeletingManualSchedule"
+    @cancel="cancelDeleteManualSchedule"
+    @confirm="confirmDeleteManualSchedule"
+  />
 </template>
 
 <style scoped>

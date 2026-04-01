@@ -1,15 +1,20 @@
 import type { TimeScheduleListItemDto, TimeScheduleTypeDto } from '#shared/types/time-schedules'
 import type { HomepageScheduleListItem } from '~/types/homepage'
 import { HOMEPAGE_BROWSE_SCHEDULES_PAGE_SIZE, HOMEPAGE_BROWSE_SEARCH_DEBOUNCE_MS } from '~/constants/homepage'
+import { extractHttpErrorMessage } from '~/utils/http-error'
 
 type BrowseSchedulesTabKey = 'manual' | 'auto'
 
 export function useHomepageBrowseSchedules() {
+  const { t } = useI18n()
+
   const isBrowseSchedulesDialogOpen = ref(false)
   const isBrowseSchedulesLoading = ref(false)
   const browseSchedulesSearchQuery = ref('')
   const isManualLoadMoreLoading = ref(false)
   const isAutoLoadMoreLoading = ref(false)
+  const isDeletingManualSchedule = ref(false)
+  const manualScheduleDeleteError = ref<string | null>(null)
 
   const manualSchedules = ref<HomepageScheduleListItem[]>([])
   const autoSchedules = ref<HomepageScheduleListItem[]>([])
@@ -204,11 +209,13 @@ export function useHomepageBrowseSchedules() {
     }
 
     isBrowseSchedulesDialogOpen.value = true
+    manualScheduleDeleteError.value = null
     void refreshBrowseSchedules()
   }
 
   function requestBrowseSchedulesSearch(nextSearchQuery: string): void {
     browseSchedulesSearchQuery.value = nextSearchQuery
+    manualScheduleDeleteError.value = null
     if (!isBrowseSchedulesDialogOpen.value) {
       return
     }
@@ -231,12 +238,36 @@ export function useHomepageBrowseSchedules() {
     void loadMoreBrowseSchedules('auto')
   }
 
+  async function deleteManualSchedule(schedule: HomepageScheduleListItem): Promise<void> {
+    if (isDeletingManualSchedule.value) {
+      return
+    }
+
+    isDeletingManualSchedule.value = true
+    manualScheduleDeleteError.value = null
+
+    try {
+      const requestFetch = useRequestFetch()
+      await requestFetch(`/api/time-schedules/${encodeURIComponent(schedule.id)}`, {
+        method: 'DELETE'
+      })
+      manualSchedules.value = manualSchedules.value.filter((entry) => entry.id !== schedule.id)
+    } catch (error: unknown) {
+      manualScheduleDeleteError.value =
+        extractHttpErrorMessage(error) ?? t('homepage.schedulesModal.delete.errorRequestFailedDescription')
+    } finally {
+      isDeletingManualSchedule.value = false
+    }
+  }
+
   return {
     isBrowseSchedulesDialogOpen,
     isBrowseSchedulesLoading,
     browseSchedulesSearchQuery,
     isManualLoadMoreLoading,
     isAutoLoadMoreLoading,
+    isDeletingManualSchedule,
+    manualScheduleDeleteError,
     manualSchedules,
     autoSchedules,
     hasMoreManualSchedules,
@@ -244,6 +275,7 @@ export function useHomepageBrowseSchedules() {
     requestBrowseSchedules,
     requestBrowseSchedulesSearch,
     loadMoreManualSchedules,
-    loadMoreAutoSchedules
+    loadMoreAutoSchedules,
+    deleteManualSchedule
   }
 }

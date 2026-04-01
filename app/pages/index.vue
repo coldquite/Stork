@@ -36,6 +36,8 @@ const {
   browseSchedulesSearchQuery,
   isManualLoadMoreLoading,
   isAutoLoadMoreLoading,
+  isDeletingManualSchedule,
+  manualScheduleDeleteError,
   hasMoreManualSchedules,
   hasMoreAutoSchedules,
   newScheduleNameInput,
@@ -45,6 +47,7 @@ const {
   requestBrowseSchedulesSearch,
   loadMoreManualSchedules,
   loadMoreAutoSchedules,
+  requestDeleteBrowseSchedule,
   requestRestoreDraft,
   cancelCreateScheduleConfirm,
   confirmCreateScheduleConfirm,
@@ -151,9 +154,12 @@ await fetchRecentSchedules()
       :search-query="browseSchedulesSearchQuery"
       :is-manual-load-more-loading="isManualLoadMoreLoading"
       :is-auto-load-more-loading="isAutoLoadMoreLoading"
+      :is-deleting-manual-schedule="isDeletingManualSchedule"
+      :manual-schedule-delete-error="manualScheduleDeleteError"
       :has-more-manual-schedules="hasMoreManualSchedules"
       :has-more-auto-schedules="hasMoreAutoSchedules"
       @open-schedule="requestOpenBrowseSchedule"
+      @delete-manual-schedule="requestDeleteBrowseSchedule"
       @search-change="requestBrowseSchedulesSearch"
       @load-more-manual="loadMoreManualSchedules"
       @load-more-auto="loadMoreAutoSchedules"

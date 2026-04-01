@@ -43,6 +43,8 @@ const {
   browseSchedulesSearchQuery,
   isManualLoadMoreLoading,
   isAutoLoadMoreLoading,
+  isDeletingManualSchedule,
+  manualScheduleDeleteError,
   hasMoreManualSchedules,
   hasMoreAutoSchedules,
   newScheduleNameInput,
@@ -51,6 +53,7 @@ const {
   requestBrowseSchedules,
   requestBrowseSchedulesSearch,
   requestOpenBrowseSchedule,
+  requestDeleteBrowseSchedule,
   cancelCreateScheduleConfirm,
   cancelOpenRecentSchedule,
   confirmCreateScheduleConfirm,
@@ -194,9 +197,12 @@ async function confirmLogout(): Promise<void> {
       :search-query="browseSchedulesSearchQuery"
       :is-manual-load-more-loading="isManualLoadMoreLoading"
       :is-auto-load-more-loading="isAutoLoadMoreLoading"
+      :is-deleting-manual-schedule="isDeletingManualSchedule"
+      :manual-schedule-delete-error="manualScheduleDeleteError"
       :has-more-manual-schedules="hasMoreManualSchedules"
       :has-more-auto-schedules="hasMoreAutoSchedules"
       @open-schedule="requestOpenBrowseSchedule"
+      @delete-manual-schedule="requestDeleteBrowseSchedule"
       @search-change="requestBrowseSchedulesSearch"
       @load-more-manual="loadMoreManualSchedules"
       @load-more-auto="loadMoreAutoSchedules"

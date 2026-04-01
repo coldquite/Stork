@@ -24,6 +24,10 @@ export function useHomepage() {
     scheduleOpening.requestOpenSchedule(schedule)
   }
 
+  function requestDeleteBrowseSchedule(schedule: HomepageScheduleListItem): void {
+    void browseSchedules.deleteManualSchedule(schedule)
+  }
+
   return {
     recentSchedules: scheduleOpening.recentSchedules,
     isRecentSchedulesLoading: scheduleOpening.isRecentSchedulesLoading,
@@ -58,6 +62,8 @@ export function useHomepage() {
     browseSchedulesSearchQuery: browseSchedules.browseSchedulesSearchQuery,
     isManualLoadMoreLoading: browseSchedules.isManualLoadMoreLoading,
     isAutoLoadMoreLoading: browseSchedules.isAutoLoadMoreLoading,
+    isDeletingManualSchedule: browseSchedules.isDeletingManualSchedule,
+    manualScheduleDeleteError: browseSchedules.manualScheduleDeleteError,
     hasMoreManualSchedules: browseSchedules.hasMoreManualSchedules,
     hasMoreAutoSchedules: browseSchedules.hasMoreAutoSchedules,
     newScheduleNameInput: createAndImport.newScheduleNameInput,
@@ -67,6 +73,7 @@ export function useHomepage() {
     requestBrowseSchedulesSearch: browseSchedules.requestBrowseSchedulesSearch,
     loadMoreManualSchedules: browseSchedules.loadMoreManualSchedules,
     loadMoreAutoSchedules: browseSchedules.loadMoreAutoSchedules,
+    requestDeleteBrowseSchedule,
     requestRestoreDraft: scheduleOpening.requestRestoreDraft,
     cancelCreateScheduleConfirm: createAndImport.cancelCreateScheduleConfirm,
     confirmCreateScheduleConfirm: createAndImport.confirmCreateScheduleConfirm,
