@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { NEW_SCHEDULE_NAME_MAX_LENGTH } from '~/constants/schedule'
+import { useHomepage } from '~/composables/homepage/useHomepage'
 
 const { t } = useI18n()
 const {
@@ -114,7 +115,7 @@ await fetchRecentSchedules()
       @confirm="confirmCreateScheduleConfirm"
     />
 
-    <CreateScheduleDialog
+    <ScheduleCreationCreateScheduleDialog
       v-model:open="isCreateScheduleDialogOpen"
       v-model:name="newScheduleNameInput"
       :loading="isCreatingNewSchedule"
@@ -125,9 +126,12 @@ await fetchRecentSchedules()
       @submit-import="submitCreateScheduleImport"
     />
 
-    <ImportMappingErrorDialog v-model:open="isImportMappingErrorDialogOpen" :error="importMappingError" />
+    <ScheduleCreationImportMappingErrorDialog
+      v-model:open="isImportMappingErrorDialogOpen"
+      :error="importMappingError"
+    />
 
-    <ImportTeachersDictionaryResolutionDialog
+    <ScheduleCreationImportTeachersDictionaryResolutionDialog
       v-model:open="isTeachersDictionaryResolutionDialogOpen"
       :loading="isCreatingNewSchedule"
       :entries="teachersDictionaryResolutionEntries"

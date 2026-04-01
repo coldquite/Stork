@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useAuthStore } from '~/stores/auth'
 import { NEW_SCHEDULE_NAME_MAX_LENGTH } from '~/constants/schedule'
+import { useEditorHeaderScheduleActions } from '~/composables/editor/useEditorHeaderScheduleActions'
 
 const { t } = useI18n()
 const authStore = useAuthStore()
@@ -223,7 +224,7 @@ async function confirmLogout(): Promise<void> {
       @confirm="confirmCreateScheduleConfirm"
     />
 
-    <CreateScheduleDialog
+    <ScheduleCreationCreateScheduleDialog
       v-if="isEditorRoute"
       v-model:open="isCreateScheduleDialogOpen"
       v-model:name="newScheduleNameInput"
@@ -235,13 +236,13 @@ async function confirmLogout(): Promise<void> {
       @submit-import="submitCreateScheduleImport"
     />
 
-    <ImportMappingErrorDialog
+    <ScheduleCreationImportMappingErrorDialog
       v-if="isEditorRoute"
       v-model:open="isImportMappingErrorDialogOpen"
       :error="importMappingError"
     />
 
-    <ImportTeachersDictionaryResolutionDialog
+    <ScheduleCreationImportTeachersDictionaryResolutionDialog
       v-if="isEditorRoute"
       v-model:open="isTeachersDictionaryResolutionDialogOpen"
       :loading="isCreatingNewSchedule"
