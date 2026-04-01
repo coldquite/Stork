@@ -21,15 +21,10 @@ export function useHomepageScheduleOpening(options: UseHomepageScheduleOpeningOp
   const isOpenRecentScheduleDialogOpen = ref(false)
   const pendingOpenSchedule = ref<ScheduleOpenCandidate | null>(null)
   const recentScheduleOpenError = ref<string | null>(null)
-  const isClientReady = ref(false)
-
-  onMounted(() => {
-    isClientReady.value = true
-  })
 
   const showRestoreCard = computed(() => {
     return (
-      isClientReady.value &&
+      import.meta.client &&
       scheduleDraftStore.hasDraft &&
       !options.isOpeningRecentSchedule.value &&
       !options.isCreatingNewSchedule.value
