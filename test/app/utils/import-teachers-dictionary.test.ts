@@ -6,7 +6,8 @@ import {
   applyTeachersDictionaryToStudentsCommittees,
   cloneImportPayload,
   collectTeachersDictionarySeedEntries,
-  createTeachersDictionaryLookupMap
+  createTeachersDictionaryLookupMap,
+  prepareImportPayloadForMapping
 } from '~/utils/import-teachers-dictionary'
 
 function createImportPayload(): ImportPayload {
@@ -199,6 +200,33 @@ describe('import-teachers-dictionary utils', () => {
     expect(unresolvedNeznamy[0]?.sourceValue).toBe('Neznámý Petr, Ing.')
   })
 
+  it('prepareImportPayloadForMapping returns unresolved entries when dictionary cannot resolve all names', () => {
+    const payload = createImportPayload()
+    const dictionaryLookupMap = createTeachersDictionaryLookupMap(
+      createDictionaryEntries([
+        'Ing. Jan Novák',
+        'Mgr. Eva Svobodová Ph.D.',
+        'doc. Petra Karásková',
+        'Ing. Roman Černý'
+      ])
+    )
+
+    const result = prepareImportPayloadForMapping(payload, dictionaryLookupMap)
+
+    expect(result.ok).toBe(false)
+    if (result.ok) {
+      throw new Error('Expected unresolved payload')
+    }
+
+    expect(result.unresolvedEntries).toHaveLength(2)
+    expect(result.unresolvedEntries.map((entry) => entry.lookupKey)).toEqual(
+      expect.arrayContaining([
+        buildTeachersDictionaryLookupKey('Neznámý Petr, Ing.'),
+        buildTeachersDictionaryLookupKey('Předseda Petr, doc.')
+      ])
+    )
+  })
+
   it('seed + lookup + apply flow resolves all target columns when dictionary contains all needed canonical names', () => {
     const payload = createImportPayload()
     const seedEntries = collectTeachersDictionarySeedEntries(payload)
@@ -220,5 +248,29 @@ describe('import-teachers-dictionary utils', () => {
     expect(payload.studentsCommittees.bachelor!.rows[0]!['VŠKP-typ A: Vedoucí práce 2']).toBe('Neznámý Petr Ing.')
     expect(payload.studentsCommittees.bachelor!.rows[0]!['Komise - člen 1']).toBe('Neznámý Petr Ing.')
     expect(payload.studentsCommittees.bachelor!.rows[0]!['Komise - předseda']).toBe('doc. Petr Předseda')
+  })
+
+  it('prepareImportPayloadForMapping returns prepared payload after full dictionary resolution', () => {
+    const payload = createImportPayload()
+    const seedEntries = collectTeachersDictionarySeedEntries(payload)
+    const dictionaryEntries = [
+      ...seedEntries.map((entry, index) => ({
+        id: `seed-${index + 1}`,
+        canonicalName: entry.canonicalName,
+        normalizedLookupKey: buildTeachersDictionaryLookupKey(entry.canonicalName),
+        isCustom: entry.isCustom
+      })),
+      ...createDictionaryEntries(['Neznámý Petr Ing.', 'doc. Petr Předseda'])
+    ]
+    const dictionaryLookupMap = createTeachersDictionaryLookupMap(dictionaryEntries)
+
+    const result = prepareImportPayloadForMapping(payload, dictionaryLookupMap)
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) {
+      throw new Error('Expected prepared payload')
+    }
+
+    expect(result.preparedPayload.studentsCommittees.bachelor!.rows[0]!['Komise - předseda']).toBe('doc. Petr Předseda')
   })
 })

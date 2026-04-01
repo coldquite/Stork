@@ -1,14 +1,25 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import type { GetTeachersDictionaryResponseDto } from '#shared/types/teachers-dictionary'
 import { buildTeachersDictionaryLookupKey } from '#shared/utils/teachers-dictionary'
-import { mapImportPayloadToDraftSource } from '~/utils/import-mapper'
-import type { ImportPayload } from '~/types/import'
+import { mapImportPayloadToDraftSource as mapPreparedImportPayloadToDraftSource } from '~/utils/import-mapper'
+import type { ImportPayload, ImportSzzType, PreparedImportPayload } from '~/types/import'
 import {
   applyTeachersDictionaryToStudentsCommittees,
   cloneImportPayload,
   collectTeachersDictionarySeedEntries,
   createTeachersDictionaryLookupMap
 } from '~/utils/import-teachers-dictionary'
+
+function mapImportPayloadToDraftSource(input: {
+  scheduleName: string
+  szzType: ImportSzzType
+  payload: ImportPayload
+}) {
+  return mapPreparedImportPayloadToDraftSource({
+    ...input,
+    payload: input.payload as PreparedImportPayload
+  })
+}
 
 function createCommitteesRow(overrides: Partial<Record<string, string>> = {}): Record<string, string> {
   return {
@@ -685,6 +696,234 @@ describe('mapImportPayloadToDraftSource', () => {
     expect(result.error.code).toBe('MISSING_DATASET')
     expect(result.error.datasetKey).toBe('studentsStork')
     expect(result.error.context.level).toBe('bachelor')
+  })
+
+  it('fails with MISSING_REQUIRED_VALUE when a required field is empty', () => {
+    const payload = createValidPayload()
+    payload.committees.rows[0] = createCommitteesRow({
+      'Název studijního programu': '   '
+    })
+
+    const result = mapImportPayloadToDraftSource({
+      scheduleName: 'SZZ červen 2025',
+      szzType: 'BACHELOR',
+      payload
+    })
+
+    expect(result.ok).toBe(false)
+    if (result.ok) {
+      throw new Error('Expected mapping failure')
+    }
+
+    expect(result.error.code).toBe('MISSING_REQUIRED_VALUE')
+    expect(result.error.datasetKey).toBe('committees')
+    expect(result.error.column).toBe('Název studijního programu')
+    expect(result.error.context.reason).toBe('required_value_is_empty')
+  })
+
+  it('fails with INVALID_COMMITTEE_NAME when committee name is blank after preprocessing', () => {
+    const payload = createValidPayload()
+    payload.committees.rows[0] = createCommitteesRow({
+      'Název komise': '   '
+    })
+
+    const result = mapImportPayloadToDraftSource({
+      scheduleName: 'SZZ červen 2025',
+      szzType: 'BACHELOR',
+      payload
+    })
+
+    expect(result.ok).toBe(false)
+    if (result.ok) {
+      throw new Error('Expected mapping failure')
+    }
+
+    expect(result.error.code).toBe('INVALID_COMMITTEE_NAME')
+    expect(result.error.datasetKey).toBe('committees')
+    expect(result.error.column).toBe('Název komise')
+  })
+
+  it('fails with COMMITTEE_NOT_FOUND_IN_COMMITTEES when students-committees contains an unknown committee', () => {
+    const payload = createValidPayload()
+    payload.studentsCommittees.bachelor!.rows.push(
+      createStudentsCommitteesRow({
+        'Jméno studenta': 'Petr',
+        'Příjmení studenta': 'Svoboda',
+        'Email adresa': 'petr.svoboda@fit.cvut.cz',
+        'Komise - název': '242-BI, 9-BI-PI.99'
+      })
+    )
+
+    const result = mapImportPayloadToDraftSource({
+      scheduleName: 'SZZ červen 2025',
+      szzType: 'BACHELOR',
+      payload
+    })
+
+    expect(result.ok).toBe(false)
+    if (result.ok) {
+      throw new Error('Expected mapping failure')
+    }
+
+    expect(result.error.code).toBe('COMMITTEE_NOT_FOUND_IN_COMMITTEES')
+    expect(result.error.datasetKey).toBe('studentsCommittees')
+    expect(result.error.column).toBe('Komise - název')
+    expect(result.error.context.committeeName).toBe('9-BI-PI.99')
+  })
+
+  it('fails with COMMITTEE_GROUP_INCONSISTENT when one committee group has conflicting invariant fields', () => {
+    const payload = createValidPayload()
+    payload.studentsCommittees.bachelor!.rows.push(
+      createStudentsCommitteesRow({
+        'Jméno studenta': 'Petr',
+        'Příjmení studenta': 'Svoboda',
+        'Email adresa': 'petr.svoboda@fit.cvut.cz',
+        'Komise - člen 2': 'Jiný člen'
+      })
+    )
+
+    const result = mapImportPayloadToDraftSource({
+      scheduleName: 'SZZ červen 2025',
+      szzType: 'BACHELOR',
+      payload
+    })
+
+    expect(result.ok).toBe(false)
+    if (result.ok) {
+      throw new Error('Expected mapping failure')
+    }
+
+    expect(result.error.code).toBe('COMMITTEE_GROUP_INCONSISTENT')
+    expect(result.error.datasetKey).toBe('studentsCommittees')
+    expect(result.error.column).toBe('Komise - člen 2')
+    expect(result.error.context.committeeName).toBe('5-BI-PI.21')
+  })
+
+  it('fails with COMMITTEE_FIELD_MISMATCH when committee and students rows disagree in mapped fields', () => {
+    const payload = createValidPayload()
+    payload.committees.rows[0] = createCommitteesRow({
+      'Název studijního programu': 'Kybernetika'
+    })
+
+    const result = mapImportPayloadToDraftSource({
+      scheduleName: 'SZZ červen 2025',
+      szzType: 'BACHELOR',
+      payload
+    })
+
+    expect(result.ok).toBe(false)
+    if (result.ok) {
+      throw new Error('Expected mapping failure')
+    }
+
+    expect(result.error.code).toBe('COMMITTEE_FIELD_MISMATCH')
+    expect(result.error.datasetKey).toBe('committees')
+    expect(result.error.column).toBe('Název studijního programu')
+    expect(result.error.context.leftColumn).toBe('St. program - název')
+    expect(result.error.context.rightColumn).toBe('Název studijního programu')
+  })
+
+  it('fails with COMMITTEE_SZZ_TYPE_MISMATCH when imported study type differs from selected SZZ type', () => {
+    const payload = createValidPayload()
+    payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
+      'St. program - typ': 'M'
+    })
+
+    const result = mapImportPayloadToDraftSource({
+      scheduleName: 'SZZ červen 2025',
+      szzType: 'BACHELOR',
+      payload
+    })
+
+    expect(result.ok).toBe(false)
+    if (result.ok) {
+      throw new Error('Expected mapping failure')
+    }
+
+    expect(result.error.code).toBe('COMMITTEE_SZZ_TYPE_MISMATCH')
+    expect(result.error.datasetKey).toBe('studentsCommittees')
+    expect(result.error.column).toBe('St. program - typ')
+    expect(result.error.context.detectedType).toBe('MASTER')
+    expect(result.error.context.selectedType).toBe('BACHELOR')
+  })
+
+  it('fails with INVALID_COMMITTEE_DATE when committee date cannot be parsed', () => {
+    const payload = createValidPayload()
+    payload.committees.rows[0] = createCommitteesRow({
+      Datum: '2025-06-23'
+    })
+
+    const result = mapImportPayloadToDraftSource({
+      scheduleName: 'SZZ červen 2025',
+      szzType: 'BACHELOR',
+      payload
+    })
+
+    expect(result.ok).toBe(false)
+    if (result.ok) {
+      throw new Error('Expected mapping failure')
+    }
+
+    expect(result.error.code).toBe('INVALID_COMMITTEE_DATE')
+    expect(result.error.datasetKey).toBe('committees')
+    expect(result.error.column).toBe('Datum')
+  })
+
+  it('fails with INVALID_STUDY_PROGRAM_TYPE when study type symbol is unsupported', () => {
+    const payload = createValidPayload()
+    payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
+      'St. program - typ': 'X'
+    })
+
+    const result = mapImportPayloadToDraftSource({
+      scheduleName: 'SZZ červen 2025',
+      szzType: 'BACHELOR',
+      payload
+    })
+
+    expect(result.ok).toBe(false)
+    if (result.ok) {
+      throw new Error('Expected mapping failure')
+    }
+
+    expect(result.error.code).toBe('INVALID_STUDY_PROGRAM_TYPE')
+    expect(result.error.datasetKey).toBe('studentsCommittees')
+    expect(result.error.column).toBe('St. program - typ')
+    expect(result.error.context.rawValue).toBe('X')
+  })
+
+  it('fails with STUDENT_COMMITTEE_NOT_FOUND when target committee lookup unexpectedly misses', () => {
+    const payload = createValidPayload()
+    const originalMapGet = Map.prototype.get
+    const mapGetSpy = vi.spyOn(Map.prototype, 'get').mockImplementation(function (this: Map<unknown, unknown>, key) {
+      const value = originalMapGet.call(this, key)
+
+      if (key === '5-BI-PI.21' && value && typeof value === 'object' && 'items' in (value as Record<string, unknown>)) {
+        return undefined
+      }
+
+      return value
+    })
+
+    try {
+      const result = mapImportPayloadToDraftSource({
+        scheduleName: 'SZZ červen 2025',
+        szzType: 'BACHELOR',
+        payload
+      })
+
+      expect(result.ok).toBe(false)
+      if (result.ok) {
+        throw new Error('Expected mapping failure')
+      }
+
+      expect(result.error.code).toBe('STUDENT_COMMITTEE_NOT_FOUND')
+      expect(result.error.datasetKey).toBe('studentsCommittees')
+      expect(result.error.column).toBe('Komise - název')
+      expect(result.error.context.committeeName).toBe('5-BI-PI.21')
+    } finally {
+      mapGetSpy.mockRestore()
+    }
   })
 
   it('fails when committee name is duplicated in committees dataset', () => {
