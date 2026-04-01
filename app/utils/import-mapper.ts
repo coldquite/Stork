@@ -17,8 +17,20 @@ import type {
 import type { DraftScheduleSource } from '~/types/schedule-draft'
 
 const COMMITTEE_START_MINUTE = 525 // 8:45
-const DEFAULT_PREPARE_MINUTES = 45
-const DEFAULT_EXAM_MINUTES = 30
+
+const BACHELOR_FIRST_OR_BOTH_PREPARE_MINUTES = 45
+const BACHELOR_FIRST_OR_BOTH_EXAM_MINUTES = 30
+const BACHELOR_THESIS_ONLY_PREPARE_MINUTES = 45
+const BACHELOR_THESIS_ONLY_EXAM_MINUTES = 15
+const BACHELOR_ORAL_ONLY_PREPARE_MINUTES = 45
+const BACHELOR_ORAL_ONLY_EXAM_MINUTES = 15
+
+const MASTER_FIRST_OR_BOTH_PREPARE_MINUTES = 45
+const MASTER_FIRST_OR_BOTH_EXAM_MINUTES = 35
+const MASTER_THESIS_ONLY_PREPARE_MINUTES = 45
+const MASTER_THESIS_ONLY_EXAM_MINUTES = 20
+const MASTER_ORAL_ONLY_PREPARE_MINUTES = 45
+const MASTER_ORAL_ONLY_EXAM_MINUTES = 15
 
 type DatasetLevel = 'bachelor' | 'master'
 type SourceDatasetKey = 'studentsStork' | 'studentsCommittees' | 'committees'
@@ -51,7 +63,7 @@ class ImportMappingFailure extends Error {
   }
 }
 
-const COMMITTEE_GROUP_INVARIANT_COLUMNS: readonly string[] = [
+const COMMITTEE_CONSISTENCY_CHECK_COLUMNS: readonly string[] = [
   'Komise - název',
   'St. program - kód',
   'St. program - název',
@@ -68,6 +80,10 @@ const COMMITTEE_GROUP_INVARIANT_COLUMNS: readonly string[] = [
   'Komise - člen 3'
 ]
 
+/**
+ * Throws a normalized mapping failure with source-aware metadata
+ * ensures every error has a safe default dataset key and context object so View can properly display it
+ */
 function throwMappingError(
   code: ImportMappingErrorCode,
   source: Pick<SourceRow, 'datasetKey' | 'fileName' | 'rowNumber'> | null,
@@ -100,10 +116,9 @@ function normalizeCompareValue(value: string): string {
   return normalizeWhitespace(value).toLowerCase()
 }
 
-function normalizeEmail(value: string): string {
-  return normalizeWhitespace(value).toLowerCase()
-}
-
+// Normalizes specialization code to a consistent shape
+// KOS exports use different formats for the same value across export types (I wonder know why)
+// Example: BI-IB21 => BI-IB.21
 function normalizeSpecializationCode(value: string): string {
   const normalized = normalizeWhitespace(value)
   const matched = normalized.match(/^(.*?)(\d+)$/)
@@ -120,12 +135,22 @@ function normalizeSpecializationCode(value: string): string {
   return `${prefix}.${digits}`
 }
 
+// Normalizes specialization code for tolerant comparisons across combined-study tracks
+//
+// Example:
+//   - "BIK-SI.21" -> "bi-si"
+//   - "BI-SI.21" -> "bi-si"
+//   - "BIE-SI.21" -> "bie-si"
 function normalizeSpecializationCodeForComparison(value: string): string {
   const normalized = normalizeCompareValue(value).replace(/k-/g, '-')
   const withoutVersionSuffix = normalized.replace(/\.\d+$/u, '').replace(/\d+$/u, '')
   return withoutVersionSuffix.replace(/[.-]+$/u, '')
 }
 
+// Normalizes committee name into the canonical form used in student rows.
+// KOS committee labels can look like "242-BI, 5-BI-PI.21"
+//
+// Example: "242-BI, 5-BI-PI.21" -> "5-BI-PI.21"
 function preprocessCommitteeName(value: string): string {
   const normalized = normalizeWhitespace(value)
   if (normalized.length === 0) {
@@ -141,16 +166,18 @@ function preprocessCommitteeName(value: string): string {
   return suffix.length > 0 ? suffix : normalized
 }
 
+// Converts parsed CSV rows to source-aware rows with metadata used by validators and error reporting
 function toSourceRows(dataset: ImportDataset, datasetKey: SourceDatasetKey, level: DatasetLevel | null): SourceRow[] {
   return dataset.rows.map((row, index) => ({
     datasetKey,
     fileName: dataset.fileName,
-    rowNumber: index + 2,
+    rowNumber: index + 2, // Unlike JS arrays, CSV lines are 1-based, plus one line for the header.
     level,
     row
   }))
 }
 
+// Parses study program type from the first significant symbol
 function parseStudyProgramType(value: string): StudyProgramTypeDto | null {
   const firstSymbol = normalizeWhitespace(value).toUpperCase()[0] ?? ''
 
@@ -200,20 +227,21 @@ function parseThesisLanguage(rawValue: string): ThesisLanguageDto | null {
   return null
 }
 
-function parseCommitteeDateToIso(rawValue: string): string | null {
+// Parses a date from Czech format "DD.MM.YYYY" to ISO string in UTC midnight
+//
+// Example: "23.06.2025" -> "2025-06-23T00:00:00.000Z"
+// Invalid dates return null.
+function parseDateToIso(rawValue: string): string | null {
   const normalized = normalizeWhitespace(rawValue)
   const matched = normalized.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/)
   if (!matched) {
     return null
   }
 
-  const day = Number.parseInt(matched[1] ?? '', 10)
-  const month = Number.parseInt(matched[2] ?? '', 10)
-  const year = Number.parseInt(matched[3] ?? '', 10)
-
-  if (!Number.isInteger(day) || !Number.isInteger(month) || !Number.isInteger(year)) {
-    return null
-  }
+  const [, dayValue, monthValue, yearValue] = matched
+  const day = Number.parseInt(dayValue ?? '', 10)
+  const month = Number.parseInt(monthValue ?? '', 10)
+  const year = Number.parseInt(yearValue ?? '', 10)
 
   const date = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0))
   if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) {
@@ -223,23 +251,105 @@ function parseCommitteeDateToIso(rawValue: string): string | null {
   return date.toISOString()
 }
 
-function parseOptionalDateTimeToIso(rawValue: string): string | null {
-  const normalized = normalizeWhitespace(rawValue)
-  if (normalized.length === 0) {
-    return null
+function resolveStudentRepeatType(studentsCommitteesRow: SourceRow): PostStudentItemDto['repeatType'] {
+  const thesisDefenseDate = readOptionalValue(studentsCommitteesRow, 'VŠKP-typ A: Datum obhajoby')
+  const firstTermDate = readOptionalValue(studentsCommitteesRow, 'Předmět 1 - 1.term. datum')
+  const secondTermDate = readOptionalValue(studentsCommitteesRow, 'Předmět 1 - 2.term. datum')
+
+  if (secondTermDate) {
+    throwMappingError('STUDENT_REPEAT_NOT_ALLOWED', studentsCommitteesRow, {
+      column: 'Předmět 1 - 2.term. datum',
+      context: {
+        reason: 'second_term_attempt_already_exists',
+        secondTermDate
+      }
+    })
   }
 
-  const czDate = parseCommitteeDateToIso(normalized)
-  if (czDate) {
-    return czDate
+  if (!firstTermDate && !thesisDefenseDate) {
+    return 'NONE'
   }
 
-  const parsed = new Date(normalized)
-  if (Number.isNaN(parsed.getTime())) {
-    return null
+  if (firstTermDate && !thesisDefenseDate) {
+    // The student repeats for sure, but import data cannot distinguish thesis-only vs both.
+    return 'UNKNOWN'
   }
 
-  return parsed.toISOString()
+  if (firstTermDate && thesisDefenseDate) {
+    return 'ORAL_EXAM'
+  }
+
+  throwMappingError('INVALID_REPEAT_TYPE_STATE', studentsCommitteesRow, {
+    column: 'VŠKP-typ A: Datum obhajoby',
+    context: {
+      reason: 'defense_date_without_first_term_date',
+      thesisDefenseDate,
+      firstTermDate: firstTermDate ?? null
+    }
+  })
+}
+
+const STUDENT_DURATION_MINUTES_BY_STUDY_PROGRAM_AND_REPEAT: Readonly<
+  Record<
+    StudyProgramTypeDto,
+    Readonly<Record<PostStudentItemDto['repeatType'], { prepareMinutes: number; examMinutes: number }>>
+  >
+> = {
+  BACHELOR: {
+    NONE: {
+      prepareMinutes: BACHELOR_FIRST_OR_BOTH_PREPARE_MINUTES,
+      examMinutes: BACHELOR_FIRST_OR_BOTH_EXAM_MINUTES
+    },
+    THESIS_DEFENSE: {
+      prepareMinutes: BACHELOR_THESIS_ONLY_PREPARE_MINUTES,
+      examMinutes: BACHELOR_THESIS_ONLY_EXAM_MINUTES
+    },
+    ORAL_EXAM: {
+      prepareMinutes: BACHELOR_ORAL_ONLY_PREPARE_MINUTES,
+      examMinutes: BACHELOR_ORAL_ONLY_EXAM_MINUTES
+    },
+    BOTH: {
+      prepareMinutes: BACHELOR_FIRST_OR_BOTH_PREPARE_MINUTES,
+      examMinutes: BACHELOR_FIRST_OR_BOTH_EXAM_MINUTES
+    },
+    UNKNOWN: {
+      // Unknown means repeat is certain, but import cannot distinguish thesis-only vs both.
+      // We use first/both slot duration to avoid underestimating total exam time.
+      prepareMinutes: BACHELOR_FIRST_OR_BOTH_PREPARE_MINUTES,
+      examMinutes: BACHELOR_FIRST_OR_BOTH_EXAM_MINUTES
+    }
+  },
+  MASTER: {
+    NONE: {
+      prepareMinutes: MASTER_FIRST_OR_BOTH_PREPARE_MINUTES,
+      examMinutes: MASTER_FIRST_OR_BOTH_EXAM_MINUTES
+    },
+    THESIS_DEFENSE: {
+      prepareMinutes: MASTER_THESIS_ONLY_PREPARE_MINUTES,
+      examMinutes: MASTER_THESIS_ONLY_EXAM_MINUTES
+    },
+    ORAL_EXAM: {
+      prepareMinutes: MASTER_ORAL_ONLY_PREPARE_MINUTES,
+      examMinutes: MASTER_ORAL_ONLY_EXAM_MINUTES
+    },
+    BOTH: {
+      prepareMinutes: MASTER_FIRST_OR_BOTH_PREPARE_MINUTES,
+      examMinutes: MASTER_FIRST_OR_BOTH_EXAM_MINUTES
+    },
+    UNKNOWN: {
+      // Unknown means repeat is certain, but import cannot distinguish thesis-only vs both.
+      // We use first/both slot duration to avoid underestimating total exam time.
+      prepareMinutes: MASTER_FIRST_OR_BOTH_PREPARE_MINUTES,
+      examMinutes: MASTER_FIRST_OR_BOTH_EXAM_MINUTES
+    }
+  }
+}
+
+function resolveStudentDurationByStudyProgramAndRepeat(
+  studyProgramType: StudyProgramTypeDto,
+  repeatType: PostStudentItemDto['repeatType']
+): { prepareMinutes: number; examMinutes: number } {
+  return STUDENT_DURATION_MINUTES_BY_STUDY_PROGRAM_AND_REPEAT[studyProgramType][repeatType]
 }
 
 function readRequiredValue(source: SourceRow, column: string): string {
@@ -284,6 +394,13 @@ function requireDataset(
   })
 }
 
+/**
+ * Normalizes uploaded student datasets into one consistent shape for mapping
+ *
+ * The app supports two import modes:
+ * - MIXED: requires bachelor + master datasets for both Students Stork and Students Committees
+ * - Single-level: requires only the level selected by the user
+ */
 function collectStudentDatasets(payload: ImportPayload, szzType: ImportSzzType): StudentsDatasetsBundle {
   if (szzType === 'MIXED') {
     const studentsStorkBachelor = requireDataset(payload.studentsStork.bachelor, 'studentsStork', { level: 'bachelor' })
@@ -319,20 +436,24 @@ function collectStudentDatasets(payload: ImportPayload, szzType: ImportSzzType):
   }
 }
 
-function assertCommitteeGroupConsistency(groupRows: SourceRow[], committeeName: string): void {
-  const baseRow = groupRows[0]
+/**
+ * For a single committee ensures that all CSV records from a `studentsCommittees` dataset are internally consistent.
+ * The first row is used as a reference. All other rows are compared against it for columns listed in `COMMITTEE_CONSISTENCY_CHECK_COLUMNS`
+ */
+function assertCommitteeGroupConsistency(committeeRows: SourceRow[], committeeName: string): void {
+  const baseRow = committeeRows[0]
   if (!baseRow) {
     return
   }
 
-  for (const column of COMMITTEE_GROUP_INVARIANT_COLUMNS) {
+  for (const column of COMMITTEE_CONSISTENCY_CHECK_COLUMNS) {
     const expectedRaw = baseRow.row[column] ?? ''
     const expected =
       column === 'Obor/spec - kód'
         ? normalizeSpecializationCodeForComparison(normalizeSpecializationCode(expectedRaw))
         : normalizeWhitespace(expectedRaw)
 
-    for (const currentRow of groupRows) {
+    for (const currentRow of committeeRows) {
       const currentRaw = currentRow.row[column] ?? ''
       const current =
         column === 'Obor/spec - kód'
@@ -356,19 +477,23 @@ function assertCommitteeGroupConsistency(groupRows: SourceRow[], committeeName: 
   }
 }
 
-function assertEqualFieldsBetweenSources(
-  left: { source: SourceRow; column: string; value: string },
-  right: { source: SourceRow; column: string; value: string },
-  committeeName: string
+function assertFieldEquality(
+  committeeName: string,
+  left: { source: SourceRow; column: string; value: string | null },
+  right: { source: SourceRow; column: string; value: string | null },
+  errorCode: Extract<
+    ImportMappingErrorCode,
+    'COMMITTEE_FIELD_MISMATCH' | 'STUDENT_VALUE_MISMATCH'
+  > = 'STUDENT_VALUE_MISMATCH'
 ): void {
-  const leftValue = normalizeWhitespace(left.value)
-  const rightValue = normalizeWhitespace(right.value)
+  const leftValue = normalizeWhitespace(left.value ?? '')
+  const rightValue = normalizeWhitespace(right.value ?? '')
 
   if (normalizeCompareValue(leftValue) === normalizeCompareValue(rightValue)) {
     return
   }
 
-  throwMappingError('COMMITTEE_FIELD_MISMATCH', right.source, {
+  throwMappingError(errorCode, right.source, {
     column: right.column,
     context: {
       committeeName,
@@ -475,7 +600,8 @@ function mapCommittees(
 
     const studentsProgramName = readRequiredValue(representativeStudentsRow, 'St. program - název')
     const committeesProgramName = readRequiredValue(committeeRow, 'Název studijního programu')
-    assertEqualFieldsBetweenSources(
+    assertFieldEquality(
+      committeeName,
       {
         source: representativeStudentsRow,
         column: 'St. program - název',
@@ -486,12 +612,13 @@ function mapCommittees(
         column: 'Název studijního programu',
         value: committeesProgramName
       },
-      committeeName
+      'COMMITTEE_FIELD_MISMATCH'
     )
 
     const studentsSpecializationName = readRequiredValue(representativeStudentsRow, 'Obor/spec - název')
     const committeesSpecializationName = readRequiredValue(committeeRow, 'Název oboru/specializace')
-    assertEqualFieldsBetweenSources(
+    assertFieldEquality(
+      committeeName,
       {
         source: representativeStudentsRow,
         column: 'Obor/spec - název',
@@ -502,7 +629,7 @@ function mapCommittees(
         column: 'Název oboru/specializace',
         value: committeesSpecializationName
       },
-      committeeName
+      'COMMITTEE_FIELD_MISMATCH'
     )
 
     const studentsDefenseDepartmentCode = readOptionalValue(
@@ -511,7 +638,8 @@ function mapCommittees(
     )
     const committeesDefenseDepartmentCode = readRequiredValue(committeeRow, 'Kat')
     if (studentsDefenseDepartmentCode) {
-      assertEqualFieldsBetweenSources(
+      assertFieldEquality(
+        committeeName,
         {
           source: representativeStudentsRow,
           column: 'VŠKP-typ A: Katedra obhajoby - kod',
@@ -522,7 +650,7 @@ function mapCommittees(
           column: 'Kat',
           value: committeesDefenseDepartmentCode
         },
-        committeeName
+        'COMMITTEE_FIELD_MISMATCH'
       )
     }
 
@@ -568,7 +696,7 @@ function mapCommittees(
     }
 
     const committeeDateRaw = readRequiredValue(committeeRow, 'Datum')
-    const committeeDate = parseCommitteeDateToIso(committeeDateRaw)
+    const committeeDate = parseDateToIso(committeeDateRaw)
     if (!committeeDate) {
       throwMappingError('INVALID_COMMITTEE_DATE', committeeRow, {
         column: 'Datum',
@@ -614,8 +742,8 @@ function mapCommittees(
   }
 }
 
-function buildStudentMatchKeyByStork(row: SourceRow): string {
-  const email = normalizeEmail(readRequiredValue(row, 'Email studenta'))
+function buildStudentMatchKeyByStudentsStork(row: SourceRow): string {
+  const email = normalizeCompareValue(readRequiredValue(row, 'Email studenta'))
   const firstName = normalizeCompareValue(readRequiredValue(row, 'Jméno'))
   const lastName = normalizeCompareValue(readRequiredValue(row, 'Příjmení'))
 
@@ -623,56 +751,11 @@ function buildStudentMatchKeyByStork(row: SourceRow): string {
 }
 
 function buildStudentMatchKeyByStudentsCommittees(row: SourceRow): string {
-  const email = normalizeEmail(readRequiredValue(row, 'Email adresa'))
+  const email = normalizeCompareValue(readRequiredValue(row, 'Email adresa'))
   const firstName = normalizeCompareValue(readRequiredValue(row, 'Jméno studenta'))
   const lastName = normalizeCompareValue(readRequiredValue(row, 'Příjmení studenta'))
 
   return `${email}|${firstName}|${lastName}`
-}
-
-function assertStudentFieldEquality(
-  committeeName: string,
-  left: { source: SourceRow; column: string; value: string },
-  right: { source: SourceRow; column: string; value: string }
-): void {
-  if (normalizeCompareValue(left.value) === normalizeCompareValue(right.value)) {
-    return
-  }
-
-  throwMappingError('STUDENT_VALUE_MISMATCH', right.source, {
-    column: right.column,
-    context: {
-      committeeName,
-      leftColumn: left.column,
-      rightColumn: right.column,
-      leftValue: left.value,
-      rightValue: right.value
-    }
-  })
-}
-
-function assertOptionalStudentFieldEquality(
-  committeeName: string,
-  left: { source: SourceRow; column: string; value: string | null },
-  right: { source: SourceRow; column: string; value: string | null }
-): void {
-  const leftValue = left.value ?? ''
-  const rightValue = right.value ?? ''
-
-  if (normalizeCompareValue(leftValue) === normalizeCompareValue(rightValue)) {
-    return
-  }
-
-  throwMappingError('STUDENT_VALUE_MISMATCH', right.source, {
-    column: right.column,
-    context: {
-      committeeName,
-      leftColumn: left.column,
-      rightColumn: right.column,
-      leftValue,
-      rightValue
-    }
-  })
 }
 
 function appendStudentsToCommittees(
@@ -693,7 +776,7 @@ function appendStudentsToCommittees(
   const bufferedStudentItems = new Map<string, Array<{ rowNumber: number; student: PostStudentItemDto }>>()
 
   for (const studentsStorkRow of studentsStorkRows) {
-    const key = buildStudentMatchKeyByStork(studentsStorkRow)
+    const key = buildStudentMatchKeyByStudentsStork(studentsStorkRow)
     const matches = studentsRowsByKey.get(key) ?? []
 
     if (matches.length === 0) {
@@ -730,7 +813,7 @@ function appendStudentsToCommittees(
 
     const storkFirstName = readRequiredValue(studentsStorkRow, 'Jméno')
     const committeesFirstName = readRequiredValue(studentsCommitteesRow, 'Jméno studenta')
-    assertStudentFieldEquality(
+    assertFieldEquality(
       preprocessCommitteeName(readRequiredValue(studentsCommitteesRow, 'Komise - název')),
       {
         source: studentsStorkRow,
@@ -746,7 +829,7 @@ function appendStudentsToCommittees(
 
     const storkLastName = readRequiredValue(studentsStorkRow, 'Příjmení')
     const committeesLastName = readRequiredValue(studentsCommitteesRow, 'Příjmení studenta')
-    assertStudentFieldEquality(
+    assertFieldEquality(
       preprocessCommitteeName(readRequiredValue(studentsCommitteesRow, 'Komise - název')),
       {
         source: studentsStorkRow,
@@ -793,7 +876,7 @@ function appendStudentsToCommittees(
 
     const storkThesisTitleLocal = readRequiredValue(studentsStorkRow, 'VŠKP-typ A: Název práce')
     const committeesThesisTitleLocal = readRequiredValue(studentsCommitteesRow, 'VŠKP-typ A: Český název práce')
-    assertStudentFieldEquality(
+    assertFieldEquality(
       committeeName,
       {
         source: studentsStorkRow,
@@ -809,7 +892,7 @@ function appendStudentsToCommittees(
 
     const storkThesisTitleEn = readRequiredValue(studentsStorkRow, 'VŠKP-typ A: Překlad názvu práce')
     const committeesThesisTitleEn = readRequiredValue(studentsCommitteesRow, 'VŠKP-typ A: Anglický název práce')
-    assertStudentFieldEquality(
+    assertFieldEquality(
       committeeName,
       {
         source: studentsStorkRow,
@@ -862,7 +945,7 @@ function appendStudentsToCommittees(
 
     const storkSupervisorName = readRequiredValue(studentsStorkRow, 'VŠKP-typ A: Vedoucí práce 1')
     const committeesSupervisorName = readRequiredValue(studentsCommitteesRow, 'VŠKP-typ A: Vedoucí práce 1')
-    assertStudentFieldEquality(
+    assertFieldEquality(
       committeeName,
       {
         source: studentsStorkRow,
@@ -878,7 +961,7 @@ function appendStudentsToCommittees(
 
     const storkAdditionalSupervisorName = readOptionalValue(studentsStorkRow, 'VŠKP-typ A: Vedoucí práce 2')
     const committeesAdditionalSupervisorName = readOptionalValue(studentsCommitteesRow, 'VŠKP-typ A: Vedoucí práce 2')
-    assertOptionalStudentFieldEquality(
+    assertFieldEquality(
       committeeName,
       {
         source: studentsStorkRow,
@@ -894,7 +977,7 @@ function appendStudentsToCommittees(
 
     const storkReviewerName = readRequiredValue(studentsStorkRow, 'VŠKP-typ A: Oponent práce 1')
     const committeesReviewerName = readRequiredValue(studentsCommitteesRow, 'VŠKP-typ A: Oponent práce 1')
-    assertStudentFieldEquality(
+    assertFieldEquality(
       committeeName,
       {
         source: studentsStorkRow,
@@ -910,7 +993,7 @@ function appendStudentsToCommittees(
 
     const storkAdditionalReviewerName = readOptionalValue(studentsStorkRow, 'VŠKP-typ A: Oponent práce 2')
     const committeesAdditionalReviewerName = readOptionalValue(studentsCommitteesRow, 'VŠKP-typ A: Oponent práce 2')
-    assertOptionalStudentFieldEquality(
+    assertFieldEquality(
       committeeName,
       {
         source: studentsStorkRow,
@@ -936,9 +1019,9 @@ function appendStudentsToCommittees(
       })
     }
 
-    const thesisSubmissionAtRaw = studentsStorkRow.row['VŠKP-typ A: Termín odevzdání práce'] ?? ''
-    const thesisSubmissionAt = parseOptionalDateTimeToIso(thesisSubmissionAtRaw)
-    if (normalizeWhitespace(thesisSubmissionAtRaw).length > 0 && !thesisSubmissionAt) {
+    const thesisSubmissionAtRaw = readOptionalValue(studentsStorkRow, 'VŠKP-typ A: Termín odevzdání práce')
+    const thesisSubmissionAt = thesisSubmissionAtRaw ? parseDateToIso(thesisSubmissionAtRaw) : null
+    if (thesisSubmissionAtRaw && !thesisSubmissionAt) {
       throwMappingError('INVALID_THESIS_SUBMISSION_DATE', studentsStorkRow, {
         column: 'VŠKP-typ A: Termín odevzdání práce',
         context: {
@@ -946,6 +1029,8 @@ function appendStudentsToCommittees(
         }
       })
     }
+    const repeatType = resolveStudentRepeatType(studentsCommitteesRow)
+    const { prepareMinutes, examMinutes } = resolveStudentDurationByStudyProgramAndRepeat(studyProgramType, repeatType)
 
     const mappedStudent: PostStudentItemDto = {
       personalNumber: readOptionalValue(studentsCommitteesRow, 'Osobní číslo'),
@@ -968,10 +1053,10 @@ function appendStudentsToCommittees(
       defenseDepartmentName: readRequiredValue(studentsStorkRow, 'Katedra studenta (název)'),
       studyLanguage,
       thesisSubmissionAt: thesisSubmissionAt ?? null,
-      repeatType: 'NONE',
+      repeatType,
       elsa: false,
-      prepareMinutes: DEFAULT_PREPARE_MINUTES,
-      examMinutes: DEFAULT_EXAM_MINUTES
+      prepareMinutes,
+      examMinutes
     }
 
     if (mappedStudent.studyProgramType !== targetCommittee.studyProgramType) {

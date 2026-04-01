@@ -74,6 +74,35 @@ function createImportPayload(): ImportPayload {
   }
 }
 
+function createImportPayloadWithUnresolvedTeacher(): ImportPayload {
+  return {
+    committees: {
+      fileName: 'komise.csv',
+      headers: ['Datum', 'Místo'],
+      rows: [{ Datum: '2026-06-15', Místo: 'TH:A-1435' }]
+    },
+    studentsStork: {
+      bachelor: {
+        fileName: 'studenti-stork-bc.csv',
+        headers: ['VŠKP-typ A: Vedoucí práce 1'],
+        rows: [{ 'VŠKP-typ A: Vedoucí práce 1': 'Ing. Jan Novák' }]
+      }
+    },
+    studentsCommittees: {
+      bachelor: {
+        fileName: 'studenti-komise-bc.csv',
+        headers: ['VŠKP-typ A: Vedoucí práce 1', 'Komise - člen 1'],
+        rows: [
+          {
+            'VŠKP-typ A: Vedoucí práce 1': 'Novák Jan, Ing.',
+            'Komise - člen 1': 'Neznámý Petr, Ing.'
+          }
+        ]
+      }
+    }
+  }
+}
+
 async function flushPromises(): Promise<void> {
   await Promise.resolve()
   await Promise.resolve()
@@ -220,6 +249,261 @@ describe('useHomepage submitCreateScheduleImport', () => {
     expect(mapImportPayloadToDraftSourceMock).not.toHaveBeenCalled()
     expect(homepage.isCreateScheduleDialogOpen.value).toBe(true)
     expect(homepage.isCreatingNewSchedule.value).toBe(false)
+  })
+
+  it('opens import mapping error with stage=seed when teachers dictionary seed request fails', async () => {
+    requestFetchMock.mockImplementation(async (url: string) => {
+      if (url.startsWith('/api/teachers-dictionary/bulk')) {
+        throw new Error('seed failed')
+      }
+
+      throw new Error(`Unexpected request URL: ${url}`)
+    })
+
+    const { useHomepage } = await import('~/composables/homepage/useHomepage')
+    const homepage = useHomepage()
+
+    homepage.isCreateScheduleDialogOpen.value = true
+    homepage.newScheduleNameInput.value = 'SZZ plán'
+
+    await homepage.submitCreateScheduleImport({
+      payload: createImportPayloadWithUnresolvedTeacher(),
+      szzType: 'BACHELOR'
+    })
+
+    expect(mapImportPayloadToDraftSourceMock).not.toHaveBeenCalled()
+    expect(homepage.isImportMappingErrorDialogOpen.value).toBe(true)
+    expect(homepage.importMappingError.value?.code).toBe('TEACHERS_DICTIONARY_REQUEST_FAILED')
+    expect(homepage.importMappingError.value?.context.stage).toBe('seed')
+  })
+
+  it('opens import mapping error with stage=fetch when teachers dictionary fetch request fails', async () => {
+    requestFetchMock.mockImplementation(async (url: string) => {
+      if (url.startsWith('/api/teachers-dictionary/bulk')) {
+        return { processed: 1, created: 1, updated: 0 }
+      }
+
+      if (url === '/api/teachers-dictionary') {
+        throw new Error('fetch failed')
+      }
+
+      throw new Error(`Unexpected request URL: ${url}`)
+    })
+
+    const { useHomepage } = await import('~/composables/homepage/useHomepage')
+    const homepage = useHomepage()
+
+    homepage.isCreateScheduleDialogOpen.value = true
+    homepage.newScheduleNameInput.value = 'SZZ plán'
+
+    await homepage.submitCreateScheduleImport({
+      payload: createImportPayload(),
+      szzType: 'BACHELOR'
+    })
+
+    expect(mapImportPayloadToDraftSourceMock).not.toHaveBeenCalled()
+    expect(homepage.isImportMappingErrorDialogOpen.value).toBe(true)
+    expect(homepage.importMappingError.value?.code).toBe('TEACHERS_DICTIONARY_REQUEST_FAILED')
+    expect(homepage.importMappingError.value?.context.stage).toBe('fetch')
+  })
+
+  it('opens teachers dictionary resolution dialog when imported payload contains unresolved names', async () => {
+    const { useHomepage } = await import('~/composables/homepage/useHomepage')
+    const homepage = useHomepage()
+
+    homepage.isCreateScheduleDialogOpen.value = true
+    homepage.newScheduleNameInput.value = 'SZZ plán'
+
+    await homepage.submitCreateScheduleImport({
+      payload: createImportPayloadWithUnresolvedTeacher(),
+      szzType: 'BACHELOR'
+    })
+
+    expect(mapImportPayloadToDraftSourceMock).not.toHaveBeenCalled()
+    expect(homepage.isTeachersDictionaryResolutionDialogOpen.value).toBe(true)
+    expect(homepage.teachersDictionaryResolutionEntries.value.length).toBeGreaterThan(0)
+    expect(homepage.teachersDictionaryResolutionEntries.value.some((entry) => entry.sourceValue.length > 0)).toBe(true)
+  })
+
+  it('blocks teachers dictionary resolution submit when canonical name contains comma', async () => {
+    requestFetchMock.mockImplementation(async (url: string) => {
+      if (url.startsWith('/api/teachers-dictionary/bulk')) {
+        return { processed: 1, created: 1, updated: 0 }
+      }
+
+      if (url === '/api/teachers-dictionary') {
+        return [
+          {
+            id: 'known-1',
+            canonicalName: 'Ing. Jan Novák',
+            normalizedLookupKey: 'ing jan novák',
+            isCustom: false
+          }
+        ]
+      }
+
+      throw new Error(`Unexpected request URL: ${url}`)
+    })
+
+    const { useHomepage } = await import('~/composables/homepage/useHomepage')
+    const homepage = useHomepage()
+
+    homepage.isCreateScheduleDialogOpen.value = true
+    homepage.newScheduleNameInput.value = 'SZZ plán'
+
+    await homepage.submitCreateScheduleImport({
+      payload: createImportPayloadWithUnresolvedTeacher(),
+      szzType: 'BACHELOR'
+    })
+
+    const firstEntry = homepage.teachersDictionaryResolutionEntries.value[0]
+    expect(firstEntry).toBeTruthy()
+    if (!firstEntry) {
+      throw new Error('Expected at least one unresolved teachers dictionary entry')
+    }
+
+    homepage.updateTeachersDictionaryResolutionEntry({
+      lookupKey: firstEntry.lookupKey,
+      value: 'Ing. Petr Novák, Ph.D.'
+    })
+
+    await homepage.submitTeachersDictionaryResolution()
+
+    expect(homepage.teachersDictionaryResolutionFieldErrors.value[firstEntry.lookupKey]).toBeTruthy()
+    // Only the initial import seed/fetch requests should happen.
+    expect(requestFetchMock).toHaveBeenCalledTimes(2)
+    expect(mapImportPayloadToDraftSourceMock).not.toHaveBeenCalled()
+  })
+
+  it('submits manual teacher resolution, remaps payload and navigates to editor on success', async () => {
+    requestFetchMock.mockImplementation(async (url: string) => {
+      if (url.startsWith('/api/teachers-dictionary/bulk')) {
+        return { processed: 1, created: 1, updated: 0 }
+      }
+
+      if (url === '/api/teachers-dictionary') {
+        return [
+          {
+            id: 'known-1',
+            canonicalName: 'Ing. Jan Novák',
+            normalizedLookupKey: 'ing jan novák',
+            isCustom: false
+          }
+        ]
+      }
+
+      throw new Error(`Unexpected request URL: ${url}`)
+    })
+
+    mapImportPayloadToDraftSourceMock.mockReturnValue({
+      ok: true,
+      draft: {
+        name: 'SZZ plán',
+        type: 'MANUAL',
+        committees: []
+      }
+    })
+
+    const { useHomepage } = await import('~/composables/homepage/useHomepage')
+    const homepage = useHomepage()
+
+    homepage.isCreateScheduleDialogOpen.value = true
+    homepage.newScheduleNameInput.value = 'SZZ plán'
+
+    await homepage.submitCreateScheduleImport({
+      payload: createImportPayloadWithUnresolvedTeacher(),
+      szzType: 'BACHELOR'
+    })
+
+    const firstEntry = homepage.teachersDictionaryResolutionEntries.value[0]
+    expect(firstEntry).toBeTruthy()
+    if (!firstEntry) {
+      throw new Error('Expected at least one unresolved teachers dictionary entry')
+    }
+
+    homepage.updateTeachersDictionaryResolutionEntry({
+      lookupKey: firstEntry.lookupKey,
+      value: 'Ing. Petr Neznamy'
+    })
+
+    await homepage.submitTeachersDictionaryResolution()
+
+    // seed bulk + fetch + custom bulk
+    expect(requestFetchMock).toHaveBeenCalledTimes(3)
+    expect(requestFetchMock.mock.calls[2]?.[0]).toContain('/api/teachers-dictionary/bulk')
+    expect(requestFetchMock.mock.calls[2]?.[1]?.body).toEqual([
+      {
+        canonicalName: 'Ing. Petr Neznamy',
+        isCustom: true
+      }
+    ])
+
+    expect(mapImportPayloadToDraftSourceMock).toHaveBeenCalledTimes(1)
+    const mappingCall = mapImportPayloadToDraftSourceMock.mock.calls[0]?.[0]
+    expect(mappingCall?.payload?.studentsCommittees?.bachelor?.rows?.[0]?.['Komise - člen 1']).toBe('Ing. Petr Neznamy')
+    expect(homepage.isTeachersDictionaryResolutionDialogOpen.value).toBe(false)
+    expect(navigateToMock).toHaveBeenCalledWith('/editor')
+  })
+
+  it('closes dictionary resolution dialog when remapping after manual resolution fails', async () => {
+    requestFetchMock.mockImplementation(async (url: string) => {
+      if (url.startsWith('/api/teachers-dictionary/bulk')) {
+        return { processed: 1, created: 1, updated: 0 }
+      }
+
+      if (url === '/api/teachers-dictionary') {
+        return [
+          {
+            id: 'known-1',
+            canonicalName: 'Ing. Jan Novák',
+            normalizedLookupKey: 'ing jan novák',
+            isCustom: false
+          }
+        ]
+      }
+
+      throw new Error(`Unexpected request URL: ${url}`)
+    })
+
+    mapImportPayloadToDraftSourceMock.mockReturnValue({
+      ok: false,
+      error: {
+        code: 'STUDENT_VALUE_MISMATCH',
+        datasetKey: 'studentsCommittees',
+        fileName: 'studenti-komise-bc.csv',
+        rowNumber: 2,
+        column: 'Komise - člen 1',
+        context: {}
+      }
+    })
+
+    const { useHomepage } = await import('~/composables/homepage/useHomepage')
+    const homepage = useHomepage()
+
+    homepage.isCreateScheduleDialogOpen.value = true
+    homepage.newScheduleNameInput.value = 'SZZ plán'
+
+    await homepage.submitCreateScheduleImport({
+      payload: createImportPayloadWithUnresolvedTeacher(),
+      szzType: 'BACHELOR'
+    })
+
+    const firstEntry = homepage.teachersDictionaryResolutionEntries.value[0]
+    expect(firstEntry).toBeTruthy()
+    if (!firstEntry) {
+      throw new Error('Expected at least one unresolved teachers dictionary entry')
+    }
+
+    homepage.updateTeachersDictionaryResolutionEntry({
+      lookupKey: firstEntry.lookupKey,
+      value: 'Ing. Petr Neznamy'
+    })
+
+    await homepage.submitTeachersDictionaryResolution()
+
+    expect(homepage.isImportMappingErrorDialogOpen.value).toBe(true)
+    expect(homepage.importMappingError.value?.code).toBe('STUDENT_VALUE_MISMATCH')
+    expect(homepage.isTeachersDictionaryResolutionDialogOpen.value).toBe(false)
   })
 })
 

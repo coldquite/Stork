@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest'
+import type { GetTeachersDictionaryResponseDto } from '#shared/types/teachers-dictionary'
+import { buildTeachersDictionaryLookupKey } from '#shared/utils/teachers-dictionary'
 import { mapImportPayloadToDraftSource } from '~/utils/import-mapper'
 import type { ImportPayload } from '~/types/import'
+import {
+  applyTeachersDictionaryToStudentsCommittees,
+  cloneImportPayload,
+  collectTeachersDictionarySeedEntries,
+  createTeachersDictionaryLookupMap
+} from '~/utils/import-teachers-dictionary'
 
 function createCommitteesRow(overrides: Partial<Record<string, string>> = {}): Record<string, string> {
   return {
@@ -97,6 +105,99 @@ function createValidPayload(): ImportPayload {
   }
 }
 
+function createValidMasterPayload(
+  overrides: {
+    studentsStork?: Partial<Record<string, string>>
+    studentsCommittees?: Partial<Record<string, string>>
+    committees?: Partial<Record<string, string>>
+  } = {}
+): ImportPayload {
+  return {
+    committees: {
+      fileName: 'komise.csv',
+      headers: [],
+      rows: [
+        createCommitteesRow({
+          'Název komise': '242-MI, 6-MI-PI.22',
+          ...overrides.committees
+        })
+      ]
+    },
+    studentsStork: {
+      master: {
+        fileName: 'studenti-stork-mgr.csv',
+        headers: [],
+        rows: [
+          createStudentsStorkRow({
+            Jméno: 'Eva',
+            Příjmení: 'Svobodová',
+            'Email studenta': 'eva.svobodova@fit.cvut.cz',
+            'Studijní plán (název)': 'Mgr. Informatika',
+            ...overrides.studentsStork
+          })
+        ]
+      }
+    },
+    studentsCommittees: {
+      master: {
+        fileName: 'studenti-komise-mgr.csv',
+        headers: [],
+        rows: [
+          createStudentsCommitteesRow({
+            'Jméno studenta': 'Eva',
+            'Příjmení studenta': 'Svobodová',
+            'Email adresa': 'eva.svobodova@fit.cvut.cz',
+            'Komise - název': '242-MI, 6-MI-PI.22',
+            'St. program - typ': 'M',
+            'St. program - kód': 'MI',
+            ...overrides.studentsCommittees
+          })
+        ]
+      }
+    }
+  }
+}
+
+function toTeachersDictionaryEntries(canonicalNames: string[]): GetTeachersDictionaryResponseDto {
+  return canonicalNames.map((canonicalName, index) => ({
+    id: `entry-${index + 1}`,
+    canonicalName,
+    normalizedLookupKey: buildTeachersDictionaryLookupKey(canonicalName),
+    isCustom: true
+  }))
+}
+
+function mapImportPayloadWithTeachersDictionary(options: {
+  scheduleName: string
+  szzType: 'BACHELOR' | 'MASTER' | 'MIXED'
+  payload: ImportPayload
+  dictionaryCanonicalNames?: string[]
+}) {
+  const defaultCommitteeTeacherNames = ['doc. Předseda', 'doc. Místopředseda', 'Člen 1', 'Člen 2', 'Člen 3']
+  const preparedPayload = cloneImportPayload(options.payload)
+  const seedEntries = collectTeachersDictionarySeedEntries(preparedPayload)
+
+  const dictionaryEntries = [
+    ...seedEntries.map((entry, index) => ({
+      id: `seed-${index + 1}`,
+      canonicalName: entry.canonicalName,
+      normalizedLookupKey: buildTeachersDictionaryLookupKey(entry.canonicalName),
+      isCustom: entry.isCustom
+    })),
+    ...toTeachersDictionaryEntries([...defaultCommitteeTeacherNames, ...(options.dictionaryCanonicalNames ?? [])])
+  ]
+
+  const dictionaryByLookupKey = createTeachersDictionaryLookupMap(dictionaryEntries)
+  const unresolvedEntries = applyTeachersDictionaryToStudentsCommittees(preparedPayload, dictionaryByLookupKey)
+  expect(unresolvedEntries).toEqual([])
+
+  return mapImportPayloadToDraftSource({
+    scheduleName: options.scheduleName,
+    szzType: options.szzType,
+    payload: preparedPayload
+  })
+}
+
 describe('mapImportPayloadToDraftSource', () => {
   it('maps valid bachelor import payload to manual draft source', () => {
     const result = mapImportPayloadToDraftSource({
@@ -124,13 +225,259 @@ describe('mapImportPayloadToDraftSource', () => {
     }
 
     expect(mappedFirstItem.student.studyLanguage).toBe('CZECH')
+    expect(mappedFirstItem.student.repeatType).toBe('NONE')
+    expect(mappedFirstItem.student.prepareMinutes).toBe(45)
+    expect(mappedFirstItem.student.examMinutes).toBe(30)
   })
 
-  it('preprocesses students-committees academic names before matching and mapping', () => {
+  it('fails when thesis submission date has invalid non-empty value', () => {
+    const payload = createValidPayload()
+    payload.studentsStork.bachelor!.rows[0] = createStudentsStorkRow({
+      'VŠKP-typ A: Termín odevzdání práce': '2025-06-23'
+    })
+
+    const result = mapImportPayloadToDraftSource({
+      scheduleName: 'SZZ červen 2025',
+      szzType: 'BACHELOR',
+      payload
+    })
+
+    expect(result.ok).toBe(false)
+    if (result.ok) {
+      throw new Error('Expected mapping failure')
+    }
+
+    expect(result.error.code).toBe('INVALID_THESIS_SUBMISSION_DATE')
+    expect(result.error.column).toBe('VŠKP-typ A: Termín odevzdání práce')
+  })
+
+  it('sets repeatType to UNKNOWN when first-term date exists and thesis defense date is empty', () => {
+    const payload = createValidPayload()
+    payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
+      'VŠKP-typ A: Datum obhajoby': '',
+      'Předmět 1 - 1.term. datum': '12.01.2025',
+      'Předmět 1 - 2.term. datum': ''
+    })
+
+    const result = mapImportPayloadToDraftSource({
+      scheduleName: 'SZZ červen 2025',
+      szzType: 'BACHELOR',
+      payload
+    })
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) {
+      throw new Error('Expected mapping success')
+    }
+
+    const mappedFirstItem = result.draft.committees[0]?.items[0]
+    if (!mappedFirstItem || mappedFirstItem.type !== 'STUDENT') {
+      throw new Error('Expected mapped student item')
+    }
+
+    expect(mappedFirstItem.student.repeatType).toBe('UNKNOWN')
+    expect(mappedFirstItem.student.prepareMinutes).toBe(45)
+    expect(mappedFirstItem.student.examMinutes).toBe(30)
+  })
+
+  it('sets repeatType to ORAL_EXAM when first-term date and thesis defense date both exist', () => {
+    const payload = createValidPayload()
+    payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
+      'VŠKP-typ A: Datum obhajoby': '11.02.2025',
+      'Předmět 1 - 1.term. datum': '12.01.2025',
+      'Předmět 1 - 2.term. datum': ''
+    })
+
+    const result = mapImportPayloadToDraftSource({
+      scheduleName: 'SZZ červen 2025',
+      szzType: 'BACHELOR',
+      payload
+    })
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) {
+      throw new Error('Expected mapping success')
+    }
+
+    const mappedFirstItem = result.draft.committees[0]?.items[0]
+    if (!mappedFirstItem || mappedFirstItem.type !== 'STUDENT') {
+      throw new Error('Expected mapped student item')
+    }
+
+    expect(mappedFirstItem.student.repeatType).toBe('ORAL_EXAM')
+    expect(mappedFirstItem.student.prepareMinutes).toBe(45)
+    expect(mappedFirstItem.student.examMinutes).toBe(15)
+  })
+
+  it('uses master default slot duration for first attempt (repeatType NONE)', () => {
+    const payload = createValidMasterPayload({
+      studentsCommittees: {
+        'VŠKP-typ A: Datum obhajoby': '',
+        'Předmět 1 - 1.term. datum': '',
+        'Předmět 1 - 2.term. datum': ''
+      }
+    })
+
+    const result = mapImportPayloadToDraftSource({
+      scheduleName: 'SZZ červen 2025',
+      szzType: 'MASTER',
+      payload
+    })
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) {
+      throw new Error('Expected mapping success')
+    }
+
+    const mappedFirstItem = result.draft.committees[0]?.items[0]
+    if (!mappedFirstItem || mappedFirstItem.type !== 'STUDENT') {
+      throw new Error('Expected mapped student item')
+    }
+
+    expect(mappedFirstItem.student.repeatType).toBe('NONE')
+    expect(mappedFirstItem.student.prepareMinutes).toBe(45)
+    expect(mappedFirstItem.student.examMinutes).toBe(35)
+  })
+
+  it('uses master oral-only duration when repeatType is ORAL_EXAM', () => {
+    const payload = createValidMasterPayload({
+      studentsCommittees: {
+        'VŠKP-typ A: Datum obhajoby': '11.02.2025',
+        'Předmět 1 - 1.term. datum': '12.01.2025',
+        'Předmět 1 - 2.term. datum': ''
+      }
+    })
+
+    const result = mapImportPayloadToDraftSource({
+      scheduleName: 'SZZ červen 2025',
+      szzType: 'MASTER',
+      payload
+    })
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) {
+      throw new Error('Expected mapping success')
+    }
+
+    const mappedFirstItem = result.draft.committees[0]?.items[0]
+    if (!mappedFirstItem || mappedFirstItem.type !== 'STUDENT') {
+      throw new Error('Expected mapped student item')
+    }
+
+    expect(mappedFirstItem.student.repeatType).toBe('ORAL_EXAM')
+    expect(mappedFirstItem.student.prepareMinutes).toBe(45)
+    expect(mappedFirstItem.student.examMinutes).toBe(15)
+  })
+
+  it('uses master first-or-both duration when repeatType is UNKNOWN', () => {
+    const payload = createValidMasterPayload({
+      studentsCommittees: {
+        'VŠKP-typ A: Datum obhajoby': '',
+        'Předmět 1 - 1.term. datum': '12.01.2025',
+        'Předmět 1 - 2.term. datum': ''
+      }
+    })
+
+    const result = mapImportPayloadToDraftSource({
+      scheduleName: 'SZZ červen 2025',
+      szzType: 'MASTER',
+      payload
+    })
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) {
+      throw new Error('Expected mapping success')
+    }
+
+    const mappedFirstItem = result.draft.committees[0]?.items[0]
+    if (!mappedFirstItem || mappedFirstItem.type !== 'STUDENT') {
+      throw new Error('Expected mapped student item')
+    }
+
+    expect(mappedFirstItem.student.repeatType).toBe('UNKNOWN')
+    expect(mappedFirstItem.student.prepareMinutes).toBe(45)
+    expect(mappedFirstItem.student.examMinutes).toBe(35)
+  })
+
+  it('fails when thesis defense date exists but first-term date is empty', () => {
+    const payload = createValidPayload()
+    payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
+      'VŠKP-typ A: Datum obhajoby': '11.02.2025',
+      'Předmět 1 - 1.term. datum': '',
+      'Předmět 1 - 2.term. datum': ''
+    })
+
+    const result = mapImportPayloadToDraftSource({
+      scheduleName: 'SZZ červen 2025',
+      szzType: 'BACHELOR',
+      payload
+    })
+
+    expect(result.ok).toBe(false)
+    if (result.ok) {
+      throw new Error('Expected mapping failure')
+    }
+
+    expect(result.error.code).toBe('INVALID_REPEAT_TYPE_STATE')
+    expect(result.error.column).toBe('VŠKP-typ A: Datum obhajoby')
+    expect(result.error.context.reason).toBe('defense_date_without_first_term_date')
+  })
+
+  it('fails when second-term date exists because student has no remaining SZZ attempt', () => {
+    const payload = createValidPayload()
+    payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
+      'VŠKP-typ A: Datum obhajoby': '',
+      'Předmět 1 - 1.term. datum': '12.01.2025',
+      'Předmět 1 - 2.term. datum': '23.02.2025'
+    })
+
+    const result = mapImportPayloadToDraftSource({
+      scheduleName: 'SZZ červen 2025',
+      szzType: 'BACHELOR',
+      payload
+    })
+
+    expect(result.ok).toBe(false)
+    if (result.ok) {
+      throw new Error('Expected mapping failure')
+    }
+
+    expect(result.error.code).toBe('STUDENT_REPEAT_NOT_ALLOWED')
+    expect(result.error.column).toBe('Předmět 1 - 2.term. datum')
+    expect(result.error.context.reason).toBe('second_term_attempt_already_exists')
+  })
+
+  it('fails when students-committees teacher names are not pre-resolved by teachers dictionary', () => {
+    const payload = createValidPayload()
+    payload.studentsStork.bachelor!.rows[0] = createStudentsStorkRow({
+      'VŠKP-typ A: Vedoucí práce 1': 'Ing. Matej Hulák'
+    })
+    payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
+      'VŠKP-typ A: Vedoucí práce 1': 'Hulák Matej, Ing.'
+    })
+
+    const result = mapImportPayloadToDraftSource({
+      scheduleName: 'SZZ červen 2025',
+      szzType: 'BACHELOR',
+      payload
+    })
+
+    expect(result.ok).toBe(false)
+    if (result.ok) {
+      throw new Error('Expected mapping failure')
+    }
+
+    expect(result.error.code).toBe('STUDENT_VALUE_MISMATCH')
+    expect(result.error.column).toBe('VŠKP-typ A: Vedoucí práce 1')
+  })
+
+  it('maps teacher fields when students-committees names are pre-resolved by teachers dictionary', () => {
     const payload = createValidPayload()
     payload.studentsStork.bachelor!.rows[0] = createStudentsStorkRow({
       'VŠKP-typ A: Vedoucí práce 1': 'Ing. Matej Hulák',
-      'VŠKP-typ A: Oponent práce 1': 'Ing. Pavel Oponent'
+      'VŠKP-typ A: Vedoucí práce 2': 'Ing. Miroslav Skrbek Ph.D.',
+      'VŠKP-typ A: Oponent práce 1': 'Ing. Pavel Oponent',
+      'VŠKP-typ A: Oponent práce 2': 'Mgr. Druhý Oponent Ph.D.'
     })
     payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
       'VŠKP-typ A: Vedoucí práce 1': 'Hulák Matej, Ing.',
@@ -144,10 +491,17 @@ describe('mapImportPayloadToDraftSource', () => {
       'Komise - člen 3': 'Člen Carol, Ph.D.'
     })
 
-    const result = mapImportPayloadToDraftSource({
+    const result = mapImportPayloadWithTeachersDictionary({
       scheduleName: 'SZZ červen 2025',
       szzType: 'BACHELOR',
-      payload
+      payload,
+      dictionaryCanonicalNames: [
+        'doc. Petr Předseda',
+        'Ing. Martin Místopředseda Ph.D.',
+        'Mgr. Alice Člen',
+        'Ing. Bob Člen',
+        'Carol Člen Ph.D.'
+      ]
     })
 
     expect(result.ok).toBe(true)
@@ -161,10 +515,10 @@ describe('mapImportPayloadToDraftSource', () => {
     }
 
     expect(mappedCommittee.chairName).toBe('doc. Petr Předseda')
-    expect(mappedCommittee.viceChairName).toBe('Ing. Martin Místopředseda, Ph.D.')
+    expect(mappedCommittee.viceChairName).toBe('Ing. Martin Místopředseda Ph.D.')
     expect(mappedCommittee.member1Name).toBe('Mgr. Alice Člen')
     expect(mappedCommittee.member2Name).toBe('Ing. Bob Člen')
-    expect(mappedCommittee.member3Name).toBe('Carol Člen, Ph.D.')
+    expect(mappedCommittee.member3Name).toBe('Carol Člen Ph.D.')
 
     const mappedFirstItem = mappedCommittee.items[0]
     if (!mappedFirstItem || mappedFirstItem.type !== 'STUDENT') {
@@ -173,11 +527,11 @@ describe('mapImportPayloadToDraftSource', () => {
 
     expect(mappedFirstItem.student.supervisorName).toBe('Ing. Matej Hulák')
     expect(mappedFirstItem.student.reviewerName).toBe('Ing. Pavel Oponent')
-    expect(mappedFirstItem.student.additionalSupervisorName).toBe('Ing. Miroslav Skrbek, Ph.D.')
-    expect(mappedFirstItem.student.additionalReviewerName).toBe('Mgr. Druhý Oponent, Ph.D.')
+    expect(mappedFirstItem.student.additionalSupervisorName).toBe('Ing. Miroslav Skrbek Ph.D.')
+    expect(mappedFirstItem.student.additionalReviewerName).toBe('Mgr. Druhý Oponent Ph.D.')
   })
 
-  it('matches supervisor names when Stork omits comma before post-nominal title', () => {
+  it('matches supervisor names after dictionary resolution by lookup key', () => {
     const payload = createValidPayload()
     payload.studentsStork.bachelor!.rows[0] = createStudentsStorkRow({
       'VŠKP-typ A: Vedoucí práce 1': 'Ing. Michal Valenta Ph.D.',
@@ -188,7 +542,7 @@ describe('mapImportPayloadToDraftSource', () => {
       'VŠKP-typ A: Oponent práce 1': 'Oponent Pavel, Ing.'
     })
 
-    const result = mapImportPayloadToDraftSource({
+    const result = mapImportPayloadWithTeachersDictionary({
       scheduleName: 'SZZ červen 2025',
       szzType: 'BACHELOR',
       payload
@@ -204,10 +558,10 @@ describe('mapImportPayloadToDraftSource', () => {
       throw new Error('Expected mapped student item')
     }
 
-    expect(mappedFirstItem.student.supervisorName).toBe('Ing. Michal Valenta, Ph.D.')
+    expect(mappedFirstItem.student.supervisorName).toBe('Ing. Michal Valenta Ph.D.')
   })
 
-  it('matches reviewer names when Stork uses comma after "et" between post-nominal titles', () => {
+  it('matches reviewer names with punctuation differences after dictionary resolution', () => {
     const payload = createValidPayload()
     payload.studentsStork.bachelor!.rows[0] = createStudentsStorkRow({
       'VŠKP-typ A: Oponent práce 1': 'Ing. Marek Suchánek Ph.D. et, Ph.D.'
@@ -216,7 +570,7 @@ describe('mapImportPayloadToDraftSource', () => {
       'VŠKP-typ A: Oponent práce 1': 'Suchánek Marek, Ing., Ph.D. et Ph.D.'
     })
 
-    const result = mapImportPayloadToDraftSource({
+    const result = mapImportPayloadWithTeachersDictionary({
       scheduleName: 'SZZ červen 2025',
       szzType: 'BACHELOR',
       payload
@@ -232,10 +586,10 @@ describe('mapImportPayloadToDraftSource', () => {
       throw new Error('Expected mapped student item')
     }
 
-    expect(mappedFirstItem.student.reviewerName).toBe('Ing. Marek Suchánek, Ph.D. et Ph.D.')
+    expect(mappedFirstItem.student.reviewerName).toBe('Ing. Marek Suchánek Ph.D. et, Ph.D.')
   })
 
-  it('matches reviewer names when M.A. appears after name in Stork and after comma in studenti-komise', () => {
+  it('matches reviewer names when source order differs but lookup key is the same', () => {
     const payload = createValidPayload()
     payload.studentsStork.bachelor!.rows[0] = createStudentsStorkRow({
       'VŠKP-typ A: Oponent práce 1': 'Milan Kolar M.A.'
@@ -244,7 +598,7 @@ describe('mapImportPayloadToDraftSource', () => {
       'VŠKP-typ A: Oponent práce 1': 'Kolar Milan, M.A.'
     })
 
-    const result = mapImportPayloadToDraftSource({
+    const result = mapImportPayloadWithTeachersDictionary({
       scheduleName: 'SZZ červen 2025',
       szzType: 'BACHELOR',
       payload
@@ -260,10 +614,10 @@ describe('mapImportPayloadToDraftSource', () => {
       throw new Error('Expected mapped student item')
     }
 
-    expect(mappedFirstItem.student.reviewerName).toBe('Milan Kolar, M.A.')
+    expect(mappedFirstItem.student.reviewerName).toBe('Milan Kolar M.A.')
   })
 
-  it('matches reviewer names with reordered multi-part surname tokens', () => {
+  it('matches reviewer names with reordered multi-part surname tokens after dictionary resolution', () => {
     const payload = createValidPayload()
     payload.studentsStork.bachelor!.rows[0] = createStudentsStorkRow({
       'VŠKP-typ A: Oponent práce 1': 'Dr. rer. nat. Rodrigo Augusto Da Silva Alves'
@@ -272,7 +626,7 @@ describe('mapImportPayloadToDraftSource', () => {
       'VŠKP-typ A: Oponent práce 1': 'Silva Alves Rodrigo Augusto Da, Dr. rer. nat.'
     })
 
-    const result = mapImportPayloadToDraftSource({
+    const result = mapImportPayloadWithTeachersDictionary({
       scheduleName: 'SZZ červen 2025',
       szzType: 'BACHELOR',
       payload

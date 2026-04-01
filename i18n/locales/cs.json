@@ -96,7 +96,9 @@
             "contextReasons": {
               "required_value_is_empty": "Povinná hodnota v povinném sloupci je prázdná.",
               "students_committees_row_reused": "Jeden řádek ve studenti-komise byl použit pro více studentů.",
-              "students_committees_row_without_matching_students_cap": "Ve studenti-komise je řádek bez odpovídajícího studenta v studenti-Stork."
+              "students_committees_row_without_matching_students_cap": "Ve studenti-komise je řádek bez odpovídajícího studenta v studenti-Stork.",
+              "defense_date_without_first_term_date": "Datum obhajoby je vyplněné, ale datum 1. termínu zkoušky chybí.",
+              "second_term_attempt_already_exists": "Je vyplněné datum 2. termínu, student už nemá nárok na další pokus SZZ."
             },
             "contextValues": {
               "stage": {
@@ -122,6 +124,8 @@
               "studentCommitteeNotFound": "Student odkazuje na komisi, která v importu neexistuje.",
               "studentValueMismatch": "Hodnoty studenta mezi soubory se neshodují.",
               "invalidThesisSubmissionDate": "Termín odevzdání práce není validní datum.",
+              "invalidRepeatTypeState": "Kombinace údajů o předchozích termínech je neplatná.",
+              "studentRepeatNotAllowed": "Student už vyčerpal dostupné pokusy a nelze ho zařadit do další SZZ.",
               "studentCommitteeMismatch": "Studijní údaje studenta neodpovídají namapované komisi.",
               "teachersDictionaryRequestFailed": "Nepodařilo se synchronizovat import se slovníkem učitelů.",
               "unknown": "Nastala neznámá chyba mapování."
