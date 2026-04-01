@@ -6,7 +6,7 @@ import type {
   StudyProgramTypeDto,
   ThesisLanguageDto
 } from '#shared/types/time-schedules'
-import { resolveStudyLevelFromStudentsCap } from '~/utils/import'
+import { resolveStudyLevelFromStudentsStork } from '~/utils/import'
 import type { ImportCsvRow, ImportDataset, ImportPayload, ImportSzzType } from '~/types/import'
 import type {
   ImportMappingError,
@@ -21,7 +21,7 @@ const DEFAULT_PREPARE_MINUTES = 45
 const DEFAULT_EXAM_MINUTES = 30
 
 type DatasetLevel = 'bachelor' | 'master'
-type SourceDatasetKey = 'studentsCap' | 'studentsCommittees' | 'committees'
+type SourceDatasetKey = 'studentsStork' | 'studentsCommittees' | 'committees'
 
 interface SourceRow {
   datasetKey: SourceDatasetKey
@@ -32,7 +32,7 @@ interface SourceRow {
 }
 
 interface StudentsDatasetsBundle {
-  studentsCapRows: SourceRow[]
+  studentsStorkRows: SourceRow[]
   studentsCommitteesRows: SourceRow[]
 }
 
@@ -286,8 +286,8 @@ function requireDataset(
 
 function collectStudentDatasets(payload: ImportPayload, szzType: ImportSzzType): StudentsDatasetsBundle {
   if (szzType === 'MIXED') {
-    const studentsCapBachelor = requireDataset(payload.studentsCap.bachelor, 'studentsCap', { level: 'bachelor' })
-    const studentsCapMaster = requireDataset(payload.studentsCap.master, 'studentsCap', { level: 'master' })
+    const studentsStorkBachelor = requireDataset(payload.studentsStork.bachelor, 'studentsStork', { level: 'bachelor' })
+    const studentsStorkMaster = requireDataset(payload.studentsStork.master, 'studentsStork', { level: 'master' })
     const studentsCommitteesBachelor = requireDataset(payload.studentsCommittees.bachelor, 'studentsCommittees', {
       level: 'bachelor'
     })
@@ -296,9 +296,9 @@ function collectStudentDatasets(payload: ImportPayload, szzType: ImportSzzType):
     })
 
     return {
-      studentsCapRows: [
-        ...toSourceRows(studentsCapBachelor, 'studentsCap', 'bachelor'),
-        ...toSourceRows(studentsCapMaster, 'studentsCap', 'master')
+      studentsStorkRows: [
+        ...toSourceRows(studentsStorkBachelor, 'studentsStork', 'bachelor'),
+        ...toSourceRows(studentsStorkMaster, 'studentsStork', 'master')
       ],
       studentsCommitteesRows: [
         ...toSourceRows(studentsCommitteesBachelor, 'studentsCommittees', 'bachelor'),
@@ -308,13 +308,13 @@ function collectStudentDatasets(payload: ImportPayload, szzType: ImportSzzType):
   }
 
   const level = resolveSingleLevelKey(szzType)
-  const studentsCapDataset = requireDataset(payload.studentsCap[level], 'studentsCap', { level })
+  const studentsStorkDataset = requireDataset(payload.studentsStork[level], 'studentsStork', { level })
   const studentsCommitteesDataset = requireDataset(payload.studentsCommittees[level], 'studentsCommittees', {
     level
   })
 
   return {
-    studentsCapRows: toSourceRows(studentsCapDataset, 'studentsCap', level),
+    studentsStorkRows: toSourceRows(studentsStorkDataset, 'studentsStork', level),
     studentsCommitteesRows: toSourceRows(studentsCommitteesDataset, 'studentsCommittees', level)
   }
 }
@@ -614,7 +614,7 @@ function mapCommittees(
   }
 }
 
-function buildStudentMatchKeyByCap(row: SourceRow): string {
+function buildStudentMatchKeyByStork(row: SourceRow): string {
   const email = normalizeEmail(readRequiredValue(row, 'Email studenta'))
   const firstName = normalizeCompareValue(readRequiredValue(row, 'Jméno'))
   const lastName = normalizeCompareValue(readRequiredValue(row, 'Příjmení'))
@@ -678,7 +678,7 @@ function assertOptionalStudentFieldEquality(
 function appendStudentsToCommittees(
   szzType: ImportSzzType,
   committeesByName: Map<string, PostCommitteeDto>,
-  studentsCapRows: SourceRow[],
+  studentsStorkRows: SourceRow[],
   studentsCommitteesRows: SourceRow[]
 ): void {
   const studentsRowsByKey = new Map<string, SourceRow[]>()
@@ -692,12 +692,12 @@ function appendStudentsToCommittees(
   const usedStudentsCommitteesRows = new Set<SourceRow>()
   const bufferedStudentItems = new Map<string, Array<{ rowNumber: number; student: PostStudentItemDto }>>()
 
-  for (const studentsCapRow of studentsCapRows) {
-    const key = buildStudentMatchKeyByCap(studentsCapRow)
+  for (const studentsStorkRow of studentsStorkRows) {
+    const key = buildStudentMatchKeyByStork(studentsStorkRow)
     const matches = studentsRowsByKey.get(key) ?? []
 
     if (matches.length === 0) {
-      throwMappingError('STUDENT_MATCH_NOT_FOUND', studentsCapRow, {
+      throwMappingError('STUDENT_MATCH_NOT_FOUND', studentsStorkRow, {
         context: {
           matchingKey: key
         }
@@ -705,7 +705,7 @@ function appendStudentsToCommittees(
     }
 
     if (matches.length > 1) {
-      throwMappingError('STUDENT_MATCH_AMBIGUOUS', studentsCapRow, {
+      throwMappingError('STUDENT_MATCH_AMBIGUOUS', studentsStorkRow, {
         context: {
           matchingKey: key,
           matches: matches.length
@@ -719,7 +719,7 @@ function appendStudentsToCommittees(
     }
 
     if (usedStudentsCommitteesRows.has(studentsCommitteesRow)) {
-      throwMappingError('STUDENT_MATCH_AMBIGUOUS', studentsCapRow, {
+      throwMappingError('STUDENT_MATCH_AMBIGUOUS', studentsStorkRow, {
         context: {
           matchingKey: key,
           reason: 'students_committees_row_reused'
@@ -728,14 +728,14 @@ function appendStudentsToCommittees(
     }
     usedStudentsCommitteesRows.add(studentsCommitteesRow)
 
-    const capFirstName = readRequiredValue(studentsCapRow, 'Jméno')
+    const storkFirstName = readRequiredValue(studentsStorkRow, 'Jméno')
     const committeesFirstName = readRequiredValue(studentsCommitteesRow, 'Jméno studenta')
     assertStudentFieldEquality(
       preprocessCommitteeName(readRequiredValue(studentsCommitteesRow, 'Komise - název')),
       {
-        source: studentsCapRow,
+        source: studentsStorkRow,
         column: 'Jméno',
-        value: capFirstName
+        value: storkFirstName
       },
       {
         source: studentsCommitteesRow,
@@ -744,14 +744,14 @@ function appendStudentsToCommittees(
       }
     )
 
-    const capLastName = readRequiredValue(studentsCapRow, 'Příjmení')
+    const storkLastName = readRequiredValue(studentsStorkRow, 'Příjmení')
     const committeesLastName = readRequiredValue(studentsCommitteesRow, 'Příjmení studenta')
     assertStudentFieldEquality(
       preprocessCommitteeName(readRequiredValue(studentsCommitteesRow, 'Komise - název')),
       {
-        source: studentsCapRow,
+        source: studentsStorkRow,
         column: 'Příjmení',
-        value: capLastName
+        value: storkLastName
       },
       {
         source: studentsCommitteesRow,
@@ -771,18 +771,18 @@ function appendStudentsToCommittees(
       })
     }
 
-    const studyProgramType = resolveStudyLevelFromStudentsCap([studentsCapRow.row])
+    const studyProgramType = resolveStudyLevelFromStudentsStork([studentsStorkRow.row])
     if (!studyProgramType) {
-      throwMappingError('INVALID_STUDY_PROGRAM_TYPE', studentsCapRow, {
+      throwMappingError('INVALID_STUDY_PROGRAM_TYPE', studentsStorkRow, {
         column: 'Studijní plán (název)',
         context: {
-          rawValue: studentsCapRow.row['Studijní plán (název)'] ?? ''
+          rawValue: studentsStorkRow.row['Studijní plán (název)'] ?? ''
         }
       })
     }
 
     if (szzType !== 'MIXED' && studyProgramType !== szzType) {
-      throwMappingError('COMMITTEE_SZZ_TYPE_MISMATCH', studentsCapRow, {
+      throwMappingError('COMMITTEE_SZZ_TYPE_MISMATCH', studentsStorkRow, {
         column: 'Studijní plán (název)',
         context: {
           detectedType: studyProgramType,
@@ -791,14 +791,14 @@ function appendStudentsToCommittees(
       })
     }
 
-    const capThesisTitleLocal = readRequiredValue(studentsCapRow, 'VŠKP-typ A: Název práce')
+    const storkThesisTitleLocal = readRequiredValue(studentsStorkRow, 'VŠKP-typ A: Název práce')
     const committeesThesisTitleLocal = readRequiredValue(studentsCommitteesRow, 'VŠKP-typ A: Český název práce')
     assertStudentFieldEquality(
       committeeName,
       {
-        source: studentsCapRow,
+        source: studentsStorkRow,
         column: 'VŠKP-typ A: Název práce',
-        value: capThesisTitleLocal
+        value: storkThesisTitleLocal
       },
       {
         source: studentsCommitteesRow,
@@ -807,14 +807,14 @@ function appendStudentsToCommittees(
       }
     )
 
-    const capThesisTitleEn = readRequiredValue(studentsCapRow, 'VŠKP-typ A: Překlad názvu práce')
+    const storkThesisTitleEn = readRequiredValue(studentsStorkRow, 'VŠKP-typ A: Překlad názvu práce')
     const committeesThesisTitleEn = readRequiredValue(studentsCommitteesRow, 'VŠKP-typ A: Anglický název práce')
     assertStudentFieldEquality(
       committeeName,
       {
-        source: studentsCapRow,
+        source: studentsStorkRow,
         column: 'VŠKP-typ A: Překlad názvu práce',
-        value: capThesisTitleEn
+        value: storkThesisTitleEn
       },
       {
         source: studentsCommitteesRow,
@@ -823,15 +823,15 @@ function appendStudentsToCommittees(
       }
     )
 
-    const capThesisLanguageRaw = readRequiredValue(studentsCapRow, 'VŠKP-typ A: jazyk práce')
+    const storkThesisLanguageRaw = readRequiredValue(studentsStorkRow, 'VŠKP-typ A: jazyk práce')
     const committeesThesisLanguageRaw = readRequiredValue(studentsCommitteesRow, 'VŠKP-typ A: Jazyk práce')
-    const capThesisLanguage = parseThesisLanguage(capThesisLanguageRaw)
-    if (!capThesisLanguage) {
-      throwMappingError('INVALID_LANGUAGE', studentsCapRow, {
+    const storkThesisLanguage = parseThesisLanguage(storkThesisLanguageRaw)
+    if (!storkThesisLanguage) {
+      throwMappingError('INVALID_LANGUAGE', studentsStorkRow, {
         column: 'VŠKP-typ A: jazyk práce',
         context: {
           languageTarget: 'thesis',
-          rawValue: capThesisLanguageRaw
+          rawValue: storkThesisLanguageRaw
         }
       })
     }
@@ -847,27 +847,27 @@ function appendStudentsToCommittees(
       })
     }
 
-    if (capThesisLanguage !== committeesThesisLanguage) {
+    if (storkThesisLanguage !== committeesThesisLanguage) {
       throwMappingError('STUDENT_VALUE_MISMATCH', studentsCommitteesRow, {
         column: 'VŠKP-typ A: Jazyk práce',
         context: {
           committeeName,
           leftColumn: 'VŠKP-typ A: jazyk práce',
           rightColumn: 'VŠKP-typ A: Jazyk práce',
-          leftValue: capThesisLanguage,
+          leftValue: storkThesisLanguage,
           rightValue: committeesThesisLanguage
         }
       })
     }
 
-    const capSupervisorName = readRequiredValue(studentsCapRow, 'VŠKP-typ A: Vedoucí práce 1')
+    const storkSupervisorName = readRequiredValue(studentsStorkRow, 'VŠKP-typ A: Vedoucí práce 1')
     const committeesSupervisorName = readRequiredValue(studentsCommitteesRow, 'VŠKP-typ A: Vedoucí práce 1')
     assertStudentFieldEquality(
       committeeName,
       {
-        source: studentsCapRow,
+        source: studentsStorkRow,
         column: 'VŠKP-typ A: Vedoucí práce 1',
-        value: capSupervisorName
+        value: storkSupervisorName
       },
       {
         source: studentsCommitteesRow,
@@ -876,14 +876,14 @@ function appendStudentsToCommittees(
       }
     )
 
-    const capAdditionalSupervisorName = readOptionalValue(studentsCapRow, 'VŠKP-typ A: Vedoucí práce 2')
+    const storkAdditionalSupervisorName = readOptionalValue(studentsStorkRow, 'VŠKP-typ A: Vedoucí práce 2')
     const committeesAdditionalSupervisorName = readOptionalValue(studentsCommitteesRow, 'VŠKP-typ A: Vedoucí práce 2')
     assertOptionalStudentFieldEquality(
       committeeName,
       {
-        source: studentsCapRow,
+        source: studentsStorkRow,
         column: 'VŠKP-typ A: Vedoucí práce 2',
-        value: capAdditionalSupervisorName
+        value: storkAdditionalSupervisorName
       },
       {
         source: studentsCommitteesRow,
@@ -892,14 +892,14 @@ function appendStudentsToCommittees(
       }
     )
 
-    const capReviewerName = readRequiredValue(studentsCapRow, 'VŠKP-typ A: Oponent práce 1')
+    const storkReviewerName = readRequiredValue(studentsStorkRow, 'VŠKP-typ A: Oponent práce 1')
     const committeesReviewerName = readRequiredValue(studentsCommitteesRow, 'VŠKP-typ A: Oponent práce 1')
     assertStudentFieldEquality(
       committeeName,
       {
-        source: studentsCapRow,
+        source: studentsStorkRow,
         column: 'VŠKP-typ A: Oponent práce 1',
-        value: capReviewerName
+        value: storkReviewerName
       },
       {
         source: studentsCommitteesRow,
@@ -908,14 +908,14 @@ function appendStudentsToCommittees(
       }
     )
 
-    const capAdditionalReviewerName = readOptionalValue(studentsCapRow, 'VŠKP-typ A: Oponent práce 2')
+    const storkAdditionalReviewerName = readOptionalValue(studentsStorkRow, 'VŠKP-typ A: Oponent práce 2')
     const committeesAdditionalReviewerName = readOptionalValue(studentsCommitteesRow, 'VŠKP-typ A: Oponent práce 2')
     assertOptionalStudentFieldEquality(
       committeeName,
       {
-        source: studentsCapRow,
+        source: studentsStorkRow,
         column: 'VŠKP-typ A: Oponent práce 2',
-        value: capAdditionalReviewerName
+        value: storkAdditionalReviewerName
       },
       {
         source: studentsCommitteesRow,
@@ -936,10 +936,10 @@ function appendStudentsToCommittees(
       })
     }
 
-    const thesisSubmissionAtRaw = studentsCapRow.row['VŠKP-typ A: Termín odevzdání práce'] ?? ''
+    const thesisSubmissionAtRaw = studentsStorkRow.row['VŠKP-typ A: Termín odevzdání práce'] ?? ''
     const thesisSubmissionAt = parseOptionalDateTimeToIso(thesisSubmissionAtRaw)
     if (normalizeWhitespace(thesisSubmissionAtRaw).length > 0 && !thesisSubmissionAt) {
-      throwMappingError('INVALID_THESIS_SUBMISSION_DATE', studentsCapRow, {
+      throwMappingError('INVALID_THESIS_SUBMISSION_DATE', studentsStorkRow, {
         column: 'VŠKP-typ A: Termín odevzdání práce',
         context: {
           rawValue: thesisSubmissionAtRaw
@@ -949,23 +949,23 @@ function appendStudentsToCommittees(
 
     const mappedStudent: PostStudentItemDto = {
       personalNumber: readOptionalValue(studentsCommitteesRow, 'Osobní číslo'),
-      firstName: capFirstName,
-      lastName: capLastName,
-      titlesBefore: readOptionalValue(studentsCapRow, 'Titul'),
-      titlesAfter: readOptionalValue(studentsCapRow, 'titul za'),
-      thesisTitleLocal: capThesisTitleLocal,
-      thesisTitleEn: capThesisTitleEn,
-      thesisLanguage: capThesisLanguage,
-      supervisorName: capSupervisorName,
-      reviewerName: capReviewerName,
-      additionalSupervisorName: capAdditionalSupervisorName,
-      additionalReviewerName: capAdditionalReviewerName,
-      studyProgramName: readRequiredValue(studentsCapRow, 'Studijní program (název)'),
+      firstName: storkFirstName,
+      lastName: storkLastName,
+      titlesBefore: readOptionalValue(studentsStorkRow, 'Titul'),
+      titlesAfter: readOptionalValue(studentsStorkRow, 'titul za'),
+      thesisTitleLocal: storkThesisTitleLocal,
+      thesisTitleEn: storkThesisTitleEn,
+      thesisLanguage: storkThesisLanguage,
+      supervisorName: storkSupervisorName,
+      reviewerName: storkReviewerName,
+      additionalSupervisorName: storkAdditionalSupervisorName,
+      additionalReviewerName: storkAdditionalReviewerName,
+      studyProgramName: readRequiredValue(studentsStorkRow, 'Studijní program (název)'),
       studyProgramType,
-      specializationName: readRequiredValue(studentsCapRow, 'Obor/spec - název'),
-      specializationCode: normalizeSpecializationCode(readRequiredValue(studentsCapRow, 'Kód studijního plánu')),
-      defenseDepartmentCode: readRequiredValue(studentsCapRow, 'Katedra studenta (kód)'),
-      defenseDepartmentName: readRequiredValue(studentsCapRow, 'Katedra studenta (název)'),
+      specializationName: readRequiredValue(studentsStorkRow, 'Obor/spec - název'),
+      specializationCode: normalizeSpecializationCode(readRequiredValue(studentsStorkRow, 'Kód studijního plánu')),
+      defenseDepartmentCode: readRequiredValue(studentsStorkRow, 'Katedra studenta (kód)'),
+      defenseDepartmentName: readRequiredValue(studentsStorkRow, 'Katedra studenta (název)'),
       studyLanguage,
       thesisSubmissionAt: thesisSubmissionAt ?? null,
       repeatType: 'NONE',
@@ -975,7 +975,7 @@ function appendStudentsToCommittees(
     }
 
     if (mappedStudent.studyProgramType !== targetCommittee.studyProgramType) {
-      throwMappingError('STUDENT_COMMITTEE_MISMATCH', studentsCapRow, {
+      throwMappingError('STUDENT_COMMITTEE_MISMATCH', studentsStorkRow, {
         column: 'Studijní plán (název)',
         context: {
           committeeName,
@@ -989,7 +989,7 @@ function appendStudentsToCommittees(
     if (
       normalizeCompareValue(mappedStudent.studyProgramName) !== normalizeCompareValue(targetCommittee.studyProgramName)
     ) {
-      throwMappingError('STUDENT_COMMITTEE_MISMATCH', studentsCapRow, {
+      throwMappingError('STUDENT_COMMITTEE_MISMATCH', studentsStorkRow, {
         column: 'Studijní program (název)',
         context: {
           committeeName,
@@ -1008,7 +1008,7 @@ function appendStudentsToCommittees(
     )
 
     if (!normalizedStudentSpecializationCode.startsWith(normalizedCommitteeSpecializationCode)) {
-      throwMappingError('STUDENT_COMMITTEE_MISMATCH', studentsCapRow, {
+      throwMappingError('STUDENT_COMMITTEE_MISMATCH', studentsStorkRow, {
         column: 'Kód studijního plánu',
         context: {
           committeeName,
@@ -1067,13 +1067,9 @@ function appendStudentsToCommittees(
   }
 }
 
-function normalizeScheduleName(value: string): string {
-  return normalizeWhitespace(value)
-}
-
 export function mapImportPayloadToDraftSource(input: MapImportPayloadToDraftInput): MapImportPayloadToDraftResult {
   try {
-    const scheduleName = normalizeScheduleName(input.scheduleName)
+    const scheduleName = normalizeWhitespace(input.scheduleName)
     const studentsDatasets = collectStudentDatasets(input.payload, input.szzType)
     const committeesMappingResult = mapCommittees(
       input.szzType,
@@ -1084,7 +1080,7 @@ export function mapImportPayloadToDraftSource(input: MapImportPayloadToDraftInpu
     appendStudentsToCommittees(
       input.szzType,
       committeesMappingResult.committeesByName,
-      studentsDatasets.studentsCapRows,
+      studentsDatasets.studentsStorkRows,
       studentsDatasets.studentsCommitteesRows
     )
 

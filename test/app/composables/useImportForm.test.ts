@@ -63,7 +63,7 @@ describe('useImportForm', () => {
     i18nTranslateMock.mockClear()
   })
 
-  it('remaps students-committees and students-cap files in mixed mode by detected study level', async () => {
+  it('remaps students-committees and students-stork files in mixed mode by detected study level', async () => {
     const selectedSzzType = ref<ImportSzzType>('MIXED')
     const { importFileStates, handleImportFileChange } = useImportForm(selectedSzzType)
 
@@ -75,13 +75,13 @@ describe('useImportForm', () => {
     expect(importFileStates.value.studentsCommitteesBachelor.file?.name).toBe(committeesBachelorFile.name)
     expect(importFileStates.value.studentsCommitteesMaster.file).toBeNull()
 
-    const capMasterFile = createCsvFile('studentsCap', 'studenti-cap-mgr.csv', {
+    const storkMasterFile = createCsvFile('studentsStork', 'studenti-stork-mgr.csv', {
       'Studijní plán (název)': 'Mgr. Informatika'
     })
-    await handleImportFileChange(createFileChangeEvent(capMasterFile), 'studentsCapBachelor')
+    await handleImportFileChange(createFileChangeEvent(storkMasterFile), 'studentsStorkBachelor')
 
-    expect(importFileStates.value.studentsCapMaster.file?.name).toBe(capMasterFile.name)
-    expect(importFileStates.value.studentsCapBachelor.file).toBeNull()
+    expect(importFileStates.value.studentsStorkMaster.file?.name).toBe(storkMasterFile.name)
+    expect(importFileStates.value.studentsStorkBachelor.file).toBeNull()
   })
 
   it('shows validation error when mixed-mode study level cannot be detected', async () => {
@@ -103,12 +103,12 @@ describe('useImportForm', () => {
   it('rejects non-csv file by extension', async () => {
     const selectedSzzType = ref<ImportSzzType>('BACHELOR')
     const { importFileStates, handleImportFileChange } = useImportForm(selectedSzzType)
-    const invalidFile = new File(['content'], 'studenti-cap.txt', { type: 'text/plain' })
+    const invalidFile = new File(['content'], 'studenti-stork.txt', { type: 'text/plain' })
 
-    await handleImportFileChange(createFileChangeEvent(invalidFile), 'studentsCapSingle')
+    await handleImportFileChange(createFileChangeEvent(invalidFile), 'studentsStorkSingle')
 
-    expect(importFileStates.value.studentsCapSingle.file).toBeNull()
-    expect(importFileStates.value.studentsCapSingle.error).toBe(
+    expect(importFileStates.value.studentsStorkSingle.file).toBeNull()
+    expect(importFileStates.value.studentsStorkSingle.error).toBe(
       'homepage.actions.create.import.validation.invalidExtension'
     )
   })
@@ -116,12 +116,12 @@ describe('useImportForm', () => {
   it('rejects file with invalid UTF-8 encoding', async () => {
     const selectedSzzType = ref<ImportSzzType>('BACHELOR')
     const { importFileStates, handleImportFileChange } = useImportForm(selectedSzzType)
-    const invalidUtf8File = new File([new Uint8Array([0xff, 0xfe, 0xfd])], 'studenti-cap.csv', { type: 'text/csv' })
+    const invalidUtf8File = new File([new Uint8Array([0xff, 0xfe, 0xfd])], 'studenti-stork.csv', { type: 'text/csv' })
 
-    await handleImportFileChange(createFileChangeEvent(invalidUtf8File), 'studentsCapSingle')
+    await handleImportFileChange(createFileChangeEvent(invalidUtf8File), 'studentsStorkSingle')
 
-    expect(importFileStates.value.studentsCapSingle.file).toBeNull()
-    expect(importFileStates.value.studentsCapSingle.error).toBe(
+    expect(importFileStates.value.studentsStorkSingle.file).toBeNull()
+    expect(importFileStates.value.studentsStorkSingle.error).toBe(
       'homepage.actions.create.import.validation.invalidEncoding'
     )
   })
@@ -131,8 +131,10 @@ describe('useImportForm', () => {
     const { handleImportFileChange, buildImportPayload, isImportSubmitDisabled } = useImportForm(selectedSzzType)
 
     await handleImportFileChange(
-      createFileChangeEvent(createCsvFile('studentsCap', 'studenti-cap.csv', { 'Studijní plán (název)': 'Bc. SI' })),
-      'studentsCapSingle'
+      createFileChangeEvent(
+        createCsvFile('studentsStork', 'studenti-stork.csv', { 'Studijní plán (název)': 'Bc. SI' })
+      ),
+      'studentsStorkSingle'
     )
     await handleImportFileChange(
       createFileChangeEvent(createCsvFile('studentsCommittees', 'studenti-komise.csv', { 'St. program - typ': 'B' })),
@@ -144,8 +146,8 @@ describe('useImportForm', () => {
 
     const payload = buildImportPayload()
     expect(payload).not.toBeNull()
-    expect(payload?.studentsCap.bachelor?.fileName).toBe('studenti-cap.csv')
-    expect(payload?.studentsCap.master).toBeUndefined()
+    expect(payload?.studentsStork.bachelor?.fileName).toBe('studenti-stork.csv')
+    expect(payload?.studentsStork.master).toBeUndefined()
     expect(payload?.studentsCommittees.bachelor?.fileName).toBe('studenti-komise.csv')
     expect(payload?.studentsCommittees.master).toBeUndefined()
   })
@@ -156,9 +158,9 @@ describe('useImportForm', () => {
 
     await handleImportFileChange(
       createFileChangeEvent(
-        createCsvFile('studentsCap', 'studenti-cap-mgr.csv', { 'Studijní plán (název)': 'Mgr. Informatika' })
+        createCsvFile('studentsStork', 'studenti-stork-mgr.csv', { 'Studijní plán (název)': 'Mgr. Informatika' })
       ),
-      'studentsCapSingle'
+      'studentsStorkSingle'
     )
     await handleImportFileChange(
       createFileChangeEvent(
@@ -172,8 +174,8 @@ describe('useImportForm', () => {
 
     const payload = buildImportPayload()
     expect(payload).not.toBeNull()
-    expect(payload?.studentsCap.master?.fileName).toBe('studenti-cap-mgr.csv')
-    expect(payload?.studentsCap.bachelor).toBeUndefined()
+    expect(payload?.studentsStork.master?.fileName).toBe('studenti-stork-mgr.csv')
+    expect(payload?.studentsStork.bachelor).toBeUndefined()
     expect(payload?.studentsCommittees.master?.fileName).toBe('studenti-komise-mgr.csv')
     expect(payload?.studentsCommittees.bachelor).toBeUndefined()
   })
@@ -184,14 +186,14 @@ describe('useImportForm', () => {
 
     await handleImportFileChange(
       createFileChangeEvent(
-        createCsvFile('studentsCap', 'studenti-cap-mgr.csv', { 'Studijní plán (název)': 'Mgr. Informatika' })
+        createCsvFile('studentsStork', 'studenti-stork-mgr.csv', { 'Studijní plán (název)': 'Mgr. Informatika' })
       ),
-      'studentsCapSingle'
+      'studentsStorkSingle'
     )
 
     expect(selectedSzzType.value).toBe('MASTER')
-    expect(importFileStates.value.studentsCapSingle.file?.name).toBe('studenti-cap-mgr.csv')
-    expect(importFileStates.value.studentsCapSingle.error).toBeNull()
+    expect(importFileStates.value.studentsStorkSingle.file?.name).toBe('studenti-stork-mgr.csv')
+    expect(importFileStates.value.studentsStorkSingle.error).toBeNull()
   })
 
   it('blocks single-mode level auto-switch when two other fields are already loaded', async () => {
@@ -208,14 +210,14 @@ describe('useImportForm', () => {
 
     await handleImportFileChange(
       createFileChangeEvent(
-        createCsvFile('studentsCap', 'studenti-cap-mgr.csv', { 'Studijní plán (název)': 'Mgr. Informatika' })
+        createCsvFile('studentsStork', 'studenti-stork-mgr.csv', { 'Studijní plán (název)': 'Mgr. Informatika' })
       ),
-      'studentsCapSingle'
+      'studentsStorkSingle'
     )
 
     expect(selectedSzzType.value).toBe('BACHELOR')
-    expect(importFileStates.value.studentsCapSingle.file).toBeNull()
-    expect(importFileStates.value.studentsCapSingle.error).toBe(
+    expect(importFileStates.value.studentsStorkSingle.file).toBeNull()
+    expect(importFileStates.value.studentsStorkSingle.error).toBe(
       'homepage.actions.create.import.validation.levelSwitchBlockedMaster'
     )
     expect(importFileStates.value.studentsCommitteesSingle.file?.name).toBe('studenti-komise-bc.csv')
@@ -229,12 +231,12 @@ describe('useImportForm', () => {
 
     const uploads: Array<{ sourceKey: ImportFieldKey; file: File }> = [
       {
-        sourceKey: 'studentsCapMaster',
-        file: createCsvFile('studentsCap', 'studenti-cap-bc.csv', { 'Studijní plán (název)': 'Bc. Informatika' })
+        sourceKey: 'studentsStorkMaster',
+        file: createCsvFile('studentsStork', 'studenti-stork-bc.csv', { 'Studijní plán (název)': 'Bc. Informatika' })
       },
       {
-        sourceKey: 'studentsCapBachelor',
-        file: createCsvFile('studentsCap', 'studenti-cap-mgr.csv', { 'Studijní plán (název)': 'Mgr. Informatika' })
+        sourceKey: 'studentsStorkBachelor',
+        file: createCsvFile('studentsStork', 'studenti-stork-mgr.csv', { 'Studijní plán (název)': 'Mgr. Informatika' })
       },
       {
         sourceKey: 'studentsCommitteesMaster',
@@ -254,8 +256,8 @@ describe('useImportForm', () => {
       await handleImportFileChange(createFileChangeEvent(upload.file), upload.sourceKey)
     }
 
-    expect(importFileStates.value.studentsCapBachelor.file?.name).toBe('studenti-cap-bc.csv')
-    expect(importFileStates.value.studentsCapMaster.file?.name).toBe('studenti-cap-mgr.csv')
+    expect(importFileStates.value.studentsStorkBachelor.file?.name).toBe('studenti-stork-bc.csv')
+    expect(importFileStates.value.studentsStorkMaster.file?.name).toBe('studenti-stork-mgr.csv')
     expect(importFileStates.value.studentsCommitteesBachelor.file?.name).toBe('studenti-komise-bc.csv')
     expect(importFileStates.value.studentsCommitteesMaster.file?.name).toBe('studenti-komise-mgr.csv')
     expect(importFileStates.value.committees.file?.name).toBe('komise.csv')
@@ -263,8 +265,8 @@ describe('useImportForm', () => {
 
     const payload = buildImportPayload()
     expect(payload).not.toBeNull()
-    expect(payload?.studentsCap.bachelor?.fileName).toBe('studenti-cap-bc.csv')
-    expect(payload?.studentsCap.master?.fileName).toBe('studenti-cap-mgr.csv')
+    expect(payload?.studentsStork.bachelor?.fileName).toBe('studenti-stork-bc.csv')
+    expect(payload?.studentsStork.master?.fileName).toBe('studenti-stork-mgr.csv')
     expect(payload?.studentsCommittees.bachelor?.fileName).toBe('studenti-komise-bc.csv')
     expect(payload?.studentsCommittees.master?.fileName).toBe('studenti-komise-mgr.csv')
     expect(payload?.committees.fileName).toBe('komise.csv')
@@ -276,31 +278,31 @@ describe('useImportForm', () => {
     const deferred = createDeferred<ArrayBuffer>()
 
     const slowCsvFile = {
-      name: 'studenti-cap-slow.csv',
+      name: 'studenti-stork-slow.csv',
       arrayBuffer: vi.fn(() => deferred.promise)
     } as unknown as File
 
-    const fastCsvFile = createCsvFile('studentsCap', 'studenti-cap-fast.csv', {
+    const fastCsvFile = createCsvFile('studentsStork', 'studenti-stork-fast.csv', {
       'Studijní plán (název)': 'Bc. Informatika'
     })
 
-    const slowChangePromise = handleImportFileChange(createFileChangeEvent(slowCsvFile), 'studentsCapSingle')
-    await handleImportFileChange(createFileChangeEvent(fastCsvFile), 'studentsCapSingle')
+    const slowChangePromise = handleImportFileChange(createFileChangeEvent(slowCsvFile), 'studentsStorkSingle')
+    await handleImportFileChange(createFileChangeEvent(fastCsvFile), 'studentsStorkSingle')
 
-    expect(importFileStates.value.studentsCapSingle.file?.name).toBe('studenti-cap-fast.csv')
-    expect(importFileStates.value.studentsCapSingle.error).toBeNull()
+    expect(importFileStates.value.studentsStorkSingle.file?.name).toBe('studenti-stork-fast.csv')
+    expect(importFileStates.value.studentsStorkSingle.error).toBeNull()
 
     deferred.resolve(
       encodeUtf8(
-        createCsvContent('studentsCap', {
+        createCsvContent('studentsStork', {
           'Studijní plán (název)': 'Bc. Informatika'
         })
       )
     )
     await slowChangePromise
 
-    expect(importFileStates.value.studentsCapSingle.file?.name).toBe('studenti-cap-fast.csv')
-    expect(importFileStates.value.studentsCapSingle.error).toBeNull()
-    expect(importFileStates.value.studentsCapSingle.isValidating).toBe(false)
+    expect(importFileStates.value.studentsStorkSingle.file?.name).toBe('studenti-stork-fast.csv')
+    expect(importFileStates.value.studentsStorkSingle.error).toBeNull()
+    expect(importFileStates.value.studentsStorkSingle.isValidating).toBe(false)
   })
 })

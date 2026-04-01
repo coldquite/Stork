@@ -9,24 +9,24 @@ type ImportSchemaMap = Record<ImportDatasetKey, readonly string[]>
 
 // Base field catalog used to build concrete form layouts.
 // getImportFormFieldsBySzzType picks and orders items from this map:
-// - single mode => studentsCapSingle, studentsCommitteesSingle, committees
+// - single mode => studentsStorkSingle, studentsCommitteesSingle, committees
 // - mixed mode => bachelor/master variants + committees (with mixed-specific label)
 const IMPORT_FORM_FIELD_CONFIGS: Record<ImportFieldKey, ImportFormFieldConfig> = {
-  studentsCapSingle: {
-    key: 'studentsCapSingle',
-    labelKey: 'homepage.actions.create.import.fields.studentsCap'
+  studentsStorkSingle: {
+    key: 'studentsStorkSingle',
+    labelKey: 'homepage.actions.create.import.fields.studentsStork'
   },
   studentsCommitteesSingle: {
     key: 'studentsCommitteesSingle',
     labelKey: 'homepage.actions.create.import.fields.studentsCommittees'
   },
-  studentsCapBachelor: {
-    key: 'studentsCapBachelor',
-    labelKey: 'homepage.actions.create.import.fields.studentsCapBachelor'
+  studentsStorkBachelor: {
+    key: 'studentsStorkBachelor',
+    labelKey: 'homepage.actions.create.import.fields.studentsStorkBachelor'
   },
-  studentsCapMaster: {
-    key: 'studentsCapMaster',
-    labelKey: 'homepage.actions.create.import.fields.studentsCapMaster'
+  studentsStorkMaster: {
+    key: 'studentsStorkMaster',
+    labelKey: 'homepage.actions.create.import.fields.studentsStorkMaster'
   },
   studentsCommitteesBachelor: {
     key: 'studentsCommitteesBachelor',
@@ -43,14 +43,14 @@ const IMPORT_FORM_FIELD_CONFIGS: Record<ImportFieldKey, ImportFormFieldConfig> =
 }
 
 const IMPORT_FORM_FIELD_CONFIGS_SINGLE: ImportFormFieldConfig[] = [
-  IMPORT_FORM_FIELD_CONFIGS.studentsCapSingle,
+  IMPORT_FORM_FIELD_CONFIGS.studentsStorkSingle,
   IMPORT_FORM_FIELD_CONFIGS.studentsCommitteesSingle,
   IMPORT_FORM_FIELD_CONFIGS.committees
 ]
 
 const IMPORT_FORM_FIELD_CONFIGS_MIXED: ImportFormFieldConfig[] = [
-  IMPORT_FORM_FIELD_CONFIGS.studentsCapBachelor,
-  IMPORT_FORM_FIELD_CONFIGS.studentsCapMaster,
+  IMPORT_FORM_FIELD_CONFIGS.studentsStorkBachelor,
+  IMPORT_FORM_FIELD_CONFIGS.studentsStorkMaster,
   IMPORT_FORM_FIELD_CONFIGS.studentsCommitteesBachelor,
   IMPORT_FORM_FIELD_CONFIGS.studentsCommitteesMaster,
   {
@@ -65,7 +65,7 @@ export const IMPORT_CSV_OPTIONS = Object.freeze({
 })
 
 export const IMPORT_SCHEMAS: ImportSchemaMap = {
-  studentsCap: [
+  studentsStork: [
     'Příjmení',
     'Jméno',
     'Titul',

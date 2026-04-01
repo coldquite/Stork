@@ -11,7 +11,7 @@ import {
   isCsvFile,
   parseImportCsvText,
   resolveImportTargetFieldKey,
-  resolveStudyLevelFromStudentsCap,
+  resolveStudyLevelFromStudentsStork,
   resolveStudyLevelFromStudentsCommittees
 } from '~/utils/import'
 import type {
@@ -37,18 +37,18 @@ type ImportFieldStates = Record<ImportFieldKey, ImportFieldState>
 type ImportValidationRequestIds = Record<ImportFieldKey, number>
 
 const IMPORT_FIELD_KEYS: ImportFieldKey[] = [
-  'studentsCapSingle',
+  'studentsStorkSingle',
   'studentsCommitteesSingle',
-  'studentsCapBachelor',
-  'studentsCapMaster',
+  'studentsStorkBachelor',
+  'studentsStorkMaster',
   'studentsCommitteesBachelor',
   'studentsCommitteesMaster',
   'committees'
 ]
-const SINGLE_MODE_FIELD_KEYS: ImportFieldKey[] = ['studentsCapSingle', 'studentsCommitteesSingle', 'committees']
-const SINGLE_MODE_STUDENT_FIELD_KEYS: ImportFieldKey[] = ['studentsCapSingle', 'studentsCommitteesSingle']
+const SINGLE_MODE_FIELD_KEYS: ImportFieldKey[] = ['studentsStorkSingle', 'studentsCommitteesSingle', 'committees']
+const SINGLE_MODE_STUDENT_FIELD_KEYS: ImportFieldKey[] = ['studentsStorkSingle', 'studentsCommitteesSingle']
 
-type ImportPayloadLevelKey = keyof ImportPayload['studentsCap']
+type ImportPayloadLevelKey = keyof ImportPayload['studentsStork']
 
 function createInitialImportFieldState(): ImportFieldState {
   return {
@@ -88,8 +88,8 @@ function cloneDataset(fieldState: ImportFieldState): ImportDataset {
 }
 
 function resolveStudyLevelFromDataset(datasetKey: ImportDatasetKey, rows: ImportCsvRow[]): ImportStudyLevel | null {
-  if (datasetKey === 'studentsCap') {
-    return resolveStudyLevelFromStudentsCap(rows)
+  if (datasetKey === 'studentsStork') {
+    return resolveStudyLevelFromStudentsStork(rows)
   }
 
   if (datasetKey === 'studentsCommittees') {
@@ -128,33 +128,33 @@ export function useImportForm(selectedSzzType: Ref<ImportSzzType>) {
 
   // Fill payload for one study level (bachelor or master), fail if any required single-level file is not ready
   function assignSingleLevelPayload(payload: ImportPayload, levelKey: ImportPayloadLevelKey): boolean {
-    const studentsCapSingleState = getReadyFieldState('studentsCapSingle')
+    const studentsStorkSingleState = getReadyFieldState('studentsStorkSingle')
     const studentsCommitteesSingleState = getReadyFieldState('studentsCommitteesSingle')
-    if (!studentsCapSingleState || !studentsCommitteesSingleState) return false
+    if (!studentsStorkSingleState || !studentsCommitteesSingleState) return false
 
-    payload.studentsCap[levelKey] = cloneDataset(studentsCapSingleState)
+    payload.studentsStork[levelKey] = cloneDataset(studentsStorkSingleState)
     payload.studentsCommittees[levelKey] = cloneDataset(studentsCommitteesSingleState)
     return true
   }
 
   // Fill payload for mixed SZZ by requiring and assigning separate bachelor/master datasets for both CSV types
   function assignMixedLevelPayload(payload: ImportPayload): boolean {
-    const studentsCapBachelorState = getReadyFieldState('studentsCapBachelor')
-    const studentsCapMasterState = getReadyFieldState('studentsCapMaster')
+    const studentsStorkBachelorState = getReadyFieldState('studentsStorkBachelor')
+    const studentsStorkMasterState = getReadyFieldState('studentsStorkMaster')
     const studentsCommitteesBachelorState = getReadyFieldState('studentsCommitteesBachelor')
     const studentsCommitteesMasterState = getReadyFieldState('studentsCommitteesMaster')
 
     if (
-      !studentsCapBachelorState ||
-      !studentsCapMasterState ||
+      !studentsStorkBachelorState ||
+      !studentsStorkMasterState ||
       !studentsCommitteesBachelorState ||
       !studentsCommitteesMasterState
     ) {
       return false
     }
 
-    payload.studentsCap.bachelor = cloneDataset(studentsCapBachelorState)
-    payload.studentsCap.master = cloneDataset(studentsCapMasterState)
+    payload.studentsStork.bachelor = cloneDataset(studentsStorkBachelorState)
+    payload.studentsStork.master = cloneDataset(studentsStorkMasterState)
     payload.studentsCommittees.bachelor = cloneDataset(studentsCommitteesBachelorState)
     payload.studentsCommittees.master = cloneDataset(studentsCommitteesMasterState)
     return true
@@ -167,7 +167,7 @@ export function useImportForm(selectedSzzType: Ref<ImportSzzType>) {
 
     const payload: ImportPayload = {
       committees: cloneDataset(committeesState),
-      studentsCap: {},
+      studentsStork: {},
       studentsCommittees: {}
     }
     return payload
@@ -224,7 +224,7 @@ export function useImportForm(selectedSzzType: Ref<ImportSzzType>) {
         continue
       }
 
-      const datasetKey: ImportDatasetKey = key === 'studentsCapSingle' ? 'studentsCap' : 'studentsCommittees'
+      const datasetKey: ImportDatasetKey = key === 'studentsStorkSingle' ? 'studentsStork' : 'studentsCommittees'
       const detectedLevel = resolveStudyLevelFromDataset(datasetKey, state.rows)
       if (!detectedLevel || detectedLevel !== targetStudyLevel) {
         return true

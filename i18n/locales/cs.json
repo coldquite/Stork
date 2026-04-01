@@ -54,10 +54,10 @@
             "mixed": "Míchané"
           },
           "fields": {
-            "studentsCap": "Nahrajte soubor \"studenti-CAP\"",
+            "studentsStork": "Nahrajte soubor \"studenti-Stork\"",
             "studentsCommittees": "Nahrajte soubor \"studenti-komise\"",
-            "studentsCapBachelor": "Nahrajte soubor \"studenti-CAP\" (bakalářské)",
-            "studentsCapMaster": "Nahrajte soubor \"studenti-CAP\" (magisterské)",
+            "studentsStorkBachelor": "Nahrajte soubor \"studenti-Stork\" (bakalářské)",
+            "studentsStorkMaster": "Nahrajte soubor \"studenti-Stork\" (magisterské)",
             "studentsCommitteesBachelor": "Nahrajte soubor \"studenti-komise\" (bakalářské)",
             "studentsCommitteesMaster": "Nahrajte soubor \"studenti-komise\" (magisterské)",
             "committees": "Nahrajte soubor \"komise\"",
@@ -96,11 +96,11 @@
             "contextReasons": {
               "required_value_is_empty": "Povinná hodnota v povinném sloupci je prázdná.",
               "students_committees_row_reused": "Jeden řádek ve studenti-komise byl použit pro více studentů.",
-              "students_committees_row_without_matching_students_cap": "Ve studenti-komise je řádek bez odpovídajícího studenta v studenti-CAP."
+              "students_committees_row_without_matching_students_cap": "Ve studenti-komise je řádek bez odpovídajícího studenta v studenti-Stork."
             },
             "contextValues": {
               "stage": {
-                "seed": "Uložení jmen ze studenti-CAP do slovníku",
+                "seed": "Uložení jmen ze studenti-Stork do slovníku",
                 "fetch": "Načtení slovníku učitelů"
               }
             },

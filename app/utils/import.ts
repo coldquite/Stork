@@ -150,7 +150,7 @@ export function resolveStudyLevelFromStudentsCommittees(rows: ImportCsvRow[]): I
   return null
 }
 
-export function resolveStudyLevelFromStudentsCap(rows: ImportCsvRow[]): ImportStudyLevel | null {
+export function resolveStudyLevelFromStudentsStork(rows: ImportCsvRow[]): ImportStudyLevel | null {
   const studyScheduleName = rows[0]?.['Studijní plán (název)']?.trim().toLowerCase() ?? ''
 
   if (startsWithAnyPrefix(studyScheduleName, ['bc.', 'bachelor', 'bakalářsk'])) {
@@ -174,20 +174,20 @@ export function resolveImportTargetFieldKey(
   }
 
   if (szzType !== 'MIXED') {
-    return datasetKey === 'studentsCap' ? 'studentsCapSingle' : 'studentsCommitteesSingle'
+    return datasetKey === 'studentsStork' ? 'studentsStorkSingle' : 'studentsCommitteesSingle'
   }
 
   const studyLevel =
-    datasetKey === 'studentsCap'
-      ? resolveStudyLevelFromStudentsCap(rows)
+    datasetKey === 'studentsStork'
+      ? resolveStudyLevelFromStudentsStork(rows)
       : resolveStudyLevelFromStudentsCommittees(rows)
 
   if (!studyLevel) {
     return null
   }
 
-  if (datasetKey === 'studentsCap') {
-    return studyLevel === 'BACHELOR' ? 'studentsCapBachelor' : 'studentsCapMaster'
+  if (datasetKey === 'studentsStork') {
+    return studyLevel === 'BACHELOR' ? 'studentsStorkBachelor' : 'studentsStorkMaster'
   }
 
   return studyLevel === 'BACHELOR' ? 'studentsCommitteesBachelor' : 'studentsCommitteesMaster'

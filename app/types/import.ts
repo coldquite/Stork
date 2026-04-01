@@ -1,14 +1,14 @@
 import type { StudyProgramTypeDto } from '#shared/types/time-schedules'
 
-export type ImportDatasetKey = 'studentsCap' | 'studentsCommittees' | 'committees'
+export type ImportDatasetKey = 'studentsStork' | 'studentsCommittees' | 'committees'
 export type ImportStudyLevel = StudyProgramTypeDto
 export type ImportSzzType = ImportStudyLevel | 'MIXED'
 
 export type ImportFieldKey =
-  | 'studentsCapSingle'
+  | 'studentsStorkSingle'
   | 'studentsCommitteesSingle'
-  | 'studentsCapBachelor'
-  | 'studentsCapMaster'
+  | 'studentsStorkBachelor'
+  | 'studentsStorkMaster'
   | 'studentsCommitteesBachelor'
   | 'studentsCommitteesMaster'
   | 'committees'
@@ -23,7 +23,7 @@ export interface ImportDataset {
 
 export interface ImportPayload {
   committees: ImportDataset
-  studentsCap: {
+  studentsStork: {
     bachelor?: ImportDataset
     master?: ImportDataset
   }

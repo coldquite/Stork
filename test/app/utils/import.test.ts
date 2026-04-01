@@ -3,7 +3,7 @@ import { IMPORT_SCHEMAS } from '~/constants/import'
 import {
   parseImportCsvText,
   resolveImportTargetFieldKey,
-  resolveStudyLevelFromStudentsCap,
+  resolveStudyLevelFromStudentsStork,
   resolveStudyLevelFromStudentsCommittees
 } from '~/utils/import'
 import type { ImportCsvRow, ImportDatasetKey } from '~/types/import'
@@ -90,7 +90,7 @@ describe('import utils', () => {
   })
 
   it('returns schema_mismatch details with multiple schema candidates for ambiguous headers', () => {
-    const ambiguousHeaders = [...new Set([...IMPORT_SCHEMAS.studentsCap, ...IMPORT_SCHEMAS.studentsCommittees])]
+    const ambiguousHeaders = [...new Set([...IMPORT_SCHEMAS.studentsStork, ...IMPORT_SCHEMAS.studentsCommittees])]
     const result = parseImportCsvText(createCsvContentByHeaders(ambiguousHeaders))
 
     expect(result.ok).toBe(false)
@@ -100,36 +100,36 @@ describe('import utils', () => {
 
     expect(result.reason).toBe('schema_mismatch')
     expect(result.details.matchedDatasetKeys).toEqual(
-      expect.arrayContaining<ImportDatasetKey>(['studentsCap', 'studentsCommittees'])
+      expect.arrayContaining<ImportDatasetKey>(['studentsStork', 'studentsCommittees'])
     )
   })
 
   it('detects study level from both KOS datasets', () => {
-    const studentsCapBachelorRows: ImportCsvRow[] = [{ 'Studijní plán (název)': 'Bc. Informatika' }]
-    const studentsCapMasterRows: ImportCsvRow[] = [{ 'Studijní plán (název)': 'Mgr. Informatika' }]
+    const studentsStorkBachelorRows: ImportCsvRow[] = [{ 'Studijní plán (název)': 'Bc. Informatika' }]
+    const studentsStorkMasterRows: ImportCsvRow[] = [{ 'Studijní plán (název)': 'Mgr. Informatika' }]
     const studentsCommitteesBachelorRows: ImportCsvRow[] = [{ 'St. program - typ': 'B' }]
     const studentsCommitteesMasterRows: ImportCsvRow[] = [{ 'St. program - typ': 'N' }]
 
-    expect(resolveStudyLevelFromStudentsCap(studentsCapBachelorRows)).toBe('BACHELOR')
-    expect(resolveStudyLevelFromStudentsCap(studentsCapMasterRows)).toBe('MASTER')
+    expect(resolveStudyLevelFromStudentsStork(studentsStorkBachelorRows)).toBe('BACHELOR')
+    expect(resolveStudyLevelFromStudentsStork(studentsStorkMasterRows)).toBe('MASTER')
     expect(resolveStudyLevelFromStudentsCommittees(studentsCommitteesBachelorRows)).toBe('BACHELOR')
     expect(resolveStudyLevelFromStudentsCommittees(studentsCommitteesMasterRows)).toBe('MASTER')
   })
 
-  it('returns null for unsupported students-cap study schedule prefixes', () => {
+  it('returns null for unsupported students-stork study schedule prefixes', () => {
     const rows: ImportCsvRow[] = [{ 'Studijní plán (název)': 'NMgr. Informatika' }]
-    expect(resolveStudyLevelFromStudentsCap(rows)).toBeNull()
+    expect(resolveStudyLevelFromStudentsStork(rows)).toBeNull()
   })
 
   it('resolves target field by SZZ type and detected dataset level', () => {
-    const studentsCapRows: ImportCsvRow[] = [{ 'Studijní plán (název)': 'Mgr. Informatika' }]
+    const studentsStorkRows: ImportCsvRow[] = [{ 'Studijní plán (název)': 'Mgr. Informatika' }]
     const studentsCommitteesRows: ImportCsvRow[] = [{ 'St. program - typ': 'B' }]
 
-    expect(resolveImportTargetFieldKey('BACHELOR', 'studentsCap', studentsCapRows)).toBe('studentsCapSingle')
+    expect(resolveImportTargetFieldKey('BACHELOR', 'studentsStork', studentsStorkRows)).toBe('studentsStorkSingle')
     expect(resolveImportTargetFieldKey('MASTER', 'studentsCommittees', studentsCommitteesRows)).toBe(
       'studentsCommitteesSingle'
     )
-    expect(resolveImportTargetFieldKey('MIXED', 'studentsCap', studentsCapRows)).toBe('studentsCapMaster')
+    expect(resolveImportTargetFieldKey('MIXED', 'studentsStork', studentsStorkRows)).toBe('studentsStorkMaster')
     expect(resolveImportTargetFieldKey('MIXED', 'studentsCommittees', studentsCommitteesRows)).toBe(
       'studentsCommitteesBachelor'
     )

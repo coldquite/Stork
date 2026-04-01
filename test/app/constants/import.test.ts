@@ -7,12 +7,12 @@ describe('import constants', () => {
     const masterFields = getImportFormFieldsBySzzType('MASTER')
 
     expect(bachelorFields.map((field) => field.key)).toEqual([
-      'studentsCapSingle',
+      'studentsStorkSingle',
       'studentsCommitteesSingle',
       'committees'
     ])
     expect(masterFields.map((field) => field.key)).toEqual([
-      'studentsCapSingle',
+      'studentsStorkSingle',
       'studentsCommitteesSingle',
       'committees'
     ])
@@ -22,8 +22,8 @@ describe('import constants', () => {
     const mixedFields = getImportFormFieldsBySzzType('MIXED')
 
     expect(mixedFields.map((field) => field.key)).toEqual([
-      'studentsCapBachelor',
-      'studentsCapMaster',
+      'studentsStorkBachelor',
+      'studentsStorkMaster',
       'studentsCommitteesBachelor',
       'studentsCommitteesMaster',
       'committees'
@@ -38,7 +38,7 @@ describe('import constants', () => {
 
   it('returns null for duplicate or incomplete headers', () => {
     const duplicateHeaders = [...IMPORT_SCHEMAS.committees, 'Datum']
-    const incompleteHeaders = IMPORT_SCHEMAS.studentsCap.slice(0, -1)
+    const incompleteHeaders = IMPORT_SCHEMAS.studentsStork.slice(0, -1)
 
     expect(resolveImportDatasetKeyByHeaders(duplicateHeaders)).toBeNull()
     expect(resolveImportDatasetKeyByHeaders(incompleteHeaders)).toBeNull()

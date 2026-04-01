@@ -57,9 +57,9 @@ function createImportPayload(): ImportPayload {
       headers: ['Datum', 'Místo'],
       rows: [{ Datum: '2026-06-15', Místo: 'TH:A-1435' }]
     },
-    studentsCap: {
+    studentsStork: {
       bachelor: {
-        fileName: 'studenti-cap-bc.csv',
+        fileName: 'studenti-stork-bc.csv',
         headers: ['Email studenta', 'Studijní plán (název)'],
         rows: [{ 'Email studenta': 'student@fit.cvut.cz', 'Studijní plán (název)': 'Bc. Informatika' }]
       }
@@ -182,8 +182,8 @@ describe('useHomepage submitCreateScheduleImport', () => {
       ok: false,
       error: {
         code: 'STUDENT_MATCH_NOT_FOUND',
-        datasetKey: 'studentsCap',
-        fileName: 'studenti-cap-bc.csv',
+        datasetKey: 'studentsStork',
+        fileName: 'studenti-stork-bc.csv',
         rowNumber: 12,
         column: 'Email studenta',
         context: {}

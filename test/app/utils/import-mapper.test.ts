@@ -49,7 +49,7 @@ function createStudentsCommitteesRow(overrides: Partial<Record<string, string>> 
   }
 }
 
-function createStudentsCapRow(overrides: Partial<Record<string, string>> = {}): Record<string, string> {
+function createStudentsStorkRow(overrides: Partial<Record<string, string>> = {}): Record<string, string> {
   return {
     Příjmení: 'Novák',
     Jméno: 'Jan',
@@ -80,11 +80,11 @@ function createValidPayload(): ImportPayload {
       headers: [],
       rows: [createCommitteesRow()]
     },
-    studentsCap: {
+    studentsStork: {
       bachelor: {
-        fileName: 'studenti-cap-bc.csv',
+        fileName: 'studenti-stork-bc.csv',
         headers: [],
-        rows: [createStudentsCapRow()]
+        rows: [createStudentsStorkRow()]
       }
     },
     studentsCommittees: {
@@ -128,7 +128,7 @@ describe('mapImportPayloadToDraftSource', () => {
 
   it('preprocesses students-committees academic names before matching and mapping', () => {
     const payload = createValidPayload()
-    payload.studentsCap.bachelor!.rows[0] = createStudentsCapRow({
+    payload.studentsStork.bachelor!.rows[0] = createStudentsStorkRow({
       'VŠKP-typ A: Vedoucí práce 1': 'Ing. Matej Hulák',
       'VŠKP-typ A: Oponent práce 1': 'Ing. Pavel Oponent'
     })
@@ -177,9 +177,9 @@ describe('mapImportPayloadToDraftSource', () => {
     expect(mappedFirstItem.student.additionalReviewerName).toBe('Mgr. Druhý Oponent, Ph.D.')
   })
 
-  it('matches supervisor names when CAP omits comma before post-nominal title', () => {
+  it('matches supervisor names when Stork omits comma before post-nominal title', () => {
     const payload = createValidPayload()
-    payload.studentsCap.bachelor!.rows[0] = createStudentsCapRow({
+    payload.studentsStork.bachelor!.rows[0] = createStudentsStorkRow({
       'VŠKP-typ A: Vedoucí práce 1': 'Ing. Michal Valenta Ph.D.',
       'VŠKP-typ A: Oponent práce 1': 'Ing. Pavel Oponent'
     })
@@ -207,9 +207,9 @@ describe('mapImportPayloadToDraftSource', () => {
     expect(mappedFirstItem.student.supervisorName).toBe('Ing. Michal Valenta, Ph.D.')
   })
 
-  it('matches reviewer names when CAP uses comma after "et" between post-nominal titles', () => {
+  it('matches reviewer names when Stork uses comma after "et" between post-nominal titles', () => {
     const payload = createValidPayload()
-    payload.studentsCap.bachelor!.rows[0] = createStudentsCapRow({
+    payload.studentsStork.bachelor!.rows[0] = createStudentsStorkRow({
       'VŠKP-typ A: Oponent práce 1': 'Ing. Marek Suchánek Ph.D. et, Ph.D.'
     })
     payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
@@ -235,9 +235,9 @@ describe('mapImportPayloadToDraftSource', () => {
     expect(mappedFirstItem.student.reviewerName).toBe('Ing. Marek Suchánek, Ph.D. et Ph.D.')
   })
 
-  it('matches reviewer names when M.A. appears after name in CAP and after comma in studenti-komise', () => {
+  it('matches reviewer names when M.A. appears after name in Stork and after comma in studenti-komise', () => {
     const payload = createValidPayload()
-    payload.studentsCap.bachelor!.rows[0] = createStudentsCapRow({
+    payload.studentsStork.bachelor!.rows[0] = createStudentsStorkRow({
       'VŠKP-typ A: Oponent práce 1': 'Milan Kolar M.A.'
     })
     payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
@@ -265,7 +265,7 @@ describe('mapImportPayloadToDraftSource', () => {
 
   it('matches reviewer names with reordered multi-part surname tokens', () => {
     const payload = createValidPayload()
-    payload.studentsCap.bachelor!.rows[0] = createStudentsCapRow({
+    payload.studentsStork.bachelor!.rows[0] = createStudentsStorkRow({
       'VŠKP-typ A: Oponent práce 1': 'Dr. rer. nat. Rodrigo Augusto Da Silva Alves'
     })
     payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
@@ -315,7 +315,7 @@ describe('mapImportPayloadToDraftSource', () => {
 
   it('returns MISSING_DATASET with correct datasetKey when required file is missing', () => {
     const payload = createValidPayload()
-    payload.studentsCap.bachelor = undefined
+    payload.studentsStork.bachelor = undefined
 
     const result = mapImportPayloadToDraftSource({
       scheduleName: 'SZZ červen 2025',
@@ -329,7 +329,7 @@ describe('mapImportPayloadToDraftSource', () => {
     }
 
     expect(result.error.code).toBe('MISSING_DATASET')
-    expect(result.error.datasetKey).toBe('studentsCap')
+    expect(result.error.datasetKey).toBe('studentsStork')
     expect(result.error.context.level).toBe('bachelor')
   })
 
@@ -372,7 +372,7 @@ describe('mapImportPayloadToDraftSource', () => {
     expect(result.error.code).toBe('COMMITTEE_NOT_FOUND_IN_STUDENTS')
   })
 
-  it('fails when one studenti-CAP row matches multiple studenti-komise rows', () => {
+  it('fails when one studenti-Stork row matches multiple studenti-komise rows', () => {
     const payload = createValidPayload()
     payload.committees.rows.push(
       createCommitteesRow({
@@ -401,7 +401,7 @@ describe('mapImportPayloadToDraftSource', () => {
 
   it('fails when mapped student and mapped committee do not share specializationCode', () => {
     const payload = createValidPayload()
-    payload.studentsCap.bachelor!.rows[0] = createStudentsCapRow({
+    payload.studentsStork.bachelor!.rows[0] = createStudentsStorkRow({
       'Kód studijního plánu': 'BI-XX.21'
     })
 
@@ -422,7 +422,7 @@ describe('mapImportPayloadToDraftSource', () => {
 
   it('normalizes specializationCode by adding dot before trailing digits', () => {
     const payload = createValidPayload()
-    payload.studentsCap.bachelor!.rows[0] = createStudentsCapRow({
+    payload.studentsStork.bachelor!.rows[0] = createStudentsStorkRow({
       'Kód studijního plánu': 'BI-IB.21'
     })
     payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
@@ -451,7 +451,7 @@ describe('mapImportPayloadToDraftSource', () => {
 
   it('allows specializationCode when committee value is a prefix of student value', () => {
     const payload = createValidPayload()
-    payload.studentsCap.bachelor!.rows[0] = createStudentsCapRow({
+    payload.studentsStork.bachelor!.rows[0] = createStudentsStorkRow({
       'Kód studijního plánu': 'NI-ZI.2020'
     })
     payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
@@ -480,7 +480,7 @@ describe('mapImportPayloadToDraftSource', () => {
 
   it('normalizes K- to - in specializationCode comparison only', () => {
     const payload = createValidPayload()
-    payload.studentsCap.bachelor!.rows[0] = createStudentsCapRow({
+    payload.studentsStork.bachelor!.rows[0] = createStudentsStorkRow({
       'Kód studijního plánu': 'BIK-SI.21'
     })
     payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
@@ -509,7 +509,7 @@ describe('mapImportPayloadToDraftSource', () => {
 
   it('ignores trailing dot and version digits in specializationCode comparison', () => {
     const payload = createValidPayload()
-    payload.studentsCap.bachelor!.rows[0] = createStudentsCapRow({
+    payload.studentsStork.bachelor!.rows[0] = createStudentsStorkRow({
       'Kód studijního plánu': 'BI-PG.24'
     })
     payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
@@ -542,7 +542,7 @@ describe('mapImportPayloadToDraftSource', () => {
       'Jazyk výuky': 'CZ',
       'VŠKP-typ A: Jazyk práce': 'SL'
     })
-    payload.studentsCap.bachelor!.rows[0] = createStudentsCapRow({
+    payload.studentsStork.bachelor!.rows[0] = createStudentsStorkRow({
       'VŠKP-typ A: jazyk práce': 'SL'
     })
 
@@ -595,11 +595,11 @@ describe('mapImportPayloadToDraftSource', () => {
         'Název komise': '242-MI, 6-MI-PI.22'
       })
     )
-    payload.studentsCap.master = {
-      fileName: 'studenti-cap-mgr.csv',
+    payload.studentsStork.master = {
+      fileName: 'studenti-stork-mgr.csv',
       headers: [],
       rows: [
-        createStudentsCapRow({
+        createStudentsStorkRow({
           Jméno: 'Eva',
           Příjmení: 'Svobodová',
           'Email studenta': 'eva.svobodova@fit.cvut.cz',
