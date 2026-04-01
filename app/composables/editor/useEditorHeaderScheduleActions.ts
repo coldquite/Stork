@@ -53,6 +53,7 @@ export function useEditorHeaderScheduleActions() {
     requestBrowseSchedules: browseSchedules.requestBrowseSchedules,
     requestBrowseSchedulesSearch: browseSchedules.requestBrowseSchedulesSearch,
     requestOpenBrowseSchedule,
+    createImportWorkflowStage: createAndImport.createImportWorkflowStage,
     cancelCreateScheduleConfirm: createAndImport.cancelCreateScheduleConfirm,
     cancelOpenRecentSchedule: scheduleOpening.cancelOpenRecentSchedule,
     confirmCreateScheduleConfirm: createAndImport.confirmCreateScheduleConfirm,

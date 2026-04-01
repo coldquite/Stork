@@ -40,6 +40,7 @@ export function useHomepage() {
     openRecentScheduleDialogDescription: scheduleOpening.openRecentScheduleDialogDescription,
     requestOpenRecentSchedule: scheduleOpening.requestOpenRecentSchedule,
     requestOpenBrowseSchedule,
+    createImportWorkflowStage: createAndImport.createImportWorkflowStage,
     cancelOpenRecentSchedule: scheduleOpening.cancelOpenRecentSchedule,
     confirmOpenRecentSchedule: scheduleOpening.confirmOpenRecentSchedule,
     isCreateScheduleConfirmDialogOpen: createAndImport.isCreateScheduleConfirmDialogOpen,

@@ -126,6 +126,7 @@ function createTimeScheduleListItem(index: number, type: 'MANUAL' | 'AUTO'): Tim
 describe('useHomepage submitCreateScheduleImport', () => {
   beforeEach(() => {
     i18nTranslateMock.mockClear()
+    scheduleDraftStoreMock.hasDraft = false
     requestFetchMock.mockReset()
     requestFetchMock.mockImplementation(async (url: string) => {
       if (url.startsWith('/api/teachers-dictionary/bulk')) {
@@ -180,8 +181,30 @@ describe('useHomepage submitCreateScheduleImport', () => {
     expect(homepage.isCreateScheduleDialogOpen.value).toBe(false)
     expect(homepage.newScheduleNameError.value).toBeNull()
     expect(homepage.isCreatingNewSchedule.value).toBe(false)
+    expect(homepage.createImportWorkflowStage.value).toBe('IDLE')
     expect(homepage.isImportMappingErrorDialogOpen.value).toBe(false)
     expect(navigateToMock).toHaveBeenCalledWith('/editor')
+  })
+
+  it('drives create/import UI via explicit workflow stages', async () => {
+    const { useHomepage } = await import('~/composables/homepage/useHomepage')
+    const homepage = useHomepage()
+
+    scheduleDraftStoreMock.hasDraft = true
+    homepage.requestCreateSchedule()
+
+    expect(homepage.createImportWorkflowStage.value).toBe('CREATE_CONFIRM')
+    expect(homepage.isCreateScheduleConfirmDialogOpen.value).toBe(true)
+
+    homepage.confirmCreateScheduleConfirm()
+
+    expect(homepage.createImportWorkflowStage.value).toBe('CREATE_DIALOG')
+    expect(homepage.isCreateScheduleDialogOpen.value).toBe(true)
+
+    homepage.cancelCreateScheduleDialog()
+
+    expect(homepage.createImportWorkflowStage.value).toBe('IDLE')
+    expect(homepage.isCreateScheduleDialogOpen.value).toBe(false)
   })
 
   it('does not map import payload when schedule name is invalid', async () => {
@@ -321,6 +344,7 @@ describe('useHomepage submitCreateScheduleImport', () => {
 
     expect(mapImportPayloadToDraftSourceMock).not.toHaveBeenCalled()
     expect(homepage.isTeachersDictionaryResolutionDialogOpen.value).toBe(true)
+    expect(homepage.createImportWorkflowStage.value).toBe('TEACHERS_DICTIONARY_RESOLUTION')
     expect(homepage.teachersDictionaryResolutionEntries.value.length).toBeGreaterThan(0)
     expect(homepage.teachersDictionaryResolutionEntries.value.some((entry) => entry.sourceValue.length > 0)).toBe(true)
   })
@@ -442,6 +466,7 @@ describe('useHomepage submitCreateScheduleImport', () => {
     const mappingCall = mapImportPayloadToDraftSourceMock.mock.calls[0]?.[0]
     expect(mappingCall?.payload?.studentsCommittees?.bachelor?.rows?.[0]?.['Komise - člen 1']).toBe('Ing. Petr Neznamy')
     expect(homepage.isTeachersDictionaryResolutionDialogOpen.value).toBe(false)
+    expect(homepage.createImportWorkflowStage.value).toBe('IDLE')
     expect(navigateToMock).toHaveBeenCalledWith('/editor')
   })
 
@@ -504,6 +529,7 @@ describe('useHomepage submitCreateScheduleImport', () => {
     expect(homepage.isImportMappingErrorDialogOpen.value).toBe(true)
     expect(homepage.importMappingError.value?.code).toBe('STUDENT_VALUE_MISMATCH')
     expect(homepage.isTeachersDictionaryResolutionDialogOpen.value).toBe(false)
+    expect(homepage.createImportWorkflowStage.value).toBe('CREATE_DIALOG')
   })
 })
 
