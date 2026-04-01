@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import CreatePlanNameDialog from '~/components/schedule-creation/CreatePlanNameDialog.vue'
+import ImportMappingErrorDialog from '~/components/schedule-creation/ImportMappingErrorDialog.vue'
+import ImportTeachersDictionaryResolutionDialog from '~/components/schedule-creation/ImportTeachersDictionaryResolutionDialog.vue'
 import { HOMEPAGE_NEW_PLAN_NAME_MAX_LENGTH } from '~/composables/useHomepage'
 
 const { t } = useI18n()
@@ -114,7 +117,7 @@ await fetchRecentPlans()
       @confirm="confirmCreatePlanConfirm"
     />
 
-    <CommonCreatePlanNameDialog
+    <CreatePlanNameDialog
       v-model:open="isCreatePlanNameDialogOpen"
       v-model:name="newPlanNameInput"
       :loading="isCreatingNewPlan"
@@ -125,9 +128,9 @@ await fetchRecentPlans()
       @submit-import="submitCreatePlanImport"
     />
 
-    <CommonImportMappingErrorDialog v-model:open="isImportMappingErrorDialogOpen" :error="importMappingError" />
+    <ImportMappingErrorDialog v-model:open="isImportMappingErrorDialogOpen" :error="importMappingError" />
 
-    <CommonImportTeachersDictionaryResolutionDialog
+    <ImportTeachersDictionaryResolutionDialog
       v-model:open="isTeachersDictionaryResolutionDialogOpen"
       :loading="isCreatingNewPlan"
       :entries="teachersDictionaryResolutionEntries"

@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import CreatePlanNameDialog from '~/components/schedule-creation/CreatePlanNameDialog.vue'
+import ImportMappingErrorDialog from '~/components/schedule-creation/ImportMappingErrorDialog.vue'
+import ImportTeachersDictionaryResolutionDialog from '~/components/schedule-creation/ImportTeachersDictionaryResolutionDialog.vue'
 import { useAuthStore } from '~/stores/auth'
 import { HOMEPAGE_NEW_PLAN_NAME_MAX_LENGTH, useHomepage } from '~/composables/useHomepage'
 
@@ -223,7 +226,7 @@ async function confirmLogout(): Promise<void> {
       @confirm="confirmCreatePlanConfirm"
     />
 
-    <CommonCreatePlanNameDialog
+    <CreatePlanNameDialog
       v-if="isEditorRoute"
       v-model:open="isCreatePlanNameDialogOpen"
       v-model:name="newPlanNameInput"
@@ -235,13 +238,13 @@ async function confirmLogout(): Promise<void> {
       @submit-import="submitCreatePlanImport"
     />
 
-    <CommonImportMappingErrorDialog
+    <ImportMappingErrorDialog
       v-if="isEditorRoute"
       v-model:open="isImportMappingErrorDialogOpen"
       :error="importMappingError"
     />
 
-    <CommonImportTeachersDictionaryResolutionDialog
+    <ImportTeachersDictionaryResolutionDialog
       v-if="isEditorRoute"
       v-model:open="isTeachersDictionaryResolutionDialogOpen"
       :loading="isCreatingNewPlan"
