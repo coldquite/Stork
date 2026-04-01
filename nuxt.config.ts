@@ -16,6 +16,10 @@ export default defineNuxtConfig({
     '@sentry/nuxt/module'
   ],
 
+  imports: {
+    dirs: ['~/composables/**']
+  },
+
   devtools: {
     enabled: true
   },
