@@ -1,7 +1,5 @@
 import { useAuthStore } from '~/stores/auth'
-
-const LOGIN_PATH = '/login'
-const HOME_PATH = '/'
+import { HOME_PATH, LOGIN_PATH } from '~/constants/routes'
 
 export default defineNuxtRouteMiddleware((to) => {
   const authStore = useAuthStore()

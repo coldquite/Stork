@@ -42,14 +42,7 @@ import type {
   ScheduleDraftCommittee,
   ScheduleDraftItem
 } from '~/types/schedule-draft'
-
-const DEFAULT_SCHEDULE_AUTOSAVE_POLICY: Readonly<ScheduleAutoSavePolicy> = Object.freeze({
-  enabled: true,
-  debounceMs: 45_000,
-  minIntervalMs: 300_000,
-  retryAfterErrorMs: 60_000
-})
-const DEFAULT_NEW_SCHEDULE_NAME_PREFIX = 'Nový plán '
+import { DEFAULT_NEW_SCHEDULE_NAME_PREFIX, DEFAULT_SCHEDULE_AUTOSAVE_POLICY } from '~/constants/schedule-draft'
 
 function createLocalId(): string {
   return crypto.randomUUID()

@@ -1,6 +1,5 @@
 import { useScheduleDraftStore } from '~/stores/schedule-draft'
-
-const HOME_PATH = '/'
+import { HOME_PATH } from '~/constants/routes'
 
 export default defineNuxtRouteMiddleware(() => {
   const scheduleDraftStore = useScheduleDraftStore()

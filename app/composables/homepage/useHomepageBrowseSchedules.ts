@@ -1,8 +1,6 @@
 import type { TimeScheduleListItemDto, TimeScheduleTypeDto } from '#shared/types/time-schedules'
 import type { HomepageScheduleListItem } from '~/types/homepage'
-
-const HOMEPAGE_BROWSE_SCHEDULES_PAGE_SIZE = 20
-const HOMEPAGE_BROWSE_SEARCH_DEBOUNCE_MS = 250 // To avoid the server burnout, I want to say hi to the BI-TWA ultimate tutors team. I still remember how they showed it :)
+import { HOMEPAGE_BROWSE_SCHEDULES_PAGE_SIZE, HOMEPAGE_BROWSE_SEARCH_DEBOUNCE_MS } from '~/constants/homepage'
 
 type BrowseSchedulesTabKey = 'manual' | 'auto'
 
