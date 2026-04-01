@@ -1,10 +1,6 @@
 <script setup lang="ts">
-import CreateScheduleDialog from '~/components/schedule-creation/CreateScheduleDialog.vue'
-import ImportMappingErrorDialog from '~/components/schedule-creation/ImportMappingErrorDialog.vue'
-import ImportTeachersDictionaryResolutionDialog from '~/components/schedule-creation/ImportTeachersDictionaryResolutionDialog.vue'
 import { useAuthStore } from '~/stores/auth'
 import { NEW_SCHEDULE_NAME_MAX_LENGTH } from '~/constants/schedule'
-import { useEditorHeaderScheduleActions } from '~/composables/editor/useEditorHeaderScheduleActions'
 
 const { t } = useI18n()
 const authStore = useAuthStore()

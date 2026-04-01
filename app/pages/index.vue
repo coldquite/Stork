@@ -1,9 +1,5 @@
 <script setup lang="ts">
-import CreateScheduleDialog from '~/components/schedule-creation/CreateScheduleDialog.vue'
-import ImportMappingErrorDialog from '~/components/schedule-creation/ImportMappingErrorDialog.vue'
-import ImportTeachersDictionaryResolutionDialog from '~/components/schedule-creation/ImportTeachersDictionaryResolutionDialog.vue'
 import { NEW_SCHEDULE_NAME_MAX_LENGTH } from '~/constants/schedule'
-import { useHomepage } from '~/composables/homepage/useHomepage'
 
 const { t } = useI18n()
 const {

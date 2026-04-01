@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
 import type { GetTeachersDictionaryResponseDto, TeachersDictionaryEntryDto } from '#shared/types/teachers-dictionary'
-import { extractHttpErrorMessage } from '~/utils/http-error'
 
 const { t } = useI18n()
 const requestFetch = useRequestFetch()

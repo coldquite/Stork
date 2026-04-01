@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { useEditorPage } from '~/composables/editor/useEditorPage'
-
 definePageMeta({
   middleware: 'editor-draft'
 })
