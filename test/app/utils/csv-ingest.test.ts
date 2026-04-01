@@ -143,12 +143,14 @@ describe('csv-ingest utils', () => {
     }
   })
 
-  it('returns success with parsed result and original file', async () => {
+  it('returns success with parsed result, original file, and clears input value for same-file reselect', async () => {
     const csvFile = createCsvFile('valid.csv')
     const parsedSuccess = { ok: true as const, datasetKey: 'committees' as const }
+    const event = createFileChangeEvent(csvFile)
+    const input = event.target as HTMLInputElement
 
     const result = await ingestCsvInputFile({
-      event: createFileChangeEvent(csvFile),
+      event,
       beginValidationRequest: () => 1,
       isValidationRequestStale: () => false,
       setValidatingState: vi.fn(),
@@ -163,6 +165,7 @@ describe('csv-ingest utils', () => {
     })
 
     expect(result.status).toBe('success')
+    expect(input.value).toBe('')
     if (result.status === 'success') {
       expect(result.file.name).toBe('valid.csv')
       expect(result.parsedResult).toEqual(parsedSuccess)

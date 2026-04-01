@@ -80,8 +80,11 @@ export async function ingestCsvInputFile<ParsedResult, ParsedSuccessResult exten
     return { status: 'no_file' }
   }
 
+  // Always clear the native file input after taking the File reference,
+  // so selecting the same filename again still triggers the next change event.
+  clearInputFileValue(input)
+
   if (!isCsvFile(selectedFile)) {
-    clearInputFileValue(input)
     return {
       status: 'invalid_extension',
       input
@@ -96,7 +99,6 @@ export async function ingestCsvInputFile<ParsedResult, ParsedSuccessResult exten
   }
 
   if (!decodedContent) {
-    clearInputFileValue(input)
     return {
       status: 'invalid_encoding',
       input
@@ -105,7 +107,6 @@ export async function ingestCsvInputFile<ParsedResult, ParsedSuccessResult exten
 
   const parsedResult = options.parseCsvText(decodedContent)
   if (!options.isParsedResultSuccess(parsedResult)) {
-    clearInputFileValue(input)
     return {
       status: 'parse_error',
       input,
