@@ -62,30 +62,32 @@ function handleRestoreClick(): void {
     </UCard>
   </section>
 
-  <section v-if="showRestoreCard" class="mb-8">
-    <UCard
-      class="group bg-success/10 border-success/80 hover:border-success hover:bg-success/15 cursor-pointer border-2 transition-colors duration-300 ease-out"
-      @click="handleRestoreClick"
-    >
-      <div class="flex flex-col items-center py-6 text-center">
-        <div
-          class="bg-success/25 group-hover:bg-success/35 dark:bg-success/15 dark:group-hover:bg-success/25 mb-4 flex size-16 items-center justify-center rounded-full transition-colors duration-300 ease-in-out"
-        >
-          <UIcon
-            name="i-lucide-rotate-ccw"
-            class="text-success size-8 drop-shadow-[0_1px_0_rgba(10,74,43,0.35)] dark:drop-shadow-none"
-          />
+  <ClientOnly>
+    <section v-if="showRestoreCard" class="mb-8">
+      <UCard
+        class="group bg-success/10 border-success/80 hover:border-success hover:bg-success/15 cursor-pointer border-2 transition-colors duration-300 ease-out"
+        @click="handleRestoreClick"
+      >
+        <div class="flex flex-col items-center py-6 text-center">
+          <div
+            class="bg-success/25 group-hover:bg-success/35 dark:bg-success/15 dark:group-hover:bg-success/25 mb-4 flex size-16 items-center justify-center rounded-full transition-colors duration-300 ease-in-out"
+          >
+            <UIcon
+              name="i-lucide-rotate-ccw"
+              class="text-success size-8 drop-shadow-[0_1px_0_rgba(10,74,43,0.35)] dark:drop-shadow-none"
+            />
+          </div>
+          <h2 class="mb-2 text-xl font-semibold">
+            {{ $t('homepage.actions.restore.title') }}
+          </h2>
+          <p class="text-muted">
+            {{ restoreDraftLine }}
+          </p>
+          <p class="text-muted">
+            {{ restoreDraftUpdatedLine }}
+          </p>
         </div>
-        <h2 class="mb-2 text-xl font-semibold">
-          {{ $t('homepage.actions.restore.title') }}
-        </h2>
-        <p class="text-muted">
-          {{ restoreDraftLine }}
-        </p>
-        <p class="text-muted">
-          {{ restoreDraftUpdatedLine }}
-        </p>
-      </div>
-    </UCard>
-  </section>
+      </UCard>
+    </section>
+  </ClientOnly>
 </template>
