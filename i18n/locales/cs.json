@@ -141,7 +141,7 @@
             "hintDescription": "Po potvrzení se nové záznamy uloží do perzistentního slovníku pro účely budoucích importů jako ručně zadané a import bude pokračovat.",
             "sourceValueLabel": "Původní hodnota z importu",
             "example": {
-              "sourceValue": "Blizničenko Jan Ing. Ph.D. (Vzorec)",
+              "sourceValue": "Blizničenko Jan Ing. Ph.D. (Příklad)",
               "canonicalValue": "Ing. Jan Blizničenko Ph.D."
             },
             "inputPlaceholder": "Zadejte jméno s tituly ve správném pořadí (tituly před jménem + jméno + příjmení + tituly za jménem)",
