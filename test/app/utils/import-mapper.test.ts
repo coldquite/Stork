@@ -4,9 +4,9 @@ import { buildTeachersDictionaryLookupKey } from '#shared/utils/teachers-diction
 import { mapImportPayloadToDraftSource as mapPreparedImportPayloadToDraftSource } from '~/utils/import-mapper'
 import type { ImportPayload, ImportSzzType, PreparedImportPayload } from '~/types/import'
 import {
-  applyTeachersDictionaryToStudentsCommittees,
   cloneImportPayload,
-  createTeachersDictionaryLookupMap
+  createTeachersDictionaryLookupMap,
+  prepareImportPayloadForMapping
 } from '~/utils/import-teachers-dictionary'
 
 function mapImportPayloadToDraftSource(input: {
@@ -205,13 +205,16 @@ function mapImportPayloadWithTeachersDictionary(options: {
   ])
 
   const dictionaryByLookupKey = createTeachersDictionaryLookupMap(dictionaryEntries)
-  const unresolvedEntries = applyTeachersDictionaryToStudentsCommittees(preparedPayload, dictionaryByLookupKey)
-  expect(unresolvedEntries).toEqual([])
+  const prepareResult = prepareImportPayloadForMapping(preparedPayload, dictionaryByLookupKey)
+  expect(prepareResult.ok).toBe(true)
+  if (!prepareResult.ok) {
+    throw new Error('Expected prepared payload')
+  }
 
   return mapImportPayloadToDraftSource({
     scheduleName: options.scheduleName,
     szzType: options.szzType,
-    payload: preparedPayload
+    payload: prepareResult.preparedPayload
   })
 }
 

@@ -11,6 +11,7 @@
  * What it does:
  * - Clones import payload to avoid mutating the original upload data
  * - Builds an in-memory lookup map from dictionary API response
+ * - Applies dictionary resolution to Students Stork teacher fields (STUDENTS_STORK_DICTIONARY_TARGET_COLUMNS), rewriting row values to properly formatted values
  * - Applies dictionary resolution to Students Committees fields (STUDENTS_COMMITTEES_DICTIONARY_TARGET_COLUMNS), rewriting row values to properly formatted values
  * - Collects unresolved names (unique by lookup key) so UI can ask the user once and store manual corrections
  * - Reuses one normalization pipeline for CSV values and manual user input
@@ -39,6 +40,13 @@ export type PrepareImportPayloadForMappingResult =
 
 const IMPORT_LEVEL_KEYS: readonly ImportPayloadLevel[] = ['bachelor', 'master']
 
+const STUDENTS_STORK_DICTIONARY_TARGET_COLUMNS = [
+  'VŠKP-typ A: Vedoucí práce 1',
+  'VŠKP-typ A: Vedoucí práce 2',
+  'VŠKP-typ A: Oponent práce 1',
+  'VŠKP-typ A: Oponent práce 2'
+] as const
+
 export const STUDENTS_COMMITTEES_DICTIONARY_TARGET_COLUMNS = [
   'VŠKP-typ A: Vedoucí práce 1',
   'VŠKP-typ A: Vedoucí práce 2',
@@ -52,7 +60,9 @@ export const STUDENTS_COMMITTEES_DICTIONARY_TARGET_COLUMNS = [
 ] as const
 
 // Flattens rows from all available payload levels (bachelor/master) into one list
-function collectRowsFromPayloadLevelMap(datasets: ImportPayload['studentsCommittees']): ImportCsvRow[] {
+function collectRowsFromPayloadLevelMap(
+  datasets: ImportPayload['studentsStork'] | ImportPayload['studentsCommittees']
+): ImportCsvRow[] {
   const rows: ImportCsvRow[] = []
 
   for (const levelKey of IMPORT_LEVEL_KEYS) {
@@ -154,10 +164,11 @@ export function createTeachersDictionaryLookupMap(entries: GetTeachersDictionary
 
 function applyTeachersDictionaryToRow(
   row: ImportCsvRow,
+  columns: readonly string[],
   dictionaryByLookupKey: ReadonlyMap<string, string>,
   missingByLookupKey: Map<string, MissingTeachersDictionaryEntry>
 ): void {
-  for (const column of STUDENTS_COMMITTEES_DICTIONARY_TARGET_COLUMNS) {
+  for (const column of columns) {
     const normalizedValue = normalizeTeacherValueForLookup(row[column] ?? '')
     if (!normalizedValue) {
       row[column] = ''
@@ -181,21 +192,38 @@ function applyTeachersDictionaryToRow(
   }
 }
 
-// Normalizes and resolves target teacher-name columns in a single row using dictionary lookup and
-// collects unresolved unique entries into missingByLookupKey for later manual resolution
-// !!! Side effects: rewrites row values to resolved canonical names
-export function applyTeachersDictionaryToStudentsCommittees(
+function applyTeachersDictionaryToStudentsStorkRows(
   payload: ImportPayload,
-  dictionaryByLookupKey: ReadonlyMap<string, string>
-): MissingTeachersDictionaryEntry[] {
-  const missingByLookupKey = new Map<string, MissingTeachersDictionaryEntry>()
+  dictionaryByLookupKey: ReadonlyMap<string, string>,
+  missingByLookupKey: Map<string, MissingTeachersDictionaryEntry>
+): void {
+  const studentsStorkRows = collectRowsFromPayloadLevelMap(payload.studentsStork)
+
+  for (const row of studentsStorkRows) {
+    applyTeachersDictionaryToRow(
+      row,
+      STUDENTS_STORK_DICTIONARY_TARGET_COLUMNS,
+      dictionaryByLookupKey,
+      missingByLookupKey
+    )
+  }
+}
+
+function applyTeachersDictionaryToStudentsCommitteesRows(
+  payload: ImportPayload,
+  dictionaryByLookupKey: ReadonlyMap<string, string>,
+  missingByLookupKey: Map<string, MissingTeachersDictionaryEntry>
+): void {
   const studentsCommitteesRows = collectRowsFromPayloadLevelMap(payload.studentsCommittees)
 
   for (const row of studentsCommitteesRows) {
-    applyTeachersDictionaryToRow(row, dictionaryByLookupKey, missingByLookupKey)
+    applyTeachersDictionaryToRow(
+      row,
+      STUDENTS_COMMITTEES_DICTIONARY_TARGET_COLUMNS,
+      dictionaryByLookupKey,
+      missingByLookupKey
+    )
   }
-
-  return Array.from(missingByLookupKey.values())
 }
 
 /**
@@ -206,7 +234,10 @@ export function prepareImportPayloadForMapping(
   payload: ImportPayload,
   dictionaryByLookupKey: ReadonlyMap<string, string>
 ): PrepareImportPayloadForMappingResult {
-  const unresolvedEntries = applyTeachersDictionaryToStudentsCommittees(payload, dictionaryByLookupKey)
+  const missingByLookupKey = new Map<string, MissingTeachersDictionaryEntry>()
+  applyTeachersDictionaryToStudentsStorkRows(payload, dictionaryByLookupKey, missingByLookupKey)
+  applyTeachersDictionaryToStudentsCommitteesRows(payload, dictionaryByLookupKey, missingByLookupKey)
+  const unresolvedEntries = Array.from(missingByLookupKey.values())
   if (unresolvedEntries.length > 0) {
     return {
       ok: false,
