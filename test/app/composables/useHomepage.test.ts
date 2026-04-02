@@ -349,7 +349,7 @@ describe('useHomepage submitCreateScheduleImport', () => {
     expect(homepage.teachersDictionaryResolutionEntries.value.some((entry) => entry.sourceValue.length > 0)).toBe(true)
   })
 
-  it('blocks teachers dictionary resolution submit when canonical name contains comma', async () => {
+  it('blocks teachers dictionary resolution submit when canonical name contains at least two commas', async () => {
     requestFetchMock.mockImplementation(async (url: string) => {
       if (url.startsWith('/api/teachers-dictionary/bulk')) {
         return { processed: 1, created: 1, updated: 0 }
@@ -388,7 +388,7 @@ describe('useHomepage submitCreateScheduleImport', () => {
 
     homepage.updateTeachersDictionaryResolutionEntry({
       lookupKey: firstEntry.lookupKey,
-      value: 'Ing. Petr Novák, Ph.D.'
+      value: 'Novák, Petr, Ing., Ph.D.'
     })
 
     await homepage.submitTeachersDictionaryResolution()

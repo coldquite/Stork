@@ -221,7 +221,8 @@ export function useHomepageCreateAndImport(options: UseHomepageCreateAndImportOp
         continue
       }
 
-      if (canonicalName.includes(',')) {
+      const commaCount = canonicalName.split(',').length - 1
+      if (commaCount >= 2) {
         fieldErrors[entry.lookupKey] = t(
           'homepage.actions.create.import.teachersDictionaryResolution.invalidCommaFormat'
         )
