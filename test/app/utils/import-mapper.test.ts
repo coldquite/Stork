@@ -1231,5 +1231,40 @@ describe('mapImportPayloadToDraftSource', () => {
     })
 
     expect(result.ok).toBe(true)
+    if (!result.ok) {
+      throw new Error('Expected mapping success for MIXED mode')
+    }
+
+    expect(result.draft.committees).toHaveLength(2)
+
+    const committeesByName = new Map(result.draft.committees.map((committee) => [committee.name, committee] as const))
+    const bachelorCommittee = committeesByName.get('5-BI-PI.21')
+    const masterCommittee = committeesByName.get('6-MI-PI.22')
+
+    expect(bachelorCommittee).toBeDefined()
+    expect(masterCommittee).toBeDefined()
+    if (!bachelorCommittee || !masterCommittee) {
+      throw new Error('Expected both bachelor and master committees in mapped draft')
+    }
+
+    expect(bachelorCommittee.studyProgramType).toBe('BACHELOR')
+    expect(masterCommittee.studyProgramType).toBe('MASTER')
+    expect(bachelorCommittee.items).toHaveLength(1)
+    expect(masterCommittee.items).toHaveLength(1)
+
+    const bachelorItem = bachelorCommittee.items[0]
+    const masterItem = masterCommittee.items[0]
+    expect(bachelorItem).toBeDefined()
+    expect(masterItem).toBeDefined()
+    if (!bachelorItem || !masterItem || bachelorItem.type !== 'STUDENT' || masterItem.type !== 'STUDENT') {
+      throw new Error('Expected mapped student items for both committees')
+    }
+
+    expect(bachelorItem.student.firstName).toBe('Jan')
+    expect(bachelorItem.student.lastName).toBe('Novák')
+    expect(bachelorItem.student.studyProgramType).toBe('BACHELOR')
+    expect(masterItem.student.firstName).toBe('Eva')
+    expect(masterItem.student.lastName).toBe('Svobodová')
+    expect(masterItem.student.studyProgramType).toBe('MASTER')
   })
 })
