@@ -158,7 +158,7 @@ describe('useTeachersDictionaryCsvImport', () => {
     expect(importState.value.error).toBeNull()
     expect(importState.value.entries).toEqual([
       {
-        canonicalName: 'Ing. Jan Novák Ph.D.',
+        canonicalName: 'Ing. Jan Novák, Ph.D.',
         isCustom: false
       }
     ])
@@ -197,7 +197,7 @@ describe('useTeachersDictionaryCsvImport', () => {
 
     expect(importState.value.file?.name).toBe('fast.csv')
     expect(importState.value.error).toBeNull()
-    expect(importState.value.entries?.[0]?.canonicalName).toBe('Ing. Jan Novák Ph.D.')
+    expect(importState.value.entries?.[0]?.canonicalName).toBe('Ing. Jan Novák, Ph.D.')
   })
 
   it('returns ok=false from submitImport when submit is disabled', async () => {
@@ -230,7 +230,7 @@ describe('useTeachersDictionaryCsvImport', () => {
       method: 'PUT',
       body: [
         {
-          canonicalName: 'Ing. Jan Novák Ph.D.',
+          canonicalName: 'Ing. Jan Novák, Ph.D.',
           isCustom: false
         }
       ]

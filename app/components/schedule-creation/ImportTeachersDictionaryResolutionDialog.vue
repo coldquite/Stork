@@ -115,6 +115,18 @@ function handleSubmit(): void {
           />
         </div>
 
+        <i18n-t
+          keypath="homepage.actions.create.import.teachersDictionaryResolution.example.commaWarning"
+          tag="p"
+          class="text-error text-sm"
+        >
+          <template #requiredWord>
+            <span class="font-bold">
+              {{ $t('homepage.actions.create.import.teachersDictionaryResolution.example.requiredWord') }}
+            </span>
+          </template>
+        </i18n-t>
+
         <UAlert
           v-if="props.error"
           icon="i-lucide-triangle-alert"

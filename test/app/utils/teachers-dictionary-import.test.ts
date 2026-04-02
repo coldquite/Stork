@@ -41,7 +41,7 @@ describe('teachers-dictionary import parser', () => {
 
     expect(result.entries).toEqual([
       {
-        canonicalName: 'Ing. Jan Novák Ph.D.',
+        canonicalName: 'Ing. Jan Novák, Ph.D.',
         isCustom: false
       },
       {
@@ -72,7 +72,7 @@ describe('teachers-dictionary import parser', () => {
     }
 
     expect(result.entries).toHaveLength(1)
-    expect(result.entries[0]?.canonicalName).toBe('Ing. Jan Novák Ph.D.')
+    expect(result.entries[0]?.canonicalName).toBe('Ing. Jan Novák, Ph.D.')
   })
 
   it('returns missing_required_headers when any required header is absent', () => {
@@ -112,8 +112,8 @@ describe('teachers-dictionary import parser', () => {
       {
         Příjmení: '  ',
         Jméno: '',
-        'Titul osoby (před jménem)': ' ',
-        'Titul osoby (za jménem)': ''
+        'Titul osoby (před jménem)': 'Ing.',
+        'Titul osoby (za jménem)': 'Ph.D.'
       }
     ])
 
@@ -125,6 +125,37 @@ describe('teachers-dictionary import parser', () => {
     }
 
     expect(result.reason).toBe('empty_rows')
+  })
+
+  it('skips rows that contain only titles without first and last names', () => {
+    const csv = createCsvContent(REQUIRED_HEADERS, [
+      {
+        Příjmení: '',
+        Jméno: '',
+        'Titul osoby (před jménem)': 'doc.',
+        'Titul osoby (za jménem)': 'Ph.D.'
+      },
+      {
+        Příjmení: 'Svoboda',
+        Jméno: 'Petr',
+        'Titul osoby (před jménem)': '',
+        'Titul osoby (za jménem)': 'Ph.D.'
+      }
+    ])
+
+    const result = parseTeachersDictionaryCsvText(csv)
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) {
+      throw new Error('Expected parse success')
+    }
+
+    expect(result.entries).toEqual([
+      {
+        canonicalName: 'Petr Svoboda, Ph.D.',
+        isCustom: false
+      }
+    ])
   })
 
   it('returns parse_error for malformed csv content', () => {
@@ -155,7 +186,7 @@ describe('teachers-dictionary import parser', () => {
       throw new Error('Expected parse success')
     }
 
-    expect(result.entries[0]?.canonicalName).toBe('Ing. Jan Novák Ph.D.')
+    expect(result.entries[0]?.canonicalName).toBe('Ing. Jan Novák, Ph.D.')
     expect(result.entries.some((entry) => entry.canonicalName === 'Petr Svoboda')).toBe(true)
   })
 })

@@ -66,14 +66,17 @@ function normalizeWhitespaceTokens(value: string): string[] {
 }
 
 function buildTeachersDictionaryCanonicalName(row: TeachersDictionaryCsvRow): string {
-  const normalizedTokens = [
-    ...normalizeWhitespaceTokens(row.titleBefore),
-    ...normalizeWhitespaceTokens(row.firstName),
-    ...normalizeWhitespaceTokens(row.lastName),
-    ...normalizeWhitespaceTokens(row.titleAfter)
-  ]
+  const baseName = [...normalizeWhitespaceTokens(row.firstName), ...normalizeWhitespaceTokens(row.lastName)].join(' ')
 
-  return normalizedTokens.join(' ')
+  if (baseName.length === 0) {
+    return ''
+  }
+
+  const titleBefore = normalizeWhitespaceTokens(row.titleBefore).join(' ')
+  const titleAfter = normalizeWhitespaceTokens(row.titleAfter).join(' ')
+  const nameWithTitleBefore = [titleBefore, baseName].filter(Boolean).join(' ')
+
+  return titleAfter.length === 0 ? nameWithTitleBefore : `${nameWithTitleBefore}, ${titleAfter}`
 }
 
 function normalizeTeachersDictionaryCsvRow(row: Record<string, unknown>): TeachersDictionaryCsvRow {

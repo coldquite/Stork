@@ -142,9 +142,11 @@
             "sourceValueLabel": "Původní hodnota z importu",
             "example": {
               "sourceValue": "Blizničenko Jan Ing. Ph.D. (Příklad)",
-              "canonicalValue": "Ing. Jan Blizničenko Ph.D."
+              "canonicalValue": "Ing. Jan Blizničenko, Ph.D.",
+              "commaWarning": "U titulů uváděných za jménem je čárka {requiredWord}. V některých položkách níže je pořadí slov správné, chybí pouze tato čárka, přesto je důležité ji doplnit.",
+              "requiredWord": "povinná"
             },
-            "inputPlaceholder": "Zadejte jméno s tituly ve správném pořadí (tituly před jménem + jméno + příjmení + tituly za jménem)",
+            "inputPlaceholder": "Zadejte jméno s tituly ve správném pořadí (Tituly Jméno Příjmení, Tituly)",
             "invalidCommaFormat": "Neplatný formát zadané hodnoty (pravděpodobně vloženo z výsledků vyhledávače Usermap, nikoliv z profilu osoby).",
             "submitAction": "Uložit a pokračovat",
             "errorTitle": "Doplnění slovníku se nepodařilo",
