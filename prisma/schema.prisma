@@ -156,7 +156,8 @@ model TeachersDictionary {
   normalizedLookupKey String @unique
 
   // true for entries created manually in the app, false for imported records.
-  isCustom Boolean @default(false)
+  isCustom  Boolean  @default(false)
+  updatedAt DateTime @default(now()) @updatedAt
 
   @@index([isCustom])
 }

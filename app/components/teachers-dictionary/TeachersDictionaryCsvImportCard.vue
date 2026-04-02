@@ -14,6 +14,19 @@ const {
   submitImport
 } = useTeachersDictionaryCsvImport()
 
+const NON_CUSTOM_METADATA_ASYNC_KEY = 'teachers-dictionary-non-custom-metadata'
+const {
+  metadata: nonCustomMetadata,
+  refreshMetadata: refreshNonCustomMetadata,
+  formatLastUpdatedAt
+} = useTeachersDictionaryMetadata({
+  asyncKey: NON_CUSTOM_METADATA_ASYNC_KEY,
+  isCustom: false,
+  lastUpdatedNeverI18nKey: 'teachersDictionary.metadata.lastUpdatedNever'
+})
+
+const nonCustomLastUpdatedText = computed<string>(() => formatLastUpdatedAt(nonCustomMetadata.value.lastUpdatedAt))
+
 const importResult = ref<PutTeachersDictionaryBulkResponseDto | null>(null)
 const successHideTimer = ref<ReturnType<typeof setTimeout> | null>(null)
 const fileInputRef = ref<HTMLInputElement | null>(null)
@@ -52,6 +65,7 @@ async function handleSubmitImport(): Promise<void> {
 
   clearFileInputValue()
   importResult.value = result.response
+  await refreshNonCustomMetadata()
   scheduleSuccessAlertHide()
 }
 
@@ -81,11 +95,14 @@ onBeforeUnmount(() => {
     </template>
 
     <div class="space-y-3">
-      <p class="text-muted text-sm">
-        {{ $t('homepage.actions.create.import.filesHint') }}
-      </p>
+      <TeachersDictionaryMetadataCards
+        :count="nonCustomMetadata.count"
+        :last-updated-text="nonCustomLastUpdatedText"
+        :count-label="$t('teachersDictionary.metadata.countLabel')"
+        :last-updated-label="$t('teachersDictionary.metadata.lastUpdatedLabel')"
+      />
 
-      <div class="border-default space-y-2 rounded-lg border p-3">
+      <div class="border-default mt-6 space-y-2 rounded-lg border p-3">
         <label for="teachers-dictionary-import-file" class="text-sm font-medium">
           {{ $t('teachersDictionary.import.fileLabel') }}
         </label>
@@ -134,6 +151,10 @@ onBeforeUnmount(() => {
           {{ importState.error }}
         </p>
       </div>
+
+      <p class="text-muted text-sm">
+        {{ $t('homepage.actions.create.import.filesHint') }}
+      </p>
 
       <UAlert
         v-if="submitError"

@@ -19,3 +19,8 @@ export interface TeachersDictionaryEntryDto {
 }
 
 export type GetTeachersDictionaryResponseDto = TeachersDictionaryEntryDto[]
+
+export interface GetTeachersDictionaryMetadataResponseDto {
+  count: number
+  lastUpdatedAt: string | null
+}

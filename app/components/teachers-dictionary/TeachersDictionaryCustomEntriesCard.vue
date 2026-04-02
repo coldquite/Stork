@@ -5,12 +5,24 @@ import type { GetTeachersDictionaryResponseDto, TeachersDictionaryEntryDto } fro
 const { t } = useI18n()
 const requestFetch = useRequestFetch()
 
+const CUSTOM_METADATA_ASYNC_KEY = 'teachers-dictionary-custom-metadata'
+const {
+  metadata,
+  refreshMetadata: refreshCustomMetadata,
+  formatLastUpdatedAt
+} = useTeachersDictionaryMetadata({
+  asyncKey: CUSTOM_METADATA_ASYNC_KEY,
+  isCustom: true,
+  lastUpdatedNeverI18nKey: 'teachersDictionary.table.metadata.lastUpdatedNever'
+})
+
 const { data, status, refresh } = useAsyncData<GetTeachersDictionaryResponseDto>(
   'teachers-dictionary-custom-entries',
   () => requestFetch<GetTeachersDictionaryResponseDto>('/api/teachers-dictionary?isCustom=true')
 )
 
 const entries = computed<TeachersDictionaryEntryDto[]>(() => data.value ?? [])
+const customLastUpdatedText = computed<string>(() => formatLastUpdatedAt(metadata.value.lastUpdatedAt))
 const isLoading = computed(() => status.value === 'pending')
 const hasLoadError = computed(() => status.value === 'error')
 const isDeleteConfirmOpen = ref(false)
@@ -45,7 +57,7 @@ const columns = computed<TableColumn<TeachersDictionaryEntryDto>[]>(() => [
 ])
 
 async function retryLoad(): Promise<void> {
-  await refresh()
+  await Promise.all([refresh(), refreshCustomMetadata()])
 }
 
 function requestDeleteEntry(entry: TeachersDictionaryEntryDto): void {
@@ -83,7 +95,7 @@ async function confirmDeleteEntry(): Promise<void> {
 
     isDeleteConfirmOpen.value = false
     pendingDeleteEntry.value = null
-    await refresh()
+    await Promise.all([refresh(), refreshCustomMetadata()])
   } catch (error: unknown) {
     deleteError.value =
       extractHttpErrorMessage(error) ?? t('teachersDictionary.table.delete.errorRequestFailedDescription')
@@ -123,6 +135,13 @@ async function confirmDeleteEntry(): Promise<void> {
     </div>
 
     <div v-else class="space-y-4">
+      <TeachersDictionaryMetadataCards
+        :count="metadata.count"
+        :last-updated-text="customLastUpdatedText"
+        :count-label="t('teachersDictionary.table.metadata.countLabel')"
+        :last-updated-label="t('teachersDictionary.table.metadata.lastUpdatedLabel')"
+      />
+
       <UAlert
         v-if="deleteError"
         color="error"

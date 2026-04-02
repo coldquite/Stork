@@ -143,8 +143,9 @@
             "example": {
               "sourceValue": "Blizničenko Jan Ing. Ph.D. (Příklad)",
               "canonicalValue": "Ing. Jan Blizničenko, Ph.D.",
-              "commaWarning": "U titulů uváděných za jménem je čárka {requiredWord}. V některých položkách níže je pořadí slov správné, chybí pouze tato čárka, přesto je důležité ji doplnit.",
-              "requiredWord": "povinná"
+              "commaWarningPrefix": "U titulů uváděných za jménem je čárka",
+              "requiredWord": "povinná",
+              "commaWarningSuffix": ". V některých položkách níže je pořadí slov správné, chybí pouze tato čárka, přesto je důležité ji doplnit."
             },
             "inputPlaceholder": "Zadejte jméno s tituly ve správném pořadí (Tituly Jméno Příjmení, Tituly)",
             "invalidCommaFormat": "Neplatný formát zadané hodnoty (pravděpodobně vloženo z výsledků vyhledávače Usermap, nikoliv z profilu osoby).",
@@ -317,15 +318,22 @@
     },
     "page": {
       "title": "Slovník učitelů",
-      "descriptionParagraph1": "V exportech IS KOS jsou u členů komisí, tajemníků a dalších osob jména s tituly často v pořadí, ze kterého nelze spolehlivě obnovit původní podobu. Aplikace ČÁP proto vede vlastní slovník těchto záznamů.",
-      "descriptionParagraph2": "Aplikace umožňuje rychlý hromadný import záznamů pomocí formuláře „89004 - soupis a editace učitelů“. Záznamy přidané prostřednictvím tohoto souboru se na této stránce nezobrazují a aplikace je neumožňuje ručně upravovat ani mazat bez zásahu administrátora do databáze. Platí však pravidlo, že novější pravidlo odvozené ze souboru přepíše starší záznam.",
-      "descriptionParagraph3": "Bohužel ani tento soupis z KOS negarantuje, že pro každou osobu budou k dispozici data pro obnovu správné formy jména s tituly, typicky jde o tajemníky a externí vedoucí nebo oponenty. Pokud proto při vytváření nového časového plánu z exportů KOS aplikace ČÁP narazí na osobu, jejíž správně formátované jméno s tituly nedokáže obnovit, požádá vás o ruční doplnění správné podoby. Ta se následně uloží do perzistentního slovníku a použije se při automatickém parsování dalších výskytů. Ručně přidané záznamy si můžete na této stránce zobrazit a případně je smazat. Nové ruční záznamy lze vytvářet pouze v rámci procesu vytváření nového plánu, a to jen tehdy, když je systém potřebuje."
+      "descriptionParagraph1": "V exportech z IS KOS jsou u členů komisí, tajemníků a dalších osob jména s tituly v pořadí, ze kterého nelze spolehlivě obnovit původní podobu. Aplikace ČÁP proto vede vlastní slovník těchto záznamů.",
+      "descriptionParagraph2Lead": "Aplikace umožňuje rychlý hromadný import záznamů pomocí formuláře „89004 - soupis a editace učitelů“.",
+      "descriptionParagraph2Bold": "Záznamy přidané prostřednictvím hromadného importu pomocí souboru se na této stránce nezobrazují a aplikace je neumožňuje ručně upravovat ani mazat bez zásahu administrátora do databáze. Platí však pravidlo, že novější pravidlo odvozené ze souboru přepíše starší záznam.",
+      "descriptionParagraph3Lead": "Bohužel ani tento soupis z KOS negarantuje, že pro každou osobu budou k dispozici data pro obnovu správné formy jména s tituly, typicky jde o tajemníky a externí vedoucí nebo oponenty. Pokud proto při vytváření nového časového plánu z exportů KOS aplikace ČÁP narazí na osobu, jejíž správně formátované jméno s tituly nedokáže obnovit, požádá vás o ruční doplnění správné podoby. Ta se následně uloží do perzistentního slovníku a použije se při automatickém parsování dalších výskytů.",
+      "descriptionParagraph3Bold": "Ruční záznamy nelze vytvářet svévolně. Systém jejich doplnění vyžádá pouze tehdy, je-li to nezbytné v rámci procesu vytvoření nového časového plánu. Jejich mazání je však povoleno, aby se předešlo situacím, kdy jednou chybně zadaný záznam ovlivňuje další importy."
     },
     "loading": "Načítám slovník učitelů...",
     "loadErrorTitle": "Slovník učitelů se nepodařilo načíst",
     "loadErrorDescription": "Zkuste načtení opakovat.",
+    "metadata": {
+      "countLabel": "Počet záznamů importovaných z IS KOS",
+      "lastUpdatedLabel": "Poslední aktualizace",
+      "lastUpdatedNever": "Zatím bez aktualizace"
+    },
     "import": {
-      "title": "Hromadný import slovníku osob z CSV podle formuláře „89004 - soupis a editace učitelů“",
+      "title": "Hromadně importované osoby (formulář „89004 - soupis a editace učitelů“)",
       "description": "Nahrajte export a aktualizujte záznamy slovníku osob najednou.",
       "fileLabel": "Nahrajte soubor se záznamy osob",
       "chooseFileAction": "Vybrat soubor",
@@ -348,6 +356,11 @@
     },
     "table": {
       "title": "Ručně evidované osoby",
+      "metadata": {
+        "countLabel": "Počet ručně evidovaných záznamů",
+        "lastUpdatedLabel": "Poslední aktualizace ručně evidovaných záznamů",
+        "lastUpdatedNever": "Zatím bez aktualizace"
+      },
       "columns": {
         "canonicalName": "Jméno osoby s tituly pro použití v časovém plánu (ručně zadané)",
         "normalizedLookupKey": "Interní normalizovaný klíč (generovaný systémem)"

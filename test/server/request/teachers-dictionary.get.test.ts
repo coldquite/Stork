@@ -1,7 +1,10 @@
 // @vitest-environment node
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import type { GetTeachersDictionaryResponseDto } from '#shared/types/teachers-dictionary'
+import type {
+  GetTeachersDictionaryMetadataResponseDto,
+  GetTeachersDictionaryResponseDto
+} from '#shared/types/teachers-dictionary'
 import { buildTeachersDictionaryLookupKey } from '#shared/utils/teachers-dictionary'
 import { prisma } from '#server/utils/db'
 import { apiUrl, createAuthCookie } from './_helpers'
@@ -99,6 +102,19 @@ async function readErrorMessage(response: Response): Promise<string> {
   }
 }
 
+function expectMetadataLastUpdatedAtShape(
+  metadata: GetTeachersDictionaryMetadataResponseDto,
+  expectedCount: number
+): void {
+  if (expectedCount === 0) {
+    expect(metadata.lastUpdatedAt).toBeNull()
+    return
+  }
+
+  expect(metadata.lastUpdatedAt).not.toBeNull()
+  expect(Number.isNaN(new Date(metadata.lastUpdatedAt ?? '').getTime())).toBe(false)
+}
+
 describe('GET /api/teachers-dictionary (integration)', () => {
   beforeEach(async () => {
     await cleanupTeachersDictionaryFixture()
@@ -179,42 +195,49 @@ describe('GET /api/teachers-dictionary (integration)', () => {
     expect(entries.every((entry) => entry.isCustom)).toBe(true)
   })
 
-  it('combines normalizedLookupKey and isCustom for precise matching', async () => {
+  it('returns metadata for non-custom entries when metadataOnly=true', async () => {
     const authCookie = createAuthCookie()
     await seedTeachersDictionaryFixture()
 
-    const response = await getTeachersDictionary(
+    const metadataResponse = await getTeachersDictionary(
       {
-        normalizedLookupKey: CUSTOM_LOOKUP_KEY,
-        isCustom: 'true'
+        isCustom: 'false',
+        metadataOnly: 'true'
       },
       authCookie
     )
 
-    expect(response.status).toBe(200)
-    const entries = (await response.json()) as GetTeachersDictionaryResponseDto
-    expect(entries).toHaveLength(1)
-    expect(entries[0]).toMatchObject({
-      canonicalName: CUSTOM_CANONICAL_NAME,
-      normalizedLookupKey: CUSTOM_LOOKUP_KEY,
-      isCustom: true
-    })
+    expect(metadataResponse.status).toBe(200)
+    const metadata = (await metadataResponse.json()) as GetTeachersDictionaryMetadataResponseDto
+
+    const entriesResponse = await getTeachersDictionary({ isCustom: 'false' }, authCookie)
+    expect(entriesResponse.status).toBe(200)
+    const entries = (await entriesResponse.json()) as GetTeachersDictionaryResponseDto
+
+    expect(entries.some((entry) => entry.normalizedLookupKey === NON_CUSTOM_LOOKUP_KEY)).toBe(true)
+    expect(metadata.count).toBe(entries.length)
+    expectMetadataLastUpdatedAtShape(metadata, metadata.count)
   })
 
-  it('returns empty array when normalizedLookupKey matches but isCustom does not', async () => {
+  it('returns metadata consistent with unfiltered entries when metadataOnly=true', async () => {
     const authCookie = createAuthCookie()
-    await seedTeachersDictionaryFixture()
 
-    const response = await getTeachersDictionary(
+    const metadataResponse = await getTeachersDictionary(
       {
-        normalizedLookupKey: CUSTOM_LOOKUP_KEY,
-        isCustom: 'false'
+        metadataOnly: 'true'
       },
       authCookie
     )
 
-    expect(response.status).toBe(200)
-    expect((await response.json()) as GetTeachersDictionaryResponseDto).toEqual([])
+    expect(metadataResponse.status).toBe(200)
+    const metadata = (await metadataResponse.json()) as GetTeachersDictionaryMetadataResponseDto
+
+    const entriesResponse = await getTeachersDictionary({}, authCookie)
+    expect(entriesResponse.status).toBe(200)
+    const entries = (await entriesResponse.json()) as GetTeachersDictionaryResponseDto
+
+    expect(metadata.count).toBe(entries.length)
+    expectMetadataLastUpdatedAtShape(metadata, metadata.count)
   })
 
   it('returns 400 for invalid isCustom value', async () => {
@@ -227,6 +250,16 @@ describe('GET /api/teachers-dictionary (integration)', () => {
     expect(statusMessage).toContain('"true" or "false"')
   })
 
+  it('returns 400 for invalid metadataOnly value', async () => {
+    const response = await getTeachersDictionary({ metadataOnly: 'yes' }, createAuthCookie())
+
+    expect(response.status).toBe(400)
+    const statusMessage = await readErrorMessage(response)
+    expect(statusMessage).toContain('Invalid teachers dictionary query')
+    expect(statusMessage).toContain('metadataOnly')
+    expect(statusMessage).toContain('"true" or "false"')
+  })
+
   it('returns 400 when isCustom query parameter is repeated', async () => {
     const response = await getTeachersDictionaryWithRawQuery('?isCustom=true&isCustom=false', createAuthCookie())
 
@@ -236,13 +269,15 @@ describe('GET /api/teachers-dictionary (integration)', () => {
     expect(statusMessage).toContain('isCustom must be provided only once')
   })
 
-  it('returns 400 for blank normalizedLookupKey query', async () => {
-    const response = await getTeachersDictionary({ normalizedLookupKey: '   ' }, createAuthCookie())
+  it('returns 400 when metadataOnly query parameter is repeated', async () => {
+    const response = await getTeachersDictionaryWithRawQuery(
+      '?metadataOnly=true&metadataOnly=false',
+      createAuthCookie()
+    )
 
     expect(response.status).toBe(400)
     const statusMessage = await readErrorMessage(response)
     expect(statusMessage).toContain('Invalid teachers dictionary query')
-    expect(statusMessage).toContain('normalizedLookupKey')
-    expect(statusMessage).toContain('at least 1 non-whitespace')
+    expect(statusMessage).toContain('metadataOnly must be provided only once')
   })
 })

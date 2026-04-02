@@ -1,7 +1,10 @@
 import { createError, getQuery } from 'h3'
 import { prisma } from '#server/utils/db'
 import { requireAuthenticatedUser } from '#server/utils/require-auth'
-import type { GetTeachersDictionaryResponseDto } from '#shared/types/teachers-dictionary'
+import type {
+  GetTeachersDictionaryMetadataResponseDto,
+  GetTeachersDictionaryResponseDto
+} from '#shared/types/teachers-dictionary'
 
 function invalidQuery(reason: string): never {
   throw createError({
@@ -26,20 +29,15 @@ function parseSingleQueryValue(value: unknown, key: string): string | undefined 
   return value
 }
 
-function parseNormalizedLookupKeyQuery(value: string | undefined): string | null {
-  if (value === undefined) {
-    return null
-  }
-
-  const normalizedValue = value.trim()
-  if (normalizedValue.length === 0) {
-    invalidQuery('normalizedLookupKey must have at least 1 non-whitespace character')
-  }
-
-  return normalizedValue
+function parseIsCustomQuery(value: string | undefined): boolean | null {
+  return parseBooleanQuery(value, 'isCustom')
 }
 
-function parseIsCustomQuery(value: string | undefined): boolean | null {
+function parseMetadataOnlyQuery(value: string | undefined): boolean | null {
+  return parseBooleanQuery(value, 'metadataOnly')
+}
+
+function parseBooleanQuery(value: string | undefined, key: string): boolean | null {
   if (value === undefined) {
     return null
   }
@@ -53,41 +51,55 @@ function parseIsCustomQuery(value: string | undefined): boolean | null {
     return false
   }
 
-  invalidQuery('isCustom must be "true" or "false"')
+  invalidQuery(`${key} must be "true" or "false"`)
 }
 
-export default defineEventHandler(async (event): Promise<GetTeachersDictionaryResponseDto> => {
-  requireAuthenticatedUser(event)
+export default defineEventHandler(
+  async (event): Promise<GetTeachersDictionaryResponseDto | GetTeachersDictionaryMetadataResponseDto> => {
+    requireAuthenticatedUser(event)
 
-  const query = getQuery(event)
-  const normalizedLookupKey = parseNormalizedLookupKeyQuery(
-    parseSingleQueryValue(query.normalizedLookupKey, 'normalizedLookupKey')
-  )
-  const isCustom = parseIsCustomQuery(parseSingleQueryValue(query.isCustom, 'isCustom'))
+    const query = getQuery(event)
+    const isCustom = parseIsCustomQuery(parseSingleQueryValue(query.isCustom, 'isCustom'))
+    const metadataOnly = parseMetadataOnlyQuery(parseSingleQueryValue(query.metadataOnly, 'metadataOnly'))
 
-  const where: {
-    normalizedLookupKey?: string
-    isCustom?: boolean
-  } = {}
+    const where: {
+      isCustom?: boolean
+    } = {}
 
-  if (normalizedLookupKey !== null) {
-    where.normalizedLookupKey = normalizedLookupKey
-  }
-
-  if (isCustom !== null) {
-    where.isCustom = isCustom
-  }
-
-  const entries = await prisma.teachersDictionary.findMany({
-    where: Object.keys(where).length > 0 ? where : undefined,
-    orderBy: [{ normalizedLookupKey: 'asc' }, { id: 'asc' }],
-    select: {
-      id: true,
-      canonicalName: true,
-      normalizedLookupKey: true,
-      isCustom: true
+    if (isCustom !== null) {
+      where.isCustom = isCustom
     }
-  })
 
-  return entries
-})
+    if (metadataOnly === true) {
+      const [count, aggregate] = await prisma.$transaction([
+        prisma.teachersDictionary.count({
+          where: Object.keys(where).length > 0 ? where : undefined
+        }),
+        prisma.teachersDictionary.aggregate({
+          where: Object.keys(where).length > 0 ? where : undefined,
+          _max: {
+            updatedAt: true
+          }
+        })
+      ])
+
+      return {
+        count,
+        lastUpdatedAt: aggregate._max.updatedAt?.toISOString() ?? null
+      }
+    }
+
+    const entries = await prisma.teachersDictionary.findMany({
+      where: Object.keys(where).length > 0 ? where : undefined,
+      orderBy: [{ normalizedLookupKey: 'asc' }, { id: 'asc' }],
+      select: {
+        id: true,
+        canonicalName: true,
+        normalizedLookupKey: true,
+        isCustom: true
+      }
+    })
+
+    return entries
+  }
+)

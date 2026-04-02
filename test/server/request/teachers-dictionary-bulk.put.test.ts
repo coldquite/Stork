@@ -212,6 +212,7 @@ describe('PUT /api/teachers-dictionary/bulk (integration)', () => {
     })
     const firstStoredMarekEntry = await findEntryByLookupKey(MAREK_LOOKUP_KEY)
     expect(firstStoredMarekEntry).toBeTruthy()
+    expect(firstStoredMarekEntry?.updatedAt).toBeInstanceOf(Date)
 
     const secondPayload: UpsertEntry[] = [
       {
@@ -238,6 +239,10 @@ describe('PUT /api/teachers-dictionary/bulk (integration)', () => {
       normalizedLookupKey: MAREK_LOOKUP_KEY,
       isCustom: true
     })
+    expect(secondStoredMarekEntry?.updatedAt).toBeInstanceOf(Date)
+    expect(secondStoredMarekEntry?.updatedAt.getTime()).toBeGreaterThanOrEqual(
+      firstStoredMarekEntry?.updatedAt.getTime() ?? 0
+    )
   })
 
   it('returns mixed created and updated counters for one existing and one new key', async () => {

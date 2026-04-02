@@ -4,11 +4,6 @@ definePageMeta({
 })
 
 const { t } = useI18n()
-const pageDescriptionParagraphs = computed<string[]>(() => [
-  t('teachersDictionary.page.descriptionParagraph1'),
-  t('teachersDictionary.page.descriptionParagraph2'),
-  t('teachersDictionary.page.descriptionParagraph3')
-])
 </script>
 
 <template>
@@ -26,13 +21,25 @@ const pageDescriptionParagraphs = computed<string[]>(() => [
           </div>
         </div>
         <div class="space-y-3">
-          <p v-for="paragraph in pageDescriptionParagraphs" :key="paragraph" class="text-muted text-lg">
-            {{ paragraph }}
+          <p class="text-muted text-lg">
+            {{ t('teachersDictionary.page.descriptionParagraph1') }}
+          </p>
+          <p class="text-muted text-lg">
+            {{ t('teachersDictionary.page.descriptionParagraph2Lead') }}
+          </p>
+          <p class="text-highlighted text-lg font-semibold">
+            {{ t('teachersDictionary.page.descriptionParagraph2Bold') }}
           </p>
         </div>
       </header>
 
       <TeachersDictionaryCsvImportCard />
+      <p class="text-muted text-lg">
+        {{ t('teachersDictionary.page.descriptionParagraph3Lead') }}
+      </p>
+      <p class="text-highlighted text-lg font-semibold">
+        {{ t('teachersDictionary.page.descriptionParagraph3Bold') }}
+      </p>
       <TeachersDictionaryCustomEntriesCard />
     </section>
   </UContainer>
