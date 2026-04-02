@@ -50,6 +50,17 @@ describe('import utils', () => {
 
     const result = parseImportCsvText(csv)
     expect(result.ok).toBe(true)
+    if (!result.ok) {
+      throw new Error('Expected parse success')
+    }
+
+    expect(result.datasetKey).toBe('studentsCommittees')
+    expect(result.headers).toEqual(IMPORT_SCHEMAS.studentsCommittees)
+    expect(result.rows).toHaveLength(2)
+    expect(result.rows[0]?.[headers[0]!]).toBe('value-1')
+    expect(result.rows[1]?.[headers[0]!]).toBe('short-1')
+    expect(result.rows[1]?.[headers[19]!]).toBe('short-20')
+    expect(result.rows[1]?.[headers[20]!]).toBe('')
   })
 
   it('returns schema_mismatch for unknown structure', () => {
