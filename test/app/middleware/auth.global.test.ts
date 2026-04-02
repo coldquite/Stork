@@ -5,7 +5,8 @@ const { navigateToMock, authStoreMock } = vi.hoisted(() => ({
   navigateToMock: vi.fn(),
   authStoreMock: {
     isSessionInitialized: false,
-    isAuthenticated: false
+    isAuthenticated: false,
+    fetchSession: vi.fn()
   }
 }))
 
@@ -26,23 +27,31 @@ describe('auth.global middleware', () => {
   beforeEach(() => {
     authStoreMock.isSessionInitialized = false
     authStoreMock.isAuthenticated = false
+    authStoreMock.fetchSession.mockReset()
+    authStoreMock.fetchSession.mockImplementation(async () => {
+      authStoreMock.isSessionInitialized = true
+    })
     navigateToMock.mockReset()
     navigateToMock.mockReturnValue('redirect')
   })
 
-  it('skips redirects while session is not initialized yet', async () => {
+  it('initializes session before evaluating redirect rules', async () => {
     const result = await runMiddleware('/editor')
 
-    expect(result).toBeUndefined()
-    expect(navigateToMock).not.toHaveBeenCalled()
+    expect(authStoreMock.fetchSession).toHaveBeenCalledTimes(1)
+    expect(navigateToMock).toHaveBeenCalledWith('/login', { replace: true })
+    expect(result).toBe('redirect')
   })
 
   it('redirects authenticated users away from login page', async () => {
-    authStoreMock.isSessionInitialized = true
-    authStoreMock.isAuthenticated = true
+    authStoreMock.fetchSession.mockImplementation(async () => {
+      authStoreMock.isSessionInitialized = true
+      authStoreMock.isAuthenticated = true
+    })
 
     const result = await runMiddleware('/login')
 
+    expect(authStoreMock.fetchSession).toHaveBeenCalledTimes(1)
     expect(navigateToMock).toHaveBeenCalledWith('/', { replace: true })
     expect(result).toBe('redirect')
   })
@@ -53,6 +62,7 @@ describe('auth.global middleware', () => {
 
     const result = await runMiddleware('/editor')
 
+    expect(authStoreMock.fetchSession).not.toHaveBeenCalled()
     expect(navigateToMock).toHaveBeenCalledWith('/login', { replace: true })
     expect(result).toBe('redirect')
   })
@@ -63,6 +73,7 @@ describe('auth.global middleware', () => {
 
     const result = await runMiddleware('/')
 
+    expect(authStoreMock.fetchSession).not.toHaveBeenCalled()
     expect(result).toBeUndefined()
     expect(navigateToMock).not.toHaveBeenCalled()
   })
@@ -73,16 +84,18 @@ describe('auth.global middleware', () => {
 
     const result = await runMiddleware('/login')
 
+    expect(authStoreMock.fetchSession).not.toHaveBeenCalled()
     expect(result).toBeUndefined()
     expect(navigateToMock).not.toHaveBeenCalled()
   })
 
-  it('does not redirect from login route while session is still uninitialized', async () => {
+  it('allows unauthenticated users to stay on login route after session fetch', async () => {
     authStoreMock.isSessionInitialized = false
-    authStoreMock.isAuthenticated = true
+    authStoreMock.isAuthenticated = false
 
     const result = await runMiddleware('/login')
 
+    expect(authStoreMock.fetchSession).toHaveBeenCalledTimes(1)
     expect(result).toBeUndefined()
     expect(navigateToMock).not.toHaveBeenCalled()
   })

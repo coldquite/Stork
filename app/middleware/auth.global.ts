@@ -1,11 +1,11 @@
 import { useAuthStore } from '~/stores/auth'
 import { HOME_PATH, LOGIN_PATH } from '~/constants/routes'
 
-export default defineNuxtRouteMiddleware((to) => {
+export default defineNuxtRouteMiddleware(async (to) => {
   const authStore = useAuthStore()
 
   if (!authStore.isSessionInitialized) {
-    return
+    await authStore.fetchSession()
   }
 
   if (to.path === LOGIN_PATH && authStore.isAuthenticated) {
