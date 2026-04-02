@@ -4,6 +4,8 @@ import { buildLicensesReport, generatedLicensesOutputPath } from './non_dependec
 const shouldDisableSentrySourceMapsUpload =
   process.env.CI === 'true' && process.env.SENTRY_DISABLE_SOURCEMAPS_UPLOAD === '1'
 const isProduction = process.env.NODE_ENV === 'production'
+const defaultPublicBaseUrl = isProduction ? 'https://cap.ksi.fit.cvut.cz' : 'http://localhost:3000'
+const defaultFitAuthRedirectUri = `${defaultPublicBaseUrl.replace(/\/$/, '')}/api/auth/callback`
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -38,9 +40,9 @@ export default defineNuxtConfig({
     authOAuthStateMaxAgeSeconds: 600, // 10m
     public: {
       i18n: {
-        baseUrl: 'http://localhost:3000'
+        baseUrl: defaultPublicBaseUrl
       },
-      fitAuthRedirectUri: 'http://localhost:3000/api/auth/callback',
+      fitAuthRedirectUri: process.env.NUXT_PUBLIC_FIT_AUTH_REDIRECT_URI ?? defaultFitAuthRedirectUri,
       fitAuthAuthorizeUrl: 'https://auth.fit.cvut.cz/oauth/authorize',
       fitAuthScope: 'cvut:umapi:read' // Minimal required scope; recommended by ICT CVUT for this application
     }
@@ -49,7 +51,10 @@ export default defineNuxtConfig({
   routeRules: {
     '/**': {
       headers: {
-        'Document-Policy': 'js-profiling'
+        // Keep JS profiling available for browser-side performance diagnostics
+        'Document-Policy': 'js-profiling',
+        // Enforce HTTPS in browsers for one year after the first secure visit
+        ...(isProduction ? { 'Strict-Transport-Security': 'max-age=31536000' } : {})
       }
     }
   },
@@ -113,7 +118,7 @@ export default defineNuxtConfig({
     strategy: 'no_prefix',
     defaultLocale: 'cs',
     detectBrowserLanguage: false,
-    baseUrl: '',
+    baseUrl: defaultPublicBaseUrl,
     langDir: 'locales',
     locales: [{ code: 'cs', name: 'Čeština', language: 'cs-CZ', file: 'cs.json' }]
   },

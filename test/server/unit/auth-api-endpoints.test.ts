@@ -119,7 +119,7 @@ function createRuntimeConfig(overrides: Partial<Record<string, unknown>> = {}): 
     authSessionAbsoluteMaxAgeSeconds: 86400,
     authOAuthStateMaxAgeSeconds: 600,
     public: {
-      fitAuthRedirectUri: 'http://localhost:3000/api/auth/callback',
+      fitAuthRedirectUri: 'https://cap.ksi.fit.cvut.cz/api/auth/callback',
       fitAuthAuthorizeUrl: 'https://auth.fit.cvut.cz/oauth/authorize',
       fitAuthScope: 'cvut:umapi:read'
     },
@@ -265,7 +265,7 @@ describe('auth API endpoints', () => {
       const authorizeUrl = new URL(redirectUrl as string)
       expect(authorizeUrl.origin + authorizeUrl.pathname).toBe('https://auth.fit.cvut.cz/oauth/authorize')
       expect(authorizeUrl.searchParams.get('client_id')).toBe('fit-client')
-      expect(authorizeUrl.searchParams.get('redirect_uri')).toBe('http://localhost:3000/api/auth/callback')
+      expect(authorizeUrl.searchParams.get('redirect_uri')).toBe('https://cap.ksi.fit.cvut.cz/api/auth/callback')
       expect(authorizeUrl.searchParams.get('response_type')).toBe('code')
       expect(authorizeUrl.searchParams.get('scope')).toBe('cvut:umapi:read')
       expect(authorizeUrl.searchParams.get('state')).toBe(stateValue)
