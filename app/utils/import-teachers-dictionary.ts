@@ -10,18 +10,13 @@
  *
  * What it does:
  * - Clones import payload to avoid mutating the original upload data
- * - Collects seed entries from students-stork payload (STUDENTS_Stork_DICTIONARY_SOURCE_COLUMNS) and prepares dictionary upserts with `isCustom: false`
- *   (This step allows to extend the dictionary as a side effect of importing, as such column already contains properly formatted values)
  * - Builds an in-memory lookup map from dictionary API response
  * - Applies dictionary resolution to Students Committees fields (STUDENTS_COMMITTEES_DICTIONARY_TARGET_COLUMNS), rewriting row values to properly formatted values
  * - Collects unresolved names (unique by lookup key) so UI can ask the user once and store manual corrections
  * - Reuses one normalization pipeline for CSV values and manual user input
  */
 
-import type {
-  GetTeachersDictionaryResponseDto,
-  UpsertTeachersDictionaryEntryDto
-} from '#shared/types/teachers-dictionary'
+import type { GetTeachersDictionaryResponseDto } from '#shared/types/teachers-dictionary'
 import { buildTeachersDictionaryLookupKey, normalizeTeachersDictionaryName } from '#shared/utils/teachers-dictionary'
 import type { ImportCsvRow, ImportPayload, PreparedImportPayload } from '~/types/import'
 
@@ -44,13 +39,6 @@ export type PrepareImportPayloadForMappingResult =
 
 const IMPORT_LEVEL_KEYS: readonly ImportPayloadLevel[] = ['bachelor', 'master']
 
-export const STUDENTS_Stork_DICTIONARY_SOURCE_COLUMNS = [
-  'VŠKP-typ A: Vedoucí práce 1',
-  'VŠKP-typ A: Vedoucí práce 2',
-  'VŠKP-typ A: Oponent práce 1',
-  'VŠKP-typ A: Oponent práce 2'
-] as const
-
 export const STUDENTS_COMMITTEES_DICTIONARY_TARGET_COLUMNS = [
   'VŠKP-typ A: Vedoucí práce 1',
   'VŠKP-typ A: Vedoucí práce 2',
@@ -64,9 +52,7 @@ export const STUDENTS_COMMITTEES_DICTIONARY_TARGET_COLUMNS = [
 ] as const
 
 // Flattens rows from all available payload levels (bachelor/master) into one list
-function collectRowsFromPayloadLevelMap(
-  datasets: ImportPayload['studentsStork'] | ImportPayload['studentsCommittees']
-): ImportCsvRow[] {
+function collectRowsFromPayloadLevelMap(datasets: ImportPayload['studentsCommittees']): ImportCsvRow[] {
   const rows: ImportCsvRow[] = []
 
   for (const levelKey of IMPORT_LEVEL_KEYS) {
@@ -146,32 +132,6 @@ export function cloneImportPayload(payload: ImportPayload): ImportPayload {
         : undefined
     }
   }
-}
-
-// Extracts supervisor/opponent names from Students Stork rows, normalizes them, and returns unique dictionary upsert entries
-// !!! Side effect: rewrites source row cells to canonical name form
-export function collectTeachersDictionarySeedEntries(payload: ImportPayload): UpsertTeachersDictionaryEntryDto[] {
-  const entriesByLookupKey = new Map<string, UpsertTeachersDictionaryEntryDto>()
-  const studentsStorkRows = collectRowsFromPayloadLevelMap(payload.studentsStork)
-
-  for (const row of studentsStorkRows) {
-    for (const column of STUDENTS_Stork_DICTIONARY_SOURCE_COLUMNS) {
-      const value = normalizeTeacherValueForLookup(row[column] ?? '')
-      if (!value) {
-        row[column] = ''
-        continue
-      }
-
-      row[column] = value.canonicalName
-
-      entriesByLookupKey.set(value.lookupKey, {
-        canonicalName: value.canonicalName,
-        isCustom: false
-      })
-    }
-  }
-
-  return Array.from(entriesByLookupKey.values())
 }
 
 export function createTeachersDictionaryLookupMap(entries: GetTeachersDictionaryResponseDto): Map<string, string> {

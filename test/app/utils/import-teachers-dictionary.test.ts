@@ -5,7 +5,6 @@ import type { ImportPayload } from '~/types/import'
 import {
   applyTeachersDictionaryToStudentsCommittees,
   cloneImportPayload,
-  collectTeachersDictionarySeedEntries,
   createTeachersDictionaryLookupMap,
   prepareImportPayloadForMapping
 } from '~/utils/import-teachers-dictionary'
@@ -111,27 +110,6 @@ describe('import-teachers-dictionary utils', () => {
     expect(payload.studentsCommittees.bachelor!.rows[0]!['Komise - předseda']).toBe('Předseda Petr, doc.')
   })
 
-  it('collectTeachersDictionarySeedEntries deduplicates by lookup key and normalizes source rows in-place', () => {
-    const payload = createImportPayload()
-
-    const seedEntries = collectTeachersDictionarySeedEntries(payload)
-    const seedNames = seedEntries.map((entry) => entry.canonicalName)
-    const janNovakLookupKey = buildTeachersDictionaryLookupKey('Ing. Jan Novák')
-
-    expect(seedNames).toContain('Mgr. Eva Svobodová Ph.D.')
-    expect(seedNames).toContain('doc. Petra Karásková')
-    expect(seedNames).toContain('Ing. Roman Černý')
-
-    const janNovakEntries = seedEntries.filter((entry) => {
-      return buildTeachersDictionaryLookupKey(entry.canonicalName) === janNovakLookupKey
-    })
-    expect(janNovakEntries).toHaveLength(1)
-    expect(seedEntries.every((entry) => entry.isCustom === false)).toBe(true)
-
-    expect(payload.studentsStork.bachelor!.rows[0]!['VŠKP-typ A: Vedoucí práce 1']).toBe('Ing. Jan Novák')
-    expect(payload.studentsStork.bachelor!.rows[1]!['VŠKP-typ A: Oponent práce 1']).toBe('')
-  })
-
   it('createTeachersDictionaryLookupMap ignores invalid rows and keeps last canonical value for duplicate lookup keys', () => {
     const duplicateLookupKey = buildTeachersDictionaryLookupKey('Ing. Jan Novák')
     const dictionaryEntries: GetTeachersDictionaryResponseDto = [
@@ -227,17 +205,16 @@ describe('import-teachers-dictionary utils', () => {
     )
   })
 
-  it('seed + lookup + apply flow resolves all target columns when dictionary contains all needed canonical names', () => {
+  it('lookup + apply flow resolves all target columns when dictionary contains all needed canonical names', () => {
     const payload = createImportPayload()
-    const seedEntries = collectTeachersDictionarySeedEntries(payload)
 
     const dictionaryEntries = [
-      ...seedEntries.map((entry, index) => ({
-        id: `seed-${index + 1}`,
-        canonicalName: entry.canonicalName,
-        normalizedLookupKey: buildTeachersDictionaryLookupKey(entry.canonicalName),
-        isCustom: entry.isCustom
-      })),
+      ...createDictionaryEntries([
+        'Ing. Jan Novák',
+        'Mgr. Eva Svobodová Ph.D.',
+        'doc. Petra Karásková',
+        'Ing. Roman Černý'
+      ]),
       ...createDictionaryEntries(['Neznámý Petr Ing.', 'doc. Petr Předseda'])
     ]
 
@@ -252,14 +229,13 @@ describe('import-teachers-dictionary utils', () => {
 
   it('prepareImportPayloadForMapping returns prepared payload after full dictionary resolution', () => {
     const payload = createImportPayload()
-    const seedEntries = collectTeachersDictionarySeedEntries(payload)
     const dictionaryEntries = [
-      ...seedEntries.map((entry, index) => ({
-        id: `seed-${index + 1}`,
-        canonicalName: entry.canonicalName,
-        normalizedLookupKey: buildTeachersDictionaryLookupKey(entry.canonicalName),
-        isCustom: entry.isCustom
-      })),
+      ...createDictionaryEntries([
+        'Ing. Jan Novák',
+        'Mgr. Eva Svobodová Ph.D.',
+        'doc. Petra Karásková',
+        'Ing. Roman Černý'
+      ]),
       ...createDictionaryEntries(['Neznámý Petr Ing.', 'doc. Petr Předseda'])
     ]
     const dictionaryLookupMap = createTeachersDictionaryLookupMap(dictionaryEntries)

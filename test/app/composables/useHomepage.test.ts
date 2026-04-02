@@ -274,38 +274,8 @@ describe('useHomepage submitCreateScheduleImport', () => {
     expect(homepage.isCreatingNewSchedule.value).toBe(false)
   })
 
-  it('opens import mapping error with stage=seed when teachers dictionary seed request fails', async () => {
-    requestFetchMock.mockImplementation(async (url: string) => {
-      if (url.startsWith('/api/teachers-dictionary/bulk')) {
-        throw new Error('seed failed')
-      }
-
-      throw new Error(`Unexpected request URL: ${url}`)
-    })
-
-    const { useHomepage } = await import('~/composables/homepage/useHomepage')
-    const homepage = useHomepage()
-
-    homepage.isCreateScheduleDialogOpen.value = true
-    homepage.newScheduleNameInput.value = 'SZZ plán'
-
-    await homepage.submitCreateScheduleImport({
-      payload: createImportPayloadWithUnresolvedTeacher(),
-      szzType: 'BACHELOR'
-    })
-
-    expect(mapImportPayloadToDraftSourceMock).not.toHaveBeenCalled()
-    expect(homepage.isImportMappingErrorDialogOpen.value).toBe(true)
-    expect(homepage.importMappingError.value?.code).toBe('TEACHERS_DICTIONARY_REQUEST_FAILED')
-    expect(homepage.importMappingError.value?.context.stage).toBe('seed')
-  })
-
   it('opens import mapping error with stage=fetch when teachers dictionary fetch request fails', async () => {
     requestFetchMock.mockImplementation(async (url: string) => {
-      if (url.startsWith('/api/teachers-dictionary/bulk')) {
-        return { processed: 1, created: 1, updated: 0 }
-      }
-
       if (url === '/api/teachers-dictionary') {
         throw new Error('fetch failed')
       }
@@ -351,10 +321,6 @@ describe('useHomepage submitCreateScheduleImport', () => {
 
   it('blocks teachers dictionary resolution submit when canonical name contains at least two commas', async () => {
     requestFetchMock.mockImplementation(async (url: string) => {
-      if (url.startsWith('/api/teachers-dictionary/bulk')) {
-        return { processed: 1, created: 1, updated: 0 }
-      }
-
       if (url === '/api/teachers-dictionary') {
         return [
           {
@@ -394,8 +360,8 @@ describe('useHomepage submitCreateScheduleImport', () => {
     await homepage.submitTeachersDictionaryResolution()
 
     expect(homepage.teachersDictionaryResolutionFieldErrors.value[firstEntry.lookupKey]).toBeTruthy()
-    // Only the initial import seed/fetch requests should happen.
-    expect(requestFetchMock).toHaveBeenCalledTimes(2)
+    // Only the initial dictionary fetch request should happen.
+    expect(requestFetchMock).toHaveBeenCalledTimes(1)
     expect(mapImportPayloadToDraftSourceMock).not.toHaveBeenCalled()
   })
 
@@ -452,10 +418,10 @@ describe('useHomepage submitCreateScheduleImport', () => {
 
     await homepage.submitTeachersDictionaryResolution()
 
-    // seed bulk + fetch + custom bulk
-    expect(requestFetchMock).toHaveBeenCalledTimes(3)
-    expect(requestFetchMock.mock.calls[2]?.[0]).toContain('/api/teachers-dictionary/bulk')
-    expect(requestFetchMock.mock.calls[2]?.[1]?.body).toEqual([
+    // fetch + custom bulk
+    expect(requestFetchMock).toHaveBeenCalledTimes(2)
+    expect(requestFetchMock.mock.calls[1]?.[0]).toContain('/api/teachers-dictionary/bulk')
+    expect(requestFetchMock.mock.calls[1]?.[1]?.body).toEqual([
       {
         canonicalName: 'Ing. Petr Neznamy',
         isCustom: true

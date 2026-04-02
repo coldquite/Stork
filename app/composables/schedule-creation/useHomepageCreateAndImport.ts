@@ -7,14 +7,11 @@ import { mapImportPayloadToDraftSource } from '~/utils/import-mapper'
 import type { ImportMappingError } from '~/types/import-mapper'
 import {
   cloneImportPayload,
-  collectTeachersDictionarySeedEntries,
   createTeachersDictionaryLookupMap,
   prepareImportPayloadForMapping,
   type MissingTeachersDictionaryEntry
 } from '~/utils/import-teachers-dictionary'
 import { extractHttpErrorMessage } from '~/utils/http-error'
-
-type TeachersDictionaryRequestStage = 'seed' | 'fetch'
 
 const CREATE_IMPORT_WORKFLOW_STAGE = {
   IDLE: 'IDLE',
@@ -323,7 +320,7 @@ export function useHomepageCreateAndImport(options: UseHomepageCreateAndImportOp
     }
   }
 
-  function openTeachersDictionaryRequestError(stage: TeachersDictionaryRequestStage, error: unknown): void {
+  function openTeachersDictionaryRequestError(error: unknown): void {
     importMappingError.value = {
       code: 'TEACHERS_DICTIONARY_REQUEST_FAILED',
       datasetKey: 'studentsCommittees',
@@ -331,7 +328,7 @@ export function useHomepageCreateAndImport(options: UseHomepageCreateAndImportOp
       rowNumber: null,
       column: null,
       context: {
-        stage,
+        stage: 'fetch',
         message: extractHttpErrorMessage(error) ?? t('common.errors.unexpected')
       }
     }
@@ -514,25 +511,11 @@ export function useHomepageCreateAndImport(options: UseHomepageCreateAndImportOp
 
       const payload = cloneImportPayload(optionsForImport.payload)
       const requestFetch = useRequestFetch()
-      const seedEntries = collectTeachersDictionarySeedEntries(payload)
-      if (seedEntries.length > 0) {
-        try {
-          await requestFetch('/api/teachers-dictionary/bulk', {
-            method: 'PUT',
-            body: seedEntries
-          })
-        } catch (error: unknown) {
-          openTeachersDictionaryRequestError('seed', error)
-          setWorkflowStage(CREATE_IMPORT_WORKFLOW_STAGE.CREATE_DIALOG)
-          return
-        }
-      }
-
       let dictionaryEntries: GetTeachersDictionaryResponseDto
       try {
         dictionaryEntries = await requestFetch<GetTeachersDictionaryResponseDto>('/api/teachers-dictionary')
       } catch (error: unknown) {
-        openTeachersDictionaryRequestError('fetch', error)
+        openTeachersDictionaryRequestError(error)
         setWorkflowStage(CREATE_IMPORT_WORKFLOW_STAGE.CREATE_DIALOG)
         return
       }

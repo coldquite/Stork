@@ -6,7 +6,6 @@ import type { ImportPayload, ImportSzzType, PreparedImportPayload } from '~/type
 import {
   applyTeachersDictionaryToStudentsCommittees,
   cloneImportPayload,
-  collectTeachersDictionarySeedEntries,
   createTeachersDictionaryLookupMap
 } from '~/utils/import-teachers-dictionary'
 
@@ -185,18 +184,25 @@ function mapImportPayloadWithTeachersDictionary(options: {
   dictionaryCanonicalNames?: string[]
 }) {
   const defaultCommitteeTeacherNames = ['doc. Předseda', 'doc. Místopředseda', 'Člen 1', 'Člen 2', 'Člen 3']
-  const preparedPayload = cloneImportPayload(options.payload)
-  const seedEntries = collectTeachersDictionarySeedEntries(preparedPayload)
-
-  const dictionaryEntries = [
-    ...seedEntries.map((entry, index) => ({
-      id: `seed-${index + 1}`,
-      canonicalName: entry.canonicalName,
-      normalizedLookupKey: buildTeachersDictionaryLookupKey(entry.canonicalName),
-      isCustom: entry.isCustom
-    })),
-    ...toTeachersDictionaryEntries([...defaultCommitteeTeacherNames, ...(options.dictionaryCanonicalNames ?? [])])
+  const defaultStudentTeacherNames = [
+    'Ing. Vedoucí',
+    'Ing. Oponent',
+    'Ing. Matej Hulák',
+    'Ing. Miroslav Skrbek Ph.D.',
+    'Ing. Pavel Oponent',
+    'Mgr. Druhý Oponent Ph.D.',
+    'Ing. Michal Valenta Ph.D.',
+    'Ing. Marek Suchánek Ph.D. et, Ph.D.',
+    'Milan Kolar M.A.',
+    'Dr. rer. nat. Rodrigo Augusto Da Silva Alves'
   ]
+  const preparedPayload = cloneImportPayload(options.payload)
+
+  const dictionaryEntries = toTeachersDictionaryEntries([
+    ...defaultCommitteeTeacherNames,
+    ...defaultStudentTeacherNames,
+    ...(options.dictionaryCanonicalNames ?? [])
+  ])
 
   const dictionaryByLookupKey = createTeachersDictionaryLookupMap(dictionaryEntries)
   const unresolvedEntries = applyTeachersDictionaryToStudentsCommittees(preparedPayload, dictionaryByLookupKey)
