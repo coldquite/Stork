@@ -43,10 +43,7 @@ import type {
   ScheduleDraftItem
 } from '~/types/schedule-draft'
 import { DEFAULT_NEW_SCHEDULE_NAME_PREFIX, DEFAULT_SCHEDULE_AUTOSAVE_POLICY } from '~/constants/schedule-draft'
-
-function createLocalId(): string {
-  return crypto.randomUUID()
-}
+import { createLocalId } from '~/utils/id'
 
 function deepClone<T>(value: T): T {
   return structuredClone(toRaw(value))

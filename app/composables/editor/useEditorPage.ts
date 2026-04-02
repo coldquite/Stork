@@ -4,6 +4,7 @@ import { DEFAULT_COMMITTEE_START_MINUTE, EDITOR_DRAFT_NAME_MAX_LENGTH } from '~/
 import { useScheduleDraftStore } from '~/stores/schedule-draft'
 import type { CommitteeTabItem, StudentRow } from '~/types/editor'
 import type { ScheduleDraftCommittee, ScheduleDraftItem } from '~/types/schedule-draft'
+import { createLocalId } from '~/utils/id'
 
 function isStudentItem(item: ScheduleDraftItem): item is ScheduleDraftItem & { type: 'STUDENT' } {
   return item.type === 'STUDENT' && item.student !== null
@@ -380,7 +381,7 @@ export function useEditorPage() {
 
     const lastCommittee = resolveLastCommittee()
     const nextCommittee: ScheduleDraftCommittee = {
-      localId: crypto.randomUUID(),
+      localId: createLocalId(),
       name: normalizedName,
       startMinute: lastCommittee?.startMinute ?? DEFAULT_COMMITTEE_START_MINUTE,
       date: lastCommittee?.date ?? new Date().toISOString(),
