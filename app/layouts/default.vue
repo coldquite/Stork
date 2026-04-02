@@ -87,7 +87,7 @@ async function confirmLogout(): Promise<void> {
 </script>
 
 <template>
-  <div>
+  <div class="flex min-h-dvh min-h-screen flex-col">
     <UHeader class="border-b-2" :ui="headerUi">
       <template #left>
         <div class="flex items-center gap-44">
@@ -176,7 +176,9 @@ async function confirmLogout(): Promise<void> {
           </UButton>
         </div>
 
-        <UColorModeButton class="cursor-pointer" />
+        <ClientOnly>
+          <UColorModeButton class="cursor-pointer" />
+        </ClientOnly>
       </template>
     </UHeader>
 
@@ -261,13 +263,13 @@ async function confirmLogout(): Promise<void> {
       @update-canonical-name="updateTeachersDictionaryResolutionEntry"
     />
 
-    <div class="relative">
+    <div class="relative flex-1">
       <CommonHeroBackground />
       <UMain class="relative z-10">
         <slot />
       </UMain>
     </div>
 
-    <LayoutAppSiteFooter class="mt-12" />
+    <LayoutAppSiteFooter class="mt-auto" />
   </div>
 </template>

@@ -1,5 +1,5 @@
 <template>
-  <div class="flex min-h-dvh flex-col">
+  <div class="flex min-h-dvh min-h-screen flex-col">
     <div class="relative flex-1">
       <CommonHeroBackground />
       <main class="relative z-10">
