@@ -125,9 +125,23 @@ describe('POST /api/time-schedules (integration)', () => {
   })
 
   it('returns 401 without authentication cookie', async () => {
-    const response = await postTimeSchedule(createPostPayload('UNAUTH'))
+    const payload = createPostPayload('UNAUTH')
+    const schedulesBefore = await prisma.timeSchedule.count({
+      where: {
+        name: payload.name
+      }
+    })
+
+    const response = await postTimeSchedule(payload)
+    const schedulesAfter = await prisma.timeSchedule.count({
+      where: {
+        name: payload.name
+      }
+    })
 
     expect(response.status).toBe(401)
+    expect(schedulesBefore).toBe(0)
+    expect(schedulesAfter).toBe(0)
   })
 
   it('creates schedule and returns metadata; persisted tree is stored in database', async () => {

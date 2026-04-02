@@ -150,9 +150,24 @@ describe('GET /api/time-schedules (integration)', () => {
   })
 
   it('returns 401 without authentication cookie', async () => {
+    const fixtureId = await createScheduleInDb({
+      name: buildScheduleName('Unauthorized fixture'),
+      type: 'MANUAL',
+      committees: []
+    })
+
     const response = await fetch(apiUrl('/api/time-schedules'))
+    const persistedFixture = await prisma.timeSchedule.findUnique({
+      where: {
+        id: fixtureId
+      },
+      select: {
+        id: true
+      }
+    })
 
     expect(response.status).toBe(401)
+    expect(persistedFixture?.id).toBe(fixtureId)
   })
 
   it('returns schedules with aggregated counts from database', async () => {

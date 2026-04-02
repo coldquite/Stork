@@ -88,13 +88,17 @@ describe('PUT /api/teachers-dictionary/bulk (integration)', () => {
   })
 
   it('returns 401 without authentication cookie', async () => {
+    const entriesBefore = await countEntriesByLookupKey(MAREK_LOOKUP_KEY)
     const response = await putTeachersDictionaryBulk([
       {
         canonicalName: ` ${MAREK_CANONICAL_NAME} `
       }
     ])
+    const entriesAfter = await countEntriesByLookupKey(MAREK_LOOKUP_KEY)
 
     expect(response.status).toBe(401)
+    expect(entriesBefore).toBe(0)
+    expect(entriesAfter).toBe(0)
   })
 
   it('returns 400 for non-array payload and writes nothing', async () => {
