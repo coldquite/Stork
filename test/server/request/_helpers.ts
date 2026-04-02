@@ -20,10 +20,6 @@ export function createAuthCookie(username = 'integration-tester'): string {
   return `${AUTH_SESSION_COOKIE_NAME}=${token}`
 }
 
-export function createUniqueSuffix(): string {
-  return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
-}
-
 export function apiUrl(path: string): string {
   return new URL(path, API_BASE_URL).toString()
 }
