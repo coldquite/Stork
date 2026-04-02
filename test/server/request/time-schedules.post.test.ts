@@ -267,18 +267,22 @@ describe('POST /api/time-schedules (integration)', () => {
   it.each([
     {
       name: 'payload is not an object',
-      mutate: () => null
+      expectedIssueFragment: 'expected object',
+      mutate: (_payload: PostTimeScheduleRequestDto) => null
     },
     {
       name: 'payload has unknown top-level key',
+      expectedIssueFragment: 'unknownTopLevel',
       mutate: (payload: PostTimeScheduleRequestDto) => ({ ...payload, unknownTopLevel: true })
     },
     {
       name: 'payload contains forbidden createdAt',
+      expectedIssueFragment: 'createdAt',
       mutate: (payload: PostTimeScheduleRequestDto) => ({ ...payload, createdAt: '2026-01-01T00:00:00.000Z' })
     },
     {
       name: 'payload contains forbidden nested itemId',
+      expectedIssueFragment: 'itemId',
       mutate: (payload: PostTimeScheduleRequestDto) => {
         const firstCommittee = payload.committees[0] as PostCommitteeDraft
         const pauseItem = firstCommittee.items[1] as Extract<PostCommitteeItemDraft, { type: 'PAUSE' }>
@@ -304,30 +308,37 @@ describe('POST /api/time-schedules (integration)', () => {
     },
     {
       name: 'name has invalid type',
+      expectedIssueFragment: 'payload.name',
       mutate: (payload: PostTimeScheduleRequestDto) => ({ ...payload, name: 123 })
     },
     {
       name: 'name is null',
+      expectedIssueFragment: 'payload.name',
       mutate: (payload: PostTimeScheduleRequestDto) => ({ ...payload, name: null })
     },
     {
       name: 'name is empty string',
+      expectedIssueFragment: 'payload.name',
       mutate: (payload: PostTimeScheduleRequestDto) => ({ ...payload, name: '' })
     },
     {
       name: 'name contains only whitespace',
+      expectedIssueFragment: 'payload.name',
       mutate: (payload: PostTimeScheduleRequestDto) => ({ ...payload, name: '   ' })
     },
     {
       name: 'type has unsupported enum value',
+      expectedIssueFragment: 'payload.type',
       mutate: (payload: PostTimeScheduleRequestDto) => ({ ...payload, type: 'INVALID_TYPE' })
     },
     {
       name: 'committees is not an array',
+      expectedIssueFragment: 'payload.committees',
       mutate: (payload: PostTimeScheduleRequestDto) => ({ ...payload, committees: {} })
     },
     {
       name: 'committee has unknown key',
+      expectedIssueFragment: 'unknownCommitteeField',
       mutate: (payload: PostTimeScheduleRequestDto) => {
         const firstCommittee = payload.committees[0] as PostCommitteeDraft
 
@@ -339,6 +350,7 @@ describe('POST /api/time-schedules (integration)', () => {
     },
     {
       name: 'committee date is invalid',
+      expectedIssueFragment: 'payload.committees[0].date',
       mutate: (payload: PostTimeScheduleRequestDto) => {
         const firstCommittee = payload.committees[0] as PostCommitteeDraft
 
@@ -350,6 +362,7 @@ describe('POST /api/time-schedules (integration)', () => {
     },
     {
       name: 'committee room has invalid type',
+      expectedIssueFragment: 'payload.committees[0].room',
       mutate: (payload: PostTimeScheduleRequestDto) => {
         const firstCommittee = payload.committees[0] as PostCommitteeDraft
 
@@ -361,6 +374,7 @@ describe('POST /api/time-schedules (integration)', () => {
     },
     {
       name: 'committee invigilators is not an array',
+      expectedIssueFragment: 'payload.committees[0].invigilators',
       mutate: (payload: PostTimeScheduleRequestDto) => {
         const firstCommittee = payload.committees[0] as PostCommitteeDraft
 
@@ -372,6 +386,7 @@ describe('POST /api/time-schedules (integration)', () => {
     },
     {
       name: 'committee invigilator entry is not a string',
+      expectedIssueFragment: 'invigilators[1]',
       mutate: (payload: PostTimeScheduleRequestDto) => {
         const firstCommittee = payload.committees[0] as PostCommitteeDraft
 
@@ -383,6 +398,7 @@ describe('POST /api/time-schedules (integration)', () => {
     },
     {
       name: 'committee items is not an array',
+      expectedIssueFragment: 'payload.committees[0].items',
       mutate: (payload: PostTimeScheduleRequestDto) => {
         const firstCommittee = payload.committees[0] as PostCommitteeDraft
 
@@ -394,6 +410,7 @@ describe('POST /api/time-schedules (integration)', () => {
     },
     {
       name: 'committee item has unknown key',
+      expectedIssueFragment: 'unknownItemField',
       mutate: (payload: PostTimeScheduleRequestDto) => {
         const firstCommittee = payload.committees[0] as PostCommitteeDraft
         const firstItem = firstCommittee.items[0] as PostCommitteeItemDraft
@@ -411,6 +428,7 @@ describe('POST /api/time-schedules (integration)', () => {
     },
     {
       name: 'committee item type is invalid',
+      expectedIssueFragment: 'payload.committees[0].items[0].type',
       mutate: (payload: PostTimeScheduleRequestDto) => {
         const firstCommittee = payload.committees[0] as PostCommitteeDraft
         const firstItem = firstCommittee.items[0] as PostCommitteeItemDraft
@@ -428,6 +446,7 @@ describe('POST /api/time-schedules (integration)', () => {
     },
     {
       name: 'committee item position is not integer',
+      expectedIssueFragment: 'payload.committees[0].items[0].position',
       mutate: (payload: PostTimeScheduleRequestDto) => {
         const firstCommittee = payload.committees[0] as PostCommitteeDraft
         const firstItem = firstCommittee.items[0] as PostCommitteeItemDraft
@@ -445,6 +464,7 @@ describe('POST /api/time-schedules (integration)', () => {
     },
     {
       name: 'student item pause must be null',
+      expectedIssueFragment: 'payload.committees[0].items[0].pause',
       mutate: (payload: PostTimeScheduleRequestDto) => {
         const firstCommittee = payload.committees[0] as PostCommitteeDraft
         const studentItem = firstCommittee.items[0] as Extract<PostCommitteeItemDraft, { type: 'STUDENT' }>
@@ -470,6 +490,7 @@ describe('POST /api/time-schedules (integration)', () => {
     },
     {
       name: 'pause item student must be null',
+      expectedIssueFragment: 'payload.committees[0].items[0].student',
       mutate: (payload: PostTimeScheduleRequestDto) => {
         const firstCommittee = payload.committees[0] as PostCommitteeDraft
         const pauseItem = firstCommittee.items[1] as Extract<PostCommitteeItemDraft, { type: 'PAUSE' }>
@@ -495,6 +516,7 @@ describe('POST /api/time-schedules (integration)', () => {
     },
     {
       name: 'student thesisLanguage has invalid enum value',
+      expectedIssueFragment: 'thesisLanguage',
       mutate: (payload: PostTimeScheduleRequestDto) => {
         const firstCommittee = payload.committees[0] as PostCommitteeDraft
         const studentItem = firstCommittee.items[0] as Extract<PostCommitteeItemDraft, { type: 'STUDENT' }>
@@ -520,6 +542,7 @@ describe('POST /api/time-schedules (integration)', () => {
     },
     {
       name: 'student repeatType has invalid enum value',
+      expectedIssueFragment: 'repeatType',
       mutate: (payload: PostTimeScheduleRequestDto) => {
         const firstCommittee = payload.committees[0] as PostCommitteeDraft
         const studentItem = firstCommittee.items[0] as Extract<PostCommitteeItemDraft, { type: 'STUDENT' }>
@@ -545,6 +568,7 @@ describe('POST /api/time-schedules (integration)', () => {
     },
     {
       name: 'student prepareMinutes is not integer',
+      expectedIssueFragment: 'prepareMinutes',
       mutate: (payload: PostTimeScheduleRequestDto) => {
         const firstCommittee = payload.committees[0] as PostCommitteeDraft
         const studentItem = firstCommittee.items[0] as Extract<PostCommitteeItemDraft, { type: 'STUDENT' }>
@@ -570,6 +594,7 @@ describe('POST /api/time-schedules (integration)', () => {
     },
     {
       name: 'pause durationMinutes is not integer',
+      expectedIssueFragment: 'durationMinutes',
       mutate: (payload: PostTimeScheduleRequestDto) => {
         const firstCommittee = payload.committees[0] as PostCommitteeDraft
         const pauseItem = firstCommittee.items[1] as Extract<PostCommitteeItemDraft, { type: 'PAUSE' }>
@@ -593,14 +618,18 @@ describe('POST /api/time-schedules (integration)', () => {
         }
       }
     }
-  ])('returns 400 when $name', async ({ mutate }) => {
+  ])('returns 400 when $name', async ({ mutate, expectedIssueFragment }) => {
     const payload = createPostPayload('INVALID')
     const invalidPayload = mutate(payload)
+    const schedulesBefore = await prisma.timeSchedule.count()
 
     const response = await postTimeSchedule(invalidPayload, createAuthCookie())
     const statusMessage = await readErrorMessage(response)
+    const schedulesAfter = await prisma.timeSchedule.count()
 
     expect(response.status).toBe(400)
     expect(statusMessage).toContain('Invalid time schedule payload')
+    expect(statusMessage).toContain(expectedIssueFragment)
+    expect(schedulesAfter).toBe(schedulesBefore)
   })
 })
