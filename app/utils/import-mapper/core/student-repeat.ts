@@ -6,7 +6,10 @@ import type { SourceRow } from '~/utils/import-mapper/core/types'
 
 const VALID_FIRST_TERM_GRADES = new Set(['A', 'B', 'C', 'D', 'E', 'F'])
 
-function validateAndResolveFirstTermDate(studentsCommitteesRow: SourceRow): string | null {
+function validateAndResolveFirstTermResult(studentsCommitteesRow: SourceRow): {
+  firstTermDate: string | null
+  firstTermGrade: string | null
+} {
   const firstTermDate = readOptionalValue(studentsCommitteesRow, 'Předmět 1 - 1.term. datum')
   const firstTermGrade = readOptionalValue(studentsCommitteesRow, 'Předmět 1 - 1.term. hodnocení')
   const hasFirstTermDate = Boolean(firstTermDate)
@@ -25,11 +28,17 @@ function validateAndResolveFirstTermDate(studentsCommitteesRow: SourceRow): stri
   }
 
   if (!firstTermGrade) {
-    return firstTermDate
+    return {
+      firstTermDate,
+      firstTermGrade: null
+    }
   }
 
   if (VALID_FIRST_TERM_GRADES.has(firstTermGrade)) {
-    return firstTermDate
+    return {
+      firstTermDate,
+      firstTermGrade
+    }
   }
 
   throwMappingError('INVALID_FIRST_TERM_GRADE', studentsCommitteesRow, {
@@ -41,7 +50,7 @@ function validateAndResolveFirstTermDate(studentsCommitteesRow: SourceRow): stri
 }
 
 export function resolveStudentRepeatType(studentsCommitteesRow: SourceRow): PostStudentItemDto['repeatType'] {
-  const firstTermDate = validateAndResolveFirstTermDate(studentsCommitteesRow)
+  const { firstTermDate, firstTermGrade } = validateAndResolveFirstTermResult(studentsCommitteesRow)
 
   const thesisDefenseDate = readOptionalValue(studentsCommitteesRow, 'VŠKP-typ A: Datum obhajoby')
   const secondTermDate = readOptionalValue(studentsCommitteesRow, 'Předmět 1 - 2.term. datum')
@@ -56,25 +65,41 @@ export function resolveStudentRepeatType(studentsCommitteesRow: SourceRow): Post
     })
   }
 
-  if (!firstTermDate && !thesisDefenseDate) {
+  if (!firstTermGrade && !thesisDefenseDate) {
     return 'NONE'
   }
 
-  if (firstTermDate && !thesisDefenseDate) {
-    // The student repeats for sure, but import data cannot distinguish thesis-only vs both.
-    return 'UNKNOWN'
+  if (firstTermGrade === 'F' && !thesisDefenseDate) {
+    return 'BOTH'
   }
 
-  if (firstTermDate && thesisDefenseDate) {
+  if (firstTermGrade && firstTermGrade !== 'F' && !thesisDefenseDate) {
+    return 'THESIS_DEFENSE'
+  }
+
+  if (firstTermGrade === 'F' && thesisDefenseDate) {
     return 'ORAL_EXAM'
+  }
+
+  if (firstTermGrade && firstTermGrade !== 'F' && thesisDefenseDate) {
+    throwMappingError('INVALID_REPEAT_TYPE_STATE', studentsCommitteesRow, {
+      column: 'VŠKP-typ A: Datum obhajoby',
+      context: {
+        reason: 'first_term_passed_and_defense_exists',
+        thesisDefenseDate,
+        firstTermDate: firstTermDate ?? null,
+        firstTermGrade
+      }
+    })
   }
 
   throwMappingError('INVALID_REPEAT_TYPE_STATE', studentsCommitteesRow, {
     column: 'VŠKP-typ A: Datum obhajoby',
     context: {
-      reason: 'defense_date_without_first_term_date',
+      reason: 'defense_date_without_first_term_grade',
       thesisDefenseDate,
-      firstTermDate: firstTermDate ?? null
+      firstTermDate: firstTermDate ?? null,
+      firstTermGrade: firstTermGrade ?? null
     }
   })
 }

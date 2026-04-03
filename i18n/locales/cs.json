@@ -99,7 +99,8 @@
               "students_committees_row_without_matching_students_cap": "Ve studenti-komise je řádek bez odpovídajícího studenta v studenti-Stork.",
               "first_term_date_without_grade": "Je vyplněné datum 1. termínu, ale chybí hodnocení 1. termínu.",
               "first_term_grade_without_date": "Je vyplněné hodnocení 1. termínu, ale chybí datum 1. termínu.",
-              "defense_date_without_first_term_date": "Datum obhajoby je vyplněné, ale datum 1. termínu zkoušky chybí.",
+              "defense_date_without_first_term_grade": "Datum obhajoby je vyplněné, ale chybí hodnocení 1. termínu.",
+              "first_term_passed_and_defense_exists": "Hodnocení 1. termínu není F, ale datum obhajoby je vyplněné. Student už má SZZ splněnou.",
               "second_term_attempt_already_exists": "Je vyplněné datum 2. termínu, student už nemá nárok na další pokus SZZ."
             },
             "contextValues": {

@@ -272,7 +272,67 @@ describe('mapImportPayloadToDraftSource', () => {
     expect(result.error.column).toBe('VŠKP-typ A: Termín odevzdání práce')
   })
 
-  it('sets repeatType to UNKNOWN when first-term date exists and thesis defense date is empty', () => {
+  it('sets repeatType to BOTH when first-term grade is F and thesis defense date is empty', () => {
+    const payload = createValidPayload()
+    payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
+      'VŠKP-typ A: Datum obhajoby': '',
+      'Předmět 1 - 1.term. datum': '12.01.2025',
+      'Předmět 1 - 1.term. hodnocení': 'F',
+      'Předmět 1 - 2.term. datum': ''
+    })
+
+    const result = mapImportPayloadToDraftSource({
+      scheduleName: 'SZZ červen 2025',
+      szzType: 'BACHELOR',
+      payload
+    })
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) {
+      throw new Error('Expected mapping success')
+    }
+
+    const mappedFirstItem = result.draft.committees[0]?.items[0]
+    if (!mappedFirstItem || mappedFirstItem.type !== 'STUDENT') {
+      throw new Error('Expected mapped student item')
+    }
+
+    expect(mappedFirstItem.student.repeatType).toBe('BOTH')
+    expect(mappedFirstItem.student.prepareMinutes).toBe(45)
+    expect(mappedFirstItem.student.examMinutes).toBe(30)
+  })
+
+  it('sets repeatType to ORAL_EXAM when first-term grade is F and thesis defense date exists', () => {
+    const payload = createValidPayload()
+    payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
+      'VŠKP-typ A: Datum obhajoby': '11.02.2025',
+      'Předmět 1 - 1.term. datum': '12.01.2025',
+      'Předmět 1 - 1.term. hodnocení': 'F',
+      'Předmět 1 - 2.term. datum': ''
+    })
+
+    const result = mapImportPayloadToDraftSource({
+      scheduleName: 'SZZ červen 2025',
+      szzType: 'BACHELOR',
+      payload
+    })
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) {
+      throw new Error('Expected mapping success')
+    }
+
+    const mappedFirstItem = result.draft.committees[0]?.items[0]
+    if (!mappedFirstItem || mappedFirstItem.type !== 'STUDENT') {
+      throw new Error('Expected mapped student item')
+    }
+
+    expect(mappedFirstItem.student.repeatType).toBe('ORAL_EXAM')
+    expect(mappedFirstItem.student.prepareMinutes).toBe(45)
+    expect(mappedFirstItem.student.examMinutes).toBe(15)
+  })
+
+  it('sets repeatType to THESIS_DEFENSE when first-term grade is A-E and thesis defense date is empty', () => {
     const payload = createValidPayload()
     payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
       'VŠKP-typ A: Datum obhajoby': '',
@@ -297,37 +357,7 @@ describe('mapImportPayloadToDraftSource', () => {
       throw new Error('Expected mapped student item')
     }
 
-    expect(mappedFirstItem.student.repeatType).toBe('UNKNOWN')
-    expect(mappedFirstItem.student.prepareMinutes).toBe(45)
-    expect(mappedFirstItem.student.examMinutes).toBe(30)
-  })
-
-  it('sets repeatType to ORAL_EXAM when first-term date and thesis defense date both exist', () => {
-    const payload = createValidPayload()
-    payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
-      'VŠKP-typ A: Datum obhajoby': '11.02.2025',
-      'Předmět 1 - 1.term. datum': '12.01.2025',
-      'Předmět 1 - 1.term. hodnocení': 'D',
-      'Předmět 1 - 2.term. datum': ''
-    })
-
-    const result = mapImportPayloadToDraftSource({
-      scheduleName: 'SZZ červen 2025',
-      szzType: 'BACHELOR',
-      payload
-    })
-
-    expect(result.ok).toBe(true)
-    if (!result.ok) {
-      throw new Error('Expected mapping success')
-    }
-
-    const mappedFirstItem = result.draft.committees[0]?.items[0]
-    if (!mappedFirstItem || mappedFirstItem.type !== 'STUDENT') {
-      throw new Error('Expected mapped student item')
-    }
-
-    expect(mappedFirstItem.student.repeatType).toBe('ORAL_EXAM')
+    expect(mappedFirstItem.student.repeatType).toBe('THESIS_DEFENSE')
     expect(mappedFirstItem.student.prepareMinutes).toBe(45)
     expect(mappedFirstItem.student.examMinutes).toBe(15)
   })
@@ -475,7 +505,7 @@ describe('mapImportPayloadToDraftSource', () => {
       studentsCommittees: {
         'VŠKP-typ A: Datum obhajoby': '11.02.2025',
         'Předmět 1 - 1.term. datum': '12.01.2025',
-        'Předmět 1 - 1.term. hodnocení': 'C',
+        'Předmět 1 - 1.term. hodnocení': 'F',
         'Předmět 1 - 2.term. datum': ''
       }
     })
@@ -501,7 +531,38 @@ describe('mapImportPayloadToDraftSource', () => {
     expect(mappedFirstItem.student.examMinutes).toBe(15)
   })
 
-  it('uses master first-or-both duration when repeatType is UNKNOWN', () => {
+  it('uses master first-or-both duration when repeatType is BOTH', () => {
+    const payload = createValidMasterPayload({
+      studentsCommittees: {
+        'VŠKP-typ A: Datum obhajoby': '',
+        'Předmět 1 - 1.term. datum': '12.01.2025',
+        'Předmět 1 - 1.term. hodnocení': 'F',
+        'Předmět 1 - 2.term. datum': ''
+      }
+    })
+
+    const result = mapImportPayloadToDraftSource({
+      scheduleName: 'SZZ červen 2025',
+      szzType: 'MASTER',
+      payload
+    })
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) {
+      throw new Error('Expected mapping success')
+    }
+
+    const mappedFirstItem = result.draft.committees[0]?.items[0]
+    if (!mappedFirstItem || mappedFirstItem.type !== 'STUDENT') {
+      throw new Error('Expected mapped student item')
+    }
+
+    expect(mappedFirstItem.student.repeatType).toBe('BOTH')
+    expect(mappedFirstItem.student.prepareMinutes).toBe(45)
+    expect(mappedFirstItem.student.examMinutes).toBe(35)
+  })
+
+  it('uses master thesis-only duration when repeatType is THESIS_DEFENSE', () => {
     const payload = createValidMasterPayload({
       studentsCommittees: {
         'VŠKP-typ A: Datum obhajoby': '',
@@ -527,16 +588,17 @@ describe('mapImportPayloadToDraftSource', () => {
       throw new Error('Expected mapped student item')
     }
 
-    expect(mappedFirstItem.student.repeatType).toBe('UNKNOWN')
+    expect(mappedFirstItem.student.repeatType).toBe('THESIS_DEFENSE')
     expect(mappedFirstItem.student.prepareMinutes).toBe(45)
-    expect(mappedFirstItem.student.examMinutes).toBe(35)
+    expect(mappedFirstItem.student.examMinutes).toBe(20)
   })
 
-  it('fails when thesis defense date exists but first-term date is empty', () => {
+  it('fails when thesis defense date exists but first-term grade is empty', () => {
     const payload = createValidPayload()
     payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
       'VŠKP-typ A: Datum obhajoby': '11.02.2025',
       'Předmět 1 - 1.term. datum': '',
+      'Předmět 1 - 1.term. hodnocení': '',
       'Předmět 1 - 2.term. datum': ''
     })
 
@@ -553,7 +615,32 @@ describe('mapImportPayloadToDraftSource', () => {
 
     expect(result.error.code).toBe('INVALID_REPEAT_TYPE_STATE')
     expect(result.error.column).toBe('VŠKP-typ A: Datum obhajoby')
-    expect(result.error.context.reason).toBe('defense_date_without_first_term_date')
+    expect(result.error.context.reason).toBe('defense_date_without_first_term_grade')
+  })
+
+  it('fails when first-term grade is A-E and thesis defense date exists', () => {
+    const payload = createValidPayload()
+    payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
+      'VŠKP-typ A: Datum obhajoby': '11.02.2025',
+      'Předmět 1 - 1.term. datum': '12.01.2025',
+      'Předmět 1 - 1.term. hodnocení': 'A',
+      'Předmět 1 - 2.term. datum': ''
+    })
+
+    const result = mapImportPayloadToDraftSource({
+      scheduleName: 'SZZ červen 2025',
+      szzType: 'BACHELOR',
+      payload
+    })
+
+    expect(result.ok).toBe(false)
+    if (result.ok) {
+      throw new Error('Expected mapping failure')
+    }
+
+    expect(result.error.code).toBe('INVALID_REPEAT_TYPE_STATE')
+    expect(result.error.column).toBe('VŠKP-typ A: Datum obhajoby')
+    expect(result.error.context.reason).toBe('first_term_passed_and_defense_exists')
   })
 
   it('fails when second-term date exists because student has no remaining SZZ attempt', () => {
