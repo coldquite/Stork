@@ -97,6 +97,8 @@
               "required_value_is_empty": "Povinná hodnota v povinném sloupci je prázdná.",
               "students_committees_row_reused": "Jeden řádek ve studenti-komise byl použit pro více studentů.",
               "students_committees_row_without_matching_students_cap": "Ve studenti-komise je řádek bez odpovídajícího studenta v studenti-Stork.",
+              "first_term_date_without_grade": "Je vyplněné datum 1. termínu, ale chybí hodnocení 1. termínu.",
+              "first_term_grade_without_date": "Je vyplněné hodnocení 1. termínu, ale chybí datum 1. termínu.",
               "defense_date_without_first_term_date": "Datum obhajoby je vyplněné, ale datum 1. termínu zkoušky chybí.",
               "second_term_attempt_already_exists": "Je vyplněné datum 2. termínu, student už nemá nárok na další pokus SZZ."
             },
@@ -124,6 +126,8 @@
               "studentCommitteeNotFound": "Student odkazuje na komisi, která v importu neexistuje.",
               "studentValueMismatch": "Hodnoty studenta mezi soubory se neshodují.",
               "invalidThesisSubmissionDate": "Termín odevzdání práce není validní datum.",
+              "invalidFirstTermGrade": "Hodnocení 1. termínu musí být jedna známka z rozsahu A až F.",
+              "invalidFirstTermResultState": "Datum 1. termínu a hodnocení 1. termínu musí být buď vyplněné oba, nebo oba prázdné.",
               "invalidRepeatTypeState": "Kombinace údajů o předchozích termínech je neplatná.",
               "studentRepeatNotAllowed": "Student už vyčerpal dostupné pokusy a nelze ho zařadit do další SZZ.",
               "studentCommitteeMismatch": "Studijní údaje studenta neodpovídají namapované komisi.",

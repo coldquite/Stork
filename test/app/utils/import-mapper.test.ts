@@ -62,6 +62,7 @@ function createStudentsCommitteesRow(overrides: Partial<Record<string, string>> 
     'St. program - typ': 'B',
     'VŠKP-typ A: Datum obhajoby': '',
     'Předmět 1 - 1.term. datum': '',
+    'Předmět 1 - 1.term. hodnocení': '',
     'Předmět 1 - 2.term. datum': '',
     ...overrides
   }
@@ -276,6 +277,7 @@ describe('mapImportPayloadToDraftSource', () => {
     payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
       'VŠKP-typ A: Datum obhajoby': '',
       'Předmět 1 - 1.term. datum': '12.01.2025',
+      'Předmět 1 - 1.term. hodnocení': 'E',
       'Předmět 1 - 2.term. datum': ''
     })
 
@@ -305,6 +307,7 @@ describe('mapImportPayloadToDraftSource', () => {
     payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
       'VŠKP-typ A: Datum obhajoby': '11.02.2025',
       'Předmět 1 - 1.term. datum': '12.01.2025',
+      'Předmět 1 - 1.term. hodnocení': 'D',
       'Předmět 1 - 2.term. datum': ''
     })
 
@@ -327,6 +330,114 @@ describe('mapImportPayloadToDraftSource', () => {
     expect(mappedFirstItem.student.repeatType).toBe('ORAL_EXAM')
     expect(mappedFirstItem.student.prepareMinutes).toBe(45)
     expect(mappedFirstItem.student.examMinutes).toBe(15)
+  })
+
+  it('fails when first-term grade is outside A-F range', () => {
+    const payload = createValidPayload()
+    payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
+      'Předmět 1 - 1.term. datum': '12.01.2025',
+      'Předmět 1 - 1.term. hodnocení': 'FX'
+    })
+
+    const result = mapImportPayloadToDraftSource({
+      scheduleName: 'SZZ červen 2025',
+      szzType: 'BACHELOR',
+      payload
+    })
+
+    expect(result.ok).toBe(false)
+    if (result.ok) {
+      throw new Error('Expected mapping failure')
+    }
+
+    expect(result.error.code).toBe('INVALID_FIRST_TERM_GRADE')
+    expect(result.error.column).toBe('Předmět 1 - 1.term. hodnocení')
+  })
+
+  it('fails when first-term grade is lowercase', () => {
+    const payload = createValidPayload()
+    payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
+      'Předmět 1 - 1.term. datum': '12.01.2025',
+      'Předmět 1 - 1.term. hodnocení': 'a'
+    })
+
+    const result = mapImportPayloadToDraftSource({
+      scheduleName: 'SZZ červen 2025',
+      szzType: 'BACHELOR',
+      payload
+    })
+
+    expect(result.ok).toBe(false)
+    if (result.ok) {
+      throw new Error('Expected mapping failure')
+    }
+
+    expect(result.error.code).toBe('INVALID_FIRST_TERM_GRADE')
+    expect(result.error.column).toBe('Předmět 1 - 1.term. hodnocení')
+  })
+
+  it('fails when first-term date exists but first-term grade is empty', () => {
+    const payload = createValidPayload()
+    payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
+      'Předmět 1 - 1.term. datum': '12.01.2025',
+      'Předmět 1 - 1.term. hodnocení': ''
+    })
+
+    const result = mapImportPayloadToDraftSource({
+      scheduleName: 'SZZ červen 2025',
+      szzType: 'BACHELOR',
+      payload
+    })
+
+    expect(result.ok).toBe(false)
+    if (result.ok) {
+      throw new Error('Expected mapping failure')
+    }
+
+    expect(result.error.code).toBe('INVALID_FIRST_TERM_RESULT_STATE')
+    expect(result.error.column).toBe('Předmět 1 - 1.term. hodnocení')
+    expect(result.error.context.reason).toBe('first_term_date_without_grade')
+  })
+
+  it('fails when first-term grade exists but first-term date is empty', () => {
+    const payload = createValidPayload()
+    payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
+      'Předmět 1 - 1.term. datum': '',
+      'Předmět 1 - 1.term. hodnocení': 'A'
+    })
+
+    const result = mapImportPayloadToDraftSource({
+      scheduleName: 'SZZ červen 2025',
+      szzType: 'BACHELOR',
+      payload
+    })
+
+    expect(result.ok).toBe(false)
+    if (result.ok) {
+      throw new Error('Expected mapping failure')
+    }
+
+    expect(result.error.code).toBe('INVALID_FIRST_TERM_RESULT_STATE')
+    expect(result.error.column).toBe('Předmět 1 - 1.term. datum')
+    expect(result.error.context.reason).toBe('first_term_grade_without_date')
+  })
+
+  it('allows empty first-term grade', () => {
+    const payload = createValidPayload()
+    payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
+      'Předmět 1 - 1.term. hodnocení': ''
+    })
+
+    const result = mapImportPayloadToDraftSource({
+      scheduleName: 'SZZ červen 2025',
+      szzType: 'BACHELOR',
+      payload
+    })
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) {
+      throw new Error('Expected mapping success')
+    }
   })
 
   it('uses master default slot duration for first attempt (repeatType NONE)', () => {
@@ -364,6 +475,7 @@ describe('mapImportPayloadToDraftSource', () => {
       studentsCommittees: {
         'VŠKP-typ A: Datum obhajoby': '11.02.2025',
         'Předmět 1 - 1.term. datum': '12.01.2025',
+        'Předmět 1 - 1.term. hodnocení': 'C',
         'Předmět 1 - 2.term. datum': ''
       }
     })
@@ -394,6 +506,7 @@ describe('mapImportPayloadToDraftSource', () => {
       studentsCommittees: {
         'VŠKP-typ A: Datum obhajoby': '',
         'Předmět 1 - 1.term. datum': '12.01.2025',
+        'Předmět 1 - 1.term. hodnocení': 'B',
         'Předmět 1 - 2.term. datum': ''
       }
     })
@@ -448,6 +561,7 @@ describe('mapImportPayloadToDraftSource', () => {
     payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
       'VŠKP-typ A: Datum obhajoby': '',
       'Předmět 1 - 1.term. datum': '12.01.2025',
+      'Předmět 1 - 1.term. hodnocení': 'A',
       'Předmět 1 - 2.term. datum': '23.02.2025'
     })
 

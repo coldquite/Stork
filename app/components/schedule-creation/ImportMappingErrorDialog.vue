@@ -28,6 +28,8 @@ const reasonTranslationKeyByCode: Record<ImportMappingErrorCode, string> = {
   STUDENT_COMMITTEE_NOT_FOUND: 'homepage.actions.create.import.mappingError.reasons.studentCommitteeNotFound',
   STUDENT_VALUE_MISMATCH: 'homepage.actions.create.import.mappingError.reasons.studentValueMismatch',
   INVALID_THESIS_SUBMISSION_DATE: 'homepage.actions.create.import.mappingError.reasons.invalidThesisSubmissionDate',
+  INVALID_FIRST_TERM_GRADE: 'homepage.actions.create.import.mappingError.reasons.invalidFirstTermGrade',
+  INVALID_FIRST_TERM_RESULT_STATE: 'homepage.actions.create.import.mappingError.reasons.invalidFirstTermResultState',
   INVALID_REPEAT_TYPE_STATE: 'homepage.actions.create.import.mappingError.reasons.invalidRepeatTypeState',
   STUDENT_REPEAT_NOT_ALLOWED: 'homepage.actions.create.import.mappingError.reasons.studentRepeatNotAllowed',
   STUDENT_COMMITTEE_MISMATCH: 'homepage.actions.create.import.mappingError.reasons.studentCommitteeMismatch',

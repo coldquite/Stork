@@ -115,6 +115,7 @@ export const IMPORT_SCHEMAS: ImportSchemaMap = {
     'St. program - typ',
     'VŠKP-typ A: Datum obhajoby',
     'Předmět 1 - 1.term. datum',
+    'Předmět 1 - 1.term. hodnocení',
     'Předmět 1 - 2.term. datum'
   ],
   committees: [

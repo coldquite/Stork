@@ -4,9 +4,46 @@ import { throwMappingError } from '~/utils/import-mapper/core/errors'
 import { readOptionalValue } from '~/utils/import-mapper/core/readers'
 import type { SourceRow } from '~/utils/import-mapper/core/types'
 
-export function resolveStudentRepeatType(studentsCommitteesRow: SourceRow): PostStudentItemDto['repeatType'] {
-  const thesisDefenseDate = readOptionalValue(studentsCommitteesRow, 'VŠKP-typ A: Datum obhajoby')
+const VALID_FIRST_TERM_GRADES = new Set(['A', 'B', 'C', 'D', 'E', 'F'])
+
+function validateAndResolveFirstTermDate(studentsCommitteesRow: SourceRow): string | null {
   const firstTermDate = readOptionalValue(studentsCommitteesRow, 'Předmět 1 - 1.term. datum')
+  const firstTermGrade = readOptionalValue(studentsCommitteesRow, 'Předmět 1 - 1.term. hodnocení')
+  const hasFirstTermDate = Boolean(firstTermDate)
+  const hasFirstTermGrade = Boolean(firstTermGrade)
+
+  if (hasFirstTermDate !== hasFirstTermGrade) {
+    const dateWithoutGrade = hasFirstTermDate
+    throwMappingError('INVALID_FIRST_TERM_RESULT_STATE', studentsCommitteesRow, {
+      column: dateWithoutGrade ? 'Předmět 1 - 1.term. hodnocení' : 'Předmět 1 - 1.term. datum',
+      context: {
+        reason: dateWithoutGrade ? 'first_term_date_without_grade' : 'first_term_grade_without_date',
+        firstTermDate: firstTermDate ?? null,
+        firstTermGrade: firstTermGrade ?? null
+      }
+    })
+  }
+
+  if (!firstTermGrade) {
+    return firstTermDate
+  }
+
+  if (VALID_FIRST_TERM_GRADES.has(firstTermGrade)) {
+    return firstTermDate
+  }
+
+  throwMappingError('INVALID_FIRST_TERM_GRADE', studentsCommitteesRow, {
+    column: 'Předmět 1 - 1.term. hodnocení',
+    context: {
+      rawValue: firstTermGrade
+    }
+  })
+}
+
+export function resolveStudentRepeatType(studentsCommitteesRow: SourceRow): PostStudentItemDto['repeatType'] {
+  const firstTermDate = validateAndResolveFirstTermDate(studentsCommitteesRow)
+
+  const thesisDefenseDate = readOptionalValue(studentsCommitteesRow, 'VŠKP-typ A: Datum obhajoby')
   const secondTermDate = readOptionalValue(studentsCommitteesRow, 'Předmět 1 - 2.term. datum')
 
   if (secondTermDate) {
