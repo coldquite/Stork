@@ -151,6 +151,10 @@ export function mapStudent(input: MapStudentInput): MappedStudentPlacement {
       column: 'VŠKP-typ A: Jazyk práce',
       context: {
         committeeName,
+        leftDataset: studentsStorkRow.datasetKey,
+        rightDataset: studentsCommitteesRow.datasetKey,
+        leftFileName: studentsStorkRow.fileName,
+        rightFileName: studentsCommitteesRow.fileName,
         leftColumn: 'VŠKP-typ A: jazyk práce',
         rightColumn: 'VŠKP-typ A: Jazyk práce',
         leftValue: storkThesisLanguage,

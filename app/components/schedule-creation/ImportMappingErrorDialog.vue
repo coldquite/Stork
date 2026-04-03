@@ -64,6 +64,13 @@ function formatContextValue(key: string, value: string | number | boolean): stri
     return t(directTranslationKey)
   }
 
+  if (key === 'leftDataset' || key === 'rightDataset') {
+    const datasetTranslationKey = `homepage.actions.create.import.mappingError.contextValues.dataset.${value}`
+    if (te(datasetTranslationKey)) {
+      return t(datasetTranslationKey)
+    }
+  }
+
   return String(value)
 }
 

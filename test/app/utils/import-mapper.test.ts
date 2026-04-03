@@ -690,6 +690,10 @@ describe('mapImportPayloadToDraftSource', () => {
 
     expect(result.error.code).toBe('STUDENT_VALUE_MISMATCH')
     expect(result.error.column).toBe('VŠKP-typ A: Vedoucí práce 1')
+    expect(result.error.context.leftDataset).toBe('studentsStork')
+    expect(result.error.context.rightDataset).toBe('studentsCommittees')
+    expect(result.error.context.leftFileName).toBe('studenti-stork-bc.csv')
+    expect(result.error.context.rightFileName).toBe('studenti-komise-bc.csv')
   })
 
   it('maps teacher fields when students-committees names are pre-resolved by teachers dictionary', () => {
@@ -1029,6 +1033,10 @@ describe('mapImportPayloadToDraftSource', () => {
     expect(result.error.code).toBe('COMMITTEE_FIELD_MISMATCH')
     expect(result.error.datasetKey).toBe('committees')
     expect(result.error.column).toBe('Název studijního programu')
+    expect(result.error.context.leftDataset).toBe('studentsCommittees')
+    expect(result.error.context.rightDataset).toBe('committees')
+    expect(result.error.context.leftFileName).toBe('studenti-komise-bc.csv')
+    expect(result.error.context.rightFileName).toBe('komise.csv')
     expect(result.error.context.leftColumn).toBe('St. program - název')
     expect(result.error.context.rightColumn).toBe('Název studijního programu')
   })

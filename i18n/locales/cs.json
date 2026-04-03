@@ -91,7 +91,15 @@
             "contextKeys": {
               "reason": "Důvod",
               "stage": "Fáze",
-              "message": "Detail"
+              "message": "Detail",
+              "leftDataset": "1. kolekce",
+              "rightDataset": "2. kolekce",
+              "leftFileName": "Soubor z 1. kolekce",
+              "rightFileName": "Soubor z 2. kolekce",
+              "leftColumn": "Sloupec z 1. kolekce",
+              "rightColumn": "Sloupec z 2. kolekce",
+              "leftValue": "Hodnota z 1. kolekce",
+              "rightValue": "Hodnota z 2. kolekce"
             },
             "contextReasons": {
               "required_value_is_empty": "Povinná hodnota v povinném sloupci je prázdná.",
@@ -107,6 +115,11 @@
               "stage": {
                 "seed": "Uložení jmen ze studenti-Stork do slovníku",
                 "fetch": "Načtení slovníku učitelů"
+              },
+              "dataset": {
+                "studentsStork": "studenti-Stork",
+                "studentsCommittees": "studenti-komise",
+                "committees": "komise"
               }
             },
             "reasons": {

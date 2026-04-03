@@ -70,6 +70,10 @@ export function assertFieldEquality(
     column: right.column,
     context: {
       committeeName,
+      leftDataset: left.source.datasetKey,
+      rightDataset: right.source.datasetKey,
+      leftFileName: left.source.fileName,
+      rightFileName: right.source.fileName,
       leftColumn: left.column,
       rightColumn: right.column,
       leftValue,
