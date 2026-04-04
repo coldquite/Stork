@@ -320,6 +320,26 @@
       "languageOptions": {
         "czech": "Čeština",
         "english": "Angličtina"
+      },
+      "invigilators": {
+        "count": "Dozor: {count} členů",
+        "add": {
+          "action": "Přidat člena dozoru",
+          "title": "Přidat člena dozoru",
+          "description": "Zadejte jméno nového člena dozoru.",
+          "placeholder": "Např. Ing. Jan Blizničenko, Ph.D.",
+          "hint": "Jméno člena dozoru nesmí začínat ani končit mezerou.",
+          "submit": "Přidat člena",
+          "validation": {
+            "required": "Jméno člena dozoru musí obsahovat alespoň 1 znak bez mezer.",
+            "leadingTrailingWhitespace": "Jméno člena dozoru nesmí začínat ani končit mezerou."
+          }
+        },
+        "delete": {
+          "ariaLabel": "Odstranit člena dozoru",
+          "confirmAction": "Odstranit člena dozoru",
+          "description": "Opravdu chcete odstranit člena dozoru „{name}“? Tato akce je nevratná."
+        }
       }
     },
     "students": {

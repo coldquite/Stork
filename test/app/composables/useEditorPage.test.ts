@@ -252,6 +252,50 @@ describe('useEditorPage', () => {
     expect(page.cloudSaveValidationError.value).toBeNull()
   })
 
+  it('adds invigilator with trimmed value to selected committee', async () => {
+    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const page = useEditorPage()
+
+    page.openAddInvigilatorDialog()
+    page.newInvigilatorName.value = 'Novák Jan, Ing.'
+    page.submitAddInvigilator()
+
+    expect(page.isAddInvigilatorDialogOpen.value).toBe(false)
+    expect(page.invigilatorValidationError.value).toBeNull()
+    expect(scheduleDraftStoreMock.draft?.committees[0]?.invigilators).toEqual(['Dozor', 'Novák Jan, Ing.'])
+  })
+
+  it('validates invigilator name when it is blank or has outer whitespace', async () => {
+    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const page = useEditorPage()
+
+    page.openAddInvigilatorDialog()
+    page.newInvigilatorName.value = '   '
+    page.submitAddInvigilator()
+    expect(page.invigilatorValidationError.value).toBe('editor.committee.invigilators.add.validation.required')
+
+    page.newInvigilatorName.value = '  Novák Jan, Ing.'
+    page.submitAddInvigilator()
+    expect(page.invigilatorValidationError.value).toBe(
+      'editor.committee.invigilators.add.validation.leadingTrailingWhitespace'
+    )
+  })
+
+  it('deletes invigilator from selected committee after confirm', async () => {
+    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const page = useEditorPage()
+
+    expect(scheduleDraftStoreMock.draft?.committees[0]?.invigilators).toEqual(['Dozor'])
+
+    page.openDeleteInvigilatorConfirm(0)
+    expect(page.isDeleteInvigilatorConfirmOpen.value).toBe(true)
+
+    page.submitDeleteInvigilator()
+
+    expect(scheduleDraftStoreMock.draft?.committees[0]?.invigilators).toEqual([])
+    expect(page.isDeleteInvigilatorConfirmOpen.value).toBe(false)
+  })
+
   it('updates selected committee language in draft store', async () => {
     const { useEditorPage } = await import('~/composables/editor/useEditorPage')
     const page = useEditorPage()

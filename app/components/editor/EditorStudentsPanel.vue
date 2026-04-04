@@ -20,6 +20,10 @@ const props = defineProps<{
   committeeLanguageLabel: string
   committeeLanguageCzechLabel: string
   committeeLanguageEnglishLabel: string
+  invigilators: string[]
+  invigilatorsCountLabel: string
+  addInvigilatorActionLabel: string
+  deleteInvigilatorAriaLabel: string
   studentsEmptyTitle: string
   studentsEmptyDescription: string
   renameCommitteeAriaLabel: string
@@ -28,6 +32,8 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (event: 'update:students', value: StudentRow[]): void
+  (event: 'addInvigilator'): void
+  (event: 'deleteInvigilator', value: number): void
   (
     event:
       | 'renameCommittee'
@@ -55,7 +61,7 @@ const deleteActionButtonUi = {
   base: 'text-error/80 ring-[2px] ring-current/45 hover:text-error hover:ring-current/80'
 }
 const secretaryInputWidthCh = computed(() => {
-  return Math.max(18, secretaryInputValue.value.length + 2)
+  return Math.max(25, secretaryInputValue.value.length + 2)
 })
 
 watch(
@@ -118,6 +124,22 @@ function requestDeleteCommittee(): void {
   }
 
   emit('deleteCommittee', props.selectedCommittee.localId)
+}
+
+function requestAddInvigilator(): void {
+  if (!props.selectedCommittee) {
+    return
+  }
+
+  emit('addInvigilator')
+}
+
+function requestDeleteInvigilator(invigilatorIndex: number): void {
+  if (!props.selectedCommittee) {
+    return
+  }
+
+  emit('deleteInvigilator', invigilatorIndex)
 }
 
 function isCalendarLikeDate(value: unknown): value is CalendarLikeDate {
@@ -244,7 +266,7 @@ if (import.meta.client) {
                       variant="outline"
                       size="sm"
                       icon="i-lucide-calendar"
-                      class="font-medium"
+                      class="min-w-34 justify-start font-medium"
                       :disabled="!props.selectedCommittee"
                     >
                       {{ props.selectedCommitteeDate }}
@@ -265,7 +287,7 @@ if (import.meta.client) {
                   <UInput
                     :model-value="roomInputValue"
                     size="sm"
-                    class="w-22"
+                    class="w-31"
                     placeholder="—"
                     :disabled="!props.selectedCommittee"
                     @update:model-value="updateCommitteeRoom"
@@ -297,21 +319,66 @@ if (import.meta.client) {
                     </UButton>
                   </div>
                 </div>
+
+                <div class="flex items-center gap-2">
+                  <span class="text-sm">{{ props.committeeSecretaryLabel }}:</span>
+                  <UInput
+                    :model-value="secretaryInputValue"
+                    size="sm"
+                    class="w-auto"
+                    :style="{ width: `${secretaryInputWidthCh}ch` }"
+                    placeholder="—"
+                    :disabled="!props.selectedCommittee"
+                    @update:model-value="updateCommitteeSecretary"
+                  />
+                </div>
               </div>
             </div>
 
-            <div class="border-default w-fit rounded-md border p-2">
-              <div class="flex items-center gap-2">
-                <span class="text-sm">{{ props.committeeSecretaryLabel }}:</span>
-                <UInput
-                  :model-value="secretaryInputValue"
-                  size="sm"
-                  class="w-auto"
-                  :style="{ width: `${secretaryInputWidthCh}ch` }"
-                  placeholder="—"
-                  :disabled="!props.selectedCommittee"
-                  @update:model-value="updateCommitteeSecretary"
-                />
+            <div class="border-default w-fit min-w-[18rem] rounded-md border p-2 sm:min-w-[20rem]">
+              <div class="flex flex-col gap-3">
+                <div class="space-y-2">
+                  <span class="text-sm font-medium">
+                    {{ props.invigilatorsCountLabel }}
+                  </span>
+
+                  <ul v-if="props.invigilators.length > 0" class="space-y-2">
+                    <li
+                      v-for="(invigilatorName, invigilatorIndex) in props.invigilators"
+                      :key="`${invigilatorName}-${invigilatorIndex}`"
+                      class="flex items-center gap-2"
+                    >
+                      <UInput
+                        :model-value="invigilatorName"
+                        disabled
+                        size="sm"
+                        class="pointer-events-none min-w-0 flex-1 select-none"
+                      />
+                      <UButton
+                        color="error"
+                        variant="ghost"
+                        size="sm"
+                        icon="i-lucide-trash-2"
+                        :aria-label="props.deleteInvigilatorAriaLabel"
+                        :class="actionButtonClass"
+                        :ui="deleteActionButtonUi"
+                        @click="requestDeleteInvigilator(invigilatorIndex)"
+                      />
+                    </li>
+                  </ul>
+
+                  <UButton
+                    color="primary"
+                    variant="soft"
+                    size="sm"
+                    icon="i-lucide-plus"
+                    class="ring-primary/35 hover:ring-primary/55 w-full cursor-pointer justify-center font-semibold ring-2"
+                    :disabled="!props.selectedCommittee"
+                    @click="requestAddInvigilator"
+                  >
+                    {{ props.addInvigilatorActionLabel }}
+                  </UButton>
+                </div>
               </div>
             </div>
           </div>

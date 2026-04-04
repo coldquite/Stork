@@ -82,6 +82,11 @@ export function useEditorPage() {
   const isCloudSaveDialogOpen = ref(false)
   const cloudSaveName = ref('')
   const cloudSaveValidationError = ref<string | null>(null)
+  const isAddInvigilatorDialogOpen = ref(false)
+  const newInvigilatorName = ref('')
+  const invigilatorValidationError = ref<string | null>(null)
+  const isDeleteInvigilatorConfirmOpen = ref(false)
+  const deleteInvigilatorIndex = ref<number | null>(null)
 
   const committees = computed(() => {
     const draftCommittees = scheduleDraftStore.draft?.committees ?? []
@@ -124,6 +129,7 @@ export function useEditorPage() {
   const selectedCommittee = computed(() => selectedCommitteeEntry.value?.committee ?? null)
   const selectedCommitteeLabel = computed(() => selectedCommitteeEntry.value?.label)
   const selectedCommitteeDate = computed(() => selectedCommitteeEntry.value?.dateLabel)
+  const selectedInvigilators = computed(() => selectedCommittee.value?.invigilators ?? [])
 
   const selectedStudents = computed<StudentRow[]>({
     get: () => {
@@ -199,6 +205,9 @@ export function useEditorPage() {
 
   const draftName = computed(() => scheduleDraftStore.draft?.name ?? t('editor.untitled'))
   const studentsCountLabel = computed(() => t('editor.students.count', { count: selectedStudents.value.length }))
+  const invigilatorsCountLabel = computed(() =>
+    t('editor.committee.invigilators.count', { count: selectedInvigilators.value.length })
+  )
   const isPageLoading = computed(() => scheduleDraftStore.isDraftLoading)
   const isCloudSaveLoading = computed(() => scheduleDraftStore.isManualSaveLoading)
   const renameCommitteeTargetLabel = computed(() => {
@@ -214,6 +223,17 @@ export function useEditorPage() {
   })
   const deleteCommitteeConfirmDescription = computed(() => {
     return t('editor.committees.delete.description', { name: deleteCommitteeTargetLabel.value })
+  })
+  const deleteInvigilatorTargetName = computed(() => {
+    const targetIndex = deleteInvigilatorIndex.value
+    if (targetIndex === null) {
+      return undefined
+    }
+
+    return selectedInvigilators.value[targetIndex]
+  })
+  const deleteInvigilatorConfirmDescription = computed(() => {
+    return t('editor.committee.invigilators.delete.description', { name: deleteInvigilatorTargetName.value })
   })
 
   watch(renameCommitteeName, () => {
@@ -237,6 +257,12 @@ export function useEditorPage() {
   watch(cloudSaveName, () => {
     if (cloudSaveValidationError.value) {
       cloudSaveValidationError.value = null
+    }
+  })
+
+  watch(newInvigilatorName, () => {
+    if (invigilatorValidationError.value) {
+      invigilatorValidationError.value = null
     }
   })
 
@@ -291,6 +317,25 @@ export function useEditorPage() {
     deleteCommitteeId.value = ''
   }
 
+  function openDeleteInvigilatorConfirm(invigilatorIndex: number): void {
+    const committee = selectedCommittee.value
+    if (!committee) {
+      return
+    }
+
+    if (invigilatorIndex < 0 || invigilatorIndex >= committee.invigilators.length) {
+      return
+    }
+
+    deleteInvigilatorIndex.value = invigilatorIndex
+    isDeleteInvigilatorConfirmOpen.value = true
+  }
+
+  function closeDeleteInvigilatorConfirm(): void {
+    isDeleteInvigilatorConfirmOpen.value = false
+    deleteInvigilatorIndex.value = null
+  }
+
   function openRenameDraftDialog(): void {
     const draft = scheduleDraftStore.draft
     if (!draft) {
@@ -329,6 +374,22 @@ export function useEditorPage() {
     cloudSaveValidationError.value = null
   }
 
+  function openAddInvigilatorDialog(): void {
+    if (!selectedCommittee.value) {
+      return
+    }
+
+    newInvigilatorName.value = ''
+    invigilatorValidationError.value = null
+    isAddInvigilatorDialogOpen.value = true
+  }
+
+  function closeAddInvigilatorDialog(): void {
+    isAddInvigilatorDialogOpen.value = false
+    newInvigilatorName.value = ''
+    invigilatorValidationError.value = null
+  }
+
   function validateDraftName(nextName: string): string | null {
     const normalizedName = nextName.trim()
 
@@ -360,6 +421,20 @@ export function useEditorPage() {
 
     if (hasDuplicateName) {
       return t('editor.committees.rename.validation.duplicate')
+    }
+
+    return null
+  }
+
+  function validateInvigilatorName(nextName: string): string | null {
+    const normalizedName = nextName.trim()
+
+    if (normalizedName.length < 1) {
+      return t('editor.committee.invigilators.add.validation.required')
+    }
+
+    if (nextName !== normalizedName) {
+      return t('editor.committee.invigilators.add.validation.leadingTrailingWhitespace')
     }
 
     return null
@@ -504,6 +579,45 @@ export function useEditorPage() {
     committee.language = nextLanguage
   }
 
+  function submitAddInvigilator(): void {
+    const committee = selectedCommittee.value
+    if (!committee) {
+      closeAddInvigilatorDialog()
+      return
+    }
+
+    const validationError = validateInvigilatorName(newInvigilatorName.value)
+    if (validationError) {
+      invigilatorValidationError.value = validationError
+      return
+    }
+
+    committee.invigilators.push(newInvigilatorName.value.trim())
+    closeAddInvigilatorDialog()
+  }
+
+  function submitDeleteInvigilator(): void {
+    const committee = selectedCommittee.value
+    if (!committee) {
+      closeDeleteInvigilatorConfirm()
+      return
+    }
+
+    const invigilatorIndex = deleteInvigilatorIndex.value
+    if (invigilatorIndex === null) {
+      closeDeleteInvigilatorConfirm()
+      return
+    }
+
+    if (invigilatorIndex < 0 || invigilatorIndex >= committee.invigilators.length) {
+      closeDeleteInvigilatorConfirm()
+      return
+    }
+
+    committee.invigilators.splice(invigilatorIndex, 1)
+    closeDeleteInvigilatorConfirm()
+  }
+
   async function submitCloudSave(): Promise<void> {
     if (isCloudSaveLoading.value || scheduleDraftStore.isAutoSaveRunning) {
       return
@@ -530,6 +644,7 @@ export function useEditorPage() {
     selectedCommitteeId,
     selectedCommitteeLabel,
     selectedCommitteeDate,
+    selectedInvigilators,
     isCreateCommitteeDialogOpen,
     createCommitteeName,
     createCommitteeValidationError,
@@ -543,30 +658,42 @@ export function useEditorPage() {
     isCloudSaveDialogOpen,
     cloudSaveName,
     cloudSaveValidationError,
+    isAddInvigilatorDialogOpen,
+    newInvigilatorName,
+    invigilatorValidationError,
+    isDeleteInvigilatorConfirmOpen,
     committeeTabs,
     selectedStudents,
     columns,
     draftName,
     studentsCountLabel,
+    invigilatorsCountLabel,
     isPageLoading,
     isCloudSaveLoading,
     renameCommitteeDialogDescription,
     deleteCommitteeConfirmDescription,
+    deleteInvigilatorConfirmDescription,
     openCreateCommitteeDialog,
     closeCreateCommitteeDialog,
     openRenameCommitteeDialog,
     closeRenameCommitteeDialog,
     openDeleteCommitteeConfirm,
     closeDeleteCommitteeConfirm,
+    openDeleteInvigilatorConfirm,
+    closeDeleteInvigilatorConfirm,
     openRenameDraftDialog,
     closeRenameDraftDialog,
     openCloudSaveDialog,
     closeCloudSaveDialog,
+    openAddInvigilatorDialog,
+    closeAddInvigilatorDialog,
     submitCreateCommittee,
     submitRenameCommittee,
     submitDeleteCommittee,
     submitRenameDraft,
     submitCloudSave,
+    submitAddInvigilator,
+    submitDeleteInvigilator,
     updateSelectedCommitteeRoom,
     updateSelectedCommitteeDate,
     updateSelectedCommitteeSecretary,

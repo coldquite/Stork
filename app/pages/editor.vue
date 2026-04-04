@@ -12,6 +12,7 @@ const {
   selectedCommitteeId,
   selectedCommitteeLabel,
   selectedCommitteeDate,
+  selectedInvigilators,
   isCreateCommitteeDialogOpen,
   createCommitteeName,
   createCommitteeValidationError,
@@ -25,31 +26,43 @@ const {
   isCloudSaveDialogOpen,
   cloudSaveName,
   cloudSaveValidationError,
+  isAddInvigilatorDialogOpen,
+  newInvigilatorName,
+  invigilatorValidationError,
+  isDeleteInvigilatorConfirmOpen,
   committeeTabs,
   selectedStudents,
   columns,
   draftName,
   draftNameMaxLength,
   studentsCountLabel,
+  invigilatorsCountLabel,
   isPageLoading,
   isCloudSaveLoading,
   renameCommitteeDialogDescription,
   deleteCommitteeConfirmDescription,
+  deleteInvigilatorConfirmDescription,
   openCreateCommitteeDialog,
   closeCreateCommitteeDialog,
   openRenameCommitteeDialog,
   closeRenameCommitteeDialog,
   openDeleteCommitteeConfirm,
   closeDeleteCommitteeConfirm,
+  openDeleteInvigilatorConfirm,
+  closeDeleteInvigilatorConfirm,
   openRenameDraftDialog,
   closeRenameDraftDialog,
   openCloudSaveDialog,
   closeCloudSaveDialog,
+  openAddInvigilatorDialog,
+  closeAddInvigilatorDialog,
   submitCreateCommittee,
   submitRenameCommittee,
   submitDeleteCommittee,
   submitRenameDraft,
   submitCloudSave,
+  submitAddInvigilator,
+  submitDeleteInvigilator,
   updateSelectedCommitteeRoom,
   updateSelectedCommitteeDate,
   updateSelectedCommitteeSecretary,
@@ -108,6 +121,10 @@ const cloudSaveAriaLabel = computed(() => t('editor.schedule.cloudSave.ariaLabel
             :committee-language-label="t('editor.committee.language')"
             :committee-language-czech-label="t('editor.committee.languageOptions.czech')"
             :committee-language-english-label="t('editor.committee.languageOptions.english')"
+            :invigilators="selectedInvigilators"
+            :invigilators-count-label="invigilatorsCountLabel"
+            :add-invigilator-action-label="t('editor.committee.invigilators.add.action')"
+            :delete-invigilator-aria-label="t('editor.committee.invigilators.delete.ariaLabel')"
             :students-empty-title="t('editor.students.emptyTitle')"
             :students-empty-description="t('editor.students.emptyDescription')"
             :rename-committee-aria-label="t('editor.committees.rename.openAriaLabel', { name: selectedCommitteeLabel })"
@@ -117,6 +134,8 @@ const cloudSaveAriaLabel = computed(() => t('editor.schedule.cloudSave.ariaLabel
             @update:committee-date="updateSelectedCommitteeDate"
             @update:committee-secretary="updateSelectedCommitteeSecretary"
             @update:committee-language="updateSelectedCommitteeLanguage"
+            @add-invigilator="openAddInvigilatorDialog"
+            @delete-invigilator="openDeleteInvigilatorConfirm"
             @rename-committee="openRenameCommitteeDialog"
             @delete-committee="openDeleteCommitteeConfirm"
           />
@@ -176,6 +195,22 @@ const cloudSaveAriaLabel = computed(() => t('editor.schedule.cloudSave.ariaLabel
     />
 
     <EditorCommitteeNameModal
+      :open="isAddInvigilatorDialogOpen"
+      :name="newInvigilatorName"
+      :title="t('editor.committee.invigilators.add.title')"
+      :description="t('editor.committee.invigilators.add.description')"
+      :placeholder="t('editor.committee.invigilators.add.placeholder')"
+      :hint="t('editor.committee.invigilators.add.hint')"
+      :submit-label="t('editor.committee.invigilators.add.submit')"
+      :cancel-label="t('common.confirmDialog.cancel')"
+      :validation-error="invigilatorValidationError"
+      @update:open="isAddInvigilatorDialogOpen = $event"
+      @update:name="newInvigilatorName = $event"
+      @cancel="closeAddInvigilatorDialog"
+      @submit="submitAddInvigilator"
+    />
+
+    <EditorCommitteeNameModal
       :open="isCreateCommitteeDialogOpen"
       :name="createCommitteeName"
       :title="t('editor.committees.create.title')"
@@ -198,6 +233,15 @@ const cloudSaveAriaLabel = computed(() => t('editor.schedule.cloudSave.ariaLabel
       :confirm-label="t('editor.committees.delete.confirmAction')"
       @cancel="closeDeleteCommitteeConfirm"
       @confirm="submitDeleteCommittee"
+    />
+
+    <CommonAppActionConfirmDialog
+      v-model:open="isDeleteInvigilatorConfirmOpen"
+      :action-label="t('editor.committee.invigilators.delete.confirmAction')"
+      :description="deleteInvigilatorConfirmDescription"
+      :confirm-label="t('editor.committee.invigilators.delete.confirmAction')"
+      @cancel="closeDeleteInvigilatorConfirm"
+      @confirm="submitDeleteInvigilator"
     />
   </UContainer>
 </template>
