@@ -6,6 +6,7 @@ settings:
 
 overrides:
   '@vercel/nft': ^0.27.4
+  reka-ui: ^2.9.3
 
 importers:
 
@@ -5860,10 +5861,10 @@ packages:
     resolution: {integrity: sha512-NZQZdC5wOE/H3UT28fVGL+ikOZcEzfMGk/c3iN9UGxzWHMa1op7274oyiUVrAG4B2EuFhus8SvkaYnhvW92p9Q==}
     hasBin: true
 
-  reka-ui@2.8.2:
-    resolution: {integrity: sha512-8lTKcJhmG+D3UyJxhBnNnW/720sLzm0pbA9AC1MWazmJ5YchJAyTSl+O00xP/kxBmEN0fw5JqWVHguiFmsGjzA==}
+  reka-ui@2.9.3:
+    resolution: {integrity: sha512-C9lCVxsSC7uYD0Nbgik1+14FNndHNprZmf0zGQt0ZDYIt5KxXV3zD0hEqNcfRUsEEJvVmoRsUkJnASBVBeaaUw==}
     peerDependencies:
-      vue: '>= 3.2.0'
+      vue: '>= 3.4.0'
 
   remeda@2.33.4:
     resolution: {integrity: sha512-ygHswjlc/opg2VrtiYvUOPLjxjtdKvjGz1/plDhkG66hjNjFr1xmfrs2ClNFo/E6TyUFiwYNh53bKV26oBoMGQ==}
@@ -6508,7 +6509,7 @@ packages:
   vaul-vue@0.4.1:
     resolution: {integrity: sha512-A6jOWOZX5yvyo1qMn7IveoWN91mJI5L3BUKsIwkg6qrTGgHs1Sb1JF/vyLJgnbN1rH4OOOxFbtqL9A46bOyGUQ==}
     peerDependencies:
-      reka-ui: ^2.0.0
+      reka-ui: ^2.9.3
       vue: ^3.3.0
 
   vite-dev-rpc@1.1.0:
@@ -8064,7 +8065,7 @@ snapshots:
       motion-v: 1.10.3(@vueuse/core@14.2.1(vue@3.5.30(typescript@5.9.3)))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vue@3.5.30(typescript@5.9.3))
       ohash: 2.0.11
       pathe: 2.0.3
-      reka-ui: 2.8.2(vue@3.5.30(typescript@5.9.3))
+      reka-ui: 2.9.3(vue@3.5.30(typescript@5.9.3))
       scule: 1.3.0
       tailwind-merge: 3.5.0
       tailwind-variants: 3.2.2(tailwind-merge@3.5.0)(tailwindcss@4.2.1)
@@ -8075,7 +8076,7 @@ snapshots:
       unplugin: 3.0.0
       unplugin-auto-import: 21.0.0(@nuxt/kit@4.4.2(magicast@0.5.2))(@vueuse/core@14.2.1(vue@3.5.30(typescript@5.9.3)))
       unplugin-vue-components: 31.0.0(@nuxt/kit@4.4.2(magicast@0.5.2))(vue@3.5.30(typescript@5.9.3))
-      vaul-vue: 0.4.1(reka-ui@2.8.2(vue@3.5.30(typescript@5.9.3)))(vue@3.5.30(typescript@5.9.3))
+      vaul-vue: 0.4.1(reka-ui@2.9.3(vue@3.5.30(typescript@5.9.3)))(vue@3.5.30(typescript@5.9.3))
       vue-component-type-helpers: 3.2.5
     optionalDependencies:
       valibot: 1.2.0(typescript@5.9.3)
@@ -13012,7 +13013,7 @@ snapshots:
     dependencies:
       jsesc: 3.1.0
 
-  reka-ui@2.8.2(vue@3.5.30(typescript@5.9.3)):
+  reka-ui@2.9.3(vue@3.5.30(typescript@5.9.3)):
     dependencies:
       '@floating-ui/dom': 1.7.6
       '@floating-ui/vue': 1.1.11(vue@3.5.30(typescript@5.9.3))
@@ -13697,10 +13698,10 @@ snapshots:
     optionalDependencies:
       typescript: 5.9.3
 
-  vaul-vue@0.4.1(reka-ui@2.8.2(vue@3.5.30(typescript@5.9.3)))(vue@3.5.30(typescript@5.9.3)):
+  vaul-vue@0.4.1(reka-ui@2.9.3(vue@3.5.30(typescript@5.9.3)))(vue@3.5.30(typescript@5.9.3)):
     dependencies:
       '@vueuse/core': 10.11.1(vue@3.5.30(typescript@5.9.3))
-      reka-ui: 2.8.2(vue@3.5.30(typescript@5.9.3))
+      reka-ui: 2.9.3(vue@3.5.30(typescript@5.9.3))
       vue: 3.5.30(typescript@5.9.3)
     transitivePeerDependencies:
       - '@vue/composition-api'
