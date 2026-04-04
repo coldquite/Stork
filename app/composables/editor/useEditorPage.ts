@@ -122,8 +122,8 @@ export function useEditorPage() {
   })
 
   const selectedCommittee = computed(() => selectedCommitteeEntry.value?.committee ?? null)
-  const selectedCommitteeLabel = computed(() => selectedCommitteeEntry.value?.label ?? '-')
-  const selectedCommitteeDate = computed(() => selectedCommitteeEntry.value?.dateLabel ?? '-')
+  const selectedCommitteeLabel = computed(() => selectedCommitteeEntry.value?.label)
+  const selectedCommitteeDate = computed(() => selectedCommitteeEntry.value?.dateLabel)
 
   const selectedStudents = computed<StudentRow[]>({
     get: () => {
@@ -203,14 +203,14 @@ export function useEditorPage() {
   const isCloudSaveLoading = computed(() => scheduleDraftStore.isManualSaveLoading)
   const renameCommitteeTargetLabel = computed(() => {
     const targetEntry = committees.value.find((entry) => entry.committee.localId === renameCommitteeId.value)
-    return targetEntry?.label ?? '-'
+    return targetEntry?.label
   })
   const renameCommitteeDialogDescription = computed(() => {
     return t('editor.committees.rename.description', { name: renameCommitteeTargetLabel.value })
   })
   const deleteCommitteeTargetLabel = computed(() => {
     const targetEntry = committees.value.find((entry) => entry.committee.localId === deleteCommitteeId.value)
-    return targetEntry?.label ?? '-'
+    return targetEntry?.label
   })
   const deleteCommitteeConfirmDescription = computed(() => {
     return t('editor.committees.delete.description', { name: deleteCommitteeTargetLabel.value })

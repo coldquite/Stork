@@ -8,8 +8,8 @@ import type { StudyLanguageDto } from '#shared/types/time-schedules'
 const props = defineProps<{
   cardRootClass: string
   selectedCommittee: ScheduleDraftCommittee | null
-  selectedCommitteeLabel: string
-  selectedCommitteeDate: string
+  selectedCommitteeLabel?: string
+  selectedCommitteeDate?: string
   studentsCountLabel: string
   students: StudentRow[]
   columns: TableColumn<StudentRow>[]

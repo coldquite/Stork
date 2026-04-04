@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const props = defineProps<{
   title: string
-  draftName: string
+  draftName?: string
   backAriaLabel: string
   renameAriaLabel: string
   renameLabel: string
