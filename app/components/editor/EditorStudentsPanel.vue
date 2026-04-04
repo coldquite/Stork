@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
 import { useSortable } from '@vueuse/integrations/useSortable'
+import { resolveEditorSpecializationOptions, resolveEditorStudyProgramNameOptions } from '~/constants/editor'
 import type { StudentRow } from '~/types/editor'
 import type { ScheduleDraftCommittee } from '~/types/schedule-draft'
-import type { StudyLanguageDto } from '#shared/types/time-schedules'
+import type { StudyLanguageDto, StudyProgramTypeDto } from '#shared/types/time-schedules'
 
 const props = defineProps<{
   cardRootClass: string
@@ -20,6 +21,12 @@ const props = defineProps<{
   committeeLanguageLabel: string
   committeeLanguageCzechLabel: string
   committeeLanguageEnglishLabel: string
+  committeeStudyProgramTypeLabel: string
+  committeeStudyProgramTypeBachelorLabel: string
+  committeeStudyProgramTypeMasterLabel: string
+  committeeStudyProgramNameLabel: string
+  committeeSpecializationCodeLabel: string
+  committeeDepartmentLabel: string
   invigilators: string[]
   invigilatorsCountLabel: string
   addInvigilatorActionLabel: string
@@ -41,9 +48,12 @@ const emit = defineEmits<{
       | 'update:committeeRoom'
       | 'update:committeeDate'
       | 'update:committeeSecretary'
-      | 'update:committeeLanguage',
+      | 'update:committeeStudyProgramName'
+      | 'update:committeeSpecializationCode',
     value: string
   ): void
+  (event: 'update:committeeLanguage', value: StudyLanguageDto): void
+  (event: 'update:committeeStudyProgramType', value: StudyProgramTypeDto): void
 }>()
 
 const tableWrapper = ref<HTMLElement | null>(null)
@@ -51,6 +61,9 @@ const localStudents = ref<StudentRow[]>([])
 const roomInputValue = ref('')
 const secretaryInputValue = ref('')
 const committeeLanguageValue = ref<StudyLanguageDto | null>(null)
+const committeeStudyProgramTypeValue = ref<StudyProgramTypeDto | null>(null)
+const committeeStudyProgramNameValue = ref('')
+const committeeSpecializationCodeValue = ref('')
 const calendarModelValue = ref<unknown>(undefined)
 const renameActionButtonClass = 'shrink-0 px-2 cursor-pointer'
 const renameActionButtonUi = {
@@ -62,6 +75,54 @@ const deleteActionButtonUi = {
 }
 const secretaryInputWidthCh = computed(() => {
   return Math.max(25, secretaryInputValue.value.length + 2)
+})
+const committeeStudyProgramNameOptions = computed(() => {
+  const studyProgramType = committeeStudyProgramTypeValue.value
+  const studyLanguage = committeeLanguageValue.value
+
+  if (!studyProgramType || !studyLanguage) {
+    return []
+  }
+
+  return resolveEditorStudyProgramNameOptions(studyProgramType, studyLanguage)
+})
+const committeeSpecializationCodeOptions = computed(() => {
+  const baseOptions = resolveEditorSpecializationOptions(
+    committeeStudyProgramTypeValue.value,
+    committeeStudyProgramNameValue.value
+  )
+  const currentValue = committeeSpecializationCodeValue.value
+  if (!currentValue || baseOptions.some((option) => option.specializationCode === currentValue)) {
+    return baseOptions
+  }
+
+  return [
+    {
+      specializationCode: currentValue,
+      specializationName: currentValue,
+      departmentCode: null,
+      departmentNameCs: null,
+      departmentNameEn: null
+    },
+    ...baseOptions
+  ]
+})
+const committeeDepartmentDisplayLabel = computed(() => {
+  const departmentName = props.selectedCommittee?.defenseDepartmentName?.trim() ?? ''
+  const departmentCode = props.selectedCommittee?.defenseDepartmentCode?.trim() ?? ''
+
+  if (departmentName.length < 1 && departmentCode.length < 1) {
+    return '-'
+  }
+
+  if (departmentName.length > 0 && departmentCode.length > 0) {
+    return `${departmentName} (${departmentCode})`
+  }
+
+  return departmentName.length > 0 ? departmentName : departmentCode
+})
+const isSpecializationPickerDisabled = computed(() => {
+  return !props.selectedCommittee || committeeStudyProgramNameValue.value.trim().length < 1
 })
 
 watch(
@@ -92,6 +153,30 @@ watch(
   () => props.selectedCommittee?.language,
   (nextLanguage) => {
     committeeLanguageValue.value = nextLanguage ?? null
+  },
+  { immediate: true }
+)
+
+watch(
+  () => props.selectedCommittee?.studyProgramType,
+  (nextStudyProgramType) => {
+    committeeStudyProgramTypeValue.value = nextStudyProgramType ?? null
+  },
+  { immediate: true }
+)
+
+watch(
+  () => props.selectedCommittee?.studyProgramName ?? '',
+  (nextStudyProgramName) => {
+    committeeStudyProgramNameValue.value = nextStudyProgramName
+  },
+  { immediate: true }
+)
+
+watch(
+  () => props.selectedCommittee?.specializationCode ?? '',
+  (nextSpecializationCode) => {
+    committeeSpecializationCodeValue.value = nextSpecializationCode
   },
   { immediate: true }
 )
@@ -193,6 +278,33 @@ function updateCommitteeLanguage(nextLanguage: StudyLanguageDto): void {
   emit('update:committeeLanguage', nextLanguage)
 }
 
+function updateCommitteeStudyProgramType(nextStudyProgramType: StudyProgramTypeDto): void {
+  if (!props.selectedCommittee) {
+    return
+  }
+
+  committeeStudyProgramTypeValue.value = nextStudyProgramType
+  emit('update:committeeStudyProgramType', nextStudyProgramType)
+}
+
+function updateCommitteeStudyProgramName(nextStudyProgramName: string): void {
+  if (!props.selectedCommittee) {
+    return
+  }
+
+  committeeStudyProgramNameValue.value = nextStudyProgramName
+  emit('update:committeeStudyProgramName', nextStudyProgramName)
+}
+
+function updateCommitteeSpecializationCode(nextSpecializationCode: string): void {
+  if (!props.selectedCommittee) {
+    return
+  }
+
+  committeeSpecializationCodeValue.value = nextSpecializationCode
+  emit('update:committeeSpecializationCode', nextSpecializationCode)
+}
+
 function handleCalendarDateSelect(nextDateValue: unknown, close?: () => void): void {
   if (!isCalendarLikeDate(nextDateValue)) {
     return
@@ -255,7 +367,7 @@ if (import.meta.client) {
             </div>
           </div>
 
-          <div class="text-muted mt-2 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+          <div class="text-muted mt-2 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
             <div class="border-default rounded-md border p-2">
               <div class="flex flex-col gap-2">
                 <div class="flex items-center gap-2">
@@ -266,7 +378,7 @@ if (import.meta.client) {
                       variant="outline"
                       size="sm"
                       icon="i-lucide-calendar"
-                      class="min-w-34 justify-start font-medium"
+                      class="min-w-42 justify-start font-medium"
                       :disabled="!props.selectedCommittee"
                     >
                       {{ props.selectedCommitteeDate }}
@@ -286,8 +398,7 @@ if (import.meta.client) {
                   <span class="text-sm">{{ props.committeeRoomLabel }}:</span>
                   <UInput
                     :model-value="roomInputValue"
-                    size="sm"
-                    class="w-31"
+                    class="w-38"
                     placeholder="—"
                     :disabled="!props.selectedCommittee"
                     @update:model-value="updateCommitteeRoom"
@@ -296,13 +407,13 @@ if (import.meta.client) {
 
                 <div class="flex items-center gap-2">
                   <span class="text-sm">{{ props.committeeLanguageLabel }}:</span>
-                  <div class="border-default flex items-center gap-1 rounded-md border p-1">
+                  <div class="border-default flex w-42 items-center gap-1 rounded-md border p-1">
                     <UButton
                       color="primary"
                       size="xs"
                       :variant="committeeLanguageValue === 'CZECH' ? 'solid' : 'ghost'"
                       :disabled="!props.selectedCommittee"
-                      class="cursor-pointer"
+                      class="flex-1 cursor-pointer justify-center"
                       @click="updateCommitteeLanguage('CZECH')"
                     >
                       {{ props.committeeLanguageCzechLabel }}
@@ -312,7 +423,7 @@ if (import.meta.client) {
                       size="xs"
                       :variant="committeeLanguageValue === 'ENGLISH' ? 'solid' : 'ghost'"
                       :disabled="!props.selectedCommittee"
-                      class="cursor-pointer"
+                      class="flex-1 cursor-pointer justify-center"
                       @click="updateCommitteeLanguage('ENGLISH')"
                     >
                       {{ props.committeeLanguageEnglishLabel }}
@@ -324,13 +435,74 @@ if (import.meta.client) {
                   <span class="text-sm">{{ props.committeeSecretaryLabel }}:</span>
                   <UInput
                     :model-value="secretaryInputValue"
-                    size="sm"
                     class="w-auto"
                     :style="{ width: `${secretaryInputWidthCh}ch` }"
                     placeholder="—"
                     :disabled="!props.selectedCommittee"
                     @update:model-value="updateCommitteeSecretary"
                   />
+                </div>
+              </div>
+            </div>
+
+            <div class="border-default w-fit min-w-76 rounded-md border p-2">
+              <div class="flex flex-col gap-2">
+                <div class="flex items-center gap-2">
+                  <span class="text-sm whitespace-nowrap">{{ props.committeeStudyProgramTypeLabel }}:</span>
+
+                  <div class="border-default flex items-center gap-1 rounded-md border p-1">
+                    <UButton
+                      color="primary"
+                      size="xs"
+                      :variant="committeeStudyProgramTypeValue === 'BACHELOR' ? 'solid' : 'ghost'"
+                      :disabled="!props.selectedCommittee"
+                      class="cursor-pointer"
+                      @click="updateCommitteeStudyProgramType('BACHELOR')"
+                    >
+                      {{ props.committeeStudyProgramTypeBachelorLabel }}
+                    </UButton>
+                    <UButton
+                      color="primary"
+                      size="xs"
+                      :variant="committeeStudyProgramTypeValue === 'MASTER' ? 'solid' : 'ghost'"
+                      :disabled="!props.selectedCommittee"
+                      class="cursor-pointer"
+                      @click="updateCommitteeStudyProgramType('MASTER')"
+                    >
+                      {{ props.committeeStudyProgramTypeMasterLabel }}
+                    </UButton>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                  <span class="text-sm whitespace-nowrap">{{ props.committeeStudyProgramNameLabel }}:</span>
+                  <USelectMenu
+                    :model-value="committeeStudyProgramNameValue"
+                    :items="committeeStudyProgramNameOptions"
+                    :search-input="false"
+                    class="min-w-0 flex-1"
+                    :disabled="!props.selectedCommittee"
+                    @update:model-value="(value) => updateCommitteeStudyProgramName(String(value ?? ''))"
+                  />
+                </div>
+
+                <div class="flex items-center gap-2">
+                  <span class="text-sm whitespace-nowrap">{{ props.committeeSpecializationCodeLabel }}:</span>
+                  <USelectMenu
+                    :model-value="committeeSpecializationCodeValue"
+                    :items="committeeSpecializationCodeOptions"
+                    value-key="specializationCode"
+                    label-key="specializationCode"
+                    :search-input="false"
+                    class="min-w-0 flex-1"
+                    :disabled="isSpecializationPickerDisabled"
+                    @update:model-value="(value) => updateCommitteeSpecializationCode(String(value ?? ''))"
+                  />
+                </div>
+
+                <div class="flex items-center gap-2">
+                  <span class="text-sm whitespace-nowrap">{{ props.committeeDepartmentLabel }}:</span>
+                  <UInput :model-value="committeeDepartmentDisplayLabel" disabled size="sm" class="min-w-0 flex-1" />
                 </div>
               </div>
             </div>

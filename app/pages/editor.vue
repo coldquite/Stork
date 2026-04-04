@@ -66,7 +66,10 @@ const {
   updateSelectedCommitteeRoom,
   updateSelectedCommitteeDate,
   updateSelectedCommitteeSecretary,
-  updateSelectedCommitteeLanguage
+  updateSelectedCommitteeLanguage,
+  updateSelectedCommitteeStudyProgramType,
+  updateSelectedCommitteeStudyProgramName,
+  updateSelectedCommitteeSpecializationCode
 } = useEditorPage()
 
 const cardAccentRootClass = 'h-full rounded-none ring-0 shadow-none divide-y-2 divide-default bg-default'
@@ -121,6 +124,12 @@ const cloudSaveAriaLabel = computed(() => t('editor.schedule.cloudSave.ariaLabel
             :committee-language-label="t('editor.committee.language')"
             :committee-language-czech-label="t('editor.committee.languageOptions.czech')"
             :committee-language-english-label="t('editor.committee.languageOptions.english')"
+            :committee-study-program-type-label="t('editor.committee.studyProgramType')"
+            :committee-study-program-type-bachelor-label="t('editor.committee.studyProgramTypeOptions.bachelor')"
+            :committee-study-program-type-master-label="t('editor.committee.studyProgramTypeOptions.master')"
+            :committee-study-program-name-label="t('editor.committee.studyProgramName')"
+            :committee-specialization-code-label="t('editor.committee.specializationCode')"
+            :committee-department-label="t('editor.committee.department')"
             :invigilators="selectedInvigilators"
             :invigilators-count-label="invigilatorsCountLabel"
             :add-invigilator-action-label="t('editor.committee.invigilators.add.action')"
@@ -134,6 +143,9 @@ const cloudSaveAriaLabel = computed(() => t('editor.schedule.cloudSave.ariaLabel
             @update:committee-date="updateSelectedCommitteeDate"
             @update:committee-secretary="updateSelectedCommitteeSecretary"
             @update:committee-language="updateSelectedCommitteeLanguage"
+            @update:committee-study-program-type="updateSelectedCommitteeStudyProgramType"
+            @update:committee-study-program-name="updateSelectedCommitteeStudyProgramName"
+            @update:committee-specialization-code="updateSelectedCommitteeSpecializationCode"
             @add-invigilator="openAddInvigilatorDialog"
             @delete-invigilator="openDeleteInvigilatorConfirm"
             @rename-committee="openRenameCommitteeDialog"

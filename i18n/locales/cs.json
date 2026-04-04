@@ -321,6 +321,14 @@
         "czech": "Čeština",
         "english": "Angličtina"
       },
+      "studyProgramType": "Typ studia",
+      "studyProgramTypeOptions": {
+        "bachelor": "Bakalářský",
+        "master": "Magisterský"
+      },
+      "studyProgramName": "Studijní program",
+      "specializationCode": "Specializace",
+      "department": "Katedra",
       "invigilators": {
         "count": "Dozor: {count} členů",
         "add": {

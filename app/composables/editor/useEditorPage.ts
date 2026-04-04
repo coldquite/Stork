@@ -1,6 +1,11 @@
 import type { TableColumn } from '@nuxt/ui'
 import { format, isValid, parseISO } from 'date-fns'
-import { DEFAULT_COMMITTEE_START_MINUTE, EDITOR_DRAFT_NAME_MAX_LENGTH } from '~/constants/editor'
+import {
+  DEFAULT_COMMITTEE_START_MINUTE,
+  EDITOR_DRAFT_NAME_MAX_LENGTH,
+  resolveEditorSpecializationOptionByCode,
+  resolveEditorStudyProgramNameOptions
+} from '~/constants/editor'
 import { useScheduleDraftStore } from '~/stores/schedule-draft'
 import type { CommitteeTabItem, StudentRow } from '~/types/editor'
 import type { ScheduleDraftCommittee, ScheduleDraftItem } from '~/types/schedule-draft'
@@ -570,6 +575,13 @@ export function useEditorPage() {
     committee.secretaryName = nextSecretaryName.length > 0 ? nextSecretaryName : null
   }
 
+  function clearCommitteeSpecializationAndDepartment(committee: ScheduleDraftCommittee): void {
+    committee.specializationCode = ''
+    committee.specializationName = ''
+    committee.defenseDepartmentCode = null
+    committee.defenseDepartmentName = null
+  }
+
   function updateSelectedCommitteeLanguage(nextLanguage: ScheduleDraftCommittee['language']): void {
     const committee = selectedCommittee.value
     if (!committee) {
@@ -577,6 +589,92 @@ export function useEditorPage() {
     }
 
     committee.language = nextLanguage
+
+    const allowedStudyProgramNames = resolveEditorStudyProgramNameOptions(
+      committee.studyProgramType,
+      committee.language
+    )
+    if (allowedStudyProgramNames.includes(committee.studyProgramName)) {
+      return
+    }
+
+    committee.studyProgramName = ''
+    clearCommitteeSpecializationAndDepartment(committee)
+  }
+
+  function updateSelectedCommitteeStudyProgramType(
+    nextStudyProgramType: ScheduleDraftCommittee['studyProgramType']
+  ): void {
+    const committee = selectedCommittee.value
+    if (!committee) {
+      return
+    }
+
+    const hasStudyProgramTypeChanged = committee.studyProgramType !== nextStudyProgramType
+    committee.studyProgramType = nextStudyProgramType
+
+    if (!hasStudyProgramTypeChanged) {
+      return
+    }
+
+    clearCommitteeSpecializationAndDepartment(committee)
+
+    const allowedStudyProgramNames = resolveEditorStudyProgramNameOptions(
+      committee.studyProgramType,
+      committee.language
+    )
+    if (allowedStudyProgramNames.includes(committee.studyProgramName)) {
+      return
+    }
+
+    committee.studyProgramName = ''
+  }
+
+  function updateSelectedCommitteeStudyProgramName(nextStudyProgramName: string): void {
+    const committee = selectedCommittee.value
+    if (!committee) {
+      return
+    }
+
+    const allowedStudyProgramNames = resolveEditorStudyProgramNameOptions(
+      committee.studyProgramType,
+      committee.language
+    )
+    const isValidStudyProgramName =
+      nextStudyProgramName.length < 1 || allowedStudyProgramNames.includes(nextStudyProgramName)
+    if (!isValidStudyProgramName) {
+      return
+    }
+
+    if (committee.studyProgramName !== nextStudyProgramName) {
+      clearCommitteeSpecializationAndDepartment(committee)
+    }
+
+    committee.studyProgramName = nextStudyProgramName
+  }
+
+  function updateSelectedCommitteeSpecializationCode(nextSpecializationCode: string): void {
+    const committee = selectedCommittee.value
+    if (!committee) {
+      return
+    }
+
+    committee.specializationCode = nextSpecializationCode
+    if (nextSpecializationCode.length < 1) {
+      committee.specializationName = ''
+      committee.defenseDepartmentCode = null
+      committee.defenseDepartmentName = null
+      return
+    }
+
+    const specializationOption = resolveEditorSpecializationOptionByCode(
+      committee.studyProgramType,
+      committee.studyProgramName,
+      nextSpecializationCode
+    )
+    committee.specializationName = specializationOption?.specializationName ?? nextSpecializationCode
+    committee.defenseDepartmentCode = specializationOption?.departmentCode ?? null
+    committee.defenseDepartmentName = specializationOption?.departmentNameCs ?? null
   }
 
   function submitAddInvigilator(): void {
@@ -698,6 +796,9 @@ export function useEditorPage() {
     updateSelectedCommitteeDate,
     updateSelectedCommitteeSecretary,
     updateSelectedCommitteeLanguage,
+    updateSelectedCommitteeStudyProgramType,
+    updateSelectedCommitteeStudyProgramName,
+    updateSelectedCommitteeSpecializationCode,
     draftNameMaxLength: EDITOR_DRAFT_NAME_MAX_LENGTH
   }
 }
