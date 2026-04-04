@@ -252,6 +252,20 @@ describe('useEditorPage', () => {
     expect(page.cloudSaveValidationError.value).toBeNull()
   })
 
+  it('updates selected committee language in draft store', async () => {
+    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const page = useEditorPage()
+
+    expect(page.selectedCommittee.value?.language).toBe('CZECH')
+
+    page.updateSelectedCommitteeLanguage('ENGLISH')
+
+    expect(page.selectedCommittee.value?.language).toBe('ENGLISH')
+    expect(
+      scheduleDraftStoreMock.draft?.committees.find((entry) => entry.localId === 'committee-early')?.language
+    ).toBe('ENGLISH')
+  })
+
   it('saves to cloud using modal name and keeps current draft name unchanged', async () => {
     const { useEditorPage } = await import('~/composables/editor/useEditorPage')
     const page = useEditorPage()

@@ -315,7 +315,12 @@
       "title": "Vybraná komise",
       "room": "Místnost konání",
       "date": "Datum konání",
-      "secretary": "Tajemník"
+      "secretary": "Tajemník",
+      "language": "Jazyk komise",
+      "languageOptions": {
+        "czech": "Čeština",
+        "english": "Angličtina"
+      }
     },
     "students": {
       "count": "{count} studentů",

@@ -495,6 +495,15 @@ export function useEditorPage() {
     committee.secretaryName = nextSecretaryName.length > 0 ? nextSecretaryName : null
   }
 
+  function updateSelectedCommitteeLanguage(nextLanguage: ScheduleDraftCommittee['language']): void {
+    const committee = selectedCommittee.value
+    if (!committee) {
+      return
+    }
+
+    committee.language = nextLanguage
+  }
+
   async function submitCloudSave(): Promise<void> {
     if (isCloudSaveLoading.value || scheduleDraftStore.isAutoSaveRunning) {
       return
@@ -561,6 +570,7 @@ export function useEditorPage() {
     updateSelectedCommitteeRoom,
     updateSelectedCommitteeDate,
     updateSelectedCommitteeSecretary,
+    updateSelectedCommitteeLanguage,
     draftNameMaxLength: EDITOR_DRAFT_NAME_MAX_LENGTH
   }
 }

@@ -52,7 +52,8 @@ const {
   submitCloudSave,
   updateSelectedCommitteeRoom,
   updateSelectedCommitteeDate,
-  updateSelectedCommitteeSecretary
+  updateSelectedCommitteeSecretary,
+  updateSelectedCommitteeLanguage
 } = useEditorPage()
 
 const cardAccentRootClass = 'h-full rounded-none ring-0 shadow-none divide-y-2 divide-default bg-default'
@@ -104,6 +105,9 @@ const cloudSaveAriaLabel = computed(() => t('editor.schedule.cloudSave.ariaLabel
             :committee-room-label="t('editor.committee.room')"
             :committee-date-label="t('editor.committee.date')"
             :committee-secretary-label="t('editor.committee.secretary')"
+            :committee-language-label="t('editor.committee.language')"
+            :committee-language-czech-label="t('editor.committee.languageOptions.czech')"
+            :committee-language-english-label="t('editor.committee.languageOptions.english')"
             :students-empty-title="t('editor.students.emptyTitle')"
             :students-empty-description="t('editor.students.emptyDescription')"
             :rename-committee-aria-label="t('editor.committees.rename.openAriaLabel', { name: selectedCommitteeLabel })"
@@ -112,6 +116,7 @@ const cloudSaveAriaLabel = computed(() => t('editor.schedule.cloudSave.ariaLabel
             @update:committee-room="updateSelectedCommitteeRoom"
             @update:committee-date="updateSelectedCommitteeDate"
             @update:committee-secretary="updateSelectedCommitteeSecretary"
+            @update:committee-language="updateSelectedCommitteeLanguage"
             @rename-committee="openRenameCommitteeDialog"
             @delete-committee="openDeleteCommitteeConfirm"
           />

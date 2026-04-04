@@ -3,6 +3,7 @@ import type { TableColumn } from '@nuxt/ui'
 import { useSortable } from '@vueuse/integrations/useSortable'
 import type { StudentRow } from '~/types/editor'
 import type { ScheduleDraftCommittee } from '~/types/schedule-draft'
+import type { StudyLanguageDto } from '#shared/types/time-schedules'
 
 const props = defineProps<{
   cardRootClass: string
@@ -16,6 +17,9 @@ const props = defineProps<{
   committeeRoomLabel: string
   committeeDateLabel: string
   committeeSecretaryLabel: string
+  committeeLanguageLabel: string
+  committeeLanguageCzechLabel: string
+  committeeLanguageEnglishLabel: string
   studentsEmptyTitle: string
   studentsEmptyDescription: string
   renameCommitteeAriaLabel: string
@@ -30,7 +34,8 @@ const emit = defineEmits<{
       | 'deleteCommittee'
       | 'update:committeeRoom'
       | 'update:committeeDate'
-      | 'update:committeeSecretary',
+      | 'update:committeeSecretary'
+      | 'update:committeeLanguage',
     value: string
   ): void
 }>()
@@ -39,6 +44,7 @@ const tableWrapper = ref<HTMLElement | null>(null)
 const localStudents = ref<StudentRow[]>([])
 const roomInputValue = ref('')
 const secretaryInputValue = ref('')
+const committeeLanguageValue = ref<StudyLanguageDto | null>(null)
 const calendarModelValue = ref<unknown>(undefined)
 const renameActionButtonClass = 'shrink-0 px-2 cursor-pointer'
 const renameActionButtonUi = {
@@ -72,6 +78,14 @@ watch(
   () => props.selectedCommittee?.secretaryName ?? '',
   (nextSecretary) => {
     secretaryInputValue.value = nextSecretary
+  },
+  { immediate: true }
+)
+
+watch(
+  () => props.selectedCommittee?.language,
+  (nextLanguage) => {
+    committeeLanguageValue.value = nextLanguage ?? null
   },
   { immediate: true }
 )
@@ -146,6 +160,15 @@ function updateCommitteeSecretary(nextValue: string | number): void {
   const secretary = String(nextValue)
   secretaryInputValue.value = secretary
   emit('update:committeeSecretary', secretary)
+}
+
+function updateCommitteeLanguage(nextLanguage: StudyLanguageDto): void {
+  if (!props.selectedCommittee) {
+    return
+  }
+
+  committeeLanguageValue.value = nextLanguage
+  emit('update:committeeLanguage', nextLanguage)
 }
 
 function handleCalendarDateSelect(nextDateValue: unknown, close?: () => void): void {
@@ -247,6 +270,32 @@ if (import.meta.client) {
                     :disabled="!props.selectedCommittee"
                     @update:model-value="updateCommitteeRoom"
                   />
+                </div>
+
+                <div class="flex items-center gap-2">
+                  <span class="text-sm">{{ props.committeeLanguageLabel }}:</span>
+                  <div class="border-default flex items-center gap-1 rounded-md border p-1">
+                    <UButton
+                      color="primary"
+                      size="xs"
+                      :variant="committeeLanguageValue === 'CZECH' ? 'solid' : 'ghost'"
+                      :disabled="!props.selectedCommittee"
+                      class="cursor-pointer"
+                      @click="updateCommitteeLanguage('CZECH')"
+                    >
+                      {{ props.committeeLanguageCzechLabel }}
+                    </UButton>
+                    <UButton
+                      color="primary"
+                      size="xs"
+                      :variant="committeeLanguageValue === 'ENGLISH' ? 'solid' : 'ghost'"
+                      :disabled="!props.selectedCommittee"
+                      class="cursor-pointer"
+                      @click="updateCommitteeLanguage('ENGLISH')"
+                    >
+                      {{ props.committeeLanguageEnglishLabel }}
+                    </UButton>
+                  </div>
                 </div>
               </div>
             </div>
