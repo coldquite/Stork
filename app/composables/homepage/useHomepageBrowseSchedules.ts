@@ -2,6 +2,7 @@ import type { TimeScheduleListItemDto, TimeScheduleTypeDto } from '#shared/types
 import type { HomepageScheduleListItem } from '~/types/homepage'
 import { HOMEPAGE_BROWSE_SCHEDULES_PAGE_SIZE, HOMEPAGE_BROWSE_SEARCH_DEBOUNCE_MS } from '~/constants/homepage'
 import { extractHttpErrorMessage } from '~/utils/http-error'
+import { buildTimeSchedulesListUrl } from '~/utils/time-schedules-list-url'
 
 type BrowseSchedulesTabKey = 'manual' | 'auto'
 
@@ -109,9 +110,13 @@ export function useHomepageBrowseSchedules() {
     searchQuery: string
   ): Promise<HomepageScheduleListItem[]> {
     const requestFetch = useRequestFetch()
-    const encodedSearchQuery = encodeURIComponent(searchQuery)
     const schedules = await requestFetch<TimeScheduleListItemDto[]>(
-      `/api/time-schedules?page=${page}&pageSize=${HOMEPAGE_BROWSE_SCHEDULES_PAGE_SIZE}&type=${type}&search=${encodedSearchQuery}`
+      buildTimeSchedulesListUrl({
+        page,
+        pageSize: HOMEPAGE_BROWSE_SCHEDULES_PAGE_SIZE,
+        type,
+        search: searchQuery
+      })
     )
 
     return schedules.map((schedule) => toHomepageScheduleListItem(schedule))

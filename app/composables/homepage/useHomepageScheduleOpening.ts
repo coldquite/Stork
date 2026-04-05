@@ -4,6 +4,7 @@ import type { Ref } from 'vue'
 import type { TimeScheduleListItemDto } from '#shared/types/time-schedules'
 import { useScheduleDraftStore } from '~/stores/schedule-draft'
 import type { ScheduleOpenCandidate } from '~/types/homepage'
+import { buildTimeSchedulesListUrl } from '~/utils/time-schedules-list-url'
 
 interface UseHomepageScheduleOpeningOptions {
   isCreatingNewSchedule: Readonly<Ref<boolean>>
@@ -86,7 +87,7 @@ export function useHomepageScheduleOpening(options: UseHomepageScheduleOpeningOp
     try {
       const requestFetch = useRequestFetch()
       recentSchedules.value = await requestFetch<TimeScheduleListItemDto[]>(
-        `/api/time-schedules?page=1&pageSize=${limit}`
+        buildTimeSchedulesListUrl({ page: 1, pageSize: limit })
       )
     } catch {
       hasRecentSchedulesError.value = true

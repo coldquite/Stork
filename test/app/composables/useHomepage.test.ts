@@ -611,8 +611,8 @@ describe('useHomepage browse schedules pagination', () => {
 
       const manualSearchCall = requestFetchMock.mock.calls[2]?.[0] as string
       const autoSearchCall = requestFetchMock.mock.calls[3]?.[0] as string
-      expect(manualSearchCall).toContain('search=alpha%20query')
-      expect(autoSearchCall).toContain('search=alpha%20query')
+      expect(new URL(manualSearchCall, 'http://localhost').searchParams.get('search')).toBe('alpha query')
+      expect(new URL(autoSearchCall, 'http://localhost').searchParams.get('search')).toBe('alpha query')
     } finally {
       vi.useRealTimers()
     }
