@@ -71,6 +71,7 @@ watch(
 
 const hasSelectedCommittee = computed(() => Boolean(props.selectedCommittee))
 const isEmptyValue = (value: string) => value.trim().length < 1
+const isRoomInvalid = computed(() => hasSelectedCommittee.value && isEmptyValue(roomInputValue.value))
 const isSecretaryInvalid = computed(() => hasSelectedCommittee.value && isEmptyValue(secretaryInputValue.value))
 
 const invalidInputUi = {
@@ -229,6 +230,7 @@ function setLanguage(lang: StudyLanguageDto): void {
         <UInput
           :model-value="roomInputValue"
           class="w-full min-w-0"
+          :ui="isRoomInvalid ? invalidInputUi : undefined"
           placeholder="—"
           :disabled="!props.selectedCommittee"
           @update:model-value="emitRoom"
