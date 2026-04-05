@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { CalendarDate } from '@internationalized/date'
 import type { ScheduleDraftCommittee } from '~/types/schedule-draft'
 import type { StudyLanguageDto } from '#shared/types/time-schedules'
 import type { EditorCommitteeStringFieldPayload } from '~/types/editor'
@@ -24,15 +25,11 @@ const roomInputValue = computed(() => props.selectedCommittee?.room ?? '')
 const secretaryInputValue = computed(() => props.selectedCommittee?.secretaryName ?? '')
 const committeeLanguageValue = computed<StudyLanguageDto | null>(() => props.selectedCommittee?.language ?? null)
 
-const calendarModelValue = ref<CalendarLikeDate | undefined>(undefined)
+/** shallowRef: avoid deep readonly unwrap that breaks UCalendar's `DateValue` prop typing. */
+const calendarModelValue = shallowRef<CalendarDate | undefined>(undefined)
 
-interface CalendarLikeDate {
-  year: number
-  month: number
-  day: number
-}
-
-function resolveCalendarModelValue(isoDate: string | undefined): CalendarLikeDate | undefined {
+/** UCalendar / Reka CalendarRoot require a DateValue with `.copy()` (not a plain object). */
+function resolveCalendarModelValue(isoDate: string | undefined): CalendarDate | undefined {
   if (!isoDate) {
     return undefined
   }
@@ -42,11 +39,7 @@ function resolveCalendarModelValue(isoDate: string | undefined): CalendarLikeDat
     return undefined
   }
 
-  return {
-    year: parsedDate.getUTCFullYear(),
-    month: parsedDate.getUTCMonth() + 1,
-    day: parsedDate.getUTCDate()
-  }
+  return new CalendarDate(parsedDate.getUTCFullYear(), parsedDate.getUTCMonth() + 1, parsedDate.getUTCDate())
 }
 
 watch(
@@ -57,9 +50,6 @@ watch(
   { immediate: true }
 )
 
-const secretaryInputWidthCh = computed(() => {
-  return Math.max(22, secretaryInputValue.value.length + 2)
-})
 const hasSelectedCommittee = computed(() => Boolean(props.selectedCommittee))
 const isEmptyValue = (value: string) => value.trim().length < 1
 const isSecretaryInvalid = computed(() => hasSelectedCommittee.value && isEmptyValue(secretaryInputValue.value))
@@ -67,30 +57,32 @@ const isSecretaryInvalid = computed(() => hasSelectedCommittee.value && isEmptyV
 const invalidInputUi = {
   base: 'ring-2 ring-inset ring-error/70'
 } as const
-const inputWidthPadding = '1.25rem + 2px'
-const secretaryInputWidthStyle = computed(() => {
-  return {
-    width: `calc(${secretaryInputWidthCh.value}ch + ${inputWidthPadding})`
-  }
-})
 
-function isCalendarLikeDate(value: unknown): value is CalendarLikeDate {
+function toCalendarDateFromUnknown(value: unknown): CalendarDate | undefined {
+  if (value instanceof CalendarDate) {
+    return value
+  }
+
   if (typeof value !== 'object' || value === null) {
-    return false
+    return undefined
   }
 
-  const candidate = value as Partial<CalendarLikeDate>
-  return (
+  const candidate = value as { year?: unknown; month?: unknown; day?: unknown }
+  if (
     typeof candidate.year === 'number' &&
-    Number.isFinite(candidate.year) &&
+    Number.isInteger(candidate.year) &&
     typeof candidate.month === 'number' &&
-    Number.isFinite(candidate.month) &&
+    Number.isInteger(candidate.month) &&
     typeof candidate.day === 'number' &&
-    Number.isFinite(candidate.day)
-  )
+    Number.isInteger(candidate.day)
+  ) {
+    return new CalendarDate(candidate.year, candidate.month, candidate.day)
+  }
+
+  return undefined
 }
 
-function toCommitteeIsoDate(nextDate: CalendarLikeDate, currentDateRaw: string | undefined): string {
+function toCommitteeIsoDate(nextDate: CalendarDate, currentDateRaw: string | undefined): string {
   const currentDate = currentDateRaw ? new Date(currentDateRaw) : new Date()
   const hasValidCurrentDate = Number.isFinite(currentDate.getTime())
 
@@ -105,12 +97,13 @@ function toCommitteeIsoDate(nextDate: CalendarLikeDate, currentDateRaw: string |
 }
 
 function handleCalendarDateSelect(nextDateValue: unknown, close?: () => void): void {
-  if (!isCalendarLikeDate(nextDateValue)) {
+  const nextCalendarDate = toCalendarDateFromUnknown(nextDateValue)
+  if (!nextCalendarDate) {
     return
   }
 
-  calendarModelValue.value = nextDateValue
-  emit('update:committeeDate', toCommitteeIsoDate(nextDateValue, props.selectedCommittee?.date))
+  calendarModelValue.value = nextCalendarDate
+  emit('update:committeeDate', toCommitteeIsoDate(nextCalendarDate, props.selectedCommittee?.date))
   close?.()
 }
 
@@ -140,52 +133,56 @@ function setLanguage(lang: StudyLanguageDto): void {
 </script>
 
 <template>
-  <div class="border-default w-fit max-w-full min-w-0 rounded-md border p-2">
+  <div class="border-default w-fit max-w-full min-w-58 rounded-md border p-2">
     <div class="flex flex-col gap-2">
-      <div class="flex items-center gap-2">
-        <span class="text-sm">{{ props.dateLabel }}:</span>
-        <UPopover :content="{ side: 'bottom', align: 'start' }">
-          <UButton
-            color="neutral"
-            variant="outline"
-            size="sm"
-            icon="i-lucide-calendar"
-            class="min-w-42 justify-start font-medium"
-            :disabled="!props.selectedCommittee"
-          >
-            {{ props.selectedCommitteeDate }}
-          </UButton>
+      <div class="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2">
+        <span class="text-sm whitespace-nowrap">{{ props.dateLabel }}:</span>
+        <div class="min-w-0">
+          <!-- flex (not block): Popover merges this onto the trigger; block breaks UButton's flex row so icon/text misalign. -->
+          <UPopover :content="{ side: 'bottom', align: 'start' }" class="flex w-full">
+            <UButton
+              color="neutral"
+              variant="outline"
+              size="sm"
+              icon="i-lucide-calendar"
+              class="flex h-auto w-full items-center justify-center px-2 py-1 text-sm font-medium"
+              :ui="{ leadingIcon: 'size-3.5 shrink-0 me-1' }"
+              :disabled="!props.selectedCommittee"
+            >
+              {{ props.selectedCommitteeDate }}
+            </UButton>
 
-          <template #content="{ close }">
-            <UCalendar
-              :model-value="calendarModelValue as any"
-              :week-starts-on="1"
-              @update:model-value="(value) => handleCalendarDateSelect(value, close)"
-            />
-          </template>
-        </UPopover>
+            <template #content="{ close }">
+              <UCalendar
+                :model-value="calendarModelValue"
+                :week-starts-on="1"
+                @update:model-value="(value) => handleCalendarDateSelect(value, close)"
+              />
+            </template>
+          </UPopover>
+        </div>
       </div>
 
-      <div class="flex items-center gap-2">
-        <span class="text-sm">{{ props.roomLabel }}:</span>
+      <div class="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2">
+        <span class="text-sm whitespace-nowrap">{{ props.roomLabel }}:</span>
         <UInput
           :model-value="roomInputValue"
-          class="w-38"
+          class="w-full min-w-0"
           placeholder="—"
           :disabled="!props.selectedCommittee"
           @update:model-value="emitRoom"
         />
       </div>
 
-      <div class="flex items-center gap-2">
-        <span class="text-sm">{{ props.languageLabel }}:</span>
-        <div class="border-default flex w-42 items-center gap-1 rounded-md border p-1">
+      <div class="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2">
+        <span class="text-sm whitespace-nowrap">{{ props.languageLabel }}:</span>
+        <div class="border-default flex min-w-0 items-center gap-1 rounded-md border p-1">
           <UButton
             color="primary"
             size="xs"
             :variant="committeeLanguageValue === 'CZECH' ? 'solid' : 'ghost'"
             :disabled="!props.selectedCommittee"
-            class="flex-1 cursor-pointer justify-center"
+            class="min-w-0 flex-1 cursor-pointer justify-center"
             @click="setLanguage('CZECH')"
           >
             {{ props.languageCzechLabel }}
@@ -195,7 +192,7 @@ function setLanguage(lang: StudyLanguageDto): void {
             size="xs"
             :variant="committeeLanguageValue === 'ENGLISH' ? 'solid' : 'ghost'"
             :disabled="!props.selectedCommittee"
-            class="flex-1 cursor-pointer justify-center"
+            class="min-w-0 flex-1 cursor-pointer justify-center"
             @click="setLanguage('ENGLISH')"
           >
             {{ props.languageEnglishLabel }}
@@ -203,12 +200,11 @@ function setLanguage(lang: StudyLanguageDto): void {
         </div>
       </div>
 
-      <div class="flex items-center gap-2">
-        <span class="text-sm">{{ props.secretaryLabel }}:</span>
+      <div class="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2">
+        <span class="text-sm whitespace-nowrap">{{ props.secretaryLabel }}:</span>
         <UInput
           :model-value="secretaryInputValue"
-          class="w-auto"
-          :style="secretaryInputWidthStyle"
+          class="w-full min-w-0"
           :ui="isSecretaryInvalid ? invalidInputUi : undefined"
           placeholder="—"
           :disabled="!props.selectedCommittee"

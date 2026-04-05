@@ -78,7 +78,7 @@ function requestDeleteCommittee(): void {
           @delete-committee="requestDeleteCommittee"
         />
 
-        <div class="text-muted flex flex-wrap items-stretch gap-2">
+        <div class="text-muted flex flex-wrap items-start gap-2">
           <EditorCommitteeBasicsCard
             :selected-committee="props.selectedCommittee"
             :selected-committee-date="props.selectedCommitteeDate"

@@ -100,8 +100,8 @@ function handleStartMinuteSelect(value: unknown): void {
         variant="outline"
         size="md"
         icon="i-lucide-clock-3"
-        class="h-auto w-fit min-w-0 shrink-0 justify-start gap-2.5 px-3.5 py-2 text-base font-semibold tabular-nums"
-        :ui="{ leadingIcon: 'size-5 shrink-0' }"
+        class="h-auto w-fit min-w-0 shrink-0 justify-start px-3.5 py-2 text-base font-semibold tabular-nums"
+        :ui="{ leadingIcon: 'size-5 shrink-0 me-2.5' }"
         :disabled="!props.selectedCommittee"
       >
         {{ startTimeButtonLabel }}
