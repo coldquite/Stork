@@ -1,4 +1,4 @@
-import { EDITOR_DRAFT_NAME_MAX_LENGTH } from '~/constants/editor'
+import { EDITOR_DRAFT_NAME_MAX_LENGTH } from '#shared/constants/editor'
 import { useValidationField } from '~/composables/useValidationField'
 import { useScheduleDraftStore } from '~/stores/schedule-draft'
 

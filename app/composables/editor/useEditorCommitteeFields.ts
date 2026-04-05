@@ -1,4 +1,4 @@
-import { resolveEditorSpecializationOptionByCode, resolveEditorStudyProgramNameOptions } from '~/constants/editor'
+import { resolveEditorSpecializationOptionByCode, resolveEditorStudyProgramNameOptions } from '#shared/constants/editor'
 import type { ScheduleDraftCommittee } from '~/types/schedule-draft'
 import { normalizeOptionalText, normalizeRequiredText } from '~/utils/editor/draft-committee'
 

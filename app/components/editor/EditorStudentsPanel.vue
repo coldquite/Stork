@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
 import { useSortable } from '@vueuse/integrations/useSortable'
-import { resolveEditorSpecializationOptions, resolveEditorStudyProgramNameOptions } from '~/constants/editor'
+import { resolveEditorSpecializationOptions, resolveEditorStudyProgramNameOptions } from '#shared/constants/editor'
 import type { StudentRow } from '~/types/editor'
 import type { ScheduleDraftCommittee, ScheduleDraftInvigilator } from '~/types/schedule-draft'
 import type { StudyLanguageDto, StudyProgramTypeDto } from '#shared/types/time-schedules'

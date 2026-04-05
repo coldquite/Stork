@@ -1,4 +1,4 @@
-import { DEFAULT_COMMITTEE_START_MINUTE } from '~/constants/editor'
+import { DEFAULT_COMMITTEE_START_MINUTE } from '#shared/constants/editor'
 import { useValidationField } from '~/composables/useValidationField'
 import { useScheduleDraftStore } from '~/stores/schedule-draft'
 import type { CommitteeTabItem } from '~/types/editor'

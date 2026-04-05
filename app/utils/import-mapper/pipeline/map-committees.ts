@@ -1,5 +1,5 @@
 import type { PostCommitteeDto } from '#shared/types/time-schedules'
-import { resolveEditorDepartmentNameByCode } from '~/constants/editor'
+import { resolveEditorDepartmentNameByCode } from '#shared/constants/editor'
 import type { ImportDataset, ImportSzzType } from '~/types/import'
 import { COMMITTEE_START_MINUTE } from '~/utils/import-mapper/core/constants'
 import { throwMappingError } from '~/utils/import-mapper/core/errors'
