@@ -575,6 +575,51 @@ export function useEditorPage() {
     committee.secretaryName = nextSecretaryName.length > 0 ? nextSecretaryName : null
   }
 
+  function updateSelectedCommitteeChairName(nextChairName: string): void {
+    const committee = selectedCommittee.value
+    if (!committee) {
+      return
+    }
+
+    committee.chairName = nextChairName
+  }
+
+  function updateSelectedCommitteeViceChairName(nextViceChairName: string): void {
+    const committee = selectedCommittee.value
+    if (!committee) {
+      return
+    }
+
+    committee.viceChairName = nextViceChairName
+  }
+
+  function updateSelectedCommitteeMember1Name(nextMember1Name: string): void {
+    const committee = selectedCommittee.value
+    if (!committee) {
+      return
+    }
+
+    committee.member1Name = nextMember1Name
+  }
+
+  function updateSelectedCommitteeMember2Name(nextMember2Name: string): void {
+    const committee = selectedCommittee.value
+    if (!committee) {
+      return
+    }
+
+    committee.member2Name = nextMember2Name
+  }
+
+  function updateSelectedCommitteeMember3Name(nextMember3Name: string): void {
+    const committee = selectedCommittee.value
+    if (!committee) {
+      return
+    }
+
+    committee.member3Name = nextMember3Name
+  }
+
   function clearCommitteeSpecializationAndDepartment(committee: ScheduleDraftCommittee): void {
     committee.specializationCode = ''
     committee.specializationName = ''
@@ -795,6 +840,11 @@ export function useEditorPage() {
     updateSelectedCommitteeRoom,
     updateSelectedCommitteeDate,
     updateSelectedCommitteeSecretary,
+    updateSelectedCommitteeChairName,
+    updateSelectedCommitteeViceChairName,
+    updateSelectedCommitteeMember1Name,
+    updateSelectedCommitteeMember2Name,
+    updateSelectedCommitteeMember3Name,
     updateSelectedCommitteeLanguage,
     updateSelectedCommitteeStudyProgramType,
     updateSelectedCommitteeStudyProgramName,

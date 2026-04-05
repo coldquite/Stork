@@ -316,6 +316,12 @@
       "room": "Místnost konání",
       "date": "Datum konání",
       "secretary": "Tajemník",
+      "members": "Složení komise",
+      "chair": "Předseda",
+      "viceChair": "Místopředseda",
+      "member1": "Člen 1",
+      "member2": "Člen 2",
+      "member3": "Člen 3",
       "language": "Jazyk komise",
       "languageOptions": {
         "czech": "Čeština",

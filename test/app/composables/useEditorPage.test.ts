@@ -310,6 +310,26 @@ describe('useEditorPage', () => {
     ).toBe('ENGLISH')
   })
 
+  it('updates committee members in draft store', async () => {
+    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const page = useEditorPage()
+
+    page.updateSelectedCommitteeChairName('doc. Předseda Nový')
+    page.updateSelectedCommitteeViceChairName('doc. Místopředseda Nový')
+    page.updateSelectedCommitteeMember1Name('Člen A')
+    page.updateSelectedCommitteeMember2Name('Člen B')
+    page.updateSelectedCommitteeMember3Name('Člen C')
+
+    const selectedCommittee = scheduleDraftStoreMock.draft?.committees.find(
+      (entry) => entry.localId === 'committee-early'
+    )
+    expect(selectedCommittee?.chairName).toBe('doc. Předseda Nový')
+    expect(selectedCommittee?.viceChairName).toBe('doc. Místopředseda Nový')
+    expect(selectedCommittee?.member1Name).toBe('Člen A')
+    expect(selectedCommittee?.member2Name).toBe('Člen B')
+    expect(selectedCommittee?.member3Name).toBe('Člen C')
+  })
+
   it('updates selected committee study program type in draft store', async () => {
     const { useEditorPage } = await import('~/composables/editor/useEditorPage')
     const page = useEditorPage()

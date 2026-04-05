@@ -66,6 +66,11 @@ const {
   updateSelectedCommitteeRoom,
   updateSelectedCommitteeDate,
   updateSelectedCommitteeSecretary,
+  updateSelectedCommitteeChairName,
+  updateSelectedCommitteeViceChairName,
+  updateSelectedCommitteeMember1Name,
+  updateSelectedCommitteeMember2Name,
+  updateSelectedCommitteeMember3Name,
   updateSelectedCommitteeLanguage,
   updateSelectedCommitteeStudyProgramType,
   updateSelectedCommitteeStudyProgramName,
@@ -121,6 +126,12 @@ const cloudSaveAriaLabel = computed(() => t('editor.schedule.cloudSave.ariaLabel
             :committee-room-label="t('editor.committee.room')"
             :committee-date-label="t('editor.committee.date')"
             :committee-secretary-label="t('editor.committee.secretary')"
+            :committee-members-label="t('editor.committee.members')"
+            :committee-chair-label="t('editor.committee.chair')"
+            :committee-vice-chair-label="t('editor.committee.viceChair')"
+            :committee-member1-label="t('editor.committee.member1')"
+            :committee-member2-label="t('editor.committee.member2')"
+            :committee-member3-label="t('editor.committee.member3')"
             :committee-language-label="t('editor.committee.language')"
             :committee-language-czech-label="t('editor.committee.languageOptions.czech')"
             :committee-language-english-label="t('editor.committee.languageOptions.english')"
@@ -142,6 +153,11 @@ const cloudSaveAriaLabel = computed(() => t('editor.schedule.cloudSave.ariaLabel
             @update:committee-room="updateSelectedCommitteeRoom"
             @update:committee-date="updateSelectedCommitteeDate"
             @update:committee-secretary="updateSelectedCommitteeSecretary"
+            @update:committee-chair="updateSelectedCommitteeChairName"
+            @update:committee-vice-chair="updateSelectedCommitteeViceChairName"
+            @update:committee-member1="updateSelectedCommitteeMember1Name"
+            @update:committee-member2="updateSelectedCommitteeMember2Name"
+            @update:committee-member3="updateSelectedCommitteeMember3Name"
             @update:committee-language="updateSelectedCommitteeLanguage"
             @update:committee-study-program-type="updateSelectedCommitteeStudyProgramType"
             @update:committee-study-program-name="updateSelectedCommitteeStudyProgramName"

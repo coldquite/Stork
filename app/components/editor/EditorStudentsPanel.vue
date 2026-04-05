@@ -18,6 +18,12 @@ const props = defineProps<{
   committeeRoomLabel: string
   committeeDateLabel: string
   committeeSecretaryLabel: string
+  committeeMembersLabel: string
+  committeeChairLabel: string
+  committeeViceChairLabel: string
+  committeeMember1Label: string
+  committeeMember2Label: string
+  committeeMember3Label: string
   committeeLanguageLabel: string
   committeeLanguageCzechLabel: string
   committeeLanguageEnglishLabel: string
@@ -48,6 +54,11 @@ const emit = defineEmits<{
       | 'update:committeeRoom'
       | 'update:committeeDate'
       | 'update:committeeSecretary'
+      | 'update:committeeChair'
+      | 'update:committeeViceChair'
+      | 'update:committeeMember1'
+      | 'update:committeeMember2'
+      | 'update:committeeMember3'
       | 'update:committeeStudyProgramName'
       | 'update:committeeSpecializationCode',
     value: string
@@ -60,6 +71,11 @@ const tableWrapper = ref<HTMLElement | null>(null)
 const localStudents = ref<StudentRow[]>([])
 const roomInputValue = ref('')
 const secretaryInputValue = ref('')
+const chairInputValue = ref('')
+const viceChairInputValue = ref('')
+const member1InputValue = ref('')
+const member2InputValue = ref('')
+const member3InputValue = ref('')
 const committeeLanguageValue = ref<StudyLanguageDto | null>(null)
 const committeeStudyProgramTypeValue = ref<StudyProgramTypeDto | null>(null)
 const committeeStudyProgramNameValue = ref('')
@@ -77,6 +93,32 @@ const deleteActionButtonUi = {
 }
 const secretaryInputWidthCh = computed(() => {
   return Math.max(25, secretaryInputValue.value.length + 2)
+})
+const committeeLeadersInputWidthCh = computed(() => {
+  const longestLeaderLength = Math.max(chairInputValue.value.length, viceChairInputValue.value.length)
+  return Math.max(14, longestLeaderLength)
+})
+const committeeLeadersLabelWidthCh = computed(() => {
+  const longestLeaderLabelLength = Math.max(props.committeeChairLabel.length, props.committeeViceChairLabel.length)
+  return longestLeaderLabelLength + 1
+})
+const committeeMembersInputWidthCh = computed(() => {
+  const longestMemberLength = Math.max(
+    member1InputValue.value.length,
+    member2InputValue.value.length,
+    member3InputValue.value.length
+  )
+  return Math.max(14, longestMemberLength)
+})
+const leaderInputWidthStyle = computed(() => {
+  return {
+    width: `calc(${committeeLeadersInputWidthCh.value}ch)`
+  }
+})
+const memberInputWidthStyle = computed(() => {
+  return {
+    width: `calc(${committeeMembersInputWidthCh.value}ch)`
+  }
 })
 const committeeStudyProgramNameOptions = computed(() => {
   const studyProgramType = committeeStudyProgramTypeValue.value
@@ -147,6 +189,46 @@ watch(
   () => props.selectedCommittee?.secretaryName ?? '',
   (nextSecretary) => {
     secretaryInputValue.value = nextSecretary
+  },
+  { immediate: true }
+)
+
+watch(
+  () => props.selectedCommittee?.chairName ?? '',
+  (nextChairName) => {
+    chairInputValue.value = nextChairName
+  },
+  { immediate: true }
+)
+
+watch(
+  () => props.selectedCommittee?.viceChairName ?? '',
+  (nextViceChairName) => {
+    viceChairInputValue.value = nextViceChairName
+  },
+  { immediate: true }
+)
+
+watch(
+  () => props.selectedCommittee?.member1Name ?? '',
+  (nextMember1Name) => {
+    member1InputValue.value = nextMember1Name
+  },
+  { immediate: true }
+)
+
+watch(
+  () => props.selectedCommittee?.member2Name ?? '',
+  (nextMember2Name) => {
+    member2InputValue.value = nextMember2Name
+  },
+  { immediate: true }
+)
+
+watch(
+  () => props.selectedCommittee?.member3Name ?? '',
+  (nextMember3Name) => {
+    member3InputValue.value = nextMember3Name
   },
   { immediate: true }
 )
@@ -271,6 +353,36 @@ function updateCommitteeSecretary(nextValue: string | number): void {
   emit('update:committeeSecretary', secretary)
 }
 
+function updateCommitteeChair(nextValue: string | number): void {
+  const chair = String(nextValue)
+  chairInputValue.value = chair
+  emit('update:committeeChair', chair)
+}
+
+function updateCommitteeViceChair(nextValue: string | number): void {
+  const viceChair = String(nextValue)
+  viceChairInputValue.value = viceChair
+  emit('update:committeeViceChair', viceChair)
+}
+
+function updateCommitteeMember1(nextValue: string | number): void {
+  const member1 = String(nextValue)
+  member1InputValue.value = member1
+  emit('update:committeeMember1', member1)
+}
+
+function updateCommitteeMember2(nextValue: string | number): void {
+  const member2 = String(nextValue)
+  member2InputValue.value = member2
+  emit('update:committeeMember2', member2)
+}
+
+function updateCommitteeMember3(nextValue: string | number): void {
+  const member3 = String(nextValue)
+  member3InputValue.value = member3
+  emit('update:committeeMember3', member3)
+}
+
 function updateCommitteeLanguage(nextLanguage: StudyLanguageDto): void {
   if (!props.selectedCommittee) {
     return
@@ -369,7 +481,7 @@ if (import.meta.client) {
             </div>
           </div>
 
-          <div class="text-muted mt-2 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
+          <div class="text-muted mt-2 grid gap-2 md:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_auto_auto_auto]">
             <div class="border-default rounded-md border p-2">
               <div class="flex flex-col gap-2">
                 <div class="flex items-center gap-2">
@@ -510,6 +622,88 @@ if (import.meta.client) {
                     size="sm"
                     :class="readOnlyInputClass"
                   />
+                </div>
+              </div>
+            </div>
+
+            <div class="border-default rounded-md border p-2">
+              <div class="space-y-2">
+                <p class="text-sm font-medium">{{ props.committeeMembersLabel }}</p>
+
+                <div class="grid gap-2 md:grid-cols-[auto_auto] md:justify-start md:gap-4">
+                  <div class="w-fit space-y-2">
+                    <div class="flex items-center gap-2">
+                      <span
+                        class="shrink-0 text-left text-sm whitespace-nowrap"
+                        :style="{ width: `${committeeLeadersLabelWidthCh}ch` }"
+                      >
+                        {{ props.committeeChairLabel }}:
+                      </span>
+                      <UInput
+                        :model-value="chairInputValue"
+                        class="w-auto"
+                        :style="leaderInputWidthStyle"
+                        placeholder="—"
+                        :disabled="!props.selectedCommittee"
+                        @update:model-value="updateCommitteeChair"
+                      />
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                      <span
+                        class="shrink-0 text-left text-sm whitespace-nowrap"
+                        :style="{ width: `${committeeLeadersLabelWidthCh}ch` }"
+                      >
+                        {{ props.committeeViceChairLabel }}:
+                      </span>
+                      <UInput
+                        :model-value="viceChairInputValue"
+                        class="w-auto"
+                        :style="leaderInputWidthStyle"
+                        placeholder="—"
+                        :disabled="!props.selectedCommittee"
+                        @update:model-value="updateCommitteeViceChair"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="w-fit space-y-2">
+                    <div class="flex items-center gap-2">
+                      <span class="text-sm whitespace-nowrap">{{ props.committeeMember1Label }}:</span>
+                      <UInput
+                        :model-value="member1InputValue"
+                        class="w-auto"
+                        :style="memberInputWidthStyle"
+                        placeholder="—"
+                        :disabled="!props.selectedCommittee"
+                        @update:model-value="updateCommitteeMember1"
+                      />
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                      <span class="text-sm whitespace-nowrap">{{ props.committeeMember2Label }}:</span>
+                      <UInput
+                        :model-value="member2InputValue"
+                        class="w-auto"
+                        :style="memberInputWidthStyle"
+                        placeholder="—"
+                        :disabled="!props.selectedCommittee"
+                        @update:model-value="updateCommitteeMember2"
+                      />
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                      <span class="text-sm whitespace-nowrap">{{ props.committeeMember3Label }}:</span>
+                      <UInput
+                        :model-value="member3InputValue"
+                        class="w-auto"
+                        :style="memberInputWidthStyle"
+                        placeholder="—"
+                        :disabled="!props.selectedCommittee"
+                        @update:model-value="updateCommitteeMember3"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
