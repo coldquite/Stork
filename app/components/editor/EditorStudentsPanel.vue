@@ -450,13 +450,13 @@ if (import.meta.client) {
                 <div class="flex items-center gap-2">
                   <span class="text-sm whitespace-nowrap">{{ props.committeeStudyProgramTypeLabel }}:</span>
 
-                  <div class="border-default flex items-center gap-1 rounded-md border p-1">
+                  <div class="border-default flex w-52 items-center gap-1 rounded-md border p-1">
                     <UButton
                       color="primary"
                       size="xs"
                       :variant="committeeStudyProgramTypeValue === 'BACHELOR' ? 'solid' : 'ghost'"
                       :disabled="!props.selectedCommittee"
-                      class="cursor-pointer"
+                      class="flex-1 cursor-pointer justify-center"
                       @click="updateCommitteeStudyProgramType('BACHELOR')"
                     >
                       {{ props.committeeStudyProgramTypeBachelorLabel }}
@@ -466,7 +466,7 @@ if (import.meta.client) {
                       size="xs"
                       :variant="committeeStudyProgramTypeValue === 'MASTER' ? 'solid' : 'ghost'"
                       :disabled="!props.selectedCommittee"
-                      class="cursor-pointer"
+                      class="flex-1 cursor-pointer justify-center"
                       @click="updateCommitteeStudyProgramType('MASTER')"
                     >
                       {{ props.committeeStudyProgramTypeMasterLabel }}
