@@ -1,4 +1,5 @@
 import { DEFAULT_COMMITTEE_START_MINUTE } from '~/constants/editor'
+import { useValidationField } from '~/composables/useValidationField'
 import { useScheduleDraftStore } from '~/stores/schedule-draft'
 import type { CommitteeTabItem } from '~/types/editor'
 import type { ScheduleDraftCommittee } from '~/types/schedule-draft'
@@ -81,17 +82,8 @@ export function useEditorCommitteeList() {
     return t('editor.committees.delete.description', { name: deleteCommitteeTargetLabel.value })
   })
 
-  watch(renameCommitteeName, () => {
-    if (renameCommitteeValidationError.value) {
-      renameCommitteeValidationError.value = null
-    }
-  })
-
-  watch(createCommitteeName, () => {
-    if (createCommitteeValidationError.value) {
-      createCommitteeValidationError.value = null
-    }
-  })
+  useValidationField(renameCommitteeName, renameCommitteeValidationError)
+  useValidationField(createCommitteeName, createCommitteeValidationError)
 
   function validateCommitteeName(nextName: string, committeeId: string): string | null {
     const normalizedName = nextName.trim()

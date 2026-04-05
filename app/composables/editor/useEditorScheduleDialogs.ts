@@ -1,4 +1,5 @@
 import { EDITOR_DRAFT_NAME_MAX_LENGTH } from '~/constants/editor'
+import { useValidationField } from '~/composables/useValidationField'
 import { useScheduleDraftStore } from '~/stores/schedule-draft'
 
 /**
@@ -17,17 +18,8 @@ export function useEditorScheduleDialogs() {
 
   const isCloudSaveLoading = computed(() => scheduleDraftStore.isManualSaveLoading)
 
-  watch(renameDraftName, () => {
-    if (renameDraftValidationError.value) {
-      renameDraftValidationError.value = null
-    }
-  })
-
-  watch(cloudSaveName, () => {
-    if (cloudSaveValidationError.value) {
-      cloudSaveValidationError.value = null
-    }
-  })
+  useValidationField(renameDraftName, renameDraftValidationError)
+  useValidationField(cloudSaveName, cloudSaveValidationError)
 
   function validateDraftName(nextName: string): string | null {
     const normalizedName = nextName.trim()

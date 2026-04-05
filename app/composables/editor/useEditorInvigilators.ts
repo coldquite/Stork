@@ -1,3 +1,4 @@
+import { useValidationField } from '~/composables/useValidationField'
 import type { ScheduleDraftCommittee } from '~/types/schedule-draft'
 import { createLocalId } from '~/utils/id'
 
@@ -31,11 +32,7 @@ export function useEditorInvigilators(selectedCommittee: ComputedRef<ScheduleDra
     return t('editor.committee.invigilators.delete.description', { name: deleteInvigilatorTargetName.value })
   })
 
-  watch(newInvigilatorName, () => {
-    if (invigilatorValidationError.value) {
-      invigilatorValidationError.value = null
-    }
-  })
+  useValidationField(newInvigilatorName, invigilatorValidationError)
 
   function validateInvigilatorName(nextName: string): string | null {
     const normalizedName = nextName.trim()
