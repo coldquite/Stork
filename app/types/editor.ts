@@ -15,6 +15,9 @@ export interface CommitteeTabItem {
 /** i18n strings for committee form blocks inside EditorStudentsPanel */
 export interface EditorStudentsPanelCommitteeLabels {
   committeeTitle: string
+  startTime: string
+  startTimeHour: string
+  startTimeMinute: string
   room: string
   date: string
   secretary: string

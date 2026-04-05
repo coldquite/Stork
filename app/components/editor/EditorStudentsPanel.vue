@@ -29,6 +29,7 @@ const emit = defineEmits<{
   (event: 'update:students', value: StudentRow[]): void
   (event: 'committeeStringField', payload: EditorCommitteeStringFieldPayload): void
   (event: 'update:committeeDate' | 'deleteInvigilator' | 'renameCommittee' | 'deleteCommittee', value: string): void
+  (event: 'update:committeeStartMinute', value: number): void
   (event: 'update:committeeLanguage', value: StudyLanguageDto): void
   (event: 'update:committeeStudyProgramType', value: StudyProgramTypeDto): void
   (event: 'addInvigilator'): void
@@ -124,6 +125,16 @@ function requestDeleteCommittee(): void {
             :is-invigilators-empty="isInvigilatorsEmpty"
             @add-invigilator="emit('addInvigilator')"
             @delete-invigilator="emit('deleteInvigilator', $event)"
+          />
+        </div>
+
+        <div class="border-default w-full min-w-0 border-t pt-3">
+          <EditorCommitteeStartTimeRow
+            :selected-committee="props.selectedCommittee"
+            :start-time-label="labels.startTime"
+            :start-time-hour-label="labels.startTimeHour"
+            :start-time-minute-label="labels.startTimeMinute"
+            @update:committee-start-minute="emit('update:committeeStartMinute', $event)"
           />
         </div>
       </div>

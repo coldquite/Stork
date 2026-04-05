@@ -6,6 +6,9 @@ import { normalizeOptionalText, normalizeRequiredText } from '~/utils/editor/dra
  * Mutations for committee metadata fields (room, members, study program chain) on the selected committee.
  */
 export function useEditorCommitteeFields(selectedCommittee: ComputedRef<ScheduleDraftCommittee | null>) {
+  const MIN_START_MINUTE = 0
+  const MAX_START_MINUTE = 24 * 60 - 1
+
   function clearCommitteeSpecializationAndDepartment(committee: ScheduleDraftCommittee): void {
     committee.specializationCode = ''
     committee.specializationName = ''
@@ -31,6 +34,20 @@ export function useEditorCommitteeFields(selectedCommittee: ComputedRef<Schedule
   function updateSelectedCommitteeDate(nextIsoDate: string): void {
     withSelectedCommittee((committee) => {
       committee.date = nextIsoDate
+    })
+  }
+
+  function updateSelectedCommitteeStartMinute(nextStartMinute: number): void {
+    withSelectedCommittee((committee) => {
+      if (!Number.isInteger(nextStartMinute)) {
+        return
+      }
+
+      if (nextStartMinute < MIN_START_MINUTE || nextStartMinute > MAX_START_MINUTE) {
+        return
+      }
+
+      committee.startMinute = nextStartMinute
     })
   }
 
@@ -158,6 +175,7 @@ export function useEditorCommitteeFields(selectedCommittee: ComputedRef<Schedule
   return {
     updateSelectedCommitteeRoom,
     updateSelectedCommitteeDate,
+    updateSelectedCommitteeStartMinute,
     updateSelectedCommitteeSecretary,
     updateSelectedCommitteeChairName,
     updateSelectedCommitteeViceChairName,

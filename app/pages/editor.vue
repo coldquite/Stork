@@ -25,6 +25,9 @@ const cloudSaveAriaLabel = computed(() => t('editor.schedule.cloudSave.ariaLabel
 
 const committeeLabels = computed(() => ({
   committeeTitle: t('editor.committee.title'),
+  startTime: t('editor.committee.startTime'),
+  startTimeHour: t('editor.committee.startTimeHour'),
+  startTimeMinute: t('editor.committee.startTimeMinute'),
   room: t('editor.committee.room'),
   date: t('editor.committee.date'),
   secretary: t('editor.committee.secretary'),
@@ -203,6 +206,7 @@ const draftNameText = computed(() => draftName.value)
             @update:students="setStudentRows"
             @committee-string-field="onCommitteeStringField"
             @update:committee-date="committeeFields.updateSelectedCommitteeDate"
+            @update:committee-start-minute="committeeFields.updateSelectedCommitteeStartMinute"
             @update:committee-language="committeeFields.updateSelectedCommitteeLanguage"
             @update:committee-study-program-type="committeeFields.updateSelectedCommitteeStudyProgramType"
             @add-invigilator="invigilators.openAddInvigilatorDialog"

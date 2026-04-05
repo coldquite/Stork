@@ -324,6 +324,20 @@ describe('useEditorPage', () => {
     ).toBe('ENGLISH')
   })
 
+  it('updates selected committee start minute in draft store', async () => {
+    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const page = useEditorPage()
+
+    expect(page.committeeList.selectedCommittee.value?.startMinute).toBe(510)
+
+    page.committeeFields.updateSelectedCommitteeStartMinute(585)
+
+    expect(page.committeeList.selectedCommittee.value?.startMinute).toBe(585)
+    expect(
+      scheduleDraftStoreMock.draft?.committees.find((entry) => entry.localId === 'committee-early')?.startMinute
+    ).toBe(585)
+  })
+
   it('updates committee members in draft store', async () => {
     const { useEditorPage } = await import('~/composables/editor/useEditorPage')
     const page = useEditorPage()

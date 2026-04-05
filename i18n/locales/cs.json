@@ -313,6 +313,9 @@
     },
     "committee": {
       "title": "Vybraná komise",
+      "startTime": "Začátek první zkoušky před komisí",
+      "startTimeHour": "Hodina",
+      "startTimeMinute": "Minuta",
       "room": "Místnost konání",
       "date": "Datum konání",
       "secretary": "Tajemník",

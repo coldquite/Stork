@@ -64,6 +64,7 @@ export function useEditorPage() {
     committeeFields: {
       updateSelectedCommitteeRoom: committeeFields.updateSelectedCommitteeRoom,
       updateSelectedCommitteeDate: committeeFields.updateSelectedCommitteeDate,
+      updateSelectedCommitteeStartMinute: committeeFields.updateSelectedCommitteeStartMinute,
       updateSelectedCommitteeSecretary: committeeFields.updateSelectedCommitteeSecretary,
       updateSelectedCommitteeChairName: committeeFields.updateSelectedCommitteeChairName,
       updateSelectedCommitteeViceChairName: committeeFields.updateSelectedCommitteeViceChairName,
