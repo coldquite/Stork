@@ -57,7 +57,8 @@ export const useAuthStore = defineStore('auth', () => {
 
     try {
       const scheduleDraftStore = useScheduleDraftStore()
-      await $fetch('/api/auth/logout', { method: 'POST' })
+      const requestFetch = useRequestFetch()
+      await requestFetch('/api/auth/logout', { method: 'POST' })
       scheduleDraftStore.clearDraft()
       clearSessionState()
       await navigateTo('/login', { replace: true })
