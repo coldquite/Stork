@@ -344,7 +344,7 @@ export const EDITOR_SPECIALIZATION_OPTIONS_BY_TYPE_AND_STUDY_PROGRAM_NAME: Edito
       'Quantum Informatics': [
         createEditorSpecializationOption({
           specializationCode: 'QNIE',
-          specializationName: 'Quantum Infromatics',
+          specializationName: 'Quantum Informatics',
           departmentCode: '18105'
         })
       ],
