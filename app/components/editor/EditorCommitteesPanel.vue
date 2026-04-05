@@ -56,6 +56,20 @@ function requestCreateCommittee(): void {
     </template>
 
     <div class="border-default bg-default border-y-2 p-0">
+      <div class="border-default border-b-2 p-2">
+        <UButton
+          color="primary"
+          variant="soft"
+          size="lg"
+          icon="i-lucide-plus"
+          block
+          class="ring-primary/35 hover:ring-primary/55 cursor-pointer font-semibold ring-2"
+          @click="requestCreateCommittee"
+        >
+          {{ props.createActionLabel }}
+        </UButton>
+      </div>
+
       <ul v-auto-animate role="listbox" :aria-label="props.title" class="w-full">
         <li v-for="item in props.committeeTabs" :key="item.value">
           <UButton
@@ -85,20 +99,6 @@ function requestCreateCommittee(): void {
           </UButton>
         </li>
       </ul>
-    </div>
-
-    <div class="border-default border-t-2 p-2">
-      <UButton
-        color="primary"
-        variant="soft"
-        size="lg"
-        icon="i-lucide-plus"
-        block
-        class="ring-primary/35 hover:ring-primary/55 cursor-pointer font-semibold ring-2"
-        @click="requestCreateCommittee"
-      >
-        {{ props.createActionLabel }}
-      </UButton>
     </div>
   </UCard>
 </template>
