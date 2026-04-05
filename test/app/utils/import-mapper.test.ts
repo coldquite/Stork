@@ -892,6 +892,56 @@ describe('mapImportPayloadToDraftSource', () => {
     expect(result.draft.committees[0]?.defenseDepartmentName).toBeNull()
   })
 
+  it('maps committee defense department name from known code when studenti-komise name is empty', () => {
+    const payload = createValidPayload()
+    payload.committees.rows[0] = createCommitteesRow({
+      Kat: '18102'
+    })
+    payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
+      'VŠKP-typ A: Katedra obhajoby - kod': '',
+      'VŠKP-typ A: Katedra obhajoby - název': ''
+    })
+
+    const result = mapImportPayloadToDraftSource({
+      scheduleName: 'SZZ červen 2025',
+      szzType: 'BACHELOR',
+      payload
+    })
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) {
+      throw new Error('Expected mapping success')
+    }
+
+    expect(result.draft.committees[0]?.defenseDepartmentCode).toBe('18102')
+    expect(result.draft.committees[0]?.defenseDepartmentName).toBe('Katedra softwarového inženýrství')
+  })
+
+  it('maps committee defense department name from studenti-komise code when name is empty', () => {
+    const payload = createValidPayload()
+    payload.committees.rows[0] = createCommitteesRow({
+      Kat: '18104'
+    })
+    payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
+      'VŠKP-typ A: Katedra obhajoby - kod': '18104',
+      'VŠKP-typ A: Katedra obhajoby - název': ''
+    })
+
+    const result = mapImportPayloadToDraftSource({
+      scheduleName: 'SZZ červen 2025',
+      szzType: 'BACHELOR',
+      payload
+    })
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) {
+      throw new Error('Expected mapping success')
+    }
+
+    expect(result.draft.committees[0]?.defenseDepartmentCode).toBe('18104')
+    expect(result.draft.committees[0]?.defenseDepartmentName).toBe('Katedra počítačových systémů')
+  })
+
   it('returns MISSING_DATASET with correct datasetKey when required file is missing', () => {
     const payload = createValidPayload()
     payload.studentsStork.bachelor = undefined

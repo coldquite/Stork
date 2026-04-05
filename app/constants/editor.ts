@@ -73,6 +73,18 @@ const EDITOR_DEPARTMENTS_BY_CODE: Record<EditorDepartmentCode, EditorDepartment>
   }
 }
 
+export function resolveEditorDepartmentNameByCode(code: string | null | undefined): string | null {
+  if (!code) {
+    return null
+  }
+
+  if (!(code in EDITOR_DEPARTMENTS_BY_CODE)) {
+    return null
+  }
+
+  return EDITOR_DEPARTMENTS_BY_CODE[code as EditorDepartmentCode].nameCs
+}
+
 function createEditorSpecializationOption(input: {
   specializationCode: string
   specializationName: string

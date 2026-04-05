@@ -1,4 +1,5 @@
 import type { PostCommitteeDto } from '#shared/types/time-schedules'
+import { resolveEditorDepartmentNameByCode } from '~/constants/editor'
 import type { ImportDataset, ImportSzzType } from '~/types/import'
 import { COMMITTEE_START_MINUTE } from '~/utils/import-mapper/core/constants'
 import { throwMappingError } from '~/utils/import-mapper/core/errors'
@@ -162,6 +163,9 @@ export function mapCommittees(
       representativeStudentsRow,
       'VŠKP-typ A: Katedra obhajoby - název'
     )
+    const defenseDepartmentCode = studentsDefenseDepartmentCode ?? committeesDefenseDepartmentCode
+    const defenseDepartmentName =
+      studentsDefenseDepartmentName ?? resolveEditorDepartmentNameByCode(defenseDepartmentCode) ?? null
 
     const studyProgramTypeValue = readRequiredValue(representativeStudentsRow, 'St. program - typ')
     const studyProgramType = parseStudyProgramType(studyProgramTypeValue)
@@ -223,8 +227,8 @@ export function mapCommittees(
       studyProgramType,
       specializationName: committeesSpecializationName,
       specializationCode: normalizeSpecializationCode(readRequiredValue(representativeStudentsRow, 'Obor/spec - kód')),
-      defenseDepartmentCode: studentsDefenseDepartmentCode ?? committeesDefenseDepartmentCode,
-      defenseDepartmentName: studentsDefenseDepartmentName ?? null,
+      defenseDepartmentCode,
+      defenseDepartmentName,
       chairName: readRequiredValue(representativeStudentsRow, 'Komise - předseda'),
       viceChairName: readRequiredValue(representativeStudentsRow, 'Komise - místopředseda'),
       member1Name: readRequiredValue(representativeStudentsRow, 'Komise - člen 1'),
