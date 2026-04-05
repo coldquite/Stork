@@ -113,9 +113,13 @@ export function useEditorScheduleDialogs() {
       return
     }
 
-    try {
-      await scheduleDraftStore.saveManualDraft(cloudSaveName.value.trim(), true)
-    } catch {
+    const savedSuccessfully = await scheduleDraftStore
+      .saveManualDraft(cloudSaveName.value.trim(), true)
+      .then(() => true)
+      .catch(() => false)
+
+    if (!savedSuccessfully) {
+      // `saveManualDraft` sets `manualSaveErrorCode` before rejecting and `useScheduleAutoSaveToasts` shows it
       return
     }
 
