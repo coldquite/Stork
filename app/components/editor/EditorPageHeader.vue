@@ -59,7 +59,7 @@ function requestSaveToCloud(): void {
             :loading="props.cloudSaveLoading"
             class="shrink-0 cursor-pointer"
             :ui="{
-              base: 'h-10 bg-default border-2 border-success-400 text-success-600 hover:border-success-500 hover:bg-success-50 dark:border-success-400 dark:bg-default dark:text-success-100 dark:hover:bg-success-600/25'
+              base: 'h-10 bg-default border-2 border-success-500 text-success-600 hover:border-success-600 hover:bg-success-50 dark:border-success-500 dark:bg-default dark:text-success-100 dark:hover:bg-success-600/25'
             }"
             @click="requestSaveToCloud"
           />
