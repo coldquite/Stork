@@ -90,7 +90,7 @@ export function buildEditorCommitteeListEntries(
       committee,
       label: resolveCommitteeLabel(committee, fallbackLabel),
       dateLabel: formatCommitteeDate(committee.date),
-      studentsCount: committee.items.filter((item) => item.type === 'STUDENT').length
+      studentsCount: committee.items.filter(isStudentItem).length
     }))
 }
 
