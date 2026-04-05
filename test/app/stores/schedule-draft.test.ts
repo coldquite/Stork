@@ -585,4 +585,60 @@ describe('useScheduleDraftStore', () => {
     expect(store.lastSavedAt).toBeNull()
     expect(store.lastSavedType).toBeNull()
   })
+
+  it('ignores stale auto save metadata when draft changes during pending AUTO request', async () => {
+    vi.useFakeTimers()
+
+    try {
+      const store = useScheduleDraftStore()
+      store.setAutoSavePolicy({ enabled: false })
+      store.initializeFromSource(createApiSchedule('StaleAutoFlight'))
+
+      if (!store.draft) {
+        throw new Error('Expected draft to be initialized')
+      }
+
+      store.draft.name = 'Before pending auto-save'
+      await nextTick()
+
+      expect(store.isDirty).toBe(true)
+
+      const deferred = createDeferred<PostTimeScheduleResponseDto>()
+      requestFetchMock.mockImplementationOnce(() => deferred.promise)
+
+      store.setAutoSavePolicy({
+        enabled: true,
+        debounceMs: 60_000,
+        minIntervalMs: 0,
+        retryAfterErrorMs: 200
+      })
+
+      const autoSavePromise = store.forceAutoSave()
+
+      expect(store.isAutoSaveRunning).toBe(true)
+
+      store.draft.name = 'Edited during pending auto-save'
+      await nextTick()
+
+      deferred.resolve({
+        id: 'saved-auto-stale-flight',
+        createdAt: '2026-06-11T15:00:00.000Z'
+      })
+
+      await expect(autoSavePromise).resolves.toEqual({
+        id: 'saved-auto-stale-flight',
+        createdAt: '2026-06-11T15:00:00.000Z'
+      })
+
+      expect(store.isAutoSaveRunning).toBe(false)
+      expect(store.draft?.name).toBe('Edited during pending auto-save')
+      expect(store.isDirty).toBe(true)
+      expect(store.lastSavedScheduleId).toBeNull()
+      expect(store.lastSavedAt).toBeNull()
+      expect(store.lastSavedType).toBeNull()
+      expect(store.nextAutoSaveAt).not.toBeNull()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
 })
