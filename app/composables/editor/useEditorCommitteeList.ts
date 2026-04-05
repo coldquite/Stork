@@ -179,7 +179,10 @@ export function useEditorCommitteeList() {
       date: lastCommittee?.date ?? new Date().toISOString(),
       room: lastCommittee?.room ?? null,
       secretaryName: lastCommittee?.secretaryName ?? null,
-      invigilators: lastCommittee?.invigilators.slice() ?? [],
+      invigilators: (lastCommittee?.invigilators ?? []).map((invigilator) => ({
+        localId: createLocalId(),
+        name: invigilator.name
+      })),
       language: lastCommittee?.language ?? 'CZECH',
       studyProgramName: lastCommittee?.studyProgramName ?? '',
       studyProgramType: lastCommittee?.studyProgramType ?? 'BACHELOR',

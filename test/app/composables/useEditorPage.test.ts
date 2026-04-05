@@ -83,6 +83,7 @@ function createCommittee(options: {
   startMinute: number
   date: string
   items?: ScheduleDraftItem[]
+  invigilators?: ScheduleDraftCommittee['invigilators']
 }): ScheduleDraftCommittee {
   return {
     localId: options.localId,
@@ -91,7 +92,7 @@ function createCommittee(options: {
     date: options.date,
     room: 'TH:A-1435',
     secretaryName: 'Sekretář',
-    invigilators: ['Dozor'],
+    invigilators: options.invigilators ?? [{ localId: 'invigilator-dozor', name: 'Dozor' }],
     language: 'CZECH',
     studyProgramName: 'Informatika',
     studyProgramType: 'BACHELOR',
@@ -129,7 +130,8 @@ function createDraftWithTwoCommittees(): ScheduleDraft {
         name: '1-NI-SI',
         date: '2026-06-11T00:00:00.000Z',
         startMinute: 525,
-        items: []
+        items: [],
+        invigilators: []
       })
     ]
   }
@@ -262,7 +264,10 @@ describe('useEditorPage', () => {
 
     expect(page.isAddInvigilatorDialogOpen.value).toBe(false)
     expect(page.invigilatorValidationError.value).toBeNull()
-    expect(scheduleDraftStoreMock.draft?.committees[0]?.invigilators).toEqual(['Dozor', 'Novák Jan, Ing.'])
+    expect(scheduleDraftStoreMock.draft?.committees[0]?.invigilators.map((entry) => entry.name)).toEqual([
+      'Dozor',
+      'Novák Jan, Ing.'
+    ])
   })
 
   it('validates invigilator name when it is blank or has outer whitespace', async () => {
@@ -285,9 +290,9 @@ describe('useEditorPage', () => {
     const { useEditorPage } = await import('~/composables/editor/useEditorPage')
     const page = useEditorPage()
 
-    expect(scheduleDraftStoreMock.draft?.committees[0]?.invigilators).toEqual(['Dozor'])
+    expect(scheduleDraftStoreMock.draft?.committees[0]?.invigilators.map((entry) => entry.name)).toEqual(['Dozor'])
 
-    page.openDeleteInvigilatorConfirm(0)
+    page.openDeleteInvigilatorConfirm('invigilator-dozor')
     expect(page.isDeleteInvigilatorConfirmOpen.value).toBe(true)
 
     page.submitDeleteInvigilator()

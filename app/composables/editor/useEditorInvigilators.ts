@@ -1,4 +1,5 @@
 import type { ScheduleDraftCommittee } from '~/types/schedule-draft'
+import { createLocalId } from '~/utils/id'
 
 /**
  * Invigilator list UI state and mutations for the selected committee.
@@ -10,7 +11,7 @@ export function useEditorInvigilators(selectedCommittee: ComputedRef<ScheduleDra
   const newInvigilatorName = ref('')
   const invigilatorValidationError = ref<string | null>(null)
   const isDeleteInvigilatorConfirmOpen = ref(false)
-  const deleteInvigilatorIndex = ref<number | null>(null)
+  const deleteInvigilatorLocalId = ref<string | null>(null)
 
   const selectedInvigilators = computed(() => selectedCommittee.value?.invigilators ?? [])
 
@@ -19,12 +20,12 @@ export function useEditorInvigilators(selectedCommittee: ComputedRef<ScheduleDra
   )
 
   const deleteInvigilatorTargetName = computed(() => {
-    const targetIndex = deleteInvigilatorIndex.value
-    if (targetIndex === null) {
+    const targetLocalId = deleteInvigilatorLocalId.value
+    if (!targetLocalId) {
       return undefined
     }
 
-    return selectedInvigilators.value[targetIndex]
+    return selectedInvigilators.value.find((invigilator) => invigilator.localId === targetLocalId)?.name
   })
   const deleteInvigilatorConfirmDescription = computed(() => {
     return t('editor.committee.invigilators.delete.description', { name: deleteInvigilatorTargetName.value })
@@ -50,23 +51,24 @@ export function useEditorInvigilators(selectedCommittee: ComputedRef<ScheduleDra
     return null
   }
 
-  function openDeleteInvigilatorConfirm(invigilatorIndex: number): void {
+  function openDeleteInvigilatorConfirm(invigilatorLocalId: string): void {
     const committee = selectedCommittee.value
     if (!committee) {
       return
     }
 
-    if (invigilatorIndex < 0 || invigilatorIndex >= committee.invigilators.length) {
+    const hasInvigilator = committee.invigilators.some((invigilator) => invigilator.localId === invigilatorLocalId)
+    if (!hasInvigilator) {
       return
     }
 
-    deleteInvigilatorIndex.value = invigilatorIndex
+    deleteInvigilatorLocalId.value = invigilatorLocalId
     isDeleteInvigilatorConfirmOpen.value = true
   }
 
   function closeDeleteInvigilatorConfirm(): void {
     isDeleteInvigilatorConfirmOpen.value = false
-    deleteInvigilatorIndex.value = null
+    deleteInvigilatorLocalId.value = null
   }
 
   function openAddInvigilatorDialog(): void {
@@ -98,7 +100,10 @@ export function useEditorInvigilators(selectedCommittee: ComputedRef<ScheduleDra
       return
     }
 
-    committee.invigilators.push(newInvigilatorName.value.trim())
+    committee.invigilators.push({
+      localId: createLocalId(),
+      name: newInvigilatorName.value.trim()
+    })
     closeAddInvigilatorDialog()
   }
 
@@ -109,18 +114,19 @@ export function useEditorInvigilators(selectedCommittee: ComputedRef<ScheduleDra
       return
     }
 
-    const invigilatorIndex = deleteInvigilatorIndex.value
-    if (invigilatorIndex === null) {
+    const targetLocalId = deleteInvigilatorLocalId.value
+    if (!targetLocalId) {
       closeDeleteInvigilatorConfirm()
       return
     }
 
-    if (invigilatorIndex < 0 || invigilatorIndex >= committee.invigilators.length) {
+    const nextInvigilators = committee.invigilators.filter((invigilator) => invigilator.localId !== targetLocalId)
+    if (nextInvigilators.length === committee.invigilators.length) {
       closeDeleteInvigilatorConfirm()
       return
     }
 
-    committee.invigilators.splice(invigilatorIndex, 1)
+    committee.invigilators = nextInvigilators
     closeDeleteInvigilatorConfirm()
   }
 

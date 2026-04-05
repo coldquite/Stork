@@ -3,7 +3,7 @@ import type { TableColumn } from '@nuxt/ui'
 import { useSortable } from '@vueuse/integrations/useSortable'
 import { resolveEditorSpecializationOptions, resolveEditorStudyProgramNameOptions } from '~/constants/editor'
 import type { StudentRow } from '~/types/editor'
-import type { ScheduleDraftCommittee } from '~/types/schedule-draft'
+import type { ScheduleDraftCommittee, ScheduleDraftInvigilator } from '~/types/schedule-draft'
 import type { StudyLanguageDto, StudyProgramTypeDto } from '#shared/types/time-schedules'
 
 const props = defineProps<{
@@ -33,7 +33,7 @@ const props = defineProps<{
   committeeStudyProgramNameLabel: string
   committeeSpecializationCodeLabel: string
   committeeDepartmentLabel: string
-  invigilators: string[]
+  invigilators: ScheduleDraftInvigilator[]
   invigilatorsCountLabel: string
   addInvigilatorActionLabel: string
   deleteInvigilatorAriaLabel: string
@@ -46,11 +46,11 @@ const props = defineProps<{
 const emit = defineEmits<{
   (event: 'update:students', value: StudentRow[]): void
   (event: 'addInvigilator'): void
-  (event: 'deleteInvigilator', value: number): void
   (
     event:
       | 'renameCommittee'
       | 'deleteCommittee'
+      | 'deleteInvigilator'
       | 'update:committeeRoom'
       | 'update:committeeDate'
       | 'update:committeeSecretary'
@@ -279,12 +279,12 @@ function requestAddInvigilator(): void {
   emit('addInvigilator')
 }
 
-function requestDeleteInvigilator(invigilatorIndex: number): void {
+function requestDeleteInvigilator(invigilatorLocalId: string): void {
   if (!props.selectedCommittee) {
     return
   }
 
-  emit('deleteInvigilator', invigilatorIndex)
+  emit('deleteInvigilator', invigilatorLocalId)
 }
 
 function isCalendarLikeDate(value: unknown): value is CalendarLikeDate {
@@ -731,12 +731,12 @@ if (import.meta.client) {
 
                 <ul v-if="props.invigilators.length > 0" class="space-y-2">
                   <li
-                    v-for="(invigilatorName, invigilatorIndex) in props.invigilators"
-                    :key="`${invigilatorName}-${invigilatorIndex}`"
+                    v-for="invigilator in props.invigilators"
+                    :key="invigilator.localId"
                     class="flex items-center gap-2"
                   >
                     <UInput
-                      :model-value="invigilatorName"
+                      :model-value="invigilator.name"
                       disabled
                       :class="`cursor-not-allowed select-none ${readOnlyInputClass}`"
                     />
@@ -747,7 +747,7 @@ if (import.meta.client) {
                       :aria-label="props.deleteInvigilatorAriaLabel"
                       :class="actionButtonClass"
                       :ui="deleteActionButtonUi"
-                      @click="requestDeleteInvigilator(invigilatorIndex)"
+                      @click="requestDeleteInvigilator(invigilator.localId)"
                     />
                   </li>
                 </ul>

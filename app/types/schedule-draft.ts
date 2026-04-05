@@ -15,13 +15,20 @@ export interface ScheduleAutoSavePolicy {
 
 export type ScheduleDraftOperationErrorCode = 'DRAFT_NOT_INITIALIZED' | 'REQUEST_FAILED'
 
+/** UI-only stable row id for invigilators. */
+export interface ScheduleDraftInvigilator {
+  localId: string
+  name: string
+}
+
 export type ScheduleDraft = Omit<PostTimeScheduleRequestDto, 'committees'> & {
   committees: ScheduleDraftCommittee[]
 }
 
-export type ScheduleDraftCommittee = Omit<PostCommitteeDto, 'items'> & {
+export type ScheduleDraftCommittee = Omit<PostCommitteeDto, 'items' | 'invigilators'> & {
   localId: string
   items: ScheduleDraftItem[]
+  invigilators: ScheduleDraftInvigilator[]
 }
 
 export type ScheduleDraftItem = PostCommitteeItemDto & { localId: string }

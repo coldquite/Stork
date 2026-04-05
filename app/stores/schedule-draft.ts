@@ -40,6 +40,7 @@ import type {
   ScheduleDraftOperationErrorCode,
   ScheduleDraft,
   ScheduleDraftCommittee,
+  ScheduleDraftInvigilator,
   ScheduleDraftItem
 } from '~/types/schedule-draft'
 import { DEFAULT_NEW_SCHEDULE_NAME_PREFIX, DEFAULT_SCHEDULE_AUTOSAVE_POLICY } from '~/constants/schedule-draft'
@@ -66,6 +67,13 @@ function createAutoScheduleName(draftName: string, now: Date = new Date()): stri
 
 function createDefaultNewScheduleName(now: Date = new Date()): string {
   return `${DEFAULT_NEW_SCHEDULE_NAME_PREFIX}${now.toISOString()}`
+}
+
+function invigilatorsFromApiStrings(names: string[]): ScheduleDraftInvigilator[] {
+  return names.map((name) => ({
+    localId: createLocalId(),
+    name
+  }))
 }
 
 function toDraftItem(item: DraftItemSource): ScheduleDraftItem {
@@ -96,7 +104,7 @@ function toDraftCommittee(committee: DraftCommitteeSource): ScheduleDraftCommitt
     date: committee.date,
     room: committee.room,
     secretaryName: committee.secretaryName,
-    invigilators: deepClone(committee.invigilators),
+    invigilators: invigilatorsFromApiStrings(committee.invigilators),
     language: committee.language,
     studyProgramName: committee.studyProgramName,
     studyProgramType: committee.studyProgramType,
@@ -171,7 +179,7 @@ function toPostCommittee(committee: ScheduleDraftCommittee): PostCommitteeDto {
     date: committee.date,
     room: committee.room,
     secretaryName: committee.secretaryName,
-    invigilators: deepClone(committee.invigilators),
+    invigilators: committee.invigilators.map((invigilator) => invigilator.name),
     language: committee.language,
     studyProgramName: committee.studyProgramName,
     studyProgramType: committee.studyProgramType,
