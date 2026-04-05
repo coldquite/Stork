@@ -225,6 +225,7 @@ const draftNameText = computed(() => draftName.value)
       :invigilators="invigilators"
       :schedule-dialogs="scheduleDialogs"
       :copy="dialogCopy"
+      :committee-labels="committeeLabels"
     />
   </UContainer>
 </template>

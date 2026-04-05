@@ -1,9 +1,15 @@
 import { DEFAULT_COMMITTEE_START_MINUTE } from '#shared/constants/editor'
+import type { StudyLanguageDto, StudyProgramTypeDto } from '#shared/types/time-schedules'
+import { useEditorCommitteeFields } from '~/composables/editor/useEditorCommitteeFields'
 import { useValidationField } from '~/composables/useValidationField'
 import { useScheduleDraftStore } from '~/stores/schedule-draft'
-import type { CommitteeTabItem } from '~/types/editor'
+import type { CommitteeTabItem, EditorCommitteeStringFieldPayload } from '~/types/editor'
 import type { ScheduleDraftCommittee } from '~/types/schedule-draft'
-import { buildEditorCommitteeListEntries, resolveLastCommitteeByTimeline } from '~/utils/editor/draft-committee'
+import {
+  buildEditorCommitteeListEntries,
+  formatCommitteeDate,
+  resolveLastCommitteeByTimeline
+} from '~/utils/editor/draft-committee'
 import { createLocalId } from '~/utils/id'
 
 /**
@@ -16,6 +22,7 @@ export function useEditorCommitteeList() {
   const selectedCommitteeId = ref('')
   const isCreateCommitteeDialogOpen = ref(false)
   const createCommitteeName = ref('')
+  const createCommitteeDraft = ref<ScheduleDraftCommittee | null>(null)
   const createCommitteeValidationError = ref<string | null>(null)
   const isRenameCommitteeDialogOpen = ref(false)
   const renameCommitteeId = ref('')
@@ -85,6 +92,31 @@ export function useEditorCommitteeList() {
   useValidationField(renameCommitteeName, renameCommitteeValidationError)
   useValidationField(createCommitteeName, createCommitteeValidationError)
 
+  const createCommitteeFields = useEditorCommitteeFields(computed(() => createCommitteeDraft.value))
+
+  const createCommitteeDateLabel = computed(() => {
+    const createDate = createCommitteeDraft.value?.date
+    if (!createDate) {
+      return '—'
+    }
+
+    return formatCommitteeDate(createDate)
+  })
+
+  const isCreateCommitteeSubmitDisabled = computed(() => {
+    const committeeDraft = createCommitteeDraft.value
+    if (!committeeDraft) {
+      return true
+    }
+
+    const hasStudyProgram = committeeDraft.studyProgramName.trim().length > 0
+    const hasSpecialization = committeeDraft.specializationCode.trim().length > 0
+    const hasDepartment =
+      committeeDraft.defenseDepartmentCode.trim().length > 0 || committeeDraft.defenseDepartmentName.trim().length > 0
+
+    return !hasStudyProgram || !hasSpecialization || !hasDepartment
+  })
+
   function validateCommitteeName(nextName: string, committeeId: string): string | null {
     const normalizedName = nextName.trim()
 
@@ -104,6 +136,31 @@ export function useEditorCommitteeList() {
   }
 
   function openCreateCommitteeDialog(): void {
+    const lastCommittee = resolveLastCommitteeByTimeline(scheduleDraftStore.draft?.committees ?? [])
+
+    createCommitteeDraft.value = {
+      localId: createLocalId(),
+      name: '',
+      startMinute: lastCommittee?.startMinute ?? DEFAULT_COMMITTEE_START_MINUTE,
+      date: lastCommittee?.date ?? new Date().toISOString(),
+      room: null,
+      secretaryName: null,
+      invigilators: [],
+      language: lastCommittee?.language ?? 'CZECH',
+      studyProgramName: lastCommittee?.studyProgramName ?? '',
+      studyProgramType: lastCommittee?.studyProgramType ?? 'BACHELOR',
+      specializationName: lastCommittee?.specializationName ?? '',
+      specializationCode: lastCommittee?.specializationCode ?? '',
+      defenseDepartmentCode: lastCommittee?.defenseDepartmentCode ?? '',
+      defenseDepartmentName: lastCommittee?.defenseDepartmentName ?? '',
+      chairName: '',
+      viceChairName: '',
+      member1Name: '',
+      member2Name: '',
+      member3Name: '',
+      items: []
+    }
+
     createCommitteeName.value = ''
     createCommitteeValidationError.value = null
     isCreateCommitteeDialogOpen.value = true
@@ -112,7 +169,37 @@ export function useEditorCommitteeList() {
   function closeCreateCommitteeDialog(): void {
     isCreateCommitteeDialogOpen.value = false
     createCommitteeName.value = ''
+    createCommitteeDraft.value = null
     createCommitteeValidationError.value = null
+  }
+
+  function updateCreateCommitteeDate(nextIsoDate: string): void {
+    createCommitteeFields.updateSelectedCommitteeDate(nextIsoDate)
+  }
+
+  function updateCreateCommitteeStartMinute(nextStartMinute: number): void {
+    createCommitteeFields.updateSelectedCommitteeStartMinute(nextStartMinute)
+  }
+
+  function updateCreateCommitteeLanguage(nextLanguage: StudyLanguageDto): void {
+    createCommitteeFields.updateSelectedCommitteeLanguage(nextLanguage)
+  }
+
+  function updateCreateCommitteeStudyProgramType(nextStudyProgramType: StudyProgramTypeDto): void {
+    createCommitteeFields.updateSelectedCommitteeStudyProgramType(nextStudyProgramType)
+  }
+
+  function updateCreateCommitteeStringField(payload: EditorCommitteeStringFieldPayload): void {
+    switch (payload.field) {
+      case 'studyProgramName':
+        createCommitteeFields.updateSelectedCommitteeStudyProgramName(payload.value)
+        break
+      case 'specializationCode':
+        createCommitteeFields.updateSelectedCommitteeSpecializationCode(payload.value)
+        break
+      default:
+        break
+    }
   }
 
   function openRenameCommitteeDialog(committeeId: string): void {
@@ -156,6 +243,10 @@ export function useEditorCommitteeList() {
       return
     }
 
+    if (isCreateCommitteeSubmitDisabled.value) {
+      return
+    }
+
     const normalizedName = createCommitteeName.value.trim()
     const validationError = validateCommitteeName(normalizedName, '')
     if (validationError) {
@@ -163,30 +254,32 @@ export function useEditorCommitteeList() {
       return
     }
 
-    const lastCommittee = resolveLastCommitteeByTimeline(draft.committees)
+    const createDraft = createCommitteeDraft.value
+    if (!createDraft) {
+      closeCreateCommitteeDialog()
+      return
+    }
+
     const nextCommittee: ScheduleDraftCommittee = {
       localId: createLocalId(),
       name: normalizedName,
-      startMinute: lastCommittee?.startMinute ?? DEFAULT_COMMITTEE_START_MINUTE,
-      date: lastCommittee?.date ?? new Date().toISOString(),
-      room: lastCommittee?.room ?? null,
-      secretaryName: lastCommittee?.secretaryName ?? null,
-      invigilators: (lastCommittee?.invigilators ?? []).map((invigilator) => ({
-        localId: createLocalId(),
-        name: invigilator.name
-      })),
-      language: lastCommittee?.language ?? 'CZECH',
-      studyProgramName: lastCommittee?.studyProgramName ?? '',
-      studyProgramType: lastCommittee?.studyProgramType ?? 'BACHELOR',
-      specializationName: lastCommittee?.specializationName ?? '',
-      specializationCode: lastCommittee?.specializationCode ?? '',
-      defenseDepartmentCode: lastCommittee?.defenseDepartmentCode ?? '',
-      defenseDepartmentName: lastCommittee?.defenseDepartmentName ?? '',
-      chairName: lastCommittee?.chairName ?? '',
-      viceChairName: lastCommittee?.viceChairName ?? '',
-      member1Name: lastCommittee?.member1Name ?? '',
-      member2Name: lastCommittee?.member2Name ?? '',
-      member3Name: lastCommittee?.member3Name ?? '',
+      startMinute: createDraft.startMinute,
+      date: createDraft.date,
+      room: null,
+      secretaryName: null,
+      invigilators: [],
+      language: createDraft.language,
+      studyProgramName: createDraft.studyProgramName,
+      studyProgramType: createDraft.studyProgramType,
+      specializationName: createDraft.specializationName,
+      specializationCode: createDraft.specializationCode,
+      defenseDepartmentCode: createDraft.defenseDepartmentCode,
+      defenseDepartmentName: createDraft.defenseDepartmentName,
+      chairName: '',
+      viceChairName: '',
+      member1Name: '',
+      member2Name: '',
+      member3Name: '',
       items: []
     }
 
@@ -247,6 +340,9 @@ export function useEditorCommitteeList() {
     committeeTabs,
     isCreateCommitteeDialogOpen,
     createCommitteeName,
+    createCommitteeDraft,
+    createCommitteeDateLabel,
+    isCreateCommitteeSubmitDisabled,
     createCommitteeValidationError,
     isRenameCommitteeDialogOpen,
     renameCommitteeName,
@@ -256,6 +352,11 @@ export function useEditorCommitteeList() {
     deleteCommitteeConfirmDescription,
     openCreateCommitteeDialog,
     closeCreateCommitteeDialog,
+    updateCreateCommitteeDate,
+    updateCreateCommitteeStartMinute,
+    updateCreateCommitteeLanguage,
+    updateCreateCommitteeStudyProgramType,
+    updateCreateCommitteeStringField,
     openRenameCommitteeDialog,
     closeRenameCommitteeDialog,
     openDeleteCommitteeConfirm,

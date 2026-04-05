@@ -4,20 +4,39 @@ import type { ScheduleDraftCommittee } from '~/types/schedule-draft'
 import type { StudyLanguageDto } from '#shared/types/time-schedules'
 import type { EditorCommitteeStringFieldPayload } from '~/types/editor'
 
-const props = defineProps<{
-  selectedCommittee: ScheduleDraftCommittee | null
-  selectedCommitteeDate?: string
-  dateLabel: string
-  roomLabel: string
-  languageLabel: string
-  languageCzechLabel: string
-  languageEnglishLabel: string
-  secretaryLabel: string
-}>()
+const props = withDefaults(
+  defineProps<{
+    selectedCommittee: ScheduleDraftCommittee | null
+    selectedCommitteeDate?: string
+    dateLabel: string
+    roomLabel: string
+    languageLabel: string
+    languageCzechLabel: string
+    languageEnglishLabel: string
+    secretaryLabel: string
+    showRoomField?: boolean
+    showSecretaryField?: boolean
+    fullWidth?: boolean
+    showStartTimeField?: boolean
+    startTimeLabel?: string
+    startTimeHourLabel?: string
+    startTimeMinuteLabel?: string
+  }>(),
+  {
+    showRoomField: true,
+    showSecretaryField: true,
+    fullWidth: false,
+    showStartTimeField: false,
+    startTimeLabel: '',
+    startTimeHourLabel: '',
+    startTimeMinuteLabel: ''
+  }
+)
 
 const emit = defineEmits<{
   (e: 'committeeStringField', payload: EditorCommitteeStringFieldPayload): void
   (e: 'update:committeeDate', value: string): void
+  (e: 'update:committeeStartMinute', value: number): void
   (e: 'update:committeeLanguage', value: StudyLanguageDto): void
 }>()
 
@@ -57,6 +76,11 @@ const isSecretaryInvalid = computed(() => hasSelectedCommittee.value && isEmptyV
 const invalidInputUi = {
   base: 'ring-2 ring-inset ring-error/70'
 } as const
+const rootClass = computed(() =>
+  props.fullWidth
+    ? 'border-default w-full max-w-full min-w-0 rounded-md border p-2'
+    : 'border-default w-fit max-w-full min-w-58 rounded-md border p-2'
+)
 
 function toCalendarDateFromUnknown(value: unknown): CalendarDate | undefined {
   if (value instanceof CalendarDate) {
@@ -133,8 +157,34 @@ function setLanguage(lang: StudyLanguageDto): void {
 </script>
 
 <template>
-  <div class="border-default w-fit max-w-full min-w-58 rounded-md border p-2">
+  <div :class="rootClass">
     <div class="flex flex-col gap-2">
+      <div class="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2">
+        <span class="text-sm whitespace-nowrap">{{ props.languageLabel }}:</span>
+        <div class="border-default flex min-w-0 items-center gap-1 rounded-md border p-1">
+          <UButton
+            color="primary"
+            size="xs"
+            :variant="committeeLanguageValue === 'CZECH' ? 'solid' : 'ghost'"
+            :disabled="!props.selectedCommittee"
+            class="min-w-0 flex-1 cursor-pointer justify-center"
+            @click="setLanguage('CZECH')"
+          >
+            {{ props.languageCzechLabel }}
+          </UButton>
+          <UButton
+            color="primary"
+            size="xs"
+            :variant="committeeLanguageValue === 'ENGLISH' ? 'solid' : 'ghost'"
+            :disabled="!props.selectedCommittee"
+            class="min-w-0 flex-1 cursor-pointer justify-center"
+            @click="setLanguage('ENGLISH')"
+          >
+            {{ props.languageEnglishLabel }}
+          </UButton>
+        </div>
+      </div>
+
       <div class="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2">
         <span class="text-sm whitespace-nowrap">{{ props.dateLabel }}:</span>
         <div class="min-w-0">
@@ -163,7 +213,18 @@ function setLanguage(lang: StudyLanguageDto): void {
         </div>
       </div>
 
-      <div class="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2">
+      <div v-if="props.showStartTimeField" class="w-full min-w-0">
+        <EditorCommitteeStartTimeRow
+          :selected-committee="props.selectedCommittee"
+          :start-time-label="props.startTimeLabel"
+          :start-time-hour-label="props.startTimeHourLabel"
+          :start-time-minute-label="props.startTimeMinuteLabel"
+          compact
+          @update:committee-start-minute="emit('update:committeeStartMinute', $event)"
+        />
+      </div>
+
+      <div v-if="props.showRoomField" class="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2">
         <span class="text-sm whitespace-nowrap">{{ props.roomLabel }}:</span>
         <UInput
           :model-value="roomInputValue"
@@ -174,33 +235,7 @@ function setLanguage(lang: StudyLanguageDto): void {
         />
       </div>
 
-      <div class="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2">
-        <span class="text-sm whitespace-nowrap">{{ props.languageLabel }}:</span>
-        <div class="border-default flex min-w-0 items-center gap-1 rounded-md border p-1">
-          <UButton
-            color="primary"
-            size="xs"
-            :variant="committeeLanguageValue === 'CZECH' ? 'solid' : 'ghost'"
-            :disabled="!props.selectedCommittee"
-            class="min-w-0 flex-1 cursor-pointer justify-center"
-            @click="setLanguage('CZECH')"
-          >
-            {{ props.languageCzechLabel }}
-          </UButton>
-          <UButton
-            color="primary"
-            size="xs"
-            :variant="committeeLanguageValue === 'ENGLISH' ? 'solid' : 'ghost'"
-            :disabled="!props.selectedCommittee"
-            class="min-w-0 flex-1 cursor-pointer justify-center"
-            @click="setLanguage('ENGLISH')"
-          >
-            {{ props.languageEnglishLabel }}
-          </UButton>
-        </div>
-      </div>
-
-      <div class="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2">
+      <div v-if="props.showSecretaryField" class="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2">
         <span class="text-sm whitespace-nowrap">{{ props.secretaryLabel }}:</span>
         <UInput
           :model-value="secretaryInputValue"

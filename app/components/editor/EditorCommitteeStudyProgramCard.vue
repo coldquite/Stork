@@ -12,6 +12,7 @@ const props = defineProps<{
   studyProgramNameLabel: string
   specializationCodeLabel: string
   departmentLabel: string
+  fullWidth?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -52,6 +53,11 @@ const invalidInputUi = {
 const invalidSelectUi = {
   base: 'ring-2 ring-inset ring-error/70'
 } as const
+const rootClass = computed(() =>
+  props.fullWidth
+    ? 'border-default w-full max-w-full min-w-0 rounded-md border p-2'
+    : 'border-default w-fit max-w-full min-w-0 rounded-md border p-2'
+)
 
 const committeeStudyProgramNameOptions = computed(() => {
   const studyProgramType = committeeStudyProgramTypeValue.value
@@ -131,12 +137,12 @@ function emitSpecializationCode(value: string): void {
 </script>
 
 <template>
-  <div class="border-default w-fit max-w-full min-w-0 rounded-md border p-2">
+  <div :class="rootClass">
     <div class="flex flex-col gap-2">
-      <div class="flex items-center gap-2">
+      <div class="flex min-w-0 items-center gap-2">
         <span class="text-sm whitespace-nowrap">{{ props.studyProgramTypeLabel }}:</span>
 
-        <div class="border-default flex w-58 items-center gap-1 rounded-md border p-1">
+        <div class="border-default flex min-w-0 flex-1 items-center gap-1 rounded-md border p-1">
           <UButton
             color="primary"
             size="xs"

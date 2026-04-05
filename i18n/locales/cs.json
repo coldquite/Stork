@@ -288,7 +288,7 @@
       "create": {
         "title": "Přidat komisi",
         "description": "Zadejte název nové komise.",
-        "placeholder": "Např. A1",
+        "placeholder": "Např. 1-BI-SI.21",
         "hint": "Název komise musí být v rámci tohoto plánu unikátní.",
         "submit": "Vytvořit komisi",
         "openAction": "Přidat komisi"
@@ -296,7 +296,7 @@
       "rename": {
         "title": "Přejmenovat komisi",
         "description": "Upravte název komise „{name}“.",
-        "placeholder": "Např. A1",
+        "placeholder": "Např. 1-BI-SI.21",
         "hint": "Název komise musí být v rámci tohoto plánu unikátní.",
         "submit": "Uložit název",
         "openAriaLabel": "Přejmenovat komisi {name}",

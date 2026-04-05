@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { useEditorPage } from '~/composables/editor/useEditorPage'
-import type { EditorScheduleDialogsCopy } from '~/types/editor'
+import type { EditorScheduleDialogsCopy, EditorStudentsPanelCommitteeLabels } from '~/types/editor'
 
 type EditorPageGroups = ReturnType<typeof useEditorPage>
 
@@ -9,6 +9,7 @@ const props = defineProps<{
   invigilators: EditorPageGroups['invigilators']
   scheduleDialogs: EditorPageGroups['scheduleDialogs']
   copy: EditorScheduleDialogsCopy
+  committeeLabels: EditorStudentsPanelCommitteeLabels
 }>()
 
 const cl = props.committeeList
@@ -79,6 +80,8 @@ const createCommitteeNameModel = computed({
     cl.createCommitteeName.value = v
   }
 })
+const createCommitteeDraftModel = computed(() => cl.createCommitteeDraft.value)
+const createCommitteeDateLabel = computed(() => cl.createCommitteeDateLabel.value)
 
 const deleteCommitteeConfirmOpen = computed({
   get: () => cl.isDeleteCommitteeConfirmOpen.value,
@@ -101,6 +104,7 @@ const cloudSaveLoadingFlag = computed(() => sd.isCloudSaveLoading.value)
 const cloudSaveValidationText = computed(() => sd.cloudSaveValidationError.value)
 const invigilatorValidationText = computed(() => inv.invigilatorValidationError.value)
 const createCommitteeValidationText = computed(() => cl.createCommitteeValidationError.value)
+const createCommitteeSubmitDisabled = computed(() => cl.isCreateCommitteeSubmitDisabled.value)
 
 const deleteCommitteeDescriptionText = computed(() => cl.deleteCommitteeConfirmDescription.value)
 const deleteInvigilatorDescriptionText = computed(() => inv.deleteInvigilatorConfirmDescription.value)
@@ -164,7 +168,7 @@ const deleteInvigilatorDescriptionText = computed(() => inv.deleteInvigilatorCon
     @submit="inv.submitAddInvigilator()"
   />
 
-  <EditorCommitteeNameModal
+  <EditorCreateCommitteeModal
     v-model:open="createCommitteeOpen"
     v-model:name="createCommitteeNameModel"
     :title="copy.createCommittee.title"
@@ -174,6 +178,29 @@ const deleteInvigilatorDescriptionText = computed(() => inv.deleteInvigilatorCon
     :submit-label="copy.createCommittee.submit"
     :cancel-label="copy.commonCancel"
     :validation-error="createCommitteeValidationText"
+    :submit-disabled="createCommitteeSubmitDisabled"
+    :selected-committee="createCommitteeDraftModel"
+    :selected-committee-date="createCommitteeDateLabel"
+    :date-label="committeeLabels.date"
+    :room-label="committeeLabels.room"
+    :language-label="committeeLabels.language"
+    :language-czech-label="committeeLabels.languageCzech"
+    :language-english-label="committeeLabels.languageEnglish"
+    :start-time-label="committeeLabels.startTime"
+    :start-time-hour-label="committeeLabels.startTimeHour"
+    :start-time-minute-label="committeeLabels.startTimeMinute"
+    :secretary-label="committeeLabels.secretary"
+    :study-program-type-label="committeeLabels.studyProgramType"
+    :study-program-type-bachelor-label="committeeLabels.studyProgramTypeBachelor"
+    :study-program-type-master-label="committeeLabels.studyProgramTypeMaster"
+    :study-program-name-label="committeeLabels.studyProgramName"
+    :specialization-code-label="committeeLabels.specializationCode"
+    :department-label="committeeLabels.department"
+    @committee-string-field="cl.updateCreateCommitteeStringField($event)"
+    @update:committee-date="cl.updateCreateCommitteeDate($event)"
+    @update:committee-start-minute="cl.updateCreateCommitteeStartMinute($event)"
+    @update:committee-language="cl.updateCreateCommitteeLanguage($event)"
+    @update:committee-study-program-type="cl.updateCreateCommitteeStudyProgramType($event)"
     @cancel="cl.closeCreateCommitteeDialog()"
     @submit="cl.submitCreateCommittee()"
   />

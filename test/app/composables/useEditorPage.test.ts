@@ -191,6 +191,60 @@ describe('useEditorPage', () => {
     expect(page.committeeList.createCommitteeValidationError.value).toBeNull()
   })
 
+  it('blocks create submit until study program, specialization and department are resolved', async () => {
+    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const page = useEditorPage()
+
+    page.committeeList.openCreateCommitteeDialog()
+    page.committeeList.createCommitteeName.value = 'Komise bez oboru'
+    page.committeeList.updateCreateCommitteeStringField({ field: 'specializationCode', value: '' })
+
+    expect(page.committeeList.isCreateCommitteeSubmitDisabled.value).toBe(true)
+    page.committeeList.submitCreateCommittee()
+    expect(scheduleDraftStoreMock.draft?.committees).toHaveLength(2)
+
+    page.committeeList.updateCreateCommitteeStringField({ field: 'studyProgramName', value: 'Informatika' })
+    expect(page.committeeList.isCreateCommitteeSubmitDisabled.value).toBe(true)
+
+    page.committeeList.updateCreateCommitteeStringField({ field: 'specializationCode', value: 'BI-SI.21' })
+    expect(page.committeeList.isCreateCommitteeSubmitDisabled.value).toBe(false)
+
+    page.committeeList.submitCreateCommittee()
+    expect(scheduleDraftStoreMock.draft?.committees).toHaveLength(3)
+  })
+
+  it('creates committee with selected study fields and auto-filled department', async () => {
+    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const page = useEditorPage()
+
+    page.committeeList.openCreateCommitteeDialog()
+    page.committeeList.updateCreateCommitteeLanguage('ENGLISH')
+    page.committeeList.updateCreateCommitteeStudyProgramType('MASTER')
+    page.committeeList.updateCreateCommitteeStartMinute(600)
+    page.committeeList.updateCreateCommitteeStringField({ field: 'studyProgramName', value: 'Informatics' })
+    page.committeeList.updateCreateCommitteeStringField({ field: 'specializationCode', value: 'NIE-SI' })
+    page.committeeList.createCommitteeName.value = 'Komise EN'
+    page.committeeList.submitCreateCommittee()
+
+    const createdCommittee = scheduleDraftStoreMock.draft?.committees.find((entry) => entry.name === 'Komise EN')
+    expect(createdCommittee).toBeDefined()
+    expect(createdCommittee?.language).toBe('ENGLISH')
+    expect(createdCommittee?.startMinute).toBe(600)
+    expect(createdCommittee?.studyProgramType).toBe('MASTER')
+    expect(createdCommittee?.studyProgramName).toBe('Informatics')
+    expect(createdCommittee?.specializationCode).toBe('NIE-SI')
+    expect(createdCommittee?.specializationName).toBe('Software Engineering 2021')
+    expect(createdCommittee?.defenseDepartmentCode).toBe('18102')
+    expect(createdCommittee?.defenseDepartmentName).toBe('Katedra softwarového inženýrství')
+    expect(createdCommittee?.room).toBeNull()
+    expect(createdCommittee?.secretaryName).toBeNull()
+    expect(createdCommittee?.chairName).toBe('')
+    expect(createdCommittee?.viceChairName).toBe('')
+    expect(createdCommittee?.member1Name).toBe('')
+    expect(createdCommittee?.member2Name).toBe('')
+    expect(createdCommittee?.member3Name).toBe('')
+  })
+
   it('shows duplicate validation when renaming committee to existing name', async () => {
     const { useEditorPage } = await import('~/composables/editor/useEditorPage')
     const page = useEditorPage()
