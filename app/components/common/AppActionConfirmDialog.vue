@@ -8,11 +8,17 @@ interface AppActionConfirmDialogProps {
   cancelLabel?: string
   confirmColor?: 'primary' | 'secondary' | 'success' | 'info' | 'warning' | 'error' | 'neutral'
   loading?: boolean
+  /**
+   * When `false`, disables Nuxt UI modal enter/leave transitions. Use when this dialog opens on top of
+   * another `UModal` to avoid a brief a11y race (focused node vs `aria-hidden`) during close.
+   */
+  transition?: boolean
 }
 
 const props = withDefaults(defineProps<AppActionConfirmDialogProps>(), {
   confirmColor: 'error',
-  loading: false
+  loading: false,
+  transition: true
 })
 
 const emit = defineEmits<{ confirm: []; cancel: [] }>()
@@ -48,6 +54,7 @@ function handleConfirm(): void {
     :description="resolvedDescription"
     :dismissible="!props.loading"
     :close="{ disabled: props.loading }"
+    :transition="props.transition"
   >
     <template #footer>
       <div class="flex w-full justify-end gap-2">

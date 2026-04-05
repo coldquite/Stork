@@ -275,18 +275,19 @@ function handleLoadMoreAuto(): void {
           </div>
         </template>
       </UTabs>
+
+      <CommonAppActionConfirmDialog
+        v-model:open="isDeleteConfirmOpen"
+        :transition="false"
+        :action-label="t('homepage.schedulesModal.delete.confirmAction')"
+        :description="deleteConfirmDescription"
+        :confirm-label="t('homepage.schedulesModal.delete.confirmAction')"
+        :loading="isDeletingManualSchedule"
+        @cancel="cancelDeleteManualSchedule"
+        @confirm="confirmDeleteManualSchedule"
+      />
     </template>
   </UModal>
-
-  <CommonAppActionConfirmDialog
-    v-model:open="isDeleteConfirmOpen"
-    :action-label="t('homepage.schedulesModal.delete.confirmAction')"
-    :description="deleteConfirmDescription"
-    :confirm-label="t('homepage.schedulesModal.delete.confirmAction')"
-    :loading="isDeletingManualSchedule"
-    @cancel="cancelDeleteManualSchedule"
-    @confirm="confirmDeleteManualSchedule"
-  />
 </template>
 
 <style scoped>
