@@ -4,7 +4,7 @@ import { useHomepageBrowseSchedules } from '~/composables/homepage/useHomepageBr
 import { useHomepageScheduleOpening } from '~/composables/homepage/useHomepageScheduleOpening'
 import { useHomepageCreateAndImport } from '~/composables/schedule-creation/useHomepageCreateAndImport'
 
-export function useEditorHeaderScheduleActions() {
+export function useDefaultLayoutScheduleActions() {
   const isCreatingNewSchedule = ref(false)
   const isOpeningRecentSchedule = ref(false)
 

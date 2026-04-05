@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useAuthStore } from '~/stores/auth'
 import { NEW_SCHEDULE_NAME_MAX_LENGTH } from '~/constants/schedule'
-import { useEditorHeaderScheduleActions } from '~/composables/editor/useEditorHeaderScheduleActions'
+import { useDefaultLayoutScheduleActions } from '~/composables/layout/useDefaultLayoutScheduleActions'
 
 const { t } = useI18n()
 const authStore = useAuthStore()
@@ -66,7 +66,7 @@ const {
   updateTeachersDictionaryResolutionEntry,
   loadMoreManualSchedules,
   loadMoreAutoSchedules
-} = useEditorHeaderScheduleActions()
+} = useDefaultLayoutScheduleActions()
 
 const logoutButtonLabel = computed(() => {
   return `${t('dashboard.logoutButton')}: ${usernameLabel.value}`
