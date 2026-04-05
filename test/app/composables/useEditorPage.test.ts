@@ -155,10 +155,13 @@ describe('useEditorPage', () => {
     const { useEditorPage } = await import('~/composables/editor/useEditorPage')
     const page = useEditorPage()
 
-    expect(page.selectedCommittee.value?.localId).toBe('committee-early')
-    expect(page.selectedStudents.value.map((row) => row.id)).toEqual(['student-a', 'student-b'])
+    expect(page.committeeList.selectedCommittee.value?.localId).toBe('committee-early')
+    expect(page.studentTable.selectedStudents.value.map((row) => row.id)).toEqual(['student-a', 'student-b'])
 
-    page.selectedStudents.value = [page.selectedStudents.value[1]!, page.selectedStudents.value[0]!]
+    page.studentTable.selectedStudents.value = [
+      page.studentTable.selectedStudents.value[1]!,
+      page.studentTable.selectedStudents.value[0]!
+    ]
 
     const committee = scheduleDraftStoreMock.draft?.committees.find((entry) => entry.localId === 'committee-early')
     expect(committee).toBeDefined()
@@ -174,96 +177,100 @@ describe('useEditorPage', () => {
     const { useEditorPage } = await import('~/composables/editor/useEditorPage')
     const page = useEditorPage()
 
-    page.openCreateCommitteeDialog()
-    page.createCommitteeName.value = '  Nová komise  '
-    page.submitCreateCommittee()
+    page.committeeList.openCreateCommitteeDialog()
+    page.committeeList.createCommitteeName.value = '  Nová komise  '
+    page.committeeList.submitCreateCommittee()
 
     const draftCommittees = scheduleDraftStoreMock.draft?.committees ?? []
     expect(draftCommittees).toHaveLength(3)
 
     const createdCommittee = draftCommittees.find((entry) => entry.name === 'Nová komise')
     expect(createdCommittee).toBeDefined()
-    expect(page.selectedCommitteeId.value).toBe(createdCommittee?.localId ?? '')
-    expect(page.isCreateCommitteeDialogOpen.value).toBe(false)
-    expect(page.createCommitteeValidationError.value).toBeNull()
+    expect(page.committeeList.selectedCommitteeId.value).toBe(createdCommittee?.localId ?? '')
+    expect(page.committeeList.isCreateCommitteeDialogOpen.value).toBe(false)
+    expect(page.committeeList.createCommitteeValidationError.value).toBeNull()
   })
 
   it('shows duplicate validation when renaming committee to existing name', async () => {
     const { useEditorPage } = await import('~/composables/editor/useEditorPage')
     const page = useEditorPage()
 
-    page.openRenameCommitteeDialog('committee-early')
-    page.renameCommitteeName.value = '1-NI-SI'
-    page.submitRenameCommittee()
+    page.committeeList.openRenameCommitteeDialog('committee-early')
+    page.committeeList.renameCommitteeName.value = '1-NI-SI'
+    page.committeeList.submitRenameCommittee()
 
-    expect(page.renameCommitteeValidationError.value).toBe('editor.committees.rename.validation.duplicate')
+    expect(page.committeeList.renameCommitteeValidationError.value).toBe(
+      'editor.committees.rename.validation.duplicate'
+    )
     expect(scheduleDraftStoreMock.draft?.committees.find((entry) => entry.localId === 'committee-early')?.name).toBe(
       '2-NI-SI'
     )
-    expect(page.isRenameCommitteeDialogOpen.value).toBe(true)
+    expect(page.committeeList.isRenameCommitteeDialogOpen.value).toBe(true)
   })
 
   it('deletes selected committee and switches selection to next available tab', async () => {
     const { useEditorPage } = await import('~/composables/editor/useEditorPage')
     const page = useEditorPage()
 
-    expect(page.selectedCommitteeId.value).toBe('committee-early')
+    expect(page.committeeList.selectedCommitteeId.value).toBe('committee-early')
 
-    page.openDeleteCommitteeConfirm('committee-early')
-    page.submitDeleteCommittee()
+    page.committeeList.openDeleteCommitteeConfirm('committee-early')
+    page.committeeList.submitDeleteCommittee()
 
     expect(scheduleDraftStoreMock.draft?.committees.map((entry) => entry.localId)).toEqual(['committee-late'])
-    expect(page.selectedCommitteeId.value).toBe('committee-late')
-    expect(page.isDeleteCommitteeConfirmOpen.value).toBe(false)
+    expect(page.committeeList.selectedCommitteeId.value).toBe('committee-late')
+    expect(page.committeeList.isDeleteCommitteeConfirmOpen.value).toBe(false)
   })
 
   it('renames draft with trimmed value', async () => {
     const { useEditorPage } = await import('~/composables/editor/useEditorPage')
     const page = useEditorPage()
 
-    page.openRenameDraftDialog()
-    page.renameDraftName.value = 'Upravený plán'
-    page.submitRenameDraft()
+    page.scheduleDialogs.openRenameDraftDialog()
+    page.scheduleDialogs.renameDraftName.value = 'Upravený plán'
+    page.scheduleDialogs.submitRenameDraft()
 
     expect(scheduleDraftStoreMock.draft?.name).toBe('Upravený plán')
-    expect(page.isRenameDraftDialogOpen.value).toBe(false)
-    expect(page.renameDraftValidationError.value).toBeNull()
+    expect(page.scheduleDialogs.isRenameDraftDialogOpen.value).toBe(false)
+    expect(page.scheduleDialogs.renameDraftValidationError.value).toBeNull()
   })
 
   it('rejects draft rename with leading or trailing whitespace', async () => {
     const { useEditorPage } = await import('~/composables/editor/useEditorPage')
     const page = useEditorPage()
 
-    page.openRenameDraftDialog()
-    page.renameDraftName.value = '  Upravený plán  '
-    page.submitRenameDraft()
+    page.scheduleDialogs.openRenameDraftDialog()
+    page.scheduleDialogs.renameDraftName.value = '  Upravený plán  '
+    page.scheduleDialogs.submitRenameDraft()
 
     expect(scheduleDraftStoreMock.draft?.name).toBe('Plán')
-    expect(page.isRenameDraftDialogOpen.value).toBe(true)
-    expect(page.renameDraftValidationError.value).toBe('editor.schedule.rename.validation.leadingTrailingWhitespace')
+    expect(page.scheduleDialogs.isRenameDraftDialogOpen.value).toBe(true)
+    expect(page.scheduleDialogs.renameDraftValidationError.value).toBe(
+      'editor.schedule.rename.validation.leadingTrailingWhitespace'
+    )
   })
 
   it('opens cloud save dialog with current draft name prefilled', async () => {
     const { useEditorPage } = await import('~/composables/editor/useEditorPage')
     const page = useEditorPage()
 
-    page.openCloudSaveDialog()
+    page.scheduleDialogs.openCloudSaveDialog()
 
-    expect(page.isCloudSaveDialogOpen.value).toBe(true)
-    expect(page.cloudSaveName.value).toBe('Plán')
-    expect(page.cloudSaveValidationError.value).toBeNull()
+    expect(page.scheduleDialogs.isCloudSaveDialogOpen.value).toBe(true)
+    expect(page.scheduleDialogs.cloudSaveName.value).toBe('Plán')
+    expect(page.scheduleDialogs.cloudSaveValidationError.value).toBeNull()
   })
 
   it('adds invigilator with trimmed value to selected committee', async () => {
     const { useEditorPage } = await import('~/composables/editor/useEditorPage')
     const page = useEditorPage()
 
-    page.openAddInvigilatorDialog()
-    page.newInvigilatorName.value = 'Novák Jan, Ing.'
-    page.submitAddInvigilator()
+    page.invigilators.openAddInvigilatorDialog()
+    page.invigilators.newInvigilatorName.value = 'Novák Jan, Ing.'
+    page.invigilators.submitAddInvigilator()
 
-    expect(page.isAddInvigilatorDialogOpen.value).toBe(false)
-    expect(page.invigilatorValidationError.value).toBeNull()
+    expect(page.invigilators.isAddInvigilatorDialogOpen.value).toBe(false)
+    expect(page.invigilators.invigilatorValidationError.value).toBeNull()
     expect(scheduleDraftStoreMock.draft?.committees[0]?.invigilators.map((entry) => entry.name)).toEqual([
       'Dozor',
       'Novák Jan, Ing.'
@@ -274,14 +281,16 @@ describe('useEditorPage', () => {
     const { useEditorPage } = await import('~/composables/editor/useEditorPage')
     const page = useEditorPage()
 
-    page.openAddInvigilatorDialog()
-    page.newInvigilatorName.value = '   '
-    page.submitAddInvigilator()
-    expect(page.invigilatorValidationError.value).toBe('editor.committee.invigilators.add.validation.required')
+    page.invigilators.openAddInvigilatorDialog()
+    page.invigilators.newInvigilatorName.value = '   '
+    page.invigilators.submitAddInvigilator()
+    expect(page.invigilators.invigilatorValidationError.value).toBe(
+      'editor.committee.invigilators.add.validation.required'
+    )
 
-    page.newInvigilatorName.value = '  Novák Jan, Ing.'
-    page.submitAddInvigilator()
-    expect(page.invigilatorValidationError.value).toBe(
+    page.invigilators.newInvigilatorName.value = '  Novák Jan, Ing.'
+    page.invigilators.submitAddInvigilator()
+    expect(page.invigilators.invigilatorValidationError.value).toBe(
       'editor.committee.invigilators.add.validation.leadingTrailingWhitespace'
     )
   })
@@ -292,24 +301,24 @@ describe('useEditorPage', () => {
 
     expect(scheduleDraftStoreMock.draft?.committees[0]?.invigilators.map((entry) => entry.name)).toEqual(['Dozor'])
 
-    page.openDeleteInvigilatorConfirm('invigilator-dozor')
-    expect(page.isDeleteInvigilatorConfirmOpen.value).toBe(true)
+    page.invigilators.openDeleteInvigilatorConfirm('invigilator-dozor')
+    expect(page.invigilators.isDeleteInvigilatorConfirmOpen.value).toBe(true)
 
-    page.submitDeleteInvigilator()
+    page.invigilators.submitDeleteInvigilator()
 
     expect(scheduleDraftStoreMock.draft?.committees[0]?.invigilators).toEqual([])
-    expect(page.isDeleteInvigilatorConfirmOpen.value).toBe(false)
+    expect(page.invigilators.isDeleteInvigilatorConfirmOpen.value).toBe(false)
   })
 
   it('updates selected committee language in draft store', async () => {
     const { useEditorPage } = await import('~/composables/editor/useEditorPage')
     const page = useEditorPage()
 
-    expect(page.selectedCommittee.value?.language).toBe('CZECH')
+    expect(page.committeeList.selectedCommittee.value?.language).toBe('CZECH')
 
-    page.updateSelectedCommitteeLanguage('ENGLISH')
+    page.committeeFields.updateSelectedCommitteeLanguage('ENGLISH')
 
-    expect(page.selectedCommittee.value?.language).toBe('ENGLISH')
+    expect(page.committeeList.selectedCommittee.value?.language).toBe('ENGLISH')
     expect(
       scheduleDraftStoreMock.draft?.committees.find((entry) => entry.localId === 'committee-early')?.language
     ).toBe('ENGLISH')
@@ -319,11 +328,11 @@ describe('useEditorPage', () => {
     const { useEditorPage } = await import('~/composables/editor/useEditorPage')
     const page = useEditorPage()
 
-    page.updateSelectedCommitteeChairName('doc. Předseda Nový')
-    page.updateSelectedCommitteeViceChairName('doc. Místopředseda Nový')
-    page.updateSelectedCommitteeMember1Name('Člen A')
-    page.updateSelectedCommitteeMember2Name('Člen B')
-    page.updateSelectedCommitteeMember3Name('Člen C')
+    page.committeeFields.updateSelectedCommitteeChairName('doc. Předseda Nový')
+    page.committeeFields.updateSelectedCommitteeViceChairName('doc. Místopředseda Nový')
+    page.committeeFields.updateSelectedCommitteeMember1Name('Člen A')
+    page.committeeFields.updateSelectedCommitteeMember2Name('Člen B')
+    page.committeeFields.updateSelectedCommitteeMember3Name('Člen C')
 
     const selectedCommittee = scheduleDraftStoreMock.draft?.committees.find(
       (entry) => entry.localId === 'committee-early'
@@ -339,9 +348,9 @@ describe('useEditorPage', () => {
     const { useEditorPage } = await import('~/composables/editor/useEditorPage')
     const page = useEditorPage()
 
-    page.updateSelectedCommitteeChairName('  doc. Předseda  ')
-    page.updateSelectedCommitteeSecretary('   ')
-    page.updateSelectedCommitteeRoom('  TH:A-1500  ')
+    page.committeeFields.updateSelectedCommitteeChairName('  doc. Předseda  ')
+    page.committeeFields.updateSelectedCommitteeSecretary('   ')
+    page.committeeFields.updateSelectedCommitteeRoom('  TH:A-1500  ')
 
     const selectedCommittee = scheduleDraftStoreMock.draft?.committees.find(
       (entry) => entry.localId === 'committee-early'
@@ -355,11 +364,11 @@ describe('useEditorPage', () => {
     const { useEditorPage } = await import('~/composables/editor/useEditorPage')
     const page = useEditorPage()
 
-    expect(page.selectedCommittee.value?.studyProgramType).toBe('BACHELOR')
+    expect(page.committeeList.selectedCommittee.value?.studyProgramType).toBe('BACHELOR')
 
-    page.updateSelectedCommitteeStudyProgramType('MASTER')
+    page.committeeFields.updateSelectedCommitteeStudyProgramType('MASTER')
 
-    expect(page.selectedCommittee.value?.studyProgramType).toBe('MASTER')
+    expect(page.committeeList.selectedCommittee.value?.studyProgramType).toBe('MASTER')
     expect(
       scheduleDraftStoreMock.draft?.committees.find((entry) => entry.localId === 'committee-early')?.studyProgramType
     ).toBe('MASTER')
@@ -369,12 +378,12 @@ describe('useEditorPage', () => {
     const { useEditorPage } = await import('~/composables/editor/useEditorPage')
     const page = useEditorPage()
 
-    expect(page.selectedCommittee.value?.studyProgramName).toBe('Informatika')
+    expect(page.committeeList.selectedCommittee.value?.studyProgramName).toBe('Informatika')
 
-    page.updateSelectedCommitteeLanguage('ENGLISH')
-    page.updateSelectedCommitteeStudyProgramName('Informatics')
+    page.committeeFields.updateSelectedCommitteeLanguage('ENGLISH')
+    page.committeeFields.updateSelectedCommitteeStudyProgramName('Informatics')
 
-    expect(page.selectedCommittee.value?.studyProgramName).toBe('Informatics')
+    expect(page.committeeList.selectedCommittee.value?.studyProgramName).toBe('Informatics')
     expect(
       scheduleDraftStoreMock.draft?.committees.find((entry) => entry.localId === 'committee-early')?.studyProgramName
     ).toBe('Informatics')
@@ -384,62 +393,62 @@ describe('useEditorPage', () => {
     const { useEditorPage } = await import('~/composables/editor/useEditorPage')
     const page = useEditorPage()
 
-    expect(page.selectedCommittee.value?.language).toBe('CZECH')
-    expect(page.selectedCommittee.value?.studyProgramType).toBe('BACHELOR')
-    expect(page.selectedCommittee.value?.studyProgramName).toBe('Informatika')
+    expect(page.committeeList.selectedCommittee.value?.language).toBe('CZECH')
+    expect(page.committeeList.selectedCommittee.value?.studyProgramType).toBe('BACHELOR')
+    expect(page.committeeList.selectedCommittee.value?.studyProgramName).toBe('Informatika')
 
-    page.updateSelectedCommitteeStudyProgramName('Informatics')
+    page.committeeFields.updateSelectedCommitteeStudyProgramName('Informatics')
 
-    expect(page.selectedCommittee.value?.studyProgramName).toBe('Informatika')
+    expect(page.committeeList.selectedCommittee.value?.studyProgramName).toBe('Informatika')
   })
 
   it('clears study program, specialization and department when language changes to incompatible one', async () => {
     const { useEditorPage } = await import('~/composables/editor/useEditorPage')
     const page = useEditorPage()
 
-    expect(page.selectedCommittee.value?.studyProgramName).toBe('Informatika')
-    expect(page.selectedCommittee.value?.specializationCode).toBe('BI-SI.21')
-    expect(page.selectedCommittee.value?.defenseDepartmentCode).toBe('18102')
+    expect(page.committeeList.selectedCommittee.value?.studyProgramName).toBe('Informatika')
+    expect(page.committeeList.selectedCommittee.value?.specializationCode).toBe('BI-SI.21')
+    expect(page.committeeList.selectedCommittee.value?.defenseDepartmentCode).toBe('18102')
 
-    page.updateSelectedCommitteeLanguage('ENGLISH')
+    page.committeeFields.updateSelectedCommitteeLanguage('ENGLISH')
 
-    expect(page.selectedCommittee.value?.studyProgramName).toBe('')
-    expect(page.selectedCommittee.value?.specializationCode).toBe('')
-    expect(page.selectedCommittee.value?.specializationName).toBe('')
-    expect(page.selectedCommittee.value?.defenseDepartmentCode).toBe('')
-    expect(page.selectedCommittee.value?.defenseDepartmentName).toBe('')
+    expect(page.committeeList.selectedCommittee.value?.studyProgramName).toBe('')
+    expect(page.committeeList.selectedCommittee.value?.specializationCode).toBe('')
+    expect(page.committeeList.selectedCommittee.value?.specializationName).toBe('')
+    expect(page.committeeList.selectedCommittee.value?.defenseDepartmentCode).toBe('')
+    expect(page.committeeList.selectedCommittee.value?.defenseDepartmentName).toBe('')
   })
 
   it('clears specialization and department when study program type changes', async () => {
     const { useEditorPage } = await import('~/composables/editor/useEditorPage')
     const page = useEditorPage()
 
-    expect(page.selectedCommittee.value?.studyProgramType).toBe('BACHELOR')
-    expect(page.selectedCommittee.value?.studyProgramName).toBe('Informatika')
-    expect(page.selectedCommittee.value?.specializationCode).toBe('BI-SI.21')
+    expect(page.committeeList.selectedCommittee.value?.studyProgramType).toBe('BACHELOR')
+    expect(page.committeeList.selectedCommittee.value?.studyProgramName).toBe('Informatika')
+    expect(page.committeeList.selectedCommittee.value?.specializationCode).toBe('BI-SI.21')
 
-    page.updateSelectedCommitteeStudyProgramType('MASTER')
+    page.committeeFields.updateSelectedCommitteeStudyProgramType('MASTER')
 
-    expect(page.selectedCommittee.value?.studyProgramType).toBe('MASTER')
-    expect(page.selectedCommittee.value?.studyProgramName).toBe('Informatika')
-    expect(page.selectedCommittee.value?.specializationCode).toBe('')
-    expect(page.selectedCommittee.value?.specializationName).toBe('')
-    expect(page.selectedCommittee.value?.defenseDepartmentCode).toBe('')
-    expect(page.selectedCommittee.value?.defenseDepartmentName).toBe('')
+    expect(page.committeeList.selectedCommittee.value?.studyProgramType).toBe('MASTER')
+    expect(page.committeeList.selectedCommittee.value?.studyProgramName).toBe('Informatika')
+    expect(page.committeeList.selectedCommittee.value?.specializationCode).toBe('')
+    expect(page.committeeList.selectedCommittee.value?.specializationName).toBe('')
+    expect(page.committeeList.selectedCommittee.value?.defenseDepartmentCode).toBe('')
+    expect(page.committeeList.selectedCommittee.value?.defenseDepartmentName).toBe('')
   })
 
   it('updates selected committee specialization from selected study program', async () => {
     const { useEditorPage } = await import('~/composables/editor/useEditorPage')
     const page = useEditorPage()
 
-    page.updateSelectedCommitteeStudyProgramType('BACHELOR')
-    page.updateSelectedCommitteeStudyProgramName('Informatika')
-    page.updateSelectedCommitteeSpecializationCode('BI-SI.21')
+    page.committeeFields.updateSelectedCommitteeStudyProgramType('BACHELOR')
+    page.committeeFields.updateSelectedCommitteeStudyProgramName('Informatika')
+    page.committeeFields.updateSelectedCommitteeSpecializationCode('BI-SI.21')
 
-    expect(page.selectedCommittee.value?.specializationCode).toBe('BI-SI.21')
-    expect(page.selectedCommittee.value?.specializationName).toBe('Softwarové inženýrství 2021')
-    expect(page.selectedCommittee.value?.defenseDepartmentCode).toBe('18102')
-    expect(page.selectedCommittee.value?.defenseDepartmentName).toBe('Katedra softwarového inženýrství')
+    expect(page.committeeList.selectedCommittee.value?.specializationCode).toBe('BI-SI.21')
+    expect(page.committeeList.selectedCommittee.value?.specializationName).toBe('Softwarové inženýrství 2021')
+    expect(page.committeeList.selectedCommittee.value?.defenseDepartmentCode).toBe('18102')
+    expect(page.committeeList.selectedCommittee.value?.defenseDepartmentName).toBe('Katedra softwarového inženýrství')
     expect(
       scheduleDraftStoreMock.draft?.committees.find((entry) => entry.localId === 'committee-early')?.specializationCode
     ).toBe('BI-SI.21')
@@ -460,14 +469,14 @@ describe('useEditorPage', () => {
     const { useEditorPage } = await import('~/composables/editor/useEditorPage')
     const page = useEditorPage()
 
-    page.openCloudSaveDialog()
-    page.cloudSaveName.value = 'Archivní plán SZZ'
+    page.scheduleDialogs.openCloudSaveDialog()
+    page.scheduleDialogs.cloudSaveName.value = 'Archivní plán SZZ'
 
-    await page.submitCloudSave()
+    await page.scheduleDialogs.submitCloudSave()
 
     expect(saveManualDraftMock).toHaveBeenCalledWith('Archivní plán SZZ', true)
     expect(scheduleDraftStoreMock.draft?.name).toBe('Plán')
-    expect(page.isCloudSaveDialogOpen.value).toBe(false)
-    expect(page.cloudSaveValidationError.value).toBeNull()
+    expect(page.scheduleDialogs.isCloudSaveDialogOpen.value).toBe(false)
+    expect(page.scheduleDialogs.cloudSaveValidationError.value).toBeNull()
   })
 })
