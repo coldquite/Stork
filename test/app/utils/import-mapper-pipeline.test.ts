@@ -141,4 +141,30 @@ describe('import mapper pipeline modules', () => {
     expect(student?.prepareMinutes).toBe(45)
     expect(student?.examMinutes).toBe(30)
   })
+
+  it('mapCommittees fails when defense department code is empty in both studenti-komise and komise', () => {
+    const payload = createPipelinePayload()
+    payload.committees.rows[0] = {
+      ...payload.committees.rows[0],
+      Kat: ''
+    }
+    payload.studentsCommittees.bachelor!.rows[0] = {
+      ...payload.studentsCommittees.bachelor!.rows[0],
+      'VŠKP-typ A: Katedra obhajoby - kod': ''
+    }
+
+    const datasets = collectDatasets(payload, 'BACHELOR')
+
+    try {
+      mapCommittees('BACHELOR', payload.committees, datasets.studentsCommitteesRows)
+      throw new Error('Expected mapping failure')
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(ImportMappingFailure)
+      const mappingError = (error as ImportMappingFailure).mappingError
+      expect(mappingError.code).toBe('MISSING_REQUIRED_VALUE')
+      expect(mappingError.datasetKey).toBe('studentsCommittees')
+      expect(mappingError.column).toBe('VŠKP-typ A: Katedra obhajoby - kod')
+      expect(mappingError.context.fallbackColumn).toBe('Kat')
+    }
+  })
 })

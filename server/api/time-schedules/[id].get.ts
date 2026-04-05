@@ -106,6 +106,9 @@ function mapCommitteeItemToDto(item: LoadedCommitteeItem): TimeScheduleDto['comm
 }
 
 function mapCommitteeToDto(committee: LoadedCommittee): TimeScheduleDto['committees'][number] {
+  const defenseDepartmentCode = committee.defenseDepartmentCode ?? ''
+  const defenseDepartmentName = committee.defenseDepartmentName ?? ''
+
   return {
     id: committee.id,
     timeScheduleId: committee.timeScheduleId,
@@ -120,8 +123,8 @@ function mapCommitteeToDto(committee: LoadedCommittee): TimeScheduleDto['committ
     studyProgramType: committee.studyProgramType,
     specializationName: committee.specializationName,
     specializationCode: committee.specializationCode,
-    defenseDepartmentCode: committee.defenseDepartmentCode,
-    defenseDepartmentName: committee.defenseDepartmentName,
+    defenseDepartmentCode,
+    defenseDepartmentName,
     chairName: committee.chairName,
     viceChairName: committee.viceChairName,
     member1Name: committee.member1Name,

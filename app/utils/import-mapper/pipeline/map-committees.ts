@@ -163,9 +163,18 @@ export function mapCommittees(
       representativeStudentsRow,
       'VŠKP-typ A: Katedra obhajoby - název'
     )
-    const defenseDepartmentCode = studentsDefenseDepartmentCode ?? committeesDefenseDepartmentCode
+    const defenseDepartmentCode = studentsDefenseDepartmentCode ?? committeesDefenseDepartmentCode ?? ''
+    if (defenseDepartmentCode.length < 1) {
+      throwMappingError('MISSING_REQUIRED_VALUE', representativeStudentsRow, {
+        column: 'VŠKP-typ A: Katedra obhajoby - kod',
+        context: {
+          reason: 'required_value_is_empty',
+          fallbackColumn: 'Kat'
+        }
+      })
+    }
     const defenseDepartmentName =
-      studentsDefenseDepartmentName ?? resolveEditorDepartmentNameByCode(defenseDepartmentCode) ?? null
+      studentsDefenseDepartmentName ?? resolveEditorDepartmentNameByCode(defenseDepartmentCode) ?? ''
 
     const studyProgramTypeValue = readRequiredValue(representativeStudentsRow, 'St. program - typ')
     const studyProgramType = parseStudyProgramType(studyProgramTypeValue)

@@ -889,7 +889,35 @@ describe('mapImportPayloadToDraftSource', () => {
     }
 
     expect(result.draft.committees[0]?.defenseDepartmentCode).toBe('KSI')
-    expect(result.draft.committees[0]?.defenseDepartmentName).toBeNull()
+    expect(result.draft.committees[0]?.defenseDepartmentName).toBe('')
+  })
+
+  it('fails when defense department code is missing in both studenti-komise and komise', () => {
+    const payload = createValidPayload()
+    payload.committees.rows[0] = createCommitteesRow({
+      Kat: ''
+    })
+    payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
+      'VŠKP-typ A: Katedra obhajoby - kod': '',
+      'VŠKP-typ A: Katedra obhajoby - název': ''
+    })
+
+    const result = mapImportPayloadToDraftSource({
+      scheduleName: 'SZZ červen 2025',
+      szzType: 'BACHELOR',
+      payload
+    })
+
+    expect(result.ok).toBe(false)
+    if (result.ok) {
+      throw new Error('Expected mapping failure')
+    }
+
+    expect(result.error.code).toBe('MISSING_REQUIRED_VALUE')
+    expect(result.error.datasetKey).toBe('studentsCommittees')
+    expect(result.error.column).toBe('VŠKP-typ A: Katedra obhajoby - kod')
+    expect(result.error.context.reason).toBe('required_value_is_empty')
+    expect(result.error.context.fallbackColumn).toBe('Kat')
   })
 
   it('maps committee defense department name from known code when studenti-komise name is empty', () => {

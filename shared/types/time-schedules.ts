@@ -84,8 +84,8 @@ export interface CommitteeDto {
   studyProgramType: StudyProgramTypeDto
   specializationName: string
   specializationCode: string
-  defenseDepartmentCode: string | null
-  defenseDepartmentName: string | null
+  defenseDepartmentCode: string
+  defenseDepartmentName: string
   chairName: string
   viceChairName: string
   member1Name: string

@@ -365,8 +365,8 @@ describe('useEditorPage', () => {
     expect(page.selectedCommittee.value?.studyProgramName).toBe('')
     expect(page.selectedCommittee.value?.specializationCode).toBe('')
     expect(page.selectedCommittee.value?.specializationName).toBe('')
-    expect(page.selectedCommittee.value?.defenseDepartmentCode).toBeNull()
-    expect(page.selectedCommittee.value?.defenseDepartmentName).toBeNull()
+    expect(page.selectedCommittee.value?.defenseDepartmentCode).toBe('')
+    expect(page.selectedCommittee.value?.defenseDepartmentName).toBe('')
   })
 
   it('clears specialization and department when study program type changes', async () => {
@@ -383,8 +383,8 @@ describe('useEditorPage', () => {
     expect(page.selectedCommittee.value?.studyProgramName).toBe('Informatika')
     expect(page.selectedCommittee.value?.specializationCode).toBe('')
     expect(page.selectedCommittee.value?.specializationName).toBe('')
-    expect(page.selectedCommittee.value?.defenseDepartmentCode).toBeNull()
-    expect(page.selectedCommittee.value?.defenseDepartmentName).toBeNull()
+    expect(page.selectedCommittee.value?.defenseDepartmentCode).toBe('')
+    expect(page.selectedCommittee.value?.defenseDepartmentName).toBe('')
   })
 
   it('updates selected committee specialization from selected study program', async () => {

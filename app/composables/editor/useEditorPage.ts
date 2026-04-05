@@ -473,8 +473,8 @@ export function useEditorPage() {
       studyProgramType: lastCommittee?.studyProgramType ?? 'BACHELOR',
       specializationName: lastCommittee?.specializationName ?? '',
       specializationCode: lastCommittee?.specializationCode ?? '',
-      defenseDepartmentCode: lastCommittee?.defenseDepartmentCode ?? null,
-      defenseDepartmentName: lastCommittee?.defenseDepartmentName ?? null,
+      defenseDepartmentCode: lastCommittee?.defenseDepartmentCode ?? '',
+      defenseDepartmentName: lastCommittee?.defenseDepartmentName ?? '',
       chairName: lastCommittee?.chairName ?? '',
       viceChairName: lastCommittee?.viceChairName ?? '',
       member1Name: lastCommittee?.member1Name ?? '',
@@ -578,8 +578,8 @@ export function useEditorPage() {
   function clearCommitteeSpecializationAndDepartment(committee: ScheduleDraftCommittee): void {
     committee.specializationCode = ''
     committee.specializationName = ''
-    committee.defenseDepartmentCode = null
-    committee.defenseDepartmentName = null
+    committee.defenseDepartmentCode = ''
+    committee.defenseDepartmentName = ''
   }
 
   function updateSelectedCommitteeLanguage(nextLanguage: ScheduleDraftCommittee['language']): void {
@@ -662,8 +662,8 @@ export function useEditorPage() {
     committee.specializationCode = nextSpecializationCode
     if (nextSpecializationCode.length < 1) {
       committee.specializationName = ''
-      committee.defenseDepartmentCode = null
-      committee.defenseDepartmentName = null
+      committee.defenseDepartmentCode = ''
+      committee.defenseDepartmentName = ''
       return
     }
 
@@ -673,8 +673,8 @@ export function useEditorPage() {
       nextSpecializationCode
     )
     committee.specializationName = specializationOption?.specializationName ?? nextSpecializationCode
-    committee.defenseDepartmentCode = specializationOption?.departmentCode ?? null
-    committee.defenseDepartmentName = specializationOption?.departmentNameCs ?? null
+    committee.defenseDepartmentCode = specializationOption?.departmentCode ?? ''
+    committee.defenseDepartmentName = specializationOption?.departmentNameCs ?? ''
   }
 
   function submitAddInvigilator(): void {

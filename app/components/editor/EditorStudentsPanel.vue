@@ -70,6 +70,7 @@ const renameActionButtonUi = {
   base: '!text-capaccent-800 ring-[2px] ring-capaccent-300/80 hover:!text-capaccent-800 hover:ring-capaccent-500 hover:bg-capaccent-50 dark:!text-capaccent-100 dark:ring-capaccent-400/80 dark:hover:!text-capaccent-100 dark:hover:bg-capaccent-500/25'
 }
 const actionButtonClass = 'shrink-0 px-2 cursor-pointer'
+
 const readOnlyInputClass = 'min-w-0 flex-1 overflow-hidden rounded-md bg-accented'
 const deleteActionButtonUi = {
   base: 'text-error/80 ring-[2px] ring-current/45 hover:text-error hover:ring-current/80'
