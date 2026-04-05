@@ -70,6 +70,7 @@ const renameActionButtonUi = {
   base: '!text-capaccent-800 ring-[2px] ring-capaccent-300/80 hover:!text-capaccent-800 hover:ring-capaccent-500 hover:bg-capaccent-50 dark:!text-capaccent-100 dark:ring-capaccent-400/80 dark:hover:!text-capaccent-100 dark:hover:bg-capaccent-500/25'
 }
 const actionButtonClass = 'shrink-0 px-2 cursor-pointer'
+const readOnlyInputClass = 'min-w-0 flex-1 overflow-hidden rounded-md bg-accented'
 const deleteActionButtonUi = {
   base: 'text-error/80 ring-[2px] ring-current/45 hover:text-error hover:ring-current/80'
 }
@@ -445,12 +446,12 @@ if (import.meta.client) {
               </div>
             </div>
 
-            <div class="border-default w-fit min-w-76 rounded-md border p-2">
+            <div class="border-default w-fit min-w-78 rounded-md border p-2">
               <div class="flex flex-col gap-2">
                 <div class="flex items-center gap-2">
                   <span class="text-sm whitespace-nowrap">{{ props.committeeStudyProgramTypeLabel }}:</span>
 
-                  <div class="border-default flex w-52 items-center gap-1 rounded-md border p-1">
+                  <div class="border-default flex w-58 items-center gap-1 rounded-md border p-1">
                     <UButton
                       color="primary"
                       size="xs"
@@ -502,7 +503,12 @@ if (import.meta.client) {
 
                 <div class="flex items-center gap-2">
                   <span class="text-sm whitespace-nowrap">{{ props.committeeDepartmentLabel }}:</span>
-                  <UInput :model-value="committeeDepartmentDisplayLabel" disabled size="sm" class="min-w-0 flex-1" />
+                  <UInput
+                    :model-value="committeeDepartmentDisplayLabel"
+                    disabled
+                    size="sm"
+                    :class="readOnlyInputClass"
+                  />
                 </div>
               </div>
             </div>
@@ -524,7 +530,7 @@ if (import.meta.client) {
                         :model-value="invigilatorName"
                         disabled
                         size="sm"
-                        class="pointer-events-none min-w-0 flex-1 select-none"
+                        :class="`cursor-not-allowed select-none ${readOnlyInputClass}`"
                       />
                       <UButton
                         color="error"
