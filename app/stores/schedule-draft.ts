@@ -130,6 +130,7 @@ function toDraftFromSource(source: DraftScheduleSource): ScheduleDraft {
   return {
     name: normalizedName(source.name, fallbackName),
     type: source.type,
+    thesisTitleDisplayMode: 'AUTO',
     committees: source.committees.map((committee) => toDraftCommittee(committee))
   }
 }
@@ -208,7 +209,6 @@ function toPostPayload(
   const targetName = explicitName !== undefined ? explicitName : payload.name
 
   return {
-    ...payload,
     name: normalizedName(targetName, ''),
     type: scheduleType,
     committees: payload.committees.map((committee) => toPostCommittee(committee))

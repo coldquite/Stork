@@ -1,9 +1,23 @@
+import type { RepeatTypeDto } from '#shared/types/time-schedules'
+
 export interface StudentRow {
   id: string
-  fullName: string
+  prepareTime: string
+  examTime: string
   personalNumber: string
-  specialization: string
+  titlesBefore: string
+  lastName: string
+  firstName: string
+  titlesAfter: string
+  specializationCode: string
   thesisTitle: string
+  thesisTitleLocal: string
+  thesisTitleEn: string
+  supervisorName: string
+  reviewerName: string
+  repeatType: RepeatTypeDto
+  prepareMinutes: number
+  examMinutes: number
 }
 
 export interface CommitteeSidebarDayBookmarkItem {
@@ -27,6 +41,9 @@ export interface EditorStudentsPanelCommitteeLabels {
   startTime: string
   startTimeHour: string
   startTimeMinute: string
+  thesisTitleDisplayMode: string
+  thesisTitleDisplayModeAuto: string
+  thesisTitleDisplayModeBoth: string
   room: string
   date: string
   secretary: string

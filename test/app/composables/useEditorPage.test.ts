@@ -113,6 +113,7 @@ function createDraftWithTwoCommittees(): ScheduleDraft {
   return {
     name: 'Plán',
     type: 'MANUAL',
+    thesisTitleDisplayMode: 'AUTO',
     committees: [
       createCommittee({
         localId: 'committee-early',
@@ -171,6 +172,120 @@ describe('useEditorPage', () => {
 
     expect(committee.items.map((item) => item.localId)).toEqual(['student-b', 'pause-a', 'student-a'])
     expect(committee.items.map((item) => item.position)).toEqual([1, 2, 3])
+  })
+
+  it('updates editable student row fields in draft', async () => {
+    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const page = useEditorPage()
+
+    const [firstStudentRow, secondStudentRow] = page.studentTable.selectedStudents.value
+    expect(firstStudentRow).toBeDefined()
+    expect(secondStudentRow).toBeDefined()
+    if (!firstStudentRow || !secondStudentRow) {
+      throw new Error('Expected student rows to exist')
+    }
+
+    page.studentTable.selectedStudents.value = [
+      {
+        ...firstStudentRow,
+        lastName: '  Alenov',
+        firstName: 'Damir  ',
+        specializationCode: 'BI-SI.21',
+        thesisTitle: 'Nový český název',
+        supervisorName: 'Ing. Vedoucí Nový',
+        reviewerName: 'Ing. Oponent Nový',
+        repeatType: 'BOTH',
+        prepareMinutes: 50,
+        examMinutes: 25
+      },
+      secondStudentRow
+    ]
+
+    const committee = scheduleDraftStoreMock.draft?.committees.find((entry) => entry.localId === 'committee-early')
+    const firstStudentItem = committee?.items.find((item) => item.localId === 'student-a')
+    expect(firstStudentItem).toBeDefined()
+    if (!firstStudentItem || firstStudentItem.type !== 'STUDENT') {
+      throw new Error('Expected first student item')
+    }
+
+    expect(firstStudentItem.student.lastName).toBe('Alenov')
+    expect(firstStudentItem.student.firstName).toBe('Damir')
+    expect(firstStudentItem.student.specializationCode).toBe('BI-SI.21')
+    expect(firstStudentItem.student.specializationName).toBe('Softwarové inženýrství 2021')
+    expect(firstStudentItem.student.thesisTitleLocal).toBe('Nový český název')
+    expect(firstStudentItem.student.supervisorName).toBe('Ing. Vedoucí Nový')
+    expect(firstStudentItem.student.reviewerName).toBe('Ing. Oponent Nový')
+    expect(firstStudentItem.student.repeatType).toBe('BOTH')
+    expect(firstStudentItem.student.prepareMinutes).toBe(50)
+    expect(firstStudentItem.student.examMinutes).toBe(25)
+
+    expect(page.studentTable.selectedStudents.value[0]?.prepareTime).toBe('07:40')
+    expect(page.studentTable.selectedStudents.value[0]?.examTime).toBe('08:30 - 08:55')
+    expect(page.studentTable.selectedStudents.value[1]?.examTime).toBe('09:15 - 09:45')
+  })
+
+  it('updates english thesis title when committee language is english', async () => {
+    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const page = useEditorPage()
+
+    page.committeeFields.updateSelectedCommitteeLanguage('ENGLISH')
+    const [firstStudentRow, secondStudentRow] = page.studentTable.selectedStudents.value
+    expect(firstStudentRow).toBeDefined()
+    expect(secondStudentRow).toBeDefined()
+    if (!firstStudentRow || !secondStudentRow) {
+      throw new Error('Expected student rows to exist')
+    }
+
+    page.studentTable.selectedStudents.value = [
+      {
+        ...firstStudentRow,
+        thesisTitle: 'Edited English Thesis'
+      },
+      secondStudentRow
+    ]
+
+    const committee = scheduleDraftStoreMock.draft?.committees.find((entry) => entry.localId === 'committee-early')
+    const firstStudentItem = committee?.items.find((item) => item.localId === 'student-a')
+    expect(firstStudentItem).toBeDefined()
+    if (!firstStudentItem || firstStudentItem.type !== 'STUDENT') {
+      throw new Error('Expected first student item')
+    }
+
+    expect(firstStudentItem.student.thesisTitleEn).toBe('Edited English Thesis')
+    expect(firstStudentItem.student.thesisTitleLocal).toBe('Local student-a')
+  })
+
+  it('updates both thesis title variants when display mode is BOTH', async () => {
+    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const page = useEditorPage()
+
+    page.draftSettings.updateThesisTitleDisplayMode('BOTH')
+    const [firstStudentRow, secondStudentRow] = page.studentTable.selectedStudents.value
+    expect(firstStudentRow).toBeDefined()
+    expect(secondStudentRow).toBeDefined()
+    if (!firstStudentRow || !secondStudentRow) {
+      throw new Error('Expected student rows to exist')
+    }
+
+    page.studentTable.selectedStudents.value = [
+      {
+        ...firstStudentRow,
+        thesisTitleLocal: 'Nový lokální název',
+        thesisTitleEn: 'New English title'
+      },
+      secondStudentRow
+    ]
+
+    const committee = scheduleDraftStoreMock.draft?.committees.find((entry) => entry.localId === 'committee-early')
+    const firstStudentItem = committee?.items.find((item) => item.localId === 'student-a')
+    expect(firstStudentItem).toBeDefined()
+    if (!firstStudentItem || firstStudentItem.type !== 'STUDENT') {
+      throw new Error('Expected first student item')
+    }
+
+    expect(firstStudentItem.student.thesisTitleLocal).toBe('Nový lokální název')
+    expect(firstStudentItem.student.thesisTitleEn).toBe('New English title')
+    expect(scheduleDraftStoreMock.draft?.thesisTitleDisplayMode).toBe('BOTH')
   })
 
   it('creates committee with trimmed name and selects it', async () => {

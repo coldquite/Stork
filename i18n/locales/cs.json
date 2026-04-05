@@ -316,6 +316,11 @@
       "startTime": "Začátek první zkoušky před komisí",
       "startTimeHour": "Hodina",
       "startTimeMinute": "Minuta",
+      "thesisTitleDisplayMode": "Ukazovat sloupec „Název práce“",
+      "thesisTitleDisplayModeOptions": {
+        "auto": "Jenom v jazyce komise",
+        "both": "CS/SK + EN názvy"
+      },
       "room": "Místnost konání",
       "date": "Datum konání",
       "secretary": "Tajemník",
@@ -366,10 +371,29 @@
     },
     "table": {
       "order": "Pořadí",
-      "student": "Student",
+      "prepareTime": "Příprava",
+      "examTime": "Zkouška",
       "personalNumber": "Osobní číslo",
-      "specialization": "Specializace",
-      "thesisTitle": "Téma práce"
+      "titlesBefore": "Titul",
+      "lastName": "Příjmení",
+      "firstName": "Jméno",
+      "titlesAfter": "Titul za",
+      "specialization": "Obor-specializace",
+      "thesisTitle": "Název práce",
+      "thesisTitleLocal": "Název práce (CS/SK)",
+      "thesisTitleEn": "Název práce (EN)",
+      "supervisor": "Vedoucí",
+      "reviewer": "Oponent",
+      "repeatType": "Opakuje",
+      "prepareMinutes": "Příprava v min",
+      "examMinutes": "Zkouška v min",
+      "repeatTypeOptions": {
+        "none": "Neopakuje",
+        "thesisDefense": "Opakuje obhajobu",
+        "oralExam": "Opakuje státnici",
+        "both": "Opakuje obhajobu i státnici",
+        "unknown": "Neznámé"
+      }
     }
   },
   "teachersDictionary": {

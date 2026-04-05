@@ -11,6 +11,7 @@ const page = useEditorPage()
 const {
   committeeList,
   studentTable,
+  draftSettings,
   committeeFields,
   invigilators,
   scheduleDialogs,
@@ -28,6 +29,9 @@ const committeeLabels = computed(() => ({
   startTime: t('editor.committee.startTime'),
   startTimeHour: t('editor.committee.startTimeHour'),
   startTimeMinute: t('editor.committee.startTimeMinute'),
+  thesisTitleDisplayMode: t('editor.committee.thesisTitleDisplayMode'),
+  thesisTitleDisplayModeAuto: t('editor.committee.thesisTitleDisplayModeOptions.auto'),
+  thesisTitleDisplayModeBoth: t('editor.committee.thesisTitleDisplayModeOptions.both'),
   room: t('editor.committee.room'),
   date: t('editor.committee.date'),
   secretary: t('editor.committee.secretary'),
@@ -153,6 +157,8 @@ const panelCommitteeLabel = computed(() => committeeList.selectedCommitteeLabel.
 const panelCommitteeDate = computed(() => committeeList.selectedCommitteeDate.value)
 const panelStudents = computed(() => studentTable.selectedStudents.value)
 const panelColumns = computed(() => studentTable.columns.value)
+const panelSpecializationOptions = computed(() => studentTable.specializationOptions.value)
+const panelThesisTitleDisplayMode = computed(() => draftSettings.thesisTitleDisplayMode.value)
 const panelInvigilators = computed(() => invigilators.selectedInvigilators.value)
 const panelInvigilatorsCountLabel = computed(() => invigilators.invigilatorsCountLabel.value)
 const cloudSaveLoading = computed(() => scheduleDialogs.isCloudSaveLoading.value)
@@ -195,9 +201,11 @@ const draftNameText = computed(() => draftName.value)
             :selected-committee="panelSelectedCommittee"
             :selected-committee-label="panelCommitteeLabel"
             :selected-committee-date="panelCommitteeDate"
+            :thesis-title-display-mode="panelThesisTitleDisplayMode"
             :students-count-label="studentsCountLabel"
             :students="panelStudents"
             :columns="panelColumns"
+            :specialization-options="panelSpecializationOptions"
             :committee-labels="committeeLabels"
             :students-empty="studentsEmpty"
             :invigilator-labels="invigilatorLabels"
@@ -207,6 +215,7 @@ const draftNameText = computed(() => draftName.value)
             @committee-string-field="onCommitteeStringField"
             @update:committee-date="committeeFields.updateSelectedCommitteeDate"
             @update:committee-start-minute="committeeFields.updateSelectedCommitteeStartMinute"
+            @update:thesis-title-display-mode="draftSettings.updateThesisTitleDisplayMode"
             @update:committee-language="committeeFields.updateSelectedCommitteeLanguage"
             @update:committee-study-program-type="committeeFields.updateSelectedCommitteeStudyProgramType"
             @add-invigilator="invigilators.openAddInvigilatorDialog"

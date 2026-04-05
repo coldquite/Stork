@@ -13,6 +13,8 @@ export interface ScheduleAutoSavePolicy {
   retryAfterErrorMs: number
 }
 
+export type ScheduleDraftThesisTitleDisplayMode = 'AUTO' | 'BOTH'
+
 export type ScheduleDraftOperationErrorCode = 'DRAFT_NOT_INITIALIZED' | 'REQUEST_FAILED'
 
 /** UI-only stable row id for invigilators. */
@@ -22,6 +24,7 @@ export interface ScheduleDraftInvigilator {
 }
 
 export type ScheduleDraft = Omit<PostTimeScheduleRequestDto, 'committees'> & {
+  thesisTitleDisplayMode?: ScheduleDraftThesisTitleDisplayMode
   committees: ScheduleDraftCommittee[]
 }
 

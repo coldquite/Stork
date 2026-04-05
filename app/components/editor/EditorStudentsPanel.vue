@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
+import type { EditorSpecializationOption } from '#shared/constants/editor'
 import type {
   EditorCommitteeStringFieldPayload,
   EditorStudentsPanelCommitteeLabels,
@@ -7,17 +8,23 @@ import type {
   EditorStudentsPanelStudentsEmptyLabels,
   StudentRow
 } from '~/types/editor'
-import type { ScheduleDraftCommittee, ScheduleDraftInvigilator } from '~/types/schedule-draft'
+import type {
+  ScheduleDraftCommittee,
+  ScheduleDraftInvigilator,
+  ScheduleDraftThesisTitleDisplayMode
+} from '~/types/schedule-draft'
 import type { StudyLanguageDto, StudyProgramTypeDto } from '#shared/types/time-schedules'
 
 const props = defineProps<{
   cardRootClass: string
   selectedCommittee: ScheduleDraftCommittee | null
+  thesisTitleDisplayMode: ScheduleDraftThesisTitleDisplayMode
   selectedCommitteeLabel?: string
   selectedCommitteeDate?: string
   studentsCountLabel: string
   students: StudentRow[]
   columns: TableColumn<StudentRow>[]
+  specializationOptions: EditorSpecializationOption[]
   committeeLabels: EditorStudentsPanelCommitteeLabels
   studentsEmpty: EditorStudentsPanelStudentsEmptyLabels
   invigilatorLabels: EditorStudentsPanelInvigilatorLabels
@@ -30,6 +37,7 @@ const emit = defineEmits<{
   (event: 'committeeStringField', payload: EditorCommitteeStringFieldPayload): void
   (event: 'update:committeeDate' | 'deleteInvigilator' | 'renameCommittee' | 'deleteCommittee', value: string): void
   (event: 'update:committeeStartMinute', value: number): void
+  (event: 'update:thesisTitleDisplayMode', value: ScheduleDraftThesisTitleDisplayMode): void
   (event: 'update:committeeLanguage', value: StudyLanguageDto): void
   (event: 'update:committeeStudyProgramType', value: StudyProgramTypeDto): void
   (event: 'addInvigilator'): void
@@ -39,6 +47,7 @@ const labels = computed(() => props.committeeLabels)
 
 const hasSelectedCommittee = computed(() => Boolean(props.selectedCommittee))
 const isInvigilatorsEmpty = computed(() => hasSelectedCommittee.value && props.invigilators.length < 1)
+const thesisTitleDisplayMode = computed<ScheduleDraftThesisTitleDisplayMode>(() => props.thesisTitleDisplayMode)
 
 const committeeLocalId = computed(() => props.selectedCommittee?.localId ?? '')
 
@@ -60,6 +69,10 @@ function requestDeleteCommittee(): void {
   }
 
   emit('deleteCommittee', props.selectedCommittee.localId)
+}
+
+function setThesisTitleDisplayMode(mode: ScheduleDraftThesisTitleDisplayMode): void {
+  emit('update:thesisTitleDisplayMode', mode)
 }
 </script>
 
@@ -129,13 +142,41 @@ function requestDeleteCommittee(): void {
         </div>
 
         <div class="border-default w-full min-w-0 border-t pt-3">
-          <EditorCommitteeStartTimeRow
-            :selected-committee="props.selectedCommittee"
-            :start-time-label="labels.startTime"
-            :start-time-hour-label="labels.startTimeHour"
-            :start-time-minute-label="labels.startTimeMinute"
-            @update:committee-start-minute="emit('update:committeeStartMinute', $event)"
-          />
+          <div class="flex w-full min-w-0 flex-wrap items-start justify-between gap-3">
+            <EditorCommitteeStartTimeRow
+              :selected-committee="props.selectedCommittee"
+              :start-time-label="labels.startTime"
+              :start-time-hour-label="labels.startTimeHour"
+              :start-time-minute-label="labels.startTimeMinute"
+              @update:committee-start-minute="emit('update:committeeStartMinute', $event)"
+            />
+
+            <div class="ml-auto flex min-w-0 items-center gap-2">
+              <span class="text-sm whitespace-nowrap">{{ labels.thesisTitleDisplayMode }}:</span>
+              <div class="border-default flex min-w-0 items-center gap-1 rounded-md border p-1">
+                <UButton
+                  color="primary"
+                  size="xs"
+                  :variant="thesisTitleDisplayMode === 'AUTO' ? 'solid' : 'ghost'"
+                  :disabled="!hasSelectedCommittee"
+                  class="min-w-0 cursor-pointer justify-center whitespace-nowrap"
+                  @click="setThesisTitleDisplayMode('AUTO')"
+                >
+                  {{ labels.thesisTitleDisplayModeAuto }}
+                </UButton>
+                <UButton
+                  color="primary"
+                  size="xs"
+                  :variant="thesisTitleDisplayMode === 'BOTH' ? 'solid' : 'ghost'"
+                  :disabled="!hasSelectedCommittee"
+                  class="min-w-0 cursor-pointer justify-center whitespace-nowrap"
+                  @click="setThesisTitleDisplayMode('BOTH')"
+                >
+                  {{ labels.thesisTitleDisplayModeBoth }}
+                </UButton>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </template>
@@ -144,6 +185,7 @@ function requestDeleteCommittee(): void {
       :committee-local-id="committeeLocalId"
       :model-value="props.students"
       :columns="props.columns"
+      :specialization-options="props.specializationOptions"
       :empty-labels="props.studentsEmpty"
       @update:model-value="emit('update:students', $event)"
     />

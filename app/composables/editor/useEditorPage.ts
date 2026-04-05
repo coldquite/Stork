@@ -4,6 +4,7 @@ import { useEditorInvigilators } from '~/composables/editor/useEditorInvigilator
 import { useEditorScheduleDialogs } from '~/composables/editor/useEditorScheduleDialogs'
 import { useEditorStudentTable } from '~/composables/editor/useEditorStudentTable'
 import { useScheduleDraftStore } from '~/stores/schedule-draft'
+import type { ScheduleDraftThesisTitleDisplayMode } from '~/types/schedule-draft'
 
 /**
  * Facade composable for the schedule editor page: composes committee list, student table,
@@ -17,10 +18,25 @@ export function useEditorPage() {
   const scheduleDraftStore = useScheduleDraftStore()
 
   const committeeList = useEditorCommitteeList()
-  const studentTable = useEditorStudentTable(committeeList.selectedCommittee)
+  const thesisTitleDisplayMode = computed<ScheduleDraftThesisTitleDisplayMode>(
+    () => scheduleDraftStore.draft?.thesisTitleDisplayMode ?? 'AUTO'
+  )
+  const studentTable = useEditorStudentTable(committeeList.selectedCommittee, thesisTitleDisplayMode)
   const committeeFields = useEditorCommitteeFields(committeeList.selectedCommittee)
   const invigilators = useEditorInvigilators(committeeList.selectedCommittee)
   const scheduleDialogs = useEditorScheduleDialogs()
+
+  function updateThesisTitleDisplayMode(nextMode: ScheduleDraftThesisTitleDisplayMode): void {
+    if (nextMode !== 'AUTO' && nextMode !== 'BOTH') {
+      return
+    }
+
+    if (!scheduleDraftStore.draft) {
+      return
+    }
+
+    scheduleDraftStore.draft.thesisTitleDisplayMode = nextMode
+  }
 
   const draftName = computed(() => scheduleDraftStore.draft?.name ?? t('editor.untitled'))
   const studentsCountLabel = computed(() =>
@@ -66,7 +82,13 @@ export function useEditorPage() {
 
     studentTable: {
       selectedStudents: studentTable.selectedStudents,
-      columns: studentTable.columns
+      columns: studentTable.columns,
+      specializationOptions: studentTable.specializationOptions
+    },
+
+    draftSettings: {
+      thesisTitleDisplayMode,
+      updateThesisTitleDisplayMode
     },
 
     committeeFields: {

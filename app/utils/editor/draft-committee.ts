@@ -1,5 +1,5 @@
 import { format, isValid, parseISO } from 'date-fns'
-import type { CommitteeSidebarItem, StudentRow } from '~/types/editor'
+import type { CommitteeSidebarItem } from '~/types/editor'
 import type { ScheduleDraftCommittee, ScheduleDraftItem } from '~/types/schedule-draft'
 
 export function isStudentItem(item: ScheduleDraftItem): item is ScheduleDraftItem & { type: 'STUDENT' } {
@@ -55,21 +55,6 @@ export function compareCommitteesByTimeline(left: ScheduleDraftCommittee, right:
   }
 
   return left.localId.localeCompare(right.localId, 'cs')
-}
-
-export function toStudentRow(item: ScheduleDraftItem & { type: 'STUDENT' }): StudentRow {
-  const fullName = [item.student.titlesBefore, item.student.firstName, item.student.lastName, item.student.titlesAfter]
-    .filter((part) => (part ?? '').trim().length > 0)
-    .join(' ')
-    .trim()
-
-  return {
-    id: item.localId,
-    fullName: fullName.length > 0 ? fullName : '-',
-    personalNumber: item.student.personalNumber?.trim() || '-',
-    specialization: item.student.specializationName.trim() || '-',
-    thesisTitle: item.student.thesisTitleLocal.trim() || item.student.thesisTitleEn.trim() || '-'
-  }
 }
 
 export interface EditorCommitteeListEntry {

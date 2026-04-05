@@ -1,13 +1,36 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
 import { useSortable } from '@vueuse/integrations/useSortable'
+import type { EditorSpecializationOption } from '#shared/constants/editor'
+import type { RepeatTypeDto } from '#shared/types/time-schedules'
+import { STUDENT_TABLE_THESIS_COLUMN_WIDTH_CLASS } from '~/constants/editor-students-table'
 import type { EditorStudentsPanelStudentsEmptyLabels, StudentRow } from '~/types/editor'
+import { resolveRepeatTypeFromSelectValue } from '~/utils/editor/repeat-type'
+
+type EditableTextField =
+  | 'personalNumber'
+  | 'titlesBefore'
+  | 'lastName'
+  | 'firstName'
+  | 'titlesAfter'
+  | 'thesisTitle'
+  | 'thesisTitleLocal'
+  | 'thesisTitleEn'
+  | 'supervisorName'
+  | 'reviewerName'
+type EditableMinuteField = 'prepareMinutes' | 'examMinutes'
+
+interface RepeatTypeOption {
+  label: string
+  value: RepeatTypeDto
+}
 
 const props = defineProps<{
   /** Stable key when the parent committee changes (resets local row order). */
   committeeLocalId: string
   modelValue: StudentRow[]
   columns: TableColumn<StudentRow>[]
+  specializationOptions: EditorSpecializationOption[]
   emptyLabels: EditorStudentsPanelStudentsEmptyLabels
 }>()
 
@@ -15,8 +38,14 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: StudentRow[]): void
 }>()
 
+const { t } = useI18n()
 const tableWrapper = ref<HTMLElement | null>(null)
 const localStudents = ref<StudentRow[]>([])
+const editingRowId = ref<string | null>(null)
+const isDragging = ref(false)
+const inlineEditInputClass = 'w-full [&_input]:text-sm'
+const inlineEditSelectClass = 'w-full [&_[role=combobox]]:text-sm [&_[role=combobox]_span]:text-sm'
+const thesisCellWrapperClass = `${STUDENT_TABLE_THESIS_COLUMN_WIDTH_CLASS} cursor-pointer`
 
 function syncFromParent(): void {
   localStudents.value = props.modelValue.slice()
@@ -26,6 +55,7 @@ watch(
   () => props.committeeLocalId,
   () => {
     syncFromParent()
+    editingRowId.value = null
   },
   { immediate: true }
 )
@@ -44,24 +74,233 @@ const sortableTarget = computed(() => {
 
 const sortable = useSortable(sortableTarget, localStudents)
 
+const repeatTypeOptions = computed<RepeatTypeOption[]>(() => [
+  {
+    value: 'NONE',
+    label: t('editor.table.repeatTypeOptions.none')
+  },
+  {
+    value: 'THESIS_DEFENSE',
+    label: t('editor.table.repeatTypeOptions.thesisDefense')
+  },
+  {
+    value: 'ORAL_EXAM',
+    label: t('editor.table.repeatTypeOptions.oralExam')
+  },
+  {
+    value: 'BOTH',
+    label: t('editor.table.repeatTypeOptions.both')
+  },
+  {
+    value: 'UNKNOWN',
+    label: t('editor.table.repeatTypeOptions.unknown')
+  }
+])
+
+const repeatTypeLabelsByValue = computed(() => {
+  return new Map(repeatTypeOptions.value.map((option) => [option.value, option.label]))
+})
+
+function emitRowsUpdate(): void {
+  emit('update:modelValue', localStudents.value.slice())
+}
+
+function activateRow(rowId: string): void {
+  editingRowId.value = rowId
+}
+
+function clearActiveRow(): void {
+  editingRowId.value = null
+}
+
+function isClickOnDragHandle(target: EventTarget | null): boolean {
+  return target instanceof Element && target.closest('.drag-handle') !== null
+}
+
+function resolveClickedRowId(target: EventTarget | null): string | null {
+  if (!(target instanceof Element)) {
+    return null
+  }
+
+  const rowElement = target.closest('tbody tr')
+  if (!(rowElement instanceof HTMLTableRowElement)) {
+    return null
+  }
+
+  const tbodyElement = rowElement.parentElement
+  if (!(tbodyElement instanceof HTMLTableSectionElement)) {
+    return null
+  }
+
+  const rowElements = Array.from(tbodyElement.querySelectorAll(':scope > tr'))
+  const clickedRowIndex = rowElements.indexOf(rowElement)
+  if (clickedRowIndex < 0) {
+    return null
+  }
+
+  return localStudents.value[clickedRowIndex]?.id ?? null
+}
+
+function handleTableClick(event: MouseEvent): void {
+  if (isDragging.value || isClickOnDragHandle(event.target)) {
+    return
+  }
+
+  const rowId = resolveClickedRowId(event.target)
+  if (!rowId) {
+    clearActiveRow()
+    return
+  }
+
+  activateRow(rowId)
+}
+
+function isClickInsideTable(target: EventTarget | null): boolean {
+  if (!(target instanceof Node)) {
+    return false
+  }
+
+  const wrapperElement = tableWrapper.value
+  if (!wrapperElement) {
+    return false
+  }
+
+  return wrapperElement.contains(target)
+}
+
+function handleDocumentClick(event: MouseEvent): void {
+  if (editingRowId.value === null || isDragging.value) {
+    return
+  }
+
+  if (isClickInsideTable(event.target)) {
+    return
+  }
+
+  clearActiveRow()
+}
+
+function isEditingRow(rowId: string): boolean {
+  return editingRowId.value === rowId
+}
+
+function updateRow(rowId: string, updater: (row: StudentRow) => StudentRow): void {
+  localStudents.value = localStudents.value.map((row) => (row.id === rowId ? updater(row) : row))
+  emitRowsUpdate()
+}
+
+function updateTextField(rowId: string, field: EditableTextField, value: unknown): void {
+  updateRow(rowId, (row) => ({
+    ...row,
+    [field]: String(value ?? '')
+  }))
+}
+
+function resolveIntegerFromInput(value: unknown, fallback: number): number {
+  const parsedValue =
+    typeof value === 'number' ? value : typeof value === 'string' ? Number.parseInt(value, 10) : Number.NaN
+
+  if (!Number.isFinite(parsedValue)) {
+    return fallback
+  }
+
+  return Math.max(Math.trunc(parsedValue), 0)
+}
+
+function updateMinuteField(rowId: string, field: EditableMinuteField, value: unknown): void {
+  updateRow(rowId, (row) => ({
+    ...row,
+    [field]: resolveIntegerFromInput(value, row[field])
+  }))
+}
+
+function resolveSpecializationCodeFromSelectValue(value: unknown, fallback: string): string {
+  if (typeof value === 'string') {
+    return value
+  }
+
+  if (typeof value === 'object' && value !== null && 'specializationCode' in value) {
+    return String(value.specializationCode)
+  }
+
+  return fallback
+}
+
+function updateSpecializationCode(rowId: string, value: unknown): void {
+  updateRow(rowId, (row) => ({
+    ...row,
+    specializationCode: resolveSpecializationCodeFromSelectValue(value, row.specializationCode)
+  }))
+}
+
+function updateRepeatType(rowId: string, value: unknown): void {
+  updateRow(rowId, (row) => ({
+    ...row,
+    repeatType: resolveRepeatTypeFromSelectValue(value, row.repeatType)
+  }))
+}
+
+function resolveRepeatTypeLabel(value: RepeatTypeDto): string {
+  return repeatTypeLabelsByValue.value.get(value) ?? value
+}
+
+function displayText(value: string): string {
+  const normalized = value.trim()
+  return normalized.length > 0 ? normalized : '-'
+}
+
+function specializationOptionsForRow(row: StudentRow): EditorSpecializationOption[] {
+  const normalizedCode = row.specializationCode.trim()
+  if (normalizedCode.length < 1) {
+    return props.specializationOptions
+  }
+
+  const hasCodeInOptions = props.specializationOptions.some((option) => option.specializationCode === normalizedCode)
+  if (hasCodeInOptions) {
+    return props.specializationOptions
+  }
+
+  return [
+    {
+      specializationCode: normalizedCode,
+      specializationName: normalizedCode,
+      departmentCode: null,
+      departmentNameCs: null,
+      departmentNameEn: null
+    },
+    ...props.specializationOptions
+  ]
+}
+
 onMounted(() => {
   sortable.option('animation', 150)
   sortable.option('handle', '.drag-handle')
   sortable.option('draggable', 'tr')
-  sortable.option('onEnd', () => {
-    emit('update:modelValue', localStudents.value.slice())
+  sortable.option('onStart', () => {
+    isDragging.value = true
   })
+  sortable.option('onEnd', () => {
+    isDragging.value = false
+    emitRowsUpdate()
+  })
+
+  window.addEventListener('click', handleDocumentClick)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('click', handleDocumentClick)
 })
 </script>
 
 <template>
-  <div ref="tableWrapper" class="overflow-x-auto">
+  <div ref="tableWrapper" class="overflow-x-auto" @click="handleTableClick">
     <UTable
       :data="localStudents"
       :columns="props.columns"
       :get-row-id="(row) => row.id"
       :ui="{
-        tbody: 'editor-students-tbody divide-y divide-default',
+        tbody:
+          'editor-students-tbody divide-y divide-default [&_tr:nth-child(odd)]:bg-primary/5 [&_tr:nth-child(even)]:bg-white dark:[&_tr:nth-child(odd)]:bg-primary/10 dark:[&_tr:nth-child(even)]:bg-default',
         separator: 'bg-default'
       }"
     >
@@ -79,6 +318,203 @@ onMounted(() => {
         <span class="text-muted text-xs font-semibold">
           {{ row.index + 1 }}
         </span>
+      </template>
+
+      <template #prepareTime-cell="{ row }">
+        <span class="text-sm whitespace-nowrap" @click="activateRow(row.original.id)">
+          {{ row.original.prepareTime }}
+        </span>
+      </template>
+
+      <template #examTime-cell="{ row }">
+        <span class="text-sm whitespace-nowrap" @click="activateRow(row.original.id)">
+          {{ row.original.examTime }}
+        </span>
+      </template>
+
+      <template #personalNumber-cell="{ row }">
+        <EditorStudentTableInlineCell
+          :is-editing="isEditingRow(row.original.id)"
+          :model-value="row.original.personalNumber"
+          cell-wrapper-class="min-w-[9rem] cursor-pointer"
+          :input-class="inlineEditInputClass"
+          mode="text"
+          @activate="activateRow(row.original.id)"
+          @update:model-value="(value) => updateTextField(row.original.id, 'personalNumber', value)"
+        />
+      </template>
+
+      <template #titlesBefore-cell="{ row }">
+        <EditorStudentTableInlineCell
+          :is-editing="isEditingRow(row.original.id)"
+          :model-value="row.original.titlesBefore"
+          cell-wrapper-class="min-w-[9rem] cursor-pointer"
+          :input-class="inlineEditInputClass"
+          mode="text"
+          @activate="activateRow(row.original.id)"
+          @update:model-value="(value) => updateTextField(row.original.id, 'titlesBefore', value)"
+        />
+      </template>
+
+      <template #lastName-cell="{ row }">
+        <EditorStudentTableInlineCell
+          :is-editing="isEditingRow(row.original.id)"
+          :model-value="row.original.lastName"
+          cell-wrapper-class="min-w-[10rem] cursor-pointer"
+          :input-class="inlineEditInputClass"
+          mode="text"
+          @activate="activateRow(row.original.id)"
+          @update:model-value="(value) => updateTextField(row.original.id, 'lastName', value)"
+        />
+      </template>
+
+      <template #firstName-cell="{ row }">
+        <EditorStudentTableInlineCell
+          :is-editing="isEditingRow(row.original.id)"
+          :model-value="row.original.firstName"
+          cell-wrapper-class="min-w-[10rem] cursor-pointer"
+          :input-class="inlineEditInputClass"
+          mode="text"
+          @activate="activateRow(row.original.id)"
+          @update:model-value="(value) => updateTextField(row.original.id, 'firstName', value)"
+        />
+      </template>
+
+      <template #titlesAfter-cell="{ row }">
+        <EditorStudentTableInlineCell
+          :is-editing="isEditingRow(row.original.id)"
+          :model-value="row.original.titlesAfter"
+          cell-wrapper-class="min-w-[9rem] cursor-pointer"
+          :input-class="inlineEditInputClass"
+          mode="text"
+          @activate="activateRow(row.original.id)"
+          @update:model-value="(value) => updateTextField(row.original.id, 'titlesAfter', value)"
+        />
+      </template>
+
+      <template #specializationCode-cell="{ row }">
+        <div class="min-w-[11rem] cursor-pointer" @click="activateRow(row.original.id)">
+          <USelectMenu
+            v-if="isEditingRow(row.original.id)"
+            :model-value="row.original.specializationCode"
+            :items="specializationOptionsForRow(row.original)"
+            value-key="specializationCode"
+            label-key="specializationCode"
+            :search-input="false"
+            size="md"
+            :class="inlineEditSelectClass"
+            @update:model-value="(value) => updateSpecializationCode(row.original.id, value)"
+          />
+          <span v-else class="text-sm whitespace-nowrap">
+            {{ displayText(row.original.specializationCode) }}
+          </span>
+        </div>
+      </template>
+
+      <template #thesisTitle-cell="{ row }">
+        <EditorStudentTableInlineCell
+          :is-editing="isEditingRow(row.original.id)"
+          :model-value="row.original.thesisTitle"
+          :cell-wrapper-class="thesisCellWrapperClass"
+          :input-class="inlineEditInputClass"
+          mode="text"
+          multiline
+          @activate="activateRow(row.original.id)"
+          @update:model-value="(value) => updateTextField(row.original.id, 'thesisTitle', value)"
+        />
+      </template>
+
+      <template #thesisTitleLocal-cell="{ row }">
+        <EditorStudentTableInlineCell
+          :is-editing="isEditingRow(row.original.id)"
+          :model-value="row.original.thesisTitleLocal"
+          :cell-wrapper-class="thesisCellWrapperClass"
+          :input-class="inlineEditInputClass"
+          mode="text"
+          multiline
+          @activate="activateRow(row.original.id)"
+          @update:model-value="(value) => updateTextField(row.original.id, 'thesisTitleLocal', value)"
+        />
+      </template>
+
+      <template #thesisTitleEn-cell="{ row }">
+        <EditorStudentTableInlineCell
+          :is-editing="isEditingRow(row.original.id)"
+          :model-value="row.original.thesisTitleEn"
+          :cell-wrapper-class="thesisCellWrapperClass"
+          :input-class="inlineEditInputClass"
+          mode="text"
+          multiline
+          @activate="activateRow(row.original.id)"
+          @update:model-value="(value) => updateTextField(row.original.id, 'thesisTitleEn', value)"
+        />
+      </template>
+
+      <template #supervisorName-cell="{ row }">
+        <EditorStudentTableInlineCell
+          :is-editing="isEditingRow(row.original.id)"
+          :model-value="row.original.supervisorName"
+          cell-wrapper-class="min-w-[14rem] cursor-pointer"
+          :input-class="inlineEditInputClass"
+          mode="text"
+          @activate="activateRow(row.original.id)"
+          @update:model-value="(value) => updateTextField(row.original.id, 'supervisorName', value)"
+        />
+      </template>
+
+      <template #reviewerName-cell="{ row }">
+        <EditorStudentTableInlineCell
+          :is-editing="isEditingRow(row.original.id)"
+          :model-value="row.original.reviewerName"
+          cell-wrapper-class="min-w-[14rem] cursor-pointer"
+          :input-class="inlineEditInputClass"
+          mode="text"
+          @activate="activateRow(row.original.id)"
+          @update:model-value="(value) => updateTextField(row.original.id, 'reviewerName', value)"
+        />
+      </template>
+
+      <template #repeatType-cell="{ row }">
+        <div class="min-w-[12rem] cursor-pointer" @click="activateRow(row.original.id)">
+          <USelectMenu
+            v-if="isEditingRow(row.original.id)"
+            :model-value="row.original.repeatType"
+            :items="repeatTypeOptions"
+            value-key="value"
+            label-key="label"
+            :search-input="false"
+            size="md"
+            :class="inlineEditSelectClass"
+            @update:model-value="(value) => updateRepeatType(row.original.id, value)"
+          />
+          <span v-else class="text-sm whitespace-nowrap">
+            {{ resolveRepeatTypeLabel(row.original.repeatType) }}
+          </span>
+        </div>
+      </template>
+
+      <template #prepareMinutes-cell="{ row }">
+        <EditorStudentTableInlineCell
+          :is-editing="isEditingRow(row.original.id)"
+          :model-value="row.original.prepareMinutes"
+          cell-wrapper-class="min-w-[8rem] cursor-pointer"
+          :input-class="inlineEditInputClass"
+          mode="number"
+          @activate="activateRow(row.original.id)"
+          @update:model-value="(value) => updateMinuteField(row.original.id, 'prepareMinutes', value)"
+        />
+      </template>
+
+      <template #examMinutes-cell="{ row }">
+        <EditorStudentTableInlineCell
+          :is-editing="isEditingRow(row.original.id)"
+          :model-value="row.original.examMinutes"
+          cell-wrapper-class="min-w-[8rem] cursor-pointer"
+          :input-class="inlineEditInputClass"
+          mode="number"
+          @activate="activateRow(row.original.id)"
+          @update:model-value="(value) => updateMinuteField(row.original.id, 'examMinutes', value)"
+        />
       </template>
 
       <template #empty>

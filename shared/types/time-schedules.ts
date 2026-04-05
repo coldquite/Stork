@@ -1,5 +1,5 @@
 export type TimeScheduleTypeDto = 'MANUAL' | 'AUTO'
-type RepeatTypeDto = 'NONE' | 'THESIS_DEFENSE' | 'ORAL_EXAM' | 'BOTH' | 'UNKNOWN'
+export type RepeatTypeDto = 'NONE' | 'THESIS_DEFENSE' | 'ORAL_EXAM' | 'BOTH' | 'UNKNOWN'
 export type ThesisLanguageDto = 'CZECH' | 'ENGLISH' | 'SLOVAK'
 export type StudyProgramTypeDto = 'BACHELOR' | 'MASTER'
 export type StudyLanguageDto = 'CZECH' | 'ENGLISH'
