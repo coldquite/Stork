@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nuxt'
 import type { Ref } from 'vue'
 import type { GetTeachersDictionaryResponseDto } from '#shared/types/teachers-dictionary'
 import { normalizeTeachersDictionaryName } from '#shared/utils/teachers-dictionary'
@@ -107,8 +108,17 @@ export function useHomepageCreateAndImport(options: UseHomepageCreateAndImportOp
 
     if (currentStage !== nextStage) {
       const allowedTransitions = CREATE_IMPORT_WORKFLOW_TRANSITIONS[currentStage] ?? []
-      if (import.meta.dev && !allowedTransitions.includes(nextStage)) {
-        console.warn(`[create-import-workflow] unexpected transition: ${currentStage} -> ${nextStage}`)
+      if (!allowedTransitions.includes(nextStage)) {
+        const message = `[create-import-workflow] unexpected transition: ${currentStage} -> ${nextStage}`
+        if (import.meta.dev) {
+          console.warn(message)
+        } else {
+          Sentry.captureMessage(message, {
+            level: 'warning',
+            tags: { workflow: 'homepage-create-import' },
+            extra: { currentStage, nextStage }
+          })
+        }
       }
     }
 
