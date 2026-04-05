@@ -330,6 +330,22 @@ describe('useEditorPage', () => {
     expect(selectedCommittee?.member3Name).toBe('Člen C')
   })
 
+  it('normalizes whitespace for committee text fields', async () => {
+    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const page = useEditorPage()
+
+    page.updateSelectedCommitteeChairName('  doc. Předseda  ')
+    page.updateSelectedCommitteeSecretary('   ')
+    page.updateSelectedCommitteeRoom('  TH:A-1500  ')
+
+    const selectedCommittee = scheduleDraftStoreMock.draft?.committees.find(
+      (entry) => entry.localId === 'committee-early'
+    )
+    expect(selectedCommittee?.chairName).toBe('doc. Předseda')
+    expect(selectedCommittee?.secretaryName).toBeNull()
+    expect(selectedCommittee?.room).toBe('TH:A-1500')
+  })
+
   it('updates selected committee study program type in draft store', async () => {
     const { useEditorPage } = await import('~/composables/editor/useEditorPage')
     const page = useEditorPage()

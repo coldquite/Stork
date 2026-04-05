@@ -336,7 +336,7 @@
       "specializationCode": "Specializace",
       "department": "Katedra",
       "invigilators": {
-        "count": "Dozor: {count} členů",
+        "count": "Počet členů dozoru: {count}",
         "add": {
           "action": "Přidat člena dozoru",
           "title": "Přidat člena dozoru",
