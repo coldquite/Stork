@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { vAutoAnimate } from '@formkit/auto-animate/vue'
-import type { CommitteeTabItem } from '~/types/editor'
+import type { CommitteeSidebarItem } from '~/types/editor'
 
 const props = defineProps<{
   cardRootClass: string
@@ -8,7 +8,7 @@ const props = defineProps<{
   sortHint: string
   committeesCount: number
   selectedCommitteeId: string
-  committeeTabs: CommitteeTabItem[]
+  committeeSidebarItems: CommitteeSidebarItem[]
   createActionLabel: string
 }>()
 
@@ -28,6 +28,10 @@ function selectCommittee(committeeId: string): void {
 
 function requestCreateCommittee(): void {
   emit('createCommittee')
+}
+
+function resolveSidebarItemKey(item: CommitteeSidebarItem): string {
+  return item.kind === 'day-bookmark' ? item.id : item.value
 }
 </script>
 
@@ -70,15 +74,22 @@ function requestCreateCommittee(): void {
         </UButton>
       </div>
 
-      <ul v-auto-animate role="listbox" :aria-label="props.title" class="w-full">
-        <li v-for="item in props.committeeTabs" :key="item.value">
+      <ul v-auto-animate role="list" :aria-label="props.title" class="w-full">
+        <li v-for="item in props.committeeSidebarItems" :key="resolveSidebarItemKey(item)">
+          <div
+            v-if="item.kind === 'day-bookmark'"
+            class="border-secondary/35 bg-secondary/10 text-capaccent-900 dark:text-capaccent-100 border-y-2 px-3 py-2 text-sm font-semibold"
+          >
+            {{ item.dayLabel }}
+          </div>
+
           <UButton
+            v-else
             :variant="item.value === selectedCommitteeIdModel ? 'soft' : 'ghost'"
             color="primary"
             size="lg"
             block
-            role="option"
-            :aria-selected="item.value === selectedCommitteeIdModel"
+            :aria-current="item.value === selectedCommitteeIdModel ? 'true' : undefined"
             class="focus-visible:ring-primary/50 w-full cursor-pointer justify-between rounded-none px-3 py-3 text-base font-semibold ring-0 focus-visible:ring-2 focus-visible:ring-inset"
             :class="item.value === selectedCommitteeIdModel ? 'ring-primary/50 ring-2 ring-inset' : 'hover:bg-accented'"
             @click="selectCommittee(item.value)"

@@ -147,7 +147,7 @@ const selectedCommitteeIdModel = computed({
     committeeList.selectedCommitteeId.value = id
   }
 })
-const committeeTabsList = computed(() => committeeList.committeeTabs.value)
+const committeeSidebarItems = computed(() => committeeList.committeeSidebarItems.value)
 const panelSelectedCommittee = computed(() => committeeList.selectedCommittee.value)
 const panelCommitteeLabel = computed(() => committeeList.selectedCommitteeLabel.value)
 const panelCommitteeDate = computed(() => committeeList.selectedCommitteeDate.value)
@@ -185,7 +185,7 @@ const draftNameText = computed(() => draftName.value)
             :title="t('editor.committees.title')"
             :sort-hint="t('editor.committees.sortHint')"
             :committees-count="committeesCount"
-            :committee-tabs="committeeTabsList"
+            :committee-sidebar-items="committeeSidebarItems"
             :create-action-label="t('editor.committees.create.openAction')"
             @create-committee="committeeList.openCreateCommitteeDialog"
           />

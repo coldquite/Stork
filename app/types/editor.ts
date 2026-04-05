@@ -6,11 +6,20 @@ export interface StudentRow {
   thesisTitle: string
 }
 
-export interface CommitteeTabItem {
+export interface CommitteeSidebarDayBookmarkItem {
+  kind: 'day-bookmark'
+  id: string
+  dayLabel: string
+}
+
+export interface CommitteeSidebarCommitteeItem {
+  kind: 'committee'
   label: string
   value: string
   studentsCount: number
 }
+
+export type CommitteeSidebarItem = CommitteeSidebarDayBookmarkItem | CommitteeSidebarCommitteeItem
 
 /** i18n strings for committee form blocks inside EditorStudentsPanel */
 export interface EditorStudentsPanelCommitteeLabels {

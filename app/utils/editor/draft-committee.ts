@@ -1,5 +1,5 @@
 import { format, isValid, parseISO } from 'date-fns'
-import type { StudentRow } from '~/types/editor'
+import type { CommitteeSidebarItem, StudentRow } from '~/types/editor'
 import type { ScheduleDraftCommittee, ScheduleDraftItem } from '~/types/schedule-draft'
 
 export function isStudentItem(item: ScheduleDraftItem): item is ScheduleDraftItem & { type: 'STUDENT' } {
@@ -92,6 +92,35 @@ export function buildEditorCommitteeListEntries(
       dateLabel: formatCommitteeDate(committee.date),
       studentsCount: committee.items.filter(isStudentItem).length
     }))
+}
+
+export function buildEditorCommitteeSidebarItems(
+  draftCommittees: ScheduleDraftCommittee[],
+  fallbackLabel: string
+): CommitteeSidebarItem[] {
+  const entries = buildEditorCommitteeListEntries(draftCommittees, fallbackLabel)
+  const sidebarItems: CommitteeSidebarItem[] = []
+  let lastDateLabel: string | null = null
+
+  for (const entry of entries) {
+    if (entry.dateLabel !== lastDateLabel) {
+      sidebarItems.push({
+        kind: 'day-bookmark',
+        id: `day-${entry.dateLabel}`,
+        dayLabel: entry.dateLabel
+      })
+      lastDateLabel = entry.dateLabel
+    }
+
+    sidebarItems.push({
+      kind: 'committee',
+      label: entry.label,
+      value: entry.committee.localId,
+      studentsCount: entry.studentsCount
+    })
+  }
+
+  return sidebarItems
 }
 
 export function resolveLastCommitteeByTimeline(

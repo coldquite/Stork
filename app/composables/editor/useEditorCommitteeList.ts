@@ -3,9 +3,10 @@ import type { StudyLanguageDto, StudyProgramTypeDto } from '#shared/types/time-s
 import { useEditorCommitteeFields } from '~/composables/editor/useEditorCommitteeFields'
 import { useValidationField } from '~/composables/useValidationField'
 import { useScheduleDraftStore } from '~/stores/schedule-draft'
-import type { CommitteeTabItem, EditorCommitteeStringFieldPayload } from '~/types/editor'
+import type { CommitteeSidebarItem, EditorCommitteeStringFieldPayload } from '~/types/editor'
 import type { ScheduleDraftCommittee } from '~/types/schedule-draft'
 import {
+  buildEditorCommitteeSidebarItems,
   buildEditorCommitteeListEntries,
   formatCommitteeDate,
   resolveLastCommitteeByTimeline
@@ -66,12 +67,9 @@ export function useEditorCommitteeList() {
   const selectedCommitteeLabel = computed(() => selectedCommitteeEntry.value?.label)
   const selectedCommitteeDate = computed(() => selectedCommitteeEntry.value?.dateLabel)
 
-  const committeeTabs = computed<CommitteeTabItem[]>(() => {
-    return committees.value.map((entry) => ({
-      label: entry.label,
-      value: entry.committee.localId,
-      studentsCount: entry.studentsCount
-    }))
+  const committeeSidebarItems = computed<CommitteeSidebarItem[]>(() => {
+    const draftCommittees = scheduleDraftStore.draft?.committees ?? []
+    return buildEditorCommitteeSidebarItems(draftCommittees, fallbackCommitteeLabel.value)
   })
 
   const renameCommitteeTargetLabel = computed(() => {
@@ -337,7 +335,7 @@ export function useEditorCommitteeList() {
     selectedCommitteeId,
     selectedCommitteeLabel,
     selectedCommitteeDate,
-    committeeTabs,
+    committeeSidebarItems,
     isCreateCommitteeDialogOpen,
     createCommitteeName,
     createCommitteeDraft,

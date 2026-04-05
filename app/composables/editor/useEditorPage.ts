@@ -35,7 +35,7 @@ export function useEditorPage() {
       selectedCommitteeId: committeeList.selectedCommitteeId,
       selectedCommitteeLabel: committeeList.selectedCommitteeLabel,
       selectedCommitteeDate: committeeList.selectedCommitteeDate,
-      committeeTabs: committeeList.committeeTabs,
+      committeeSidebarItems: committeeList.committeeSidebarItems,
       isCreateCommitteeDialogOpen: committeeList.isCreateCommitteeDialogOpen,
       createCommitteeName: committeeList.createCommitteeName,
       createCommitteeDraft: committeeList.createCommitteeDraft,
