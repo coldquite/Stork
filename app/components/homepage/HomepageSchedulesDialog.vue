@@ -140,141 +140,148 @@ function handleLoadMoreAuto(): void {
         />
       </div>
 
-      <CommonAppLoadingState
-        v-if="isLoading"
-        :label="t('homepage.schedulesModal.loading')"
-        min-height-class="min-h-90"
-      />
-
-      <UTabs v-else :items="tabs" class="homepage-schedules-tabs border-default mb-2 border-b pb-3">
-        <template #manual>
-          <div v-if="manualSchedules.length === 0" class="py-6">
-            <UEmpty
-              icon="i-lucide-folder-open"
-              :title="t('homepage.schedulesModal.emptyTitle')"
-              :description="t('homepage.schedulesModal.emptyDescription')"
-            />
-          </div>
-
-          <div v-else class="box-border max-h-[56vh] space-y-3 overflow-y-auto px-1 py-1 pr-3">
-            <UAlert
-              v-if="manualScheduleDeleteError"
-              color="error"
-              variant="soft"
-              icon="i-lucide-triangle-alert"
-              :title="t('homepage.schedulesModal.delete.errorTitle')"
-              :description="manualScheduleDeleteError"
-            />
-
-            <UCard
-              v-for="draft in manualSchedules"
-              :key="draft.id"
-              class="hover:bg-primary/5 w-full cursor-pointer transition-colors"
-              @click="handleOpenSchedule(draft)"
-            >
-              <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div class="min-w-0">
-                  <h3 class="truncate text-sm font-semibold">
-                    {{ draft.name }}
-                  </h3>
-                  <p class="text-muted text-xs">
-                    {{ t('homepage.schedulesModal.updatedAt') }} {{ formatUpdatedAt(draft.updatedAt) }}
-                  </p>
-                </div>
-                <div class="text-muted flex shrink-0 items-center gap-4 text-xs">
-                  <span class="flex items-center gap-1">
-                    <UIcon name="i-lucide-users" class="size-3.5" />
-                    {{ t('homepage.recent.committees', { count: draft.committeesCount }) }}
-                  </span>
-                  <span>{{ t('homepage.recent.students', { count: draft.studentsCount }) }}</span>
-                  <UButton
-                    color="error"
-                    variant="ghost"
-                    size="sm"
-                    icon="i-lucide-trash-2"
-                    :aria-label="t('homepage.schedulesModal.delete.openAriaLabel', { name: draft.name })"
-                    :class="deleteActionButtonClass"
-                    :disabled="isDeletingManualSchedule"
-                    :loading="isDeletingManualSchedule"
-                    :ui="deleteActionButtonUi"
-                    @click.stop="requestDeleteManualSchedule(draft)"
-                  />
-                </div>
-              </div>
-            </UCard>
-
-            <div v-if="hasMoreManualSchedules" class="flex justify-center pt-2">
-              <UButton
-                color="primary"
-                variant="solid"
-                size="lg"
-                class="min-w-50 cursor-pointer justify-center px-4"
-                :loading="isManualLoadMoreLoading"
-                :disabled="isManualLoadMoreLoading"
-                @click="handleLoadMoreManual"
-              >
-                {{ t('homepage.schedulesModal.loadMore') }}
-              </UButton>
+      <!-- Keep UTabs mounted while searching: v-if/v-else would destroy tabs and reset the active tab to "manual". -->
+      <!-- Stable min-height avoids modal height jumping when loading overlay toggles or list length changes slightly. -->
+      <div class="relative mb-2">
+        <UTabs :items="tabs" class="homepage-schedules-tabs border-default border-b pb-3">
+          <template #manual>
+            <div v-if="manualSchedules.length === 0" class="py-6">
+              <UEmpty
+                icon="i-lucide-folder-open"
+                :title="t('homepage.schedulesModal.emptyTitle')"
+                :description="t('homepage.schedulesModal.emptyDescription')"
+              />
             </div>
-          </div>
-        </template>
 
-        <template #auto>
-          <div v-if="autoSchedules.length === 0" class="py-6">
-            <UEmpty
-              icon="i-lucide-folder-open"
-              :title="t('homepage.schedulesModal.emptyTitle')"
-              :description="t('homepage.schedulesModal.emptyDescription')"
-            />
-          </div>
+            <div v-else class="box-border max-h-[56vh] space-y-3 overflow-y-auto px-1 py-1 pr-3">
+              <UAlert
+                v-if="manualScheduleDeleteError"
+                color="error"
+                variant="soft"
+                icon="i-lucide-triangle-alert"
+                :title="t('homepage.schedulesModal.delete.errorTitle')"
+                :description="manualScheduleDeleteError"
+              />
 
-          <div v-else class="box-border max-h-[56vh] space-y-3 overflow-y-auto px-2 py-1 pr-3">
-            <UCard
-              v-for="draft in autoSchedules"
-              :key="draft.id"
-              class="hover:bg-warning/10 w-full cursor-pointer transition-colors"
-              @click="handleOpenSchedule(draft)"
-            >
-              <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div class="min-w-0 space-y-1">
-                  <div class="flex flex-wrap items-center gap-2">
+              <UCard
+                v-for="draft in manualSchedules"
+                :key="draft.id"
+                class="hover:bg-primary/5 w-full cursor-pointer transition-colors"
+                @click="handleOpenSchedule(draft)"
+              >
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div class="min-w-0">
                     <h3 class="truncate text-sm font-semibold">
                       {{ draft.name }}
                     </h3>
-                    <UBadge color="secondary" variant="soft" class="auto-save-badge text-[11px]">
-                      {{ t('homepage.schedulesModal.autoBadge') }}
-                    </UBadge>
+                    <p class="text-muted text-xs">
+                      {{ t('homepage.schedulesModal.updatedAt') }} {{ formatUpdatedAt(draft.updatedAt) }}
+                    </p>
                   </div>
-                  <p class="text-muted text-xs">
-                    {{ t('homepage.schedulesModal.updatedAt') }} {{ formatUpdatedAt(draft.updatedAt) }}
-                  </p>
+                  <div class="text-muted flex shrink-0 items-center gap-4 text-xs">
+                    <span class="flex items-center gap-1">
+                      <UIcon name="i-lucide-users" class="size-3.5" />
+                      {{ t('homepage.recent.committees', { count: draft.committeesCount }) }}
+                    </span>
+                    <span>{{ t('homepage.recent.students', { count: draft.studentsCount }) }}</span>
+                    <UButton
+                      color="error"
+                      variant="ghost"
+                      size="sm"
+                      icon="i-lucide-trash-2"
+                      :aria-label="t('homepage.schedulesModal.delete.openAriaLabel', { name: draft.name })"
+                      :class="deleteActionButtonClass"
+                      :disabled="isDeletingManualSchedule"
+                      :loading="isDeletingManualSchedule"
+                      :ui="deleteActionButtonUi"
+                      @click.stop="requestDeleteManualSchedule(draft)"
+                    />
+                  </div>
                 </div>
-                <div class="text-muted flex shrink-0 items-center gap-4 text-xs">
-                  <span class="flex items-center gap-1">
-                    <UIcon name="i-lucide-users" class="size-3.5" />
-                    {{ t('homepage.recent.committees', { count: draft.committeesCount }) }}
-                  </span>
-                  <span>{{ t('homepage.recent.students', { count: draft.studentsCount }) }}</span>
-                </div>
-              </div>
-            </UCard>
+              </UCard>
 
-            <div v-if="hasMoreAutoSchedules" class="flex justify-center pt-2">
-              <UButton
-                color="primary"
-                variant="solid"
-                size="lg"
-                class="min-w-56 cursor-pointer justify-center px-6"
-                :loading="isAutoLoadMoreLoading"
-                :disabled="isAutoLoadMoreLoading"
-                @click="handleLoadMoreAuto"
-              >
-                {{ t('homepage.schedulesModal.loadMore') }}
-              </UButton>
+              <div v-if="hasMoreManualSchedules" class="flex justify-center pt-2">
+                <UButton
+                  color="primary"
+                  variant="solid"
+                  size="lg"
+                  class="min-w-50 cursor-pointer justify-center px-4"
+                  :loading="isManualLoadMoreLoading"
+                  :disabled="isManualLoadMoreLoading"
+                  @click="handleLoadMoreManual"
+                >
+                  {{ t('homepage.schedulesModal.loadMore') }}
+                </UButton>
+              </div>
             </div>
-          </div>
-        </template>
-      </UTabs>
+          </template>
+
+          <template #auto>
+            <div v-if="autoSchedules.length === 0" class="py-6">
+              <UEmpty
+                icon="i-lucide-folder-open"
+                :title="t('homepage.schedulesModal.emptyTitle')"
+                :description="t('homepage.schedulesModal.emptyDescription')"
+              />
+            </div>
+
+            <div v-else class="box-border max-h-[56vh] space-y-3 overflow-y-auto px-2 py-1 pr-3">
+              <UCard
+                v-for="draft in autoSchedules"
+                :key="draft.id"
+                class="hover:bg-warning/10 w-full cursor-pointer transition-colors"
+                @click="handleOpenSchedule(draft)"
+              >
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div class="min-w-0 space-y-1">
+                    <div class="flex flex-wrap items-center gap-2">
+                      <h3 class="truncate text-sm font-semibold">
+                        {{ draft.name }}
+                      </h3>
+                      <UBadge color="secondary" variant="soft" class="auto-save-badge text-[11px]">
+                        {{ t('homepage.schedulesModal.autoBadge') }}
+                      </UBadge>
+                    </div>
+                    <p class="text-muted text-xs">
+                      {{ t('homepage.schedulesModal.updatedAt') }} {{ formatUpdatedAt(draft.updatedAt) }}
+                    </p>
+                  </div>
+                  <div class="text-muted flex shrink-0 items-center gap-4 text-xs">
+                    <span class="flex items-center gap-1">
+                      <UIcon name="i-lucide-users" class="size-3.5" />
+                      {{ t('homepage.recent.committees', { count: draft.committeesCount }) }}
+                    </span>
+                    <span>{{ t('homepage.recent.students', { count: draft.studentsCount }) }}</span>
+                  </div>
+                </div>
+              </UCard>
+
+              <div v-if="hasMoreAutoSchedules" class="flex justify-center pt-2">
+                <UButton
+                  color="primary"
+                  variant="solid"
+                  size="lg"
+                  class="min-w-56 cursor-pointer justify-center px-6"
+                  :loading="isAutoLoadMoreLoading"
+                  :disabled="isAutoLoadMoreLoading"
+                  @click="handleLoadMoreAuto"
+                >
+                  {{ t('homepage.schedulesModal.loadMore') }}
+                </UButton>
+              </div>
+            </div>
+          </template>
+        </UTabs>
+
+        <div
+          v-show="isLoading"
+          class="bg-default/80 absolute inset-0 z-10 flex items-center justify-center rounded-lg"
+          aria-busy="true"
+          aria-live="polite"
+        >
+          <CommonAppLoadingState :label="t('homepage.schedulesModal.loading')" min-height-class="min-h-0" />
+        </div>
+      </div>
 
       <CommonAppActionConfirmDialog
         v-model:open="isDeleteConfirmOpen"

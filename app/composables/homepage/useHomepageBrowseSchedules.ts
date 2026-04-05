@@ -121,12 +121,8 @@ export function useHomepageBrowseSchedules() {
     isBrowseSchedulesLoading.value = true
     isManualLoadMoreLoading.value = false
     isAutoLoadMoreLoading.value = false
-    manualSchedules.value = []
-    autoSchedules.value = []
-    hasMoreManualSchedules.value = false
-    hasMoreAutoSchedules.value = false
-    manualSchedulesPage.value = 0
-    autoSchedulesPage.value = 0
+    // Do not clear lists here: emptying arrays shrinks the modal and flashes before new data arrives.
+    // Replace results only in the try branch when the request succeeds (stale-while-revalidate).
 
     const manualRequestId = nextTabRequestId('manual')
     const autoRequestId = nextTabRequestId('auto')
@@ -152,12 +148,7 @@ export function useHomepageBrowseSchedules() {
         return
       }
 
-      manualSchedules.value = []
-      autoSchedules.value = []
-      hasMoreManualSchedules.value = false
-      hasMoreAutoSchedules.value = false
-      manualSchedulesPage.value = 0
-      autoSchedulesPage.value = 0
+      // Keep showing the previous list on failure to avoid an empty flash and layout jump.
     } finally {
       if (isTabRequestCurrent('manual', manualRequestId) && isTabRequestCurrent('auto', autoRequestId)) {
         isBrowseSchedulesLoading.value = false
