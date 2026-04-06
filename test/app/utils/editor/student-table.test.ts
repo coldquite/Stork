@@ -157,5 +157,8 @@ describe('student-table rows', () => {
 
     expect(rows[0]?.thesisTitleLocal).toBe('Lokální název')
     expect(rows[0]?.thesisTitleEn).toBe('English thesis title')
+    expect(rows[0]?.thesisLanguage).toBe('CZECH')
+    expect(rows[0]?.additionalSupervisorName).toBe('')
+    expect(rows[0]?.additionalReviewerName).toBe('')
   })
 })

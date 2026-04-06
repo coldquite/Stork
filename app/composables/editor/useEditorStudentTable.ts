@@ -10,6 +10,7 @@ import type {
 import { isStudentItem, normalizeOptionalText, normalizeRequiredText } from '~/utils/editor/draft-committee'
 import { resolveRepeatType } from '~/utils/editor/repeat-type'
 import { buildStudentRowsForCommittee } from '~/utils/editor/student-table'
+import { resolveThesisLanguage } from '~/utils/editor/thesis-language'
 
 function resolveMinutes(value: number, fallback: number): number {
   if (!Number.isFinite(value)) {
@@ -96,7 +97,13 @@ export function useEditorStudentTable(
         }
 
         studentItem.student.supervisorName = normalizeRequiredText(row.supervisorName)
+        studentItem.student.additionalSupervisorName = normalizeOptionalText(row.additionalSupervisorName)
         studentItem.student.reviewerName = normalizeRequiredText(row.reviewerName)
+        studentItem.student.additionalReviewerName = normalizeOptionalText(row.additionalReviewerName)
+        studentItem.student.thesisLanguage = resolveThesisLanguage(
+          row.thesisLanguage,
+          studentItem.student.thesisLanguage
+        )
         studentItem.student.repeatType = resolveRepeatType(row.repeatType, studentItem.student.repeatType)
         studentItem.student.prepareMinutes = resolveMinutes(row.prepareMinutes, studentItem.student.prepareMinutes)
         studentItem.student.examMinutes = resolveMinutes(row.examMinutes, studentItem.student.examMinutes)
@@ -202,11 +209,26 @@ export function useEditorStudentTable(
       },
       ...thesisTitleColumns,
       {
+        accessorKey: 'thesisLanguage',
+        header: t('editor.table.thesisLanguage'),
+        meta: { class: { th: 'whitespace-nowrap' } }
+      },
+      {
         accessorKey: 'supervisorName',
         header: t('editor.table.supervisor'),
         meta: { class: { th: 'whitespace-nowrap' } }
       },
+      {
+        accessorKey: 'additionalSupervisorName',
+        header: t('editor.table.additionalSupervisor'),
+        meta: { class: { th: 'whitespace-nowrap' } }
+      },
       { accessorKey: 'reviewerName', header: t('editor.table.reviewer'), meta: { class: { th: 'whitespace-nowrap' } } },
+      {
+        accessorKey: 'additionalReviewerName',
+        header: t('editor.table.additionalReviewer'),
+        meta: { class: { th: 'whitespace-nowrap' } }
+      },
       { accessorKey: 'repeatType', header: t('editor.table.repeatType'), meta: { class: { th: 'whitespace-nowrap' } } },
       {
         accessorKey: 'prepareMinutes',

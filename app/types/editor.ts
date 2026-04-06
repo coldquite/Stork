@@ -1,4 +1,4 @@
-import type { RepeatTypeDto } from '#shared/types/time-schedules'
+import type { RepeatTypeDto, ThesisLanguageDto } from '#shared/types/time-schedules'
 
 export interface StudentRow {
   id: string
@@ -13,8 +13,11 @@ export interface StudentRow {
   thesisTitle: string
   thesisTitleLocal: string
   thesisTitleEn: string
+  thesisLanguage: ThesisLanguageDto
   supervisorName: string
+  additionalSupervisorName: string
   reviewerName: string
+  additionalReviewerName: string
   repeatType: RepeatTypeDto
   prepareMinutes: number
   examMinutes: number

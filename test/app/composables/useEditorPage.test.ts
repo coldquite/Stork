@@ -192,8 +192,11 @@ describe('useEditorPage', () => {
         firstName: 'Damir  ',
         specializationCode: 'BI-SI.21',
         thesisTitle: 'Nový český název',
+        thesisLanguage: 'ENGLISH',
         supervisorName: 'Ing. Vedoucí Nový',
+        additionalSupervisorName: 'Ing. Druhý Vedoucí',
         reviewerName: 'Ing. Oponent Nový',
+        additionalReviewerName: 'Ing. Druhý Oponent',
         repeatType: 'BOTH',
         prepareMinutes: 50,
         examMinutes: 25
@@ -213,8 +216,11 @@ describe('useEditorPage', () => {
     expect(firstStudentItem.student.specializationCode).toBe('BI-SI.21')
     expect(firstStudentItem.student.specializationName).toBe('Softwarové inženýrství 2021')
     expect(firstStudentItem.student.thesisTitleLocal).toBe('Nový český název')
+    expect(firstStudentItem.student.thesisLanguage).toBe('ENGLISH')
     expect(firstStudentItem.student.supervisorName).toBe('Ing. Vedoucí Nový')
+    expect(firstStudentItem.student.additionalSupervisorName).toBe('Ing. Druhý Vedoucí')
     expect(firstStudentItem.student.reviewerName).toBe('Ing. Oponent Nový')
+    expect(firstStudentItem.student.additionalReviewerName).toBe('Ing. Druhý Oponent')
     expect(firstStudentItem.student.repeatType).toBe('BOTH')
     expect(firstStudentItem.student.prepareMinutes).toBe(50)
     expect(firstStudentItem.student.examMinutes).toBe(25)

@@ -69,8 +69,11 @@ export function buildStudentRowsForCommittee(committee: ScheduleDraftCommittee):
       thesisTitle: resolveThesisTitleByCommitteeLanguage(item, committee.language),
       thesisTitleLocal: resolveLocalThesisTitle(item),
       thesisTitleEn: resolveEnglishThesisTitle(item),
+      thesisLanguage: item.student.thesisLanguage,
       supervisorName: item.student.supervisorName,
+      additionalSupervisorName: item.student.additionalSupervisorName?.trim() ?? '',
       reviewerName: item.student.reviewerName,
+      additionalReviewerName: item.student.additionalReviewerName?.trim() ?? '',
       repeatType: item.student.repeatType,
       prepareMinutes: item.student.prepareMinutes,
       examMinutes: item.student.examMinutes

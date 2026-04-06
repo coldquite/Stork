@@ -2,10 +2,11 @@
 import type { TableColumn } from '@nuxt/ui'
 import { useSortable } from '@vueuse/integrations/useSortable'
 import type { EditorSpecializationOption } from '#shared/constants/editor'
-import type { RepeatTypeDto } from '#shared/types/time-schedules'
+import type { RepeatTypeDto, ThesisLanguageDto } from '#shared/types/time-schedules'
 import { STUDENT_TABLE_THESIS_COLUMN_WIDTH_CLASS } from '~/constants/editor-students-table'
 import type { EditorStudentsPanelStudentsEmptyLabels, StudentRow } from '~/types/editor'
 import { resolveRepeatTypeFromSelectValue } from '~/utils/editor/repeat-type'
+import { resolveThesisLanguageFromSelectValue } from '~/utils/editor/thesis-language'
 
 type EditableTextField =
   | 'personalNumber'
@@ -17,12 +18,19 @@ type EditableTextField =
   | 'thesisTitleLocal'
   | 'thesisTitleEn'
   | 'supervisorName'
+  | 'additionalSupervisorName'
   | 'reviewerName'
+  | 'additionalReviewerName'
 type EditableMinuteField = 'prepareMinutes' | 'examMinutes'
 
 interface RepeatTypeOption {
   label: string
   value: RepeatTypeDto
+}
+
+interface ThesisLanguageOption {
+  label: string
+  value: ThesisLanguageDto
 }
 
 interface SortableUpdateEventLike {
@@ -155,6 +163,25 @@ const repeatTypeOptions = computed<RepeatTypeOption[]>(() => [
 
 const repeatTypeLabelsByValue = computed(() => {
   return new Map(repeatTypeOptions.value.map((option) => [option.value, option.label]))
+})
+
+const thesisLanguageOptions = computed<ThesisLanguageOption[]>(() => [
+  {
+    value: 'CZECH',
+    label: t('editor.table.thesisLanguageOptions.czech')
+  },
+  {
+    value: 'ENGLISH',
+    label: t('editor.table.thesisLanguageOptions.english')
+  },
+  {
+    value: 'SLOVAK',
+    label: t('editor.table.thesisLanguageOptions.slovak')
+  }
+])
+
+const thesisLanguageLabelsByValue = computed(() => {
+  return new Map(thesisLanguageOptions.value.map((option) => [option.value, option.label]))
 })
 
 function emitRowsUpdate(): void {
@@ -315,8 +342,19 @@ function updateRepeatType(rowId: string, value: unknown): void {
   }))
 }
 
+function updateThesisLanguage(rowId: string, value: unknown): void {
+  updateRow(rowId, (row) => ({
+    ...row,
+    thesisLanguage: resolveThesisLanguageFromSelectValue(value, row.thesisLanguage)
+  }))
+}
+
 function resolveRepeatTypeLabel(value: RepeatTypeDto): string {
   return repeatTypeLabelsByValue.value.get(value) ?? value
+}
+
+function resolveThesisLanguageLabel(value: ThesisLanguageDto): string {
+  return thesisLanguageLabelsByValue.value.get(value) ?? value
 }
 
 function displayText(value: string): string {
@@ -458,7 +496,7 @@ onBeforeUnmount(() => {
       </template>
 
       <template #specializationCode-cell="{ row }">
-        <div class="min-w-[11rem] cursor-pointer" @click="activateRow(row.original.id)">
+        <div class="min-w-44 cursor-pointer" @click="activateRow(row.original.id)">
           <USelectMenu
             v-if="isEditingRow(row.original.id)"
             :model-value="row.original.specializationCode"
@@ -515,6 +553,25 @@ onBeforeUnmount(() => {
         />
       </template>
 
+      <template #thesisLanguage-cell="{ row }">
+        <div class="min-w-[11rem] cursor-pointer" @click="activateRow(row.original.id)">
+          <USelectMenu
+            v-if="isEditingRow(row.original.id)"
+            :model-value="row.original.thesisLanguage"
+            :items="thesisLanguageOptions"
+            value-key="value"
+            label-key="label"
+            :search-input="false"
+            size="md"
+            :class="inlineEditSelectClass"
+            @update:model-value="(value) => updateThesisLanguage(row.original.id, value)"
+          />
+          <span v-else class="text-sm whitespace-nowrap">
+            {{ resolveThesisLanguageLabel(row.original.thesisLanguage) }}
+          </span>
+        </div>
+      </template>
+
       <template #supervisorName-cell="{ row }">
         <EditorStudentTableInlineCell
           :is-editing="isEditingRow(row.original.id)"
@@ -524,6 +581,18 @@ onBeforeUnmount(() => {
           mode="text"
           @activate="activateRow(row.original.id)"
           @update:model-value="(value) => updateTextField(row.original.id, 'supervisorName', value)"
+        />
+      </template>
+
+      <template #additionalSupervisorName-cell="{ row }">
+        <EditorStudentTableInlineCell
+          :is-editing="isEditingRow(row.original.id)"
+          :model-value="row.original.additionalSupervisorName"
+          cell-wrapper-class="min-w-[14rem] cursor-pointer"
+          :input-class="inlineEditInputClass"
+          mode="text"
+          @activate="activateRow(row.original.id)"
+          @update:model-value="(value) => updateTextField(row.original.id, 'additionalSupervisorName', value)"
         />
       </template>
 
@@ -539,8 +608,20 @@ onBeforeUnmount(() => {
         />
       </template>
 
+      <template #additionalReviewerName-cell="{ row }">
+        <EditorStudentTableInlineCell
+          :is-editing="isEditingRow(row.original.id)"
+          :model-value="row.original.additionalReviewerName"
+          cell-wrapper-class="min-w-[14rem] cursor-pointer"
+          :input-class="inlineEditInputClass"
+          mode="text"
+          @activate="activateRow(row.original.id)"
+          @update:model-value="(value) => updateTextField(row.original.id, 'additionalReviewerName', value)"
+        />
+      </template>
+
       <template #repeatType-cell="{ row }">
-        <div class="min-w-[12rem] cursor-pointer" @click="activateRow(row.original.id)">
+        <div class="min-w-48 cursor-pointer" @click="activateRow(row.original.id)">
           <USelectMenu
             v-if="isEditingRow(row.original.id)"
             :model-value="row.original.repeatType"

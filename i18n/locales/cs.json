@@ -382,8 +382,16 @@
       "thesisTitle": "Název práce",
       "thesisTitleLocal": "Název práce (CS/SK)",
       "thesisTitleEn": "Název práce (EN)",
+      "thesisLanguage": "Jazyk práce",
+      "thesisLanguageOptions": {
+        "czech": "Čeština",
+        "english": "Angličtina",
+        "slovak": "Slovenština"
+      },
       "supervisor": "Vedoucí",
+      "additionalSupervisor": "Další vedoucí práce",
       "reviewer": "Oponent",
+      "additionalReviewer": "Další oponent práce",
       "repeatType": "Opakuje",
       "prepareMinutes": "Příprava v min",
       "examMinutes": "Zkouška v min",
