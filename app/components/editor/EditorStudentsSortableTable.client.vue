@@ -25,6 +25,11 @@ interface RepeatTypeOption {
   value: RepeatTypeDto
 }
 
+interface SortableUpdateEventLike {
+  oldIndex: number | null
+  newIndex: number | null
+}
+
 const props = defineProps<{
   /** Stable key when the parent committee changes (resets local row order). */
   committeeLocalId: string
@@ -43,6 +48,7 @@ const tableWrapper = ref<HTMLElement | null>(null)
 const localStudents = ref<StudentRow[]>([])
 const editingRowId = ref<string | null>(null)
 const isDragging = ref(false)
+const activeDragCommitteeId = ref<string | null>(null)
 const inlineEditInputClass = 'w-full [&_input]:text-sm'
 const inlineEditSelectClass = 'w-full [&_[role=combobox]]:text-sm [&_[role=combobox]_span]:text-sm'
 const thesisCellWrapperClass = `${STUDENT_TABLE_THESIS_COLUMN_WIDTH_CLASS} cursor-pointer`
@@ -71,8 +77,58 @@ watch(
 const sortableTarget = computed(() => {
   return (tableWrapper.value?.querySelector('tbody') as HTMLElement | null) ?? null
 })
+const tableRenderKey = computed(() => `${props.committeeLocalId}:${localStudents.value.map((row) => row.id).join('|')}`)
 
-const sortable = useSortable(sortableTarget, localStudents)
+// watchElement: tbody may appear after mount; re-bind Sortable when the node is replaced.
+const sortable = useSortable(sortableTarget, localStudents, { watchElement: true })
+
+function applySortableOptions(): void {
+  sortable.option('animation', 150)
+  sortable.option('handle', '.drag-handle')
+  sortable.option('draggable', 'tr')
+  sortable.option('onStart', () => {
+    activeDragCommitteeId.value = props.committeeLocalId
+    isDragging.value = true
+  })
+  sortable.option('onUpdate', (event: SortableUpdateEventLike) => {
+    if (event.oldIndex === null || event.newIndex === null) {
+      return
+    }
+
+    reorderLocalStudents(event.oldIndex, event.newIndex)
+  })
+  sortable.option('onEnd', () => {
+    const dragCommitteeLocalId = activeDragCommitteeId.value
+    activeDragCommitteeId.value = null
+
+    isDragging.value = false
+
+    nextTick(() => {
+      // Drag can finish after committee switch; ignore stale emit to avoid writing rows to another committee.
+      if (dragCommitteeLocalId !== props.committeeLocalId) {
+        return
+      }
+
+      emitRowsUpdate()
+    })
+  })
+}
+
+watch(
+  sortableTarget,
+  (nextTarget) => {
+    if (!nextTarget) {
+      return
+    }
+
+    // useSortable initializes Sortable for target in a post-flush watch.
+    // Re-applying options here ensures handlers survive tbody rebinds.
+    nextTick(() => {
+      applySortableOptions()
+    })
+  },
+  { immediate: true, flush: 'post' }
+)
 
 const repeatTypeOptions = computed<RepeatTypeOption[]>(() => [
   {
@@ -103,6 +159,25 @@ const repeatTypeLabelsByValue = computed(() => {
 
 function emitRowsUpdate(): void {
   emit('update:modelValue', localStudents.value.slice())
+}
+
+function reorderLocalStudents(oldIndex: number, newIndex: number): void {
+  if (oldIndex === newIndex) {
+    return
+  }
+
+  const rows = localStudents.value.slice()
+  if (oldIndex < 0 || newIndex < 0 || oldIndex >= rows.length || newIndex >= rows.length) {
+    return
+  }
+
+  const [movedRow] = rows.splice(oldIndex, 1)
+  if (!movedRow) {
+    return
+  }
+
+  rows.splice(newIndex, 0, movedRow)
+  localStudents.value = rows
 }
 
 function activateRow(rowId: string): void {
@@ -273,17 +348,6 @@ function specializationOptionsForRow(row: StudentRow): EditorSpecializationOptio
 }
 
 onMounted(() => {
-  sortable.option('animation', 150)
-  sortable.option('handle', '.drag-handle')
-  sortable.option('draggable', 'tr')
-  sortable.option('onStart', () => {
-    isDragging.value = true
-  })
-  sortable.option('onEnd', () => {
-    isDragging.value = false
-    emitRowsUpdate()
-  })
-
   window.addEventListener('click', handleDocumentClick)
 })
 
@@ -295,6 +359,7 @@ onBeforeUnmount(() => {
 <template>
   <div ref="tableWrapper" class="overflow-x-auto" @click="handleTableClick">
     <UTable
+      :key="tableRenderKey"
       :data="localStudents"
       :columns="props.columns"
       :get-row-id="(row) => row.id"

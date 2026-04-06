@@ -182,6 +182,7 @@ function setThesisTitleDisplayMode(mode: ScheduleDraftThesisTitleDisplayMode): v
     </template>
 
     <EditorStudentsSortableTable
+      :key="committeeLocalId"
       :committee-local-id="committeeLocalId"
       :model-value="props.students"
       :columns="props.columns"
