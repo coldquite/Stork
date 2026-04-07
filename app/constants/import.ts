@@ -91,7 +91,6 @@ export const IMPORT_SCHEMAS: ImportSchemaMap = {
     'Email adresa',
     'Jazyk výuky',
     'Komise - název',
-    'Osobní číslo',
     'VŠKP-typ A: Anglický název práce',
     'VŠKP-typ A: Český název práce',
     'VŠKP-typ A: Jazyk práce',

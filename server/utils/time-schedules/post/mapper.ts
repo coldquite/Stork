@@ -40,7 +40,6 @@ function mapItemCreateData(item: PostCommitteeItemDto): Prisma.CommitteeItemCrea
       position: item.position,
       student: {
         create: {
-          personalNumber: item.student.personalNumber,
           firstName: item.student.firstName,
           lastName: item.student.lastName,
           titlesBefore: item.student.titlesBefore,

@@ -40,7 +40,6 @@ function createStudentsCommitteesRow(overrides: Partial<Record<string, string>> 
     'Email adresa': 'jan.novak@fit.cvut.cz',
     'Jazyk výuky': 'CZ',
     'Komise - název': '242-BI, 5-BI-PI.21',
-    'Osobní číslo': 'A24B0001P',
     'VŠKP-typ A: Anglický název práce': 'Smart Scheduler',
     'VŠKP-typ A: Český název práce': 'Chytrý plánovač',
     'VŠKP-typ A: Jazyk práce': 'CZ',

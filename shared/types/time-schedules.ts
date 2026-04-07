@@ -19,7 +19,6 @@ export interface TimeScheduleListItemDto {
 
 export interface StudentItemDto {
   itemId: string
-  personalNumber: string | null
   firstName: string
   lastName: string
   titlesBefore: string | null

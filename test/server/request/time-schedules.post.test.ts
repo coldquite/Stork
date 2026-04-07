@@ -36,7 +36,6 @@ function createPostPayload(nameSuffix: string): PostTimeScheduleRequestDto {
             type: 'STUDENT' as const,
             position: 0,
             student: {
-              personalNumber: `A${nameSuffix}`,
               firstName: 'Jan',
               lastName: 'Novák',
               titlesBefore: 'Bc.',

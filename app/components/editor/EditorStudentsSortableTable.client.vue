@@ -9,7 +9,6 @@ import { resolveRepeatTypeFromSelectValue } from '~/utils/editor/repeat-type'
 import { resolveThesisLanguageFromSelectValue } from '~/utils/editor/thesis-language'
 
 type EditableTextField =
-  | 'personalNumber'
   | 'titlesBefore'
   | 'lastName'
   | 'firstName'
@@ -469,18 +468,6 @@ onBeforeUnmount(() => {
         <span class="text-sm whitespace-nowrap" @click="activateRow(row.original.id)">
           {{ row.original.examTime }}
         </span>
-      </template>
-
-      <template #personalNumber-cell="{ row }">
-        <EditorStudentTableInlineCell
-          :is-editing="isEditingRow(row.original.id)"
-          :model-value="row.original.personalNumber"
-          cell-wrapper-class="min-w-[4rem] cursor-pointer"
-          :input-class="inlineEditInputClass"
-          mode="text"
-          @activate="activateRow(row.original.id)"
-          @update:model-value="(value) => updateTextField(row.original.id, 'personalNumber', value)"
-        />
       </template>
 
       <template #titlesBefore-cell="{ row }">

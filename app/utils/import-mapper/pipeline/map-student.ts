@@ -254,7 +254,6 @@ export function mapStudent(input: MapStudentInput): MappedStudentPlacement {
   const { prepareMinutes, examMinutes } = resolveStudentDurationByStudyProgramAndRepeat(studyProgramType, repeatType)
 
   const mappedStudent: PostStudentItemDto = {
-    personalNumber: readOptionalValue(studentsCommitteesRow, 'Osobní číslo'),
     firstName: storkFirstName,
     lastName: storkLastName,
     titlesBefore: readOptionalValue(studentsStorkRow, 'Titul'),

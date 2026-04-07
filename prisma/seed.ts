@@ -88,7 +88,6 @@ function buildStudentDraft(
     lastName: `Dumb student last name ${committeeSortOrder}`,
     email: `dumb_email.${idPart}@example.test`,
     mobilePhone: studentOrder % 3 === 0 ? null : `+42077710${idPart}`,
-    personalNumber: studentOrder % 4 === 0 ? null : `DUMB-${idPart}`,
     titlesBefore: matrixIndex % 2 === 0 ? 'Bc.' : null,
     titlesAfter: matrixIndex % 5 === 0 ? 'DiS.' : null,
     specialization: `Dumb specialization name ${committeeSortOrder}`,

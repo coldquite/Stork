@@ -83,8 +83,7 @@ function createPipelinePayload(): ImportPayload {
             'VŠKP-typ A: Datum obhajoby': '',
             'Předmět 1 - 1.term. datum': '',
             'Předmět 1 - 1.term. hodnocení': '',
-            'Předmět 1 - 2.term. datum': '',
-            'Osobní číslo': 'A22B0001P'
+            'Předmět 1 - 2.term. datum': ''
           }
         ]
       }

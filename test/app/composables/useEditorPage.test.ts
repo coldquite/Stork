@@ -36,7 +36,6 @@ function createStudentItem(localId: string, position: number, firstName: string)
     type: 'STUDENT',
     position,
     student: {
-      personalNumber: `A-${localId}`,
       firstName,
       lastName: 'Novák',
       titlesBefore: 'Bc.',

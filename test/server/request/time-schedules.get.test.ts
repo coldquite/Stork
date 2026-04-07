@@ -17,7 +17,6 @@ function buildScheduleName(name: string): string {
 
 function createStudentDraft(index: string) {
   return {
-    personalNumber: `A${index}`,
     firstName: 'Andrii',
     lastName: 'Pihal',
     titlesBefore: 'Bc.',
@@ -48,7 +47,6 @@ function mapCommitteeItemToCreateData(item: PostCommitteeItemDto) {
       position: item.position,
       student: {
         create: {
-          personalNumber: item.student.personalNumber,
           firstName: item.student.firstName,
           lastName: item.student.lastName,
           titlesBefore: item.student.titlesBefore,

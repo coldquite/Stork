@@ -71,7 +71,6 @@ export function useEditorStudentTable(
 
         studentItem.student.lastName = resolveRequiredText(row.lastName, studentItem.student.lastName)
         studentItem.student.firstName = resolveRequiredText(row.firstName, studentItem.student.firstName)
-        studentItem.student.personalNumber = normalizeOptionalText(row.personalNumber)
         studentItem.student.titlesBefore = normalizeOptionalText(row.titlesBefore)
         studentItem.student.titlesAfter = normalizeOptionalText(row.titlesAfter)
 
@@ -185,11 +184,6 @@ export function useEditorStudentTable(
         meta: { class: { th: 'whitespace-nowrap' } }
       },
       { accessorKey: 'examTime', header: t('editor.table.examTime'), meta: { class: { th: 'whitespace-nowrap' } } },
-      {
-        accessorKey: 'personalNumber',
-        header: t('editor.table.personalNumber'),
-        meta: { class: { th: 'whitespace-nowrap' } }
-      },
       {
         accessorKey: 'titlesBefore',
         header: t('editor.table.titlesBefore'),

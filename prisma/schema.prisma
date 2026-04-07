@@ -103,9 +103,8 @@ model CommitteeItem {
 }
 
 model StudentItem {
-  itemId         String        @id
-  item           CommitteeItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
-  personalNumber String?
+  itemId String        @id
+  item   CommitteeItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
 
   // Mapping studenti-CAP and studenti-komise using studenti-CAP:"Email studenta" and studenti-komise:"Email adresa".
   // They should be the same and, in fact, unique for each student (according to ICT CVUT).

@@ -55,7 +55,6 @@ function mapCommitteeItemToDto(item: LoadedCommitteeItem): TimeScheduleDto['comm
       position: item.position,
       student: {
         itemId: item.student.itemId,
-        personalNumber: item.student.personalNumber,
         firstName: item.student.firstName,
         lastName: item.student.lastName,
         titlesBefore: item.student.titlesBefore,

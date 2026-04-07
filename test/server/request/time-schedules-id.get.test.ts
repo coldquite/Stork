@@ -10,7 +10,6 @@ const FIXTURE_SCHEDULE_NAME = `${TEST_NAME_PREFIX} Fixture`
 
 function createStudentDraft() {
   return {
-    personalNumber: 'AID-GET-001',
     firstName: 'Jan',
     lastName: 'Novák',
     titlesBefore: 'Bc.',
@@ -69,7 +68,6 @@ async function createScheduleFixtureInDb(): Promise<string> {
                   position: 0,
                   student: {
                     create: {
-                      personalNumber: studentDraft.personalNumber,
                       firstName: studentDraft.firstName,
                       lastName: studentDraft.lastName,
                       titlesBefore: studentDraft.titlesBefore,

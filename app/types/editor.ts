@@ -4,7 +4,6 @@ export interface StudentRow {
   id: string
   prepareTime: string
   examTime: string
-  personalNumber: string
   titlesBefore: string
   lastName: string
   firstName: string

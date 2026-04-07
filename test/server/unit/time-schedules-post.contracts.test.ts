@@ -34,7 +34,6 @@ function createPayload(): PostTimeScheduleRequestDto {
             type: 'STUDENT',
             position: 0,
             student: {
-              personalNumber: 'A123',
               firstName: 'Jan',
               lastName: 'Novák',
               titlesBefore: 'Bc.',

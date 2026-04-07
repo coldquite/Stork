@@ -29,7 +29,6 @@ const dateStringSchema = z.string().refine((value) => !Number.isNaN(Date.parse(v
 
 const studentItemSchema = z
   .object({
-    personalNumber: z.string().nullable(),
     firstName: nonEmptyTrimmedStringSchema,
     lastName: nonEmptyTrimmedStringSchema,
     titlesBefore: z.string().nullable(),

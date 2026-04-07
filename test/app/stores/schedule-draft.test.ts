@@ -57,7 +57,6 @@ function createApiSchedule(seed = 'A'): TimeScheduleDto {
             position: 0,
             student: {
               itemId: `student-${seed}`,
-              personalNumber: `A123${seed}`,
               firstName: 'Jan',
               lastName: 'Novák',
               titlesBefore: 'Bc.',

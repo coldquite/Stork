@@ -60,7 +60,6 @@ export function buildStudentRowsForCommittee(committee: ScheduleDraftCommittee):
       id: item.localId,
       prepareTime: formatPrepareTime(examStartMinute, item.student.prepareMinutes),
       examTime: `${formatMinuteOfDay(examStartMinute)} - ${formatMinuteOfDay(examEndMinute)}`,
-      personalNumber: item.student.personalNumber?.trim() ?? '',
       titlesBefore: item.student.titlesBefore?.trim() ?? '',
       lastName: item.student.lastName,
       firstName: item.student.firstName,

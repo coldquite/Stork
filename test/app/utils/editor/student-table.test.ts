@@ -17,7 +17,6 @@ function createStudentItem(options: {
     type: 'STUDENT',
     position: options.position,
     student: {
-      personalNumber: null,
       firstName: options.firstName ?? 'Damir',
       lastName: options.lastName ?? 'Alenov',
       titlesBefore: null,
