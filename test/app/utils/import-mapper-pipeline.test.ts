@@ -131,6 +131,7 @@ describe('import mapper pipeline modules', () => {
     expect(draft.committees[0]?.items).toHaveLength(1)
 
     const student = draft.committees[0]?.items[0]?.student
+    expect(student?.email).toBe('jan.student@fit.cvut.cz')
     expect(student?.firstName).toBe('Jan')
     expect(student?.lastName).toBe('Student')
     expect(student?.studyProgramType).toBe('BACHELOR')

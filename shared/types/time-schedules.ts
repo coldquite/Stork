@@ -21,6 +21,7 @@ export interface StudentItemDto {
   itemId: string
   firstName: string
   lastName: string
+  email: string | null
   titlesBefore: string | null
   titlesAfter: string | null
   thesisTitleLocal: string

@@ -70,6 +70,22 @@ export function mapStudent(input: MapStudentInput): MappedStudentPlacement {
     })
   }
 
+  const storkEmail = readRequiredValue(studentsStorkRow, 'Email studenta')
+  const committeesEmail = readRequiredValue(studentsCommitteesRow, 'Email adresa')
+  assertFieldEquality(
+    committeeName,
+    {
+      source: studentsStorkRow,
+      column: 'Email studenta',
+      value: storkEmail
+    },
+    {
+      source: studentsCommitteesRow,
+      column: 'Email adresa',
+      value: committeesEmail
+    }
+  )
+
   const studyProgramType = resolveStudyLevelFromStudentsStork([studentsStorkRow.row])
   if (!studyProgramType) {
     throwMappingError('INVALID_STUDY_PROGRAM_TYPE', studentsStorkRow, {
@@ -256,6 +272,7 @@ export function mapStudent(input: MapStudentInput): MappedStudentPlacement {
   const mappedStudent: PostStudentItemDto = {
     firstName: storkFirstName,
     lastName: storkLastName,
+    email: storkEmail,
     titlesBefore: readOptionalValue(studentsStorkRow, 'Titul'),
     titlesAfter: readOptionalValue(studentsStorkRow, 'titul za'),
     thesisTitleLocal: storkThesisTitleLocal,

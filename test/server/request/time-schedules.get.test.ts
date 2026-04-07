@@ -19,6 +19,7 @@ function createStudentDraft(index: string) {
   return {
     firstName: 'Andrii',
     lastName: 'Pihal',
+    email: `andrii.${index}@fit.cvut.cz`,
     titlesBefore: 'Bc.',
     titlesAfter: null,
     studyProgramName: `Study program ${index}`,
@@ -49,6 +50,7 @@ function mapCommitteeItemToCreateData(item: PostCommitteeItemDto) {
         create: {
           firstName: item.student.firstName,
           lastName: item.student.lastName,
+          email: item.student.email,
           titlesBefore: item.student.titlesBefore,
           titlesAfter: item.student.titlesAfter,
           thesisTitleLocal: item.student.thesisTitleLocal,

@@ -111,6 +111,7 @@ model StudentItem {
 
   firstName                String // studenti-CAP: Jméno + studenti-komise: Jméno studenta
   lastName                 String // studenti-CAP: Příjmení + studenti-komise: Příjmení studenta
+  email                    String? // studenti-CAP: Email studenta + studenti-komise: Email adresa
   titlesBefore             String? // studenti-CAP: Titul
   titlesAfter              String? // studenti-CAP: titul za
   thesisTitleLocal         String // studenti-CAP: VŠKP-typ A: Název práce + studenti-komise: VŠKP-typ A: Český název práce

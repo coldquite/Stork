@@ -31,6 +31,7 @@ const studentItemSchema = z
   .object({
     firstName: nonEmptyTrimmedStringSchema,
     lastName: nonEmptyTrimmedStringSchema,
+    email: z.string().nullable(),
     titlesBefore: z.string().nullable(),
     titlesAfter: z.string().nullable(),
     thesisTitleLocal: z.string(),

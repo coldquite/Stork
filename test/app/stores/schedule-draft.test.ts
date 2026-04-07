@@ -59,6 +59,7 @@ function createApiSchedule(seed = 'A'): TimeScheduleDto {
               itemId: `student-${seed}`,
               firstName: 'Jan',
               lastName: 'Novák',
+              email: `jan.${seed}@fit.cvut.cz`,
               titlesBefore: 'Bc.',
               titlesAfter: null,
               thesisTitleLocal: `Lokální název ${seed}`,

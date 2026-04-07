@@ -63,6 +63,7 @@ export function buildStudentRowsForCommittee(committee: ScheduleDraftCommittee):
       titlesBefore: item.student.titlesBefore?.trim() ?? '',
       lastName: item.student.lastName,
       firstName: item.student.firstName,
+      email: item.student.email?.trim() ?? '',
       titlesAfter: item.student.titlesAfter?.trim() ?? '',
       specializationCode: item.student.specializationCode,
       thesisTitle: resolveThesisTitleByCommitteeLanguage(item, committee.language),

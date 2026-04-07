@@ -7,6 +7,7 @@ export interface StudentRow {
   titlesBefore: string
   lastName: string
   firstName: string
+  email: string
   titlesAfter: string
   specializationCode: string
   thesisTitle: string

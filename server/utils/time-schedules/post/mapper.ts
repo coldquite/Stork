@@ -42,6 +42,7 @@ function mapItemCreateData(item: PostCommitteeItemDto): Prisma.CommitteeItemCrea
         create: {
           firstName: item.student.firstName,
           lastName: item.student.lastName,
+          email: item.student.email,
           titlesBefore: item.student.titlesBefore,
           titlesAfter: item.student.titlesAfter,
           thesisTitleLocal: item.student.thesisTitleLocal,

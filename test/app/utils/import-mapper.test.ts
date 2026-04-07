@@ -242,6 +242,7 @@ describe('mapImportPayloadToDraftSource', () => {
       throw new Error('Expected mapped student item')
     }
 
+    expect(mappedFirstItem.student.email).toBe('jan.novak@fit.cvut.cz')
     expect(mappedFirstItem.student.studyLanguage).toBe('CZECH')
     expect(mappedFirstItem.student.repeatType).toBe('NONE')
     expect(mappedFirstItem.student.prepareMinutes).toBe(45)

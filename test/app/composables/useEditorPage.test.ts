@@ -38,6 +38,7 @@ function createStudentItem(localId: string, position: number, firstName: string)
     student: {
       firstName,
       lastName: 'Novák',
+      email: `${localId}@fit.cvut.cz`,
       titlesBefore: 'Bc.',
       titlesAfter: null,
       thesisTitleLocal: `Local ${localId}`,

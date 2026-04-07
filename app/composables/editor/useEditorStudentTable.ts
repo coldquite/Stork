@@ -71,6 +71,7 @@ export function useEditorStudentTable(
 
         studentItem.student.lastName = resolveRequiredText(row.lastName, studentItem.student.lastName)
         studentItem.student.firstName = resolveRequiredText(row.firstName, studentItem.student.firstName)
+        studentItem.student.email = normalizeOptionalText(row.email)
         studentItem.student.titlesBefore = normalizeOptionalText(row.titlesBefore)
         studentItem.student.titlesAfter = normalizeOptionalText(row.titlesAfter)
 
@@ -190,6 +191,7 @@ export function useEditorStudentTable(
         meta: { class: { th: 'whitespace-nowrap' } }
       },
       { accessorKey: 'firstName', header: t('editor.table.firstName'), meta: { class: { th: 'whitespace-nowrap' } } },
+      { accessorKey: 'email', header: t('editor.table.email'), meta: { class: { th: 'whitespace-nowrap' } } },
       { accessorKey: 'lastName', header: t('editor.table.lastName'), meta: { class: { th: 'whitespace-nowrap' } } },
       {
         accessorKey: 'titlesAfter',

@@ -19,6 +19,7 @@ function createStudentItem(options: {
     student: {
       firstName: options.firstName ?? 'Damir',
       lastName: options.lastName ?? 'Alenov',
+      email: 'student@example.test',
       titlesBefore: null,
       titlesAfter: null,
       thesisTitleLocal: options.thesisTitleLocal ?? 'Český název',

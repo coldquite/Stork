@@ -12,6 +12,7 @@ type EditableTextField =
   | 'titlesBefore'
   | 'lastName'
   | 'firstName'
+  | 'email'
   | 'titlesAfter'
   | 'thesisTitle'
   | 'thesisTitleLocal'
@@ -503,6 +504,18 @@ onBeforeUnmount(() => {
           mode="text"
           @activate="activateRow(row.original.id)"
           @update:model-value="(value) => updateTextField(row.original.id, 'firstName', value)"
+        />
+      </template>
+
+      <template #email-cell="{ row }">
+        <EditorStudentTableInlineCell
+          :is-editing="isEditingRow(row.original.id)"
+          :model-value="row.original.email"
+          cell-wrapper-class="min-w-[10rem] cursor-pointer"
+          :input-class="inlineEditInputClass"
+          mode="text"
+          @activate="activateRow(row.original.id)"
+          @update:model-value="(value) => updateTextField(row.original.id, 'email', value)"
         />
       </template>
 

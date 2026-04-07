@@ -12,6 +12,7 @@ function createStudentDraft() {
   return {
     firstName: 'Jan',
     lastName: 'Novák',
+    email: 'jan.novak@fit.cvut.cz',
     titlesBefore: 'Bc.',
     titlesAfter: null,
     studyProgramName: 'Study program fixture',
@@ -70,6 +71,7 @@ async function createScheduleFixtureInDb(): Promise<string> {
                     create: {
                       firstName: studentDraft.firstName,
                       lastName: studentDraft.lastName,
+                      email: studentDraft.email,
                       titlesBefore: studentDraft.titlesBefore,
                       titlesAfter: studentDraft.titlesAfter,
                       thesisTitleLocal: studentDraft.thesisTitleLocal,
@@ -229,6 +231,7 @@ describe('GET /api/time-schedules/:id (integration)', () => {
       expect(studentItem.committeeId).toBe(secondCommittee.id)
       expect(studentItem.position).toBe(0)
       expect(studentItem.student.firstName).toBe('Jan')
+      expect(studentItem.student.email).toBe('jan.novak@fit.cvut.cz')
       expect(studentItem.pause).toBeNull()
     }
 
