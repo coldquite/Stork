@@ -56,6 +56,7 @@ const tableWrapper = ref<HTMLElement | null>(null)
 const localStudents = ref<StudentRow[]>([])
 const editingRowId = ref<string | null>(null)
 const isDragging = ref(false)
+const isHoverSuppressedAfterDrag = ref(false)
 const activeDragCommitteeId = ref<string | null>(null)
 const inlineEditInputClass = 'w-full [&_input]:text-sm'
 const inlineEditSelectClass = 'w-full [&_[role=combobox]]:text-sm [&_[role=combobox]_span]:text-sm'
@@ -63,6 +64,10 @@ const inlineReadonlyFrameClass = 'w-full min-h-8 px-2.5 py-1.5'
 const inlineReadonlySelectFrameClass = `${inlineReadonlyFrameClass} pe-9`
 const inlineReadonlyTextClass = 'block text-sm whitespace-nowrap truncate'
 const thesisCellWrapperClass = `${STUDENT_TABLE_THESIS_COLUMN_WIDTH_CLASS} cursor-pointer`
+const studentTableTbodyBaseClass =
+  'editor-students-tbody divide-y divide-default [&_tr:nth-child(odd)]:bg-primary/5 [&_tr:nth-child(even)]:bg-white dark:[&_tr:nth-child(odd)]:bg-primary/10 dark:[&_tr:nth-child(even)]:bg-default'
+const studentTableTbodyHoverClass =
+  'editor-students-hover-accent [&_tr:hover]:bg-primary/12 dark:[&_tr:hover]:bg-primary/18'
 
 function syncFromParent(): void {
   localStudents.value = props.modelValue.slice()
@@ -99,6 +104,7 @@ function applySortableOptions(): void {
   sortable.option('handle', '.drag-handle')
   sortable.option('draggable', 'tr')
   sortable.option('onStart', () => {
+    stopSuppressingHoverAfterDrag()
     activeDragCommitteeId.value = props.committeeLocalId
     isDragging.value = true
   })
@@ -114,6 +120,7 @@ function applySortableOptions(): void {
     activeDragCommitteeId.value = null
 
     isDragging.value = false
+    suppressHoverAfterDragUntilPointerMove()
 
     nextTick(() => {
       // Drag can finish after committee switch; ignore stale emit to avoid writing rows to another committee.
@@ -187,6 +194,31 @@ const thesisLanguageOptions = computed<ThesisLanguageOption[]>(() => [
 const thesisLanguageLabelsByValue = computed(() => {
   return new Map(thesisLanguageOptions.value.map((option) => [option.value, option.label]))
 })
+
+const tbodyUiClass = computed(() => {
+  if (isDragging.value || isHoverSuppressedAfterDrag.value) {
+    return studentTableTbodyBaseClass
+  }
+
+  return `${studentTableTbodyBaseClass} ${studentTableTbodyHoverClass}`
+})
+
+function stopSuppressingHoverAfterDrag(): void {
+  isHoverSuppressedAfterDrag.value = false
+  window.removeEventListener('pointermove', handlePointerMoveAfterDragEnd, true)
+}
+
+function handlePointerMoveAfterDragEnd(): void {
+  stopSuppressingHoverAfterDrag()
+}
+
+function suppressHoverAfterDragUntilPointerMove(): void {
+  isHoverSuppressedAfterDrag.value = true
+
+  // Use capture to reliably consume the first pointer move across nested interactive cells.
+  window.removeEventListener('pointermove', handlePointerMoveAfterDragEnd, true)
+  window.addEventListener('pointermove', handlePointerMoveAfterDragEnd, { capture: true, once: true, passive: true })
+}
 
 function emitRowsUpdate(): void {
   emit('update:modelValue', localStudents.value.slice())
@@ -394,20 +426,20 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  stopSuppressingHoverAfterDrag()
   window.removeEventListener('click', handleDocumentClick)
 })
 </script>
 
 <template>
-  <div ref="tableWrapper" class="overflow-x-auto" @click="handleTableClick">
+  <div ref="tableWrapper" class="relative overflow-x-auto" @click="handleTableClick">
     <UTable
       :key="tableRenderKey"
       :data="localStudents"
       :columns="props.columns"
       :get-row-id="(row) => row.id"
       :ui="{
-        tbody:
-          'editor-students-tbody divide-y divide-default [&_tr:nth-child(odd)]:bg-primary/5 [&_tr:nth-child(even)]:bg-white dark:[&_tr:nth-child(odd)]:bg-primary/10 dark:[&_tr:nth-child(even)]:bg-default',
+        tbody: tbodyUiClass,
         separator: 'bg-default'
       }"
     >
@@ -708,5 +740,11 @@ onBeforeUnmount(() => {
         />
       </template>
     </UTable>
+
+    <div
+      aria-hidden="true"
+      class="editor-students-table-drag-overlay pointer-events-none absolute inset-0 z-10"
+      :class="{ 'editor-students-table-drag-overlay--visible': isDragging }"
+    />
   </div>
 </template>
