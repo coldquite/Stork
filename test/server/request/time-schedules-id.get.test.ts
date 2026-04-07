@@ -20,7 +20,6 @@ function createStudentDraft() {
     specializationName: 'Softwarové inženýrství',
     specializationCode: 'SPEC-ID-GET-001',
     studyLanguage: 'CZECH' as const,
-    thesisSubmissionAt: '2026-06-10T08:30:00.000Z',
     thesisTitleLocal: 'Lokální název',
     thesisTitleEn: 'English title',
     thesisLanguage: 'CZECH' as const,
@@ -86,7 +85,6 @@ async function createScheduleFixtureInDb(): Promise<string> {
                       specializationName: studentDraft.specializationName,
                       specializationCode: studentDraft.specializationCode,
                       studyLanguage: studentDraft.studyLanguage,
-                      thesisSubmissionAt: new Date(studentDraft.thesisSubmissionAt),
                       repeatType: studentDraft.repeatType,
                       prepareMinutes: studentDraft.prepareMinutes,
                       examMinutes: studentDraft.examMinutes

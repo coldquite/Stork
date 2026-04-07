@@ -45,8 +45,7 @@ function createPipelinePayload(): ImportPayload {
             'VŠKP-typ A: Vedoucí práce 1': 'Ing. Vedoucí',
             'VŠKP-typ A: Vedoucí práce 2': '',
             'VŠKP-typ A: Oponent práce 1': 'Ing. Oponent',
-            'VŠKP-typ A: Oponent práce 2': '',
-            'VŠKP-typ A: Termín odevzdání práce': '01.05.2026'
+            'VŠKP-typ A: Oponent práce 2': ''
           }
         ]
       }

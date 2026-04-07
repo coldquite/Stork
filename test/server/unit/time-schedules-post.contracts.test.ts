@@ -51,7 +51,6 @@ function createPayload(): PostTimeScheduleRequestDto {
               specializationName: 'Specialization A',
               specializationCode: 'SPEC-A',
               studyLanguage: 'CZECH',
-              thesisSubmissionAt: '2026-06-10T23:30:00.000Z',
               repeatType: 'NONE',
               prepareMinutes: 45,
               examMinutes: 30
@@ -220,40 +219,6 @@ describe('time-schedules post contracts', () => {
     expect(statusMessage).toContain('payload.committees[0].items[0].student')
   })
 
-  it('rejects thesisSubmissionAt without timezone offset', () => {
-    const payload = createPayload()
-    const firstCommittee = payload.committees[0]
-    if (!firstCommittee) {
-      throw new Error('Expected committee in payload')
-    }
-
-    const firstItem = firstCommittee.items[0]
-    if (!firstItem || firstItem.type !== 'STUDENT') {
-      throw new Error('Expected first item to be STUDENT')
-    }
-
-    const statusMessage = getValidationStatusMessage({
-      ...payload,
-      committees: [
-        {
-          ...firstCommittee,
-          items: [
-            {
-              ...firstItem,
-              student: {
-                ...firstItem.student,
-                thesisSubmissionAt: '2026-06-10T23:30:00'
-              }
-            }
-          ]
-        }
-      ]
-    })
-
-    expect(statusMessage).toContain('Invalid time schedule payload:')
-    expect(statusMessage).toContain('payload.committees[0].items[0].student.thesisSubmissionAt')
-  })
-
   it('rejects non-integer minute fields', () => {
     const payload = createPayload()
     const firstCommittee = payload.committees[0]
@@ -309,82 +274,20 @@ describe('time-schedules post contracts', () => {
     expect(() => parsePostTimeSchedulePayload(invalidPayload)).toThrowError(/Invalid time schedule payload/)
   })
 
-  it('maps null thesisSubmissionAt to null in prisma create data', () => {
-    const payload = createPayload()
-    const firstCommittee = payload.committees[0]
-    if (!firstCommittee) {
-      throw new Error('Expected committee in payload')
-    }
-
-    const firstItem = firstCommittee.items[0]
-    if (!firstItem || firstItem.type !== 'STUDENT') {
-      throw new Error('Expected first item to be STUDENT')
-    }
-
-    const parsed = parsePostTimeSchedulePayload({
-      ...payload,
-      committees: [
-        {
-          ...firstCommittee,
-          items: [
-            {
-              ...firstItem,
-              student: {
-                ...firstItem.student,
-                thesisSubmissionAt: null
-              }
-            }
-          ]
-        }
-      ]
-    })
-    const mapped = mapTimeScheduleCreateData(parsed)
-
-    if (!mapped.committees || !Array.isArray(mapped.committees.create)) {
-      throw new Error('Expected mapped committees.create array')
-    }
-
-    const firstMappedCommittee = mapped.committees.create[0]
-    if (!firstMappedCommittee || !firstMappedCommittee.items || !Array.isArray(firstMappedCommittee.items.create)) {
-      throw new Error('Expected mapped committee items array')
-    }
-
-    const firstMappedItem = firstMappedCommittee.items.create[0]
-    if (!firstMappedItem || !firstMappedItem.student || !firstMappedItem.student.create) {
-      throw new Error('Expected mapped student item')
-    }
-
-    expect(firstMappedItem.student.create.thesisSubmissionAt).toBeNull()
-  })
-
-  it('maps payload to prisma create data and normalizes thesisSubmissionAt to Prague day start', () => {
+  it('maps payload to prisma create data and parses committee date', () => {
     const mapped = mapTimeScheduleCreateData(parsePostTimeSchedulePayload(createPayload()))
     if (!mapped.committees || !Array.isArray(mapped.committees.create)) {
       throw new Error('Expected mapped committees.create array')
     }
 
-    const committeesCreate = mapped.committees.create as Array<{
-      date: Date
-      items: {
-        create: Array<{
-          student?: {
-            create: {
-              thesisSubmissionAt: Date | null
-            }
-          }
-        }>
-      }
-    }>
-
-    const firstCommittee = committeesCreate[0]
+    const firstCommittee = mapped.committees.create[0]
     expect(firstCommittee).toBeDefined()
-    expect(firstCommittee?.date).toBeInstanceOf(Date)
-    expect(firstCommittee?.date.toISOString()).toBe('2026-06-10T00:00:00.000Z')
+    const committeeDate = firstCommittee?.date
+    expect(committeeDate).toBeInstanceOf(Date)
+    if (!(committeeDate instanceof Date)) {
+      throw new Error('Expected committee date to be a Date instance')
+    }
 
-    const firstItem = firstCommittee?.items.create[0]
-    const thesisSubmissionAt = firstItem?.student?.create.thesisSubmissionAt
-
-    expect(thesisSubmissionAt).toBeInstanceOf(Date)
-    expect(thesisSubmissionAt?.toISOString()).toBe('2026-06-11T00:00:00.000Z')
+    expect(committeeDate.toISOString()).toBe('2026-06-10T00:00:00.000Z')
   })
 })

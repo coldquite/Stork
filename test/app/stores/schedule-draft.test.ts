@@ -74,7 +74,6 @@ function createApiSchedule(seed = 'A'): TimeScheduleDto {
               specializationName: 'Softwarové inženýrství',
               specializationCode: `SPEC-${seed}`,
               studyLanguage: 'CZECH',
-              thesisSubmissionAt: '2026-06-10T12:15:00.000Z',
               repeatType: 'NONE',
               prepareMinutes: 45,
               examMinutes: 30

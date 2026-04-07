@@ -82,8 +82,7 @@ export const IMPORT_SCHEMAS: ImportSchemaMap = {
     'Obor/spec - název',
     'Studijní plán (název)',
     'VŠKP-typ A: jazyk práce',
-    'VŠKP-typ A: Překlad názvu práce',
-    'VŠKP-typ A: Termín odevzdání práce'
+    'VŠKP-typ A: Překlad názvu práce'
   ],
   studentsCommittees: [
     'Jméno studenta',

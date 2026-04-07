@@ -27,7 +27,6 @@ function createStudentDraft(index: string) {
     specializationName: 'Softwarové inženýrství',
     specializationCode: `SP-${index}`,
     studyLanguage: 'CZECH' as const,
-    thesisSubmissionAt: '2026-06-10T08:30:00.000Z',
     thesisTitleLocal: `Lokální název ${index}`,
     thesisTitleEn: `English title ${index}`,
     thesisLanguage: 'CZECH' as const,
@@ -65,8 +64,6 @@ function mapCommitteeItemToCreateData(item: PostCommitteeItemDto) {
           specializationName: item.student.specializationName,
           specializationCode: item.student.specializationCode,
           studyLanguage: item.student.studyLanguage,
-          thesisSubmissionAt:
-            item.student.thesisSubmissionAt !== null ? new Date(item.student.thesisSubmissionAt) : null,
           repeatType: item.student.repeatType,
           prepareMinutes: item.student.prepareMinutes,
           examMinutes: item.student.examMinutes

@@ -84,7 +84,6 @@ function createStudentsStorkRow(overrides: Partial<Record<string, string>> = {})
     'Studijní plán (název)': 'Bc. Informatika',
     'VŠKP-typ A: jazyk práce': 'CZ',
     'VŠKP-typ A: Překlad názvu práce': 'Smart Scheduler',
-    'VŠKP-typ A: Termín odevzdání práce': '23.06.2025',
     ...overrides
   }
 }
@@ -249,10 +248,10 @@ describe('mapImportPayloadToDraftSource', () => {
     expect(mappedFirstItem.student.examMinutes).toBe(30)
   })
 
-  it('fails when thesis submission date has invalid non-empty value', () => {
+  it('does not depend on students-stork defense date column', () => {
     const payload = createValidPayload()
     payload.studentsStork.bachelor!.rows[0] = createStudentsStorkRow({
-      'VŠKP-typ A: Termín odevzdání práce': '2025-06-23'
+      'VŠKP-typ A: Datum obhajoby': 'not-a-date'
     })
 
     const result = mapImportPayloadToDraftSource({
@@ -261,13 +260,10 @@ describe('mapImportPayloadToDraftSource', () => {
       payload
     })
 
-    expect(result.ok).toBe(false)
-    if (result.ok) {
-      throw new Error('Expected mapping failure')
+    expect(result.ok).toBe(true)
+    if (!result.ok) {
+      throw new Error('Expected mapping success')
     }
-
-    expect(result.error.code).toBe('INVALID_THESIS_SUBMISSION_DATE')
-    expect(result.error.column).toBe('VŠKP-typ A: Termín odevzdání práce')
   })
 
   it('sets repeatType to BOTH when first-term grade is F and thesis defense date is empty', () => {

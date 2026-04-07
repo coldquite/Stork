@@ -1,38 +1,6 @@
 import type { Prisma } from '~~/prisma/generated/client/client'
 import type { PostCommitteeDto, PostCommitteeItemDto, PostTimeScheduleRequestDto } from '#shared/types/time-schedules'
 
-const PRAGUE_DATE_FORMATTER = new Intl.DateTimeFormat('en', {
-  timeZone: 'Europe/Prague',
-  year: 'numeric',
-  month: '2-digit',
-  day: '2-digit'
-})
-
-function parseDatePart(parts: Intl.DateTimeFormatPart[], type: 'year' | 'month' | 'day'): number {
-  const part = parts.find((entry) => entry.type === type)?.value
-
-  if (!part) {
-    throw new Error(`thesisSubmissionAt normalization failed for missing "${type}"`)
-  }
-
-  const parsedValue = Number.parseInt(part, 10)
-  if (!Number.isSafeInteger(parsedValue)) {
-    throw new Error(`thesisSubmissionAt normalization failed for invalid "${type}"`)
-  }
-
-  return parsedValue
-}
-
-function normalizeDateTimeToPragueDayStart(value: string): Date {
-  const parsedDate = new Date(value)
-  const dateParts = PRAGUE_DATE_FORMATTER.formatToParts(parsedDate)
-  const year = parseDatePart(dateParts, 'year')
-  const month = parseDatePart(dateParts, 'month')
-  const day = parseDatePart(dateParts, 'day')
-
-  return new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0))
-}
-
 function mapItemCreateData(item: PostCommitteeItemDto): Prisma.CommitteeItemCreateWithoutCommitteeInput {
   if (item.type === 'STUDENT') {
     return {
@@ -57,10 +25,6 @@ function mapItemCreateData(item: PostCommitteeItemDto): Prisma.CommitteeItemCrea
           specializationName: item.student.specializationName,
           specializationCode: item.student.specializationCode,
           studyLanguage: item.student.studyLanguage,
-          thesisSubmissionAt:
-            item.student.thesisSubmissionAt !== null
-              ? normalizeDateTimeToPragueDayStart(item.student.thesisSubmissionAt)
-              : null,
           repeatType: item.student.repeatType,
           prepareMinutes: item.student.prepareMinutes,
           examMinutes: item.student.examMinutes

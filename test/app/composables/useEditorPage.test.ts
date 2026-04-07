@@ -53,7 +53,6 @@ function createStudentItem(localId: string, position: number, firstName: string)
       specializationName: 'Softwarové inženýrství 2021',
       specializationCode: 'BI-SI.21',
       studyLanguage: 'CZECH',
-      thesisSubmissionAt: null,
       repeatType: 'NONE',
       prepareMinutes: 45,
       examMinutes: 30

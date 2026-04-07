@@ -9,7 +9,7 @@ import {
   normalizeSpecializationCodeForComparison,
   preprocessCommitteeName
 } from '~/utils/import-mapper/core/normalize'
-import { parseDateToIso, parseStudyLanguage, parseThesisLanguage } from '~/utils/import-mapper/core/parsers'
+import { parseStudyLanguage, parseThesisLanguage } from '~/utils/import-mapper/core/parsers'
 import { readOptionalValue, readRequiredValue } from '~/utils/import-mapper/core/readers'
 import {
   resolveStudentDurationByStudyProgramAndRepeat,
@@ -255,17 +255,6 @@ export function mapStudent(input: MapStudentInput): MappedStudentPlacement {
     })
   }
 
-  const thesisSubmissionAtRaw = readOptionalValue(studentsStorkRow, 'VŠKP-typ A: Termín odevzdání práce')
-  const thesisSubmissionAt = thesisSubmissionAtRaw ? parseDateToIso(thesisSubmissionAtRaw) : null
-  if (thesisSubmissionAtRaw && !thesisSubmissionAt) {
-    throwMappingError('INVALID_THESIS_SUBMISSION_DATE', studentsStorkRow, {
-      column: 'VŠKP-typ A: Termín odevzdání práce',
-      context: {
-        rawValue: thesisSubmissionAtRaw
-      }
-    })
-  }
-
   const repeatType = resolveStudentRepeatType(studentsCommitteesRow)
   const { prepareMinutes, examMinutes } = resolveStudentDurationByStudyProgramAndRepeat(studyProgramType, repeatType)
 
@@ -287,7 +276,6 @@ export function mapStudent(input: MapStudentInput): MappedStudentPlacement {
     specializationName: readRequiredValue(studentsStorkRow, 'Obor/spec - název'),
     specializationCode: normalizeSpecializationCode(readRequiredValue(studentsStorkRow, 'Kód studijního plánu')),
     studyLanguage,
-    thesisSubmissionAt: thesisSubmissionAt ?? null,
     repeatType,
     prepareMinutes,
     examMinutes

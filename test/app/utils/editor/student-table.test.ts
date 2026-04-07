@@ -34,7 +34,6 @@ function createStudentItem(options: {
       specializationName: 'Softwarové inženýrství',
       specializationCode: 'BI-SI.21',
       studyLanguage: 'CZECH',
-      thesisSubmissionAt: null,
       repeatType: 'NONE',
       prepareMinutes: options.prepareMinutes ?? 45,
       examMinutes: options.examMinutes ?? 30

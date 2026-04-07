@@ -72,7 +72,6 @@ function mapCommitteeItemToDto(item: LoadedCommitteeItem): TimeScheduleDto['comm
         specializationName: item.student.specializationName,
         specializationCode: item.student.specializationCode,
         studyLanguage: item.student.studyLanguage,
-        thesisSubmissionAt: item.student.thesisSubmissionAt?.toISOString() ?? null,
         repeatType: item.student.repeatType,
         prepareMinutes: item.student.prepareMinutes,
         examMinutes: item.student.examMinutes

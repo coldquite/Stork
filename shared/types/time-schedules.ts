@@ -36,7 +36,6 @@ export interface StudentItemDto {
   specializationName: string
   specializationCode: string
   studyLanguage: StudyLanguageDto
-  thesisSubmissionAt: string | null
   repeatType: RepeatTypeDto
   prepareMinutes: number
   examMinutes: number

@@ -2,8 +2,6 @@ import { createError } from 'h3'
 import { z } from 'zod'
 import type { PostTimeScheduleRequestDto } from '#shared/types/time-schedules'
 
-const ISO_DATE_TIME_WITH_TIMEZONE_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:\d{2})$/
-
 const studyLanguageSchema = z.enum(['CZECH', 'ENGLISH'])
 const studyProgramTypeSchema = z.enum(['BACHELOR', 'MASTER'])
 const thesisLanguageSchema = z.enum(['CZECH', 'ENGLISH', 'SLOVAK'])
@@ -13,15 +11,6 @@ const timeScheduleTypeSchema = z.enum(['MANUAL', 'AUTO'])
 const nonEmptyTrimmedStringSchema = z.string().trim().min(1, {
   message: 'must have at least 1 non-whitespace character'
 })
-
-const isoDateTimeWithTimezoneSchema = z
-  .string()
-  .refine((value) => ISO_DATE_TIME_WITH_TIMEZONE_PATTERN.test(value), {
-    message: 'must be a valid ISO datetime with timezone'
-  })
-  .refine((value) => !Number.isNaN(Date.parse(value)), {
-    message: 'must be a valid ISO datetime'
-  })
 
 const dateStringSchema = z.string().refine((value) => !Number.isNaN(Date.parse(value)), {
   message: 'must be a valid ISO date string'
@@ -46,7 +35,6 @@ const studentItemSchema = z
     specializationName: z.string(),
     specializationCode: z.string(),
     studyLanguage: studyLanguageSchema,
-    thesisSubmissionAt: isoDateTimeWithTimezoneSchema.nullable(),
     repeatType: repeatTypeSchema,
     prepareMinutes: z.number().int({
       message: 'must be an integer'

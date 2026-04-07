@@ -53,7 +53,6 @@ function createPostPayload(nameSuffix: string): PostTimeScheduleRequestDto {
               specializationName: `Specialization ${nameSuffix}`,
               specializationCode: `SPEC-${nameSuffix}`,
               studyLanguage: 'CZECH' as const,
-              thesisSubmissionAt: '2026-06-10T12:15:00.000Z',
               repeatType: 'NONE' as const,
               prepareMinutes: 45,
               examMinutes: 30
@@ -205,7 +204,6 @@ describe('POST /api/time-schedules (integration)', () => {
     expect(studentItem?.student).not.toBeNull()
     expect(studentItem?.student?.firstName).toBe('Jan')
     expect(studentItem?.student?.email).toBe(`jan.${payloadSeed}@fit.cvut.cz`)
-    expect(studentItem?.student?.thesisSubmissionAt?.toISOString()).toBe('2026-06-10T00:00:00.000Z')
 
     expect(pauseItem?.id.length).toBeGreaterThan(0)
     expect(pauseItem?.pause).not.toBeNull()

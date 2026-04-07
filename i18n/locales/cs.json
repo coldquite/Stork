@@ -139,7 +139,6 @@
               "studentMatchAmbiguous": "Pro studenta bylo nalezeno více kandidátů, mapování není jednoznačné.",
               "studentCommitteeNotFound": "Student odkazuje na komisi, která v importu neexistuje.",
               "studentValueMismatch": "Hodnoty studenta mezi soubory se neshodují.",
-              "invalidThesisSubmissionDate": "Termín odevzdání práce není validní datum.",
               "invalidFirstTermGrade": "Hodnocení 1. termínu musí být jedna známka z rozsahu A až F.",
               "invalidFirstTermResultState": "Datum 1. termínu a hodnocení 1. termínu musí být buď vyplněné oba, nebo oba prázdné.",
               "invalidRepeatTypeState": "Kombinace údajů o předchozích termínech je neplatná.",
