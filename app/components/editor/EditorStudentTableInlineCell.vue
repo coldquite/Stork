@@ -40,7 +40,7 @@ const displayContentClass = computed(() => {
     return 'block text-sm break-words whitespace-normal'
   }
 
-  return 'block text-sm whitespace-nowrap truncate'
+  return 'block text-sm whitespace-nowrap'
 })
 </script>
 

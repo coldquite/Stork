@@ -62,7 +62,7 @@ const inlineEditInputClass = 'w-full [&_input]:text-sm'
 const inlineEditSelectClass = 'w-full [&_[role=combobox]]:text-sm [&_[role=combobox]_span]:text-sm'
 const inlineReadonlyFrameClass = 'w-full min-h-8 px-2.5 py-1.5'
 const inlineReadonlySelectFrameClass = `${inlineReadonlyFrameClass} pe-9`
-const inlineReadonlyTextClass = 'block text-sm whitespace-nowrap truncate'
+const inlineReadonlyTextClass = 'block text-sm whitespace-nowrap'
 const thesisCellWrapperClass = `${STUDENT_TABLE_THESIS_COLUMN_WIDTH_CLASS} cursor-pointer`
 const studentTableTbodyBaseClass =
   'editor-students-tbody divide-y divide-default [&_tr:nth-child(odd)]:bg-primary/5 [&_tr:nth-child(even)]:bg-white dark:[&_tr:nth-child(odd)]:bg-primary/10 dark:[&_tr:nth-child(even)]:bg-default'
@@ -475,7 +475,7 @@ onBeforeUnmount(() => {
         <EditorStudentTableInlineCell
           :is-editing="isEditingRow(row.original.id)"
           :model-value="row.original.personalNumber"
-          cell-wrapper-class="min-w-[9rem] cursor-pointer"
+          cell-wrapper-class="min-w-[4rem] cursor-pointer"
           :input-class="inlineEditInputClass"
           mode="text"
           @activate="activateRow(row.original.id)"
@@ -487,7 +487,7 @@ onBeforeUnmount(() => {
         <EditorStudentTableInlineCell
           :is-editing="isEditingRow(row.original.id)"
           :model-value="row.original.titlesBefore"
-          cell-wrapper-class="min-w-[9rem] cursor-pointer"
+          cell-wrapper-class="min-w-[4rem] cursor-pointer"
           :input-class="inlineEditInputClass"
           mode="text"
           @activate="activateRow(row.original.id)"
@@ -499,7 +499,7 @@ onBeforeUnmount(() => {
         <EditorStudentTableInlineCell
           :is-editing="isEditingRow(row.original.id)"
           :model-value="row.original.lastName"
-          cell-wrapper-class="min-w-[10rem] cursor-pointer"
+          cell-wrapper-class="min-w-[5rem] cursor-pointer"
           :input-class="inlineEditInputClass"
           mode="text"
           @activate="activateRow(row.original.id)"
@@ -511,7 +511,7 @@ onBeforeUnmount(() => {
         <EditorStudentTableInlineCell
           :is-editing="isEditingRow(row.original.id)"
           :model-value="row.original.firstName"
-          cell-wrapper-class="min-w-[10rem] cursor-pointer"
+          cell-wrapper-class="min-w-[5rem] cursor-pointer"
           :input-class="inlineEditInputClass"
           mode="text"
           @activate="activateRow(row.original.id)"
@@ -523,7 +523,7 @@ onBeforeUnmount(() => {
         <EditorStudentTableInlineCell
           :is-editing="isEditingRow(row.original.id)"
           :model-value="row.original.titlesAfter"
-          cell-wrapper-class="min-w-[9rem] cursor-pointer"
+          cell-wrapper-class="min-w-[5rem] cursor-pointer"
           :input-class="inlineEditInputClass"
           mode="text"
           @activate="activateRow(row.original.id)"
@@ -535,7 +535,7 @@ onBeforeUnmount(() => {
         <EditorStudentTableInlineCell
           :is-editing="isEditingRow(row.original.id)"
           :model-value="row.original.specializationCode"
-          cell-wrapper-class="min-w-44 cursor-pointer"
+          cell-wrapper-class="min-w-32 cursor-pointer"
           :input-class="inlineEditSelectClass"
           :display-frame-class="inlineReadonlySelectFrameClass"
           mode="text"
@@ -604,7 +604,7 @@ onBeforeUnmount(() => {
         <EditorStudentTableInlineCell
           :is-editing="isEditingRow(row.original.id)"
           :model-value="resolveThesisLanguageLabel(row.original.thesisLanguage)"
-          cell-wrapper-class="min-w-[11rem] cursor-pointer"
+          cell-wrapper-class="min-w-[9rem] cursor-pointer"
           :input-class="inlineEditSelectClass"
           :display-frame-class="inlineReadonlySelectFrameClass"
           mode="text"
@@ -634,7 +634,7 @@ onBeforeUnmount(() => {
         <EditorStudentTableInlineCell
           :is-editing="isEditingRow(row.original.id)"
           :model-value="row.original.supervisorName"
-          cell-wrapper-class="min-w-[14rem] cursor-pointer"
+          cell-wrapper-class="min-w-[11rem] cursor-pointer"
           :input-class="inlineEditInputClass"
           mode="text"
           @activate="activateRow(row.original.id)"
@@ -646,7 +646,7 @@ onBeforeUnmount(() => {
         <EditorStudentTableInlineCell
           :is-editing="isEditingRow(row.original.id)"
           :model-value="row.original.additionalSupervisorName"
-          cell-wrapper-class="min-w-[14rem] cursor-pointer"
+          cell-wrapper-class="min-w-[6.5rem] cursor-pointer"
           :input-class="inlineEditInputClass"
           mode="text"
           @activate="activateRow(row.original.id)"
@@ -658,7 +658,7 @@ onBeforeUnmount(() => {
         <EditorStudentTableInlineCell
           :is-editing="isEditingRow(row.original.id)"
           :model-value="row.original.reviewerName"
-          cell-wrapper-class="min-w-[14rem] cursor-pointer"
+          cell-wrapper-class="min-w-[11rem] cursor-pointer"
           :input-class="inlineEditInputClass"
           mode="text"
           @activate="activateRow(row.original.id)"
@@ -670,7 +670,7 @@ onBeforeUnmount(() => {
         <EditorStudentTableInlineCell
           :is-editing="isEditingRow(row.original.id)"
           :model-value="row.original.additionalReviewerName"
-          cell-wrapper-class="min-w-[14rem] cursor-pointer"
+          cell-wrapper-class="min-w-[6.5rem] cursor-pointer"
           :input-class="inlineEditInputClass"
           mode="text"
           @activate="activateRow(row.original.id)"
@@ -682,7 +682,7 @@ onBeforeUnmount(() => {
         <EditorStudentTableInlineCell
           :is-editing="isEditingRow(row.original.id)"
           :model-value="resolveRepeatTypeLabel(row.original.repeatType)"
-          cell-wrapper-class="min-w-48 cursor-pointer"
+          cell-wrapper-class="min-w-[11rem] cursor-pointer"
           :input-class="inlineEditSelectClass"
           :display-frame-class="inlineReadonlySelectFrameClass"
           mode="text"
@@ -712,7 +712,7 @@ onBeforeUnmount(() => {
         <EditorStudentTableInlineCell
           :is-editing="isEditingRow(row.original.id)"
           :model-value="row.original.prepareMinutes"
-          cell-wrapper-class="min-w-[8rem] cursor-pointer"
+          cell-wrapper-class="min-w-[6.5rem] cursor-pointer"
           :input-class="inlineEditInputClass"
           mode="number"
           @activate="activateRow(row.original.id)"
@@ -724,7 +724,7 @@ onBeforeUnmount(() => {
         <EditorStudentTableInlineCell
           :is-editing="isEditingRow(row.original.id)"
           :model-value="row.original.examMinutes"
-          cell-wrapper-class="min-w-[8rem] cursor-pointer"
+          cell-wrapper-class="min-w-[6.5rem] cursor-pointer"
           :input-class="inlineEditInputClass"
           mode="number"
           @activate="activateRow(row.original.id)"

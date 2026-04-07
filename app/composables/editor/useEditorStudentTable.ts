@@ -221,13 +221,13 @@ export function useEditorStudentTable(
       {
         accessorKey: 'additionalSupervisorName',
         header: t('editor.table.additionalSupervisor'),
-        meta: { class: { th: 'whitespace-nowrap' } }
+        meta: { class: { th: 'min-w-[6.5rem] whitespace-nowrap' } }
       },
       { accessorKey: 'reviewerName', header: t('editor.table.reviewer'), meta: { class: { th: 'whitespace-nowrap' } } },
       {
         accessorKey: 'additionalReviewerName',
         header: t('editor.table.additionalReviewer'),
-        meta: { class: { th: 'whitespace-nowrap' } }
+        meta: { class: { th: 'min-w-[6.5rem] whitespace-nowrap' } }
       },
       { accessorKey: 'repeatType', header: t('editor.table.repeatType'), meta: { class: { th: 'whitespace-nowrap' } } },
       {
