@@ -56,8 +56,6 @@ function mapItemCreateData(item: PostCommitteeItemDto): Prisma.CommitteeItemCrea
           studyProgramType: item.student.studyProgramType,
           specializationName: item.student.specializationName,
           specializationCode: item.student.specializationCode,
-          defenseDepartmentCode: item.student.defenseDepartmentCode,
-          defenseDepartmentName: item.student.defenseDepartmentName,
           studyLanguage: item.student.studyLanguage,
           thesisSubmissionAt:
             item.student.thesisSubmissionAt !== null

@@ -52,8 +52,6 @@ function createStudentItem(localId: string, position: number, firstName: string)
       studyProgramType: 'BACHELOR',
       specializationName: 'SI',
       specializationCode: 'SI',
-      defenseDepartmentCode: 'KSI',
-      defenseDepartmentName: 'KSI',
       studyLanguage: 'CZECH',
       thesisSubmissionAt: null,
       repeatType: 'NONE',

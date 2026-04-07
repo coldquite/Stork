@@ -50,8 +50,6 @@ function createPayload(): PostTimeScheduleRequestDto {
               studyProgramType: 'BACHELOR',
               specializationName: 'Specialization A',
               specializationCode: 'SPEC-A',
-              defenseDepartmentCode: 'KAT-A',
-              defenseDepartmentName: 'Department A',
               studyLanguage: 'CZECH',
               thesisSubmissionAt: '2026-06-10T23:30:00.000Z',
               repeatType: 'NONE',

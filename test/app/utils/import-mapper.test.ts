@@ -83,8 +83,6 @@ function createStudentsStorkRow(overrides: Partial<Record<string, string>> = {})
     'Studijní program (název)': 'Informatika',
     'Obor/spec - název': 'Softwarové inženýrství 2021',
     'Studijní plán (název)': 'Bc. Informatika',
-    'Katedra studenta (název)': 'Katedra softwarového inženýrství',
-    'Katedra studenta (kód)': 'KSI',
     'VŠKP-typ A: jazyk práce': 'CZ',
     'VŠKP-typ A: Překlad názvu práce': 'Smart Scheduler',
     'VŠKP-typ A: Termín odevzdání práce': '23.06.2025',

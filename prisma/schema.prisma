@@ -127,9 +127,6 @@ model StudentItem {
   specializationName String // studenti-CAP: Obor/spec - název (Information Security 2021 (Bachelor in English))
   specializationCode String // studenti-CAP: Kód studijního plánu (BIE-IB.21)
 
-  defenseDepartmentCode String? // studenti-CAP: Katedra studenta (kód)
-  defenseDepartmentName String? // studenti-CAP: Katedra studenta (název)
-
   studyLanguage      StudyLanguage // studenti-komise: Jazyk výuky
   thesisSubmissionAt DateTime? // studenti-CAP: VŠKP-typ A: Termín odevzdání práce
 

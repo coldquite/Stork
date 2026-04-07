@@ -33,8 +33,6 @@ function createStudentItem(options: {
       studyProgramType: 'BACHELOR',
       specializationName: 'Softwarové inženýrství',
       specializationCode: 'BI-SI.21',
-      defenseDepartmentCode: '18102',
-      defenseDepartmentName: 'KSI',
       studyLanguage: 'CZECH',
       thesisSubmissionAt: null,
       repeatType: 'NONE',

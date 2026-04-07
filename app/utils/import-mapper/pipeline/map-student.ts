@@ -270,8 +270,6 @@ export function mapStudent(input: MapStudentInput): MappedStudentPlacement {
     studyProgramType,
     specializationName: readRequiredValue(studentsStorkRow, 'Obor/spec - název'),
     specializationCode: normalizeSpecializationCode(readRequiredValue(studentsStorkRow, 'Kód studijního plánu')),
-    defenseDepartmentCode: readOptionalValue(studentsStorkRow, 'Katedra studenta (kód)'),
-    defenseDepartmentName: readOptionalValue(studentsStorkRow, 'Katedra studenta (název)'),
     studyLanguage,
     thesisSubmissionAt: thesisSubmissionAt ?? null,
     repeatType,

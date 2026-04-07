@@ -35,8 +35,6 @@ export interface StudentItemDto {
   studyProgramType: StudyProgramTypeDto
   specializationName: string
   specializationCode: string
-  defenseDepartmentCode: string | null
-  defenseDepartmentName: string | null
   studyLanguage: StudyLanguageDto
   thesisSubmissionAt: string | null
   repeatType: RepeatTypeDto

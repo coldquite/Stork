@@ -39,8 +39,6 @@ function createPipelinePayload(): ImportPayload {
             'Studijní program (název)': 'Informatika',
             'Obor/spec - název': 'Počítačové inženýrství',
             'Kód studijního plánu': 'BI-PI.21',
-            'Katedra studenta (kód)': '13139',
-            'Katedra studenta (název)': 'Katedra software engineeringu',
             'VŠKP-typ A: Název práce': 'Návrh systému',
             'VŠKP-typ A: Překlad názvu práce': 'System Design',
             'VŠKP-typ A: jazyk práce': 'CZ',

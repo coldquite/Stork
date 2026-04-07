@@ -73,8 +73,6 @@ function createApiSchedule(seed = 'A'): TimeScheduleDto {
               studyProgramType: 'BACHELOR',
               specializationName: 'Softwarové inženýrství',
               specializationCode: `SPEC-${seed}`,
-              defenseDepartmentCode: `KAT-${seed}`,
-              defenseDepartmentName: `Department ${seed}`,
               studyLanguage: 'CZECH',
               thesisSubmissionAt: '2026-06-10T12:15:00.000Z',
               repeatType: 'NONE',

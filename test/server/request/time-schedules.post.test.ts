@@ -52,8 +52,6 @@ function createPostPayload(nameSuffix: string): PostTimeScheduleRequestDto {
               studyProgramType: 'BACHELOR' as const,
               specializationName: `Specialization ${nameSuffix}`,
               specializationCode: `SPEC-${nameSuffix}`,
-              defenseDepartmentCode: `KAT-${nameSuffix}`,
-              defenseDepartmentName: `Department ${nameSuffix}`,
               studyLanguage: 'CZECH' as const,
               thesisSubmissionAt: '2026-06-10T12:15:00.000Z',
               repeatType: 'NONE' as const,
