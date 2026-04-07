@@ -59,6 +59,9 @@ const isDragging = ref(false)
 const activeDragCommitteeId = ref<string | null>(null)
 const inlineEditInputClass = 'w-full [&_input]:text-sm'
 const inlineEditSelectClass = 'w-full [&_[role=combobox]]:text-sm [&_[role=combobox]_span]:text-sm'
+const inlineReadonlyFrameClass = 'w-full min-h-8 px-2.5 py-1.5'
+const inlineReadonlySelectFrameClass = `${inlineReadonlyFrameClass} pe-9`
+const inlineReadonlyTextClass = 'block text-sm whitespace-nowrap truncate'
 const thesisCellWrapperClass = `${STUDENT_TABLE_THESIS_COLUMN_WIDTH_CLASS} cursor-pointer`
 
 function syncFromParent(): void {
@@ -85,7 +88,8 @@ watch(
 const sortableTarget = computed(() => {
   return (tableWrapper.value?.querySelector('tbody') as HTMLElement | null) ?? null
 })
-const tableRenderKey = computed(() => `${props.committeeLocalId}:${localStudents.value.map((row) => row.id).join('|')}`)
+// Recreate table only when committee changes; recreating on every reorder detaches Sortable listeners from tbody.
+const tableRenderKey = computed(() => props.committeeLocalId)
 
 // watchElement: tbody may appear after mount; re-bind Sortable when the node is replaced.
 const sortable = useSortable(sortableTarget, localStudents, { watchElement: true })
@@ -496,22 +500,33 @@ onBeforeUnmount(() => {
       </template>
 
       <template #specializationCode-cell="{ row }">
-        <div class="min-w-44 cursor-pointer" @click="activateRow(row.original.id)">
-          <USelectMenu
-            v-if="isEditingRow(row.original.id)"
-            :model-value="row.original.specializationCode"
-            :items="specializationOptionsForRow(row.original)"
-            value-key="specializationCode"
-            label-key="specializationCode"
-            :search-input="false"
-            size="md"
-            :class="inlineEditSelectClass"
-            @update:model-value="(value) => updateSpecializationCode(row.original.id, value)"
-          />
-          <span v-else class="text-sm whitespace-nowrap">
-            {{ displayText(row.original.specializationCode) }}
-          </span>
-        </div>
+        <EditorStudentTableInlineCell
+          :is-editing="isEditingRow(row.original.id)"
+          :model-value="row.original.specializationCode"
+          cell-wrapper-class="min-w-44 cursor-pointer"
+          :input-class="inlineEditSelectClass"
+          :display-frame-class="inlineReadonlySelectFrameClass"
+          mode="text"
+          @activate="activateRow(row.original.id)"
+        >
+          <template #edit>
+            <USelectMenu
+              :model-value="row.original.specializationCode"
+              :items="specializationOptionsForRow(row.original)"
+              value-key="specializationCode"
+              label-key="specializationCode"
+              :search-input="false"
+              size="md"
+              :class="inlineEditSelectClass"
+              @update:model-value="(value) => updateSpecializationCode(row.original.id, value)"
+            />
+          </template>
+          <template #display>
+            <span :class="inlineReadonlyTextClass">
+              {{ displayText(row.original.specializationCode) }}
+            </span>
+          </template>
+        </EditorStudentTableInlineCell>
       </template>
 
       <template #thesisTitle-cell="{ row }">
@@ -554,22 +569,33 @@ onBeforeUnmount(() => {
       </template>
 
       <template #thesisLanguage-cell="{ row }">
-        <div class="min-w-[11rem] cursor-pointer" @click="activateRow(row.original.id)">
-          <USelectMenu
-            v-if="isEditingRow(row.original.id)"
-            :model-value="row.original.thesisLanguage"
-            :items="thesisLanguageOptions"
-            value-key="value"
-            label-key="label"
-            :search-input="false"
-            size="md"
-            :class="inlineEditSelectClass"
-            @update:model-value="(value) => updateThesisLanguage(row.original.id, value)"
-          />
-          <span v-else class="text-sm whitespace-nowrap">
-            {{ resolveThesisLanguageLabel(row.original.thesisLanguage) }}
-          </span>
-        </div>
+        <EditorStudentTableInlineCell
+          :is-editing="isEditingRow(row.original.id)"
+          :model-value="resolveThesisLanguageLabel(row.original.thesisLanguage)"
+          cell-wrapper-class="min-w-[11rem] cursor-pointer"
+          :input-class="inlineEditSelectClass"
+          :display-frame-class="inlineReadonlySelectFrameClass"
+          mode="text"
+          @activate="activateRow(row.original.id)"
+        >
+          <template #edit>
+            <USelectMenu
+              :model-value="row.original.thesisLanguage"
+              :items="thesisLanguageOptions"
+              value-key="value"
+              label-key="label"
+              :search-input="false"
+              size="md"
+              :class="inlineEditSelectClass"
+              @update:model-value="(value) => updateThesisLanguage(row.original.id, value)"
+            />
+          </template>
+          <template #display>
+            <span :class="inlineReadonlyTextClass">
+              {{ resolveThesisLanguageLabel(row.original.thesisLanguage) }}
+            </span>
+          </template>
+        </EditorStudentTableInlineCell>
       </template>
 
       <template #supervisorName-cell="{ row }">
@@ -621,22 +647,33 @@ onBeforeUnmount(() => {
       </template>
 
       <template #repeatType-cell="{ row }">
-        <div class="min-w-48 cursor-pointer" @click="activateRow(row.original.id)">
-          <USelectMenu
-            v-if="isEditingRow(row.original.id)"
-            :model-value="row.original.repeatType"
-            :items="repeatTypeOptions"
-            value-key="value"
-            label-key="label"
-            :search-input="false"
-            size="md"
-            :class="inlineEditSelectClass"
-            @update:model-value="(value) => updateRepeatType(row.original.id, value)"
-          />
-          <span v-else class="text-sm whitespace-nowrap">
-            {{ resolveRepeatTypeLabel(row.original.repeatType) }}
-          </span>
-        </div>
+        <EditorStudentTableInlineCell
+          :is-editing="isEditingRow(row.original.id)"
+          :model-value="resolveRepeatTypeLabel(row.original.repeatType)"
+          cell-wrapper-class="min-w-48 cursor-pointer"
+          :input-class="inlineEditSelectClass"
+          :display-frame-class="inlineReadonlySelectFrameClass"
+          mode="text"
+          @activate="activateRow(row.original.id)"
+        >
+          <template #edit>
+            <USelectMenu
+              :model-value="row.original.repeatType"
+              :items="repeatTypeOptions"
+              value-key="value"
+              label-key="label"
+              :search-input="false"
+              size="md"
+              :class="inlineEditSelectClass"
+              @update:model-value="(value) => updateRepeatType(row.original.id, value)"
+            />
+          </template>
+          <template #display>
+            <span :class="inlineReadonlyTextClass">
+              {{ resolveRepeatTypeLabel(row.original.repeatType) }}
+            </span>
+          </template>
+        </EditorStudentTableInlineCell>
       </template>
 
       <template #prepareMinutes-cell="{ row }">
