@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
-import type { EditorSpecializationOption } from '#shared/constants/editor'
 import type {
   EditorCommitteeStringFieldPayload,
   EditorStudentsPanelCommitteeLabels,
@@ -24,7 +23,6 @@ const props = defineProps<{
   studentsCountLabel: string
   students: StudentRow[]
   columns: TableColumn<StudentRow>[]
-  specializationOptions: EditorSpecializationOption[]
   committeeLabels: EditorStudentsPanelCommitteeLabels
   studentsEmpty: EditorStudentsPanelStudentsEmptyLabels
   invigilatorLabels: EditorStudentsPanelInvigilatorLabels
@@ -186,7 +184,6 @@ function setThesisTitleDisplayMode(mode: ScheduleDraftThesisTitleDisplayMode): v
       :committee-local-id="committeeLocalId"
       :model-value="props.students"
       :columns="props.columns"
-      :specialization-options="props.specializationOptions"
       :empty-labels="props.studentsEmpty"
       @update:model-value="emit('update:students', $event)"
     />

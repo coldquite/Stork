@@ -1,11 +1,29 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
 import { useSortable } from '@vueuse/integrations/useSortable'
-import type { EditorSpecializationOption } from '#shared/constants/editor'
-import type { RepeatTypeDto, ThesisLanguageDto } from '#shared/types/time-schedules'
+import {
+  resolveEditorSpecializationOptions,
+  resolveEditorStudyProgramNameOptions,
+  type EditorSpecializationOption
+} from '#shared/constants/editor'
+import type {
+  RepeatTypeDto,
+  StudyLanguageDto,
+  StudyProgramTypeDto,
+  ThesisLanguageDto
+} from '#shared/types/time-schedules'
 import { STUDENT_TABLE_THESIS_COLUMN_WIDTH_CLASS } from '~/constants/editor-students-table'
 import type { EditorStudentsPanelStudentsEmptyLabels, StudentRow } from '~/types/editor'
 import { resolveRepeatTypeFromSelectValue } from '~/utils/editor/repeat-type'
+import {
+  applySpecializationCodeChange,
+  applyStudyLanguageChange,
+  applyStudyProgramNameChange,
+  applyStudyProgramTypeChange,
+  type StudentStudyProfileFields
+} from '~/utils/editor/student-study-profile'
+import { resolveStudyLanguageFromSelectValue } from '~/utils/editor/study-language'
+import { resolveStudyProgramTypeFromSelectValue } from '~/utils/editor/study-program-type'
 import { resolveThesisLanguageFromSelectValue } from '~/utils/editor/thesis-language'
 
 type EditableTextField =
@@ -33,6 +51,16 @@ interface ThesisLanguageOption {
   value: ThesisLanguageDto
 }
 
+interface StudyLanguageOption {
+  label: string
+  value: StudyLanguageDto
+}
+
+interface StudyProgramTypeOption {
+  label: string
+  value: StudyProgramTypeDto
+}
+
 interface SortableUpdateEventLike {
   oldIndex: number | null
   newIndex: number | null
@@ -43,7 +71,6 @@ const props = defineProps<{
   committeeLocalId: string
   modelValue: StudentRow[]
   columns: TableColumn<StudentRow>[]
-  specializationOptions: EditorSpecializationOption[]
   emptyLabels: EditorStudentsPanelStudentsEmptyLabels
 }>()
 
@@ -193,6 +220,36 @@ const thesisLanguageOptions = computed<ThesisLanguageOption[]>(() => [
 
 const thesisLanguageLabelsByValue = computed(() => {
   return new Map(thesisLanguageOptions.value.map((option) => [option.value, option.label]))
+})
+
+const studyLanguageOptions = computed<StudyLanguageOption[]>(() => [
+  {
+    value: 'CZECH',
+    label: t('editor.table.studyLanguageOptions.czech')
+  },
+  {
+    value: 'ENGLISH',
+    label: t('editor.table.studyLanguageOptions.english')
+  }
+])
+
+const studyLanguageLabelsByValue = computed(() => {
+  return new Map(studyLanguageOptions.value.map((option) => [option.value, option.label]))
+})
+
+const studyProgramTypeOptions = computed<StudyProgramTypeOption[]>(() => [
+  {
+    value: 'BACHELOR',
+    label: t('editor.table.studyProgramTypeOptions.bachelor')
+  },
+  {
+    value: 'MASTER',
+    label: t('editor.table.studyProgramTypeOptions.master')
+  }
+])
+
+const studyProgramTypeLabelsByValue = computed(() => {
+  return new Map(studyProgramTypeOptions.value.map((option) => [option.value, option.label]))
 })
 
 const tbodyUiClass = computed(() => {
@@ -352,6 +409,25 @@ function updateMinuteField(rowId: string, field: EditableMinuteField, value: unk
   }))
 }
 
+function toStudyProfileFields(row: StudentRow): StudentStudyProfileFields {
+  return {
+    studyLanguage: row.studyLanguage,
+    studyProgramType: row.studyProgramType,
+    studyProgramName: row.studyProgramName,
+    specializationCode: row.specializationCode
+  }
+}
+
+function withStudyProfileFields(row: StudentRow, profile: StudentStudyProfileFields): StudentRow {
+  return {
+    ...row,
+    studyLanguage: profile.studyLanguage,
+    studyProgramType: profile.studyProgramType,
+    studyProgramName: profile.studyProgramName,
+    specializationCode: profile.specializationCode
+  }
+}
+
 function resolveSpecializationCodeFromSelectValue(value: unknown, fallback: string): string {
   if (typeof value === 'string') {
     return value
@@ -364,11 +440,44 @@ function resolveSpecializationCodeFromSelectValue(value: unknown, fallback: stri
   return fallback
 }
 
+function resolveStudyProgramNameFromSelectValue(value: unknown, fallback: string): string {
+  if (typeof value === 'string') {
+    return value
+  }
+
+  return fallback
+}
+
+function updateStudyLanguage(rowId: string, value: unknown): void {
+  updateRow(rowId, (row) => {
+    const nextStudyLanguage = resolveStudyLanguageFromSelectValue(value, row.studyLanguage)
+    const nextStudyProfile = applyStudyLanguageChange(toStudyProfileFields(row), nextStudyLanguage)
+    return withStudyProfileFields(row, nextStudyProfile)
+  })
+}
+
+function updateStudyProgramType(rowId: string, value: unknown): void {
+  updateRow(rowId, (row) => {
+    const nextStudyProgramType = resolveStudyProgramTypeFromSelectValue(value, row.studyProgramType)
+    const nextStudyProfile = applyStudyProgramTypeChange(toStudyProfileFields(row), nextStudyProgramType)
+    return withStudyProfileFields(row, nextStudyProfile)
+  })
+}
+
+function updateStudyProgramName(rowId: string, value: unknown): void {
+  updateRow(rowId, (row) => {
+    const nextStudyProgramName = resolveStudyProgramNameFromSelectValue(value, row.studyProgramName)
+    const nextStudyProfile = applyStudyProgramNameChange(toStudyProfileFields(row), nextStudyProgramName)
+    return withStudyProfileFields(row, nextStudyProfile)
+  })
+}
+
 function updateSpecializationCode(rowId: string, value: unknown): void {
-  updateRow(rowId, (row) => ({
-    ...row,
-    specializationCode: resolveSpecializationCodeFromSelectValue(value, row.specializationCode)
-  }))
+  updateRow(rowId, (row) => {
+    const nextSpecializationCode = resolveSpecializationCodeFromSelectValue(value, row.specializationCode)
+    const nextStudyProfile = applySpecializationCodeChange(toStudyProfileFields(row), nextSpecializationCode)
+    return withStudyProfileFields(row, nextStudyProfile)
+  })
 }
 
 function updateRepeatType(rowId: string, value: unknown): void {
@@ -393,20 +502,39 @@ function resolveThesisLanguageLabel(value: ThesisLanguageDto): string {
   return thesisLanguageLabelsByValue.value.get(value) ?? value
 }
 
+function resolveStudyLanguageLabel(value: StudyLanguageDto): string {
+  return studyLanguageLabelsByValue.value.get(value) ?? value
+}
+
+function resolveStudyProgramTypeLabel(value: StudyProgramTypeDto): string {
+  return studyProgramTypeLabelsByValue.value.get(value) ?? value
+}
+
 function displayText(value: string): string {
   const normalized = value.trim()
   return normalized.length > 0 ? normalized : '-'
 }
 
-function specializationOptionsForRow(row: StudentRow): EditorSpecializationOption[] {
-  const normalizedCode = row.specializationCode.trim()
-  if (normalizedCode.length < 1) {
-    return props.specializationOptions
+function studyProgramNameOptionsForRow(row: StudentRow): string[] {
+  const baseOptions = resolveEditorStudyProgramNameOptions(row.studyProgramType, row.studyLanguage)
+  const normalizedProgramName = row.studyProgramName.trim()
+  if (normalizedProgramName.length < 1 || baseOptions.includes(normalizedProgramName)) {
+    return baseOptions
   }
 
-  const hasCodeInOptions = props.specializationOptions.some((option) => option.specializationCode === normalizedCode)
+  return [normalizedProgramName, ...baseOptions]
+}
+
+function specializationOptionsForRow(row: StudentRow): EditorSpecializationOption[] {
+  const baseOptions = resolveEditorSpecializationOptions(row.studyProgramType, row.studyProgramName)
+  const normalizedCode = row.specializationCode.trim()
+  if (normalizedCode.length < 1) {
+    return baseOptions
+  }
+
+  const hasCodeInOptions = baseOptions.some((option) => option.specializationCode === normalizedCode)
   if (hasCodeInOptions) {
-    return props.specializationOptions
+    return baseOptions
   }
 
   return [
@@ -417,7 +545,7 @@ function specializationOptionsForRow(row: StudentRow): EditorSpecializationOptio
       departmentNameCs: null,
       departmentNameEn: null
     },
-    ...props.specializationOptions
+    ...baseOptions
   ]
 }
 
@@ -529,6 +657,94 @@ onBeforeUnmount(() => {
           @activate="activateRow(row.original.id)"
           @update:model-value="(value) => updateTextField(row.original.id, 'titlesAfter', value)"
         />
+      </template>
+
+      <template #studyLanguage-cell="{ row }">
+        <EditorStudentTableInlineCell
+          :is-editing="isEditingRow(row.original.id)"
+          :model-value="resolveStudyLanguageLabel(row.original.studyLanguage)"
+          cell-wrapper-class="min-w-[8.5rem] cursor-pointer"
+          :input-class="inlineEditSelectClass"
+          :display-frame-class="inlineReadonlySelectFrameClass"
+          mode="text"
+          @activate="activateRow(row.original.id)"
+        >
+          <template #edit>
+            <USelectMenu
+              :model-value="row.original.studyLanguage"
+              :items="studyLanguageOptions"
+              value-key="value"
+              label-key="label"
+              :search-input="false"
+              size="md"
+              :class="inlineEditSelectClass"
+              @update:model-value="(value) => updateStudyLanguage(row.original.id, value)"
+            />
+          </template>
+          <template #display>
+            <span :class="inlineReadonlyTextClass">
+              {{ resolveStudyLanguageLabel(row.original.studyLanguage) }}
+            </span>
+          </template>
+        </EditorStudentTableInlineCell>
+      </template>
+
+      <template #studyProgramType-cell="{ row }">
+        <EditorStudentTableInlineCell
+          :is-editing="isEditingRow(row.original.id)"
+          :model-value="resolveStudyProgramTypeLabel(row.original.studyProgramType)"
+          cell-wrapper-class="min-w-[8.5rem] cursor-pointer"
+          :input-class="inlineEditSelectClass"
+          :display-frame-class="inlineReadonlySelectFrameClass"
+          mode="text"
+          @activate="activateRow(row.original.id)"
+        >
+          <template #edit>
+            <USelectMenu
+              :model-value="row.original.studyProgramType"
+              :items="studyProgramTypeOptions"
+              value-key="value"
+              label-key="label"
+              :search-input="false"
+              size="md"
+              :class="inlineEditSelectClass"
+              @update:model-value="(value) => updateStudyProgramType(row.original.id, value)"
+            />
+          </template>
+          <template #display>
+            <span :class="inlineReadonlyTextClass">
+              {{ resolveStudyProgramTypeLabel(row.original.studyProgramType) }}
+            </span>
+          </template>
+        </EditorStudentTableInlineCell>
+      </template>
+
+      <template #studyProgramName-cell="{ row }">
+        <EditorStudentTableInlineCell
+          :is-editing="isEditingRow(row.original.id)"
+          :model-value="row.original.studyProgramName"
+          cell-wrapper-class="min-w-[9.5rem] cursor-pointer"
+          :input-class="inlineEditSelectClass"
+          :display-frame-class="inlineReadonlySelectFrameClass"
+          mode="text"
+          @activate="activateRow(row.original.id)"
+        >
+          <template #edit>
+            <USelectMenu
+              :model-value="row.original.studyProgramName"
+              :items="studyProgramNameOptionsForRow(row.original)"
+              :search-input="false"
+              size="md"
+              :class="inlineEditSelectClass"
+              @update:model-value="(value) => updateStudyProgramName(row.original.id, value)"
+            />
+          </template>
+          <template #display>
+            <span :class="inlineReadonlyTextClass">
+              {{ displayText(row.original.studyProgramName) }}
+            </span>
+          </template>
+        </EditorStudentTableInlineCell>
       </template>
 
       <template #specializationCode-cell="{ row }">

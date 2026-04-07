@@ -82,8 +82,7 @@ export function useEditorPage() {
 
     studentTable: {
       selectedStudents: studentTable.selectedStudents,
-      columns: studentTable.columns,
-      specializationOptions: studentTable.specializationOptions
+      columns: studentTable.columns
     },
 
     draftSettings: {

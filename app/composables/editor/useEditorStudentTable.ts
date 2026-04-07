@@ -1,5 +1,4 @@
 import type { TableColumn } from '@nuxt/ui'
-import { resolveEditorSpecializationOptions, type EditorSpecializationOption } from '#shared/constants/editor'
 import { STUDENT_TABLE_THESIS_COLUMN_WIDTH_CLASS } from '~/constants/editor-students-table'
 import type { StudentRow } from '~/types/editor'
 import type {
@@ -10,6 +9,13 @@ import type {
 import { isStudentItem, normalizeOptionalText, normalizeRequiredText } from '~/utils/editor/draft-committee'
 import { resolveRepeatType } from '~/utils/editor/repeat-type'
 import { buildStudentRowsForCommittee } from '~/utils/editor/student-table'
+import {
+  applySpecializationCodeChange,
+  applyStudyLanguageChange,
+  applyStudyProgramNameChange,
+  applyStudyProgramTypeChange,
+  resolveSpecializationNameForStudyProfile
+} from '~/utils/editor/student-study-profile'
 import { resolveThesisLanguage } from '~/utils/editor/thesis-language'
 
 function resolveMinutes(value: number, fallback: number): number {
@@ -56,13 +62,6 @@ export function useEditorStudentTable(
         return
       }
 
-      const specializationByCode = new Map(
-        resolveEditorSpecializationOptions(committee.studyProgramType, committee.studyProgramName).map((option) => [
-          option.specializationCode,
-          option
-        ])
-      )
-
       for (const [studentId, studentItem] of studentsByLocalId.entries()) {
         const row = rowsByStudentId.get(studentId)
         if (!row) {
@@ -75,14 +74,42 @@ export function useEditorStudentTable(
         studentItem.student.titlesBefore = normalizeOptionalText(row.titlesBefore)
         studentItem.student.titlesAfter = normalizeOptionalText(row.titlesAfter)
 
-        const specializationCode = normalizeRequiredText(row.specializationCode)
-        studentItem.student.specializationCode = specializationCode
-        if (specializationCode.length < 1) {
-          studentItem.student.specializationName = ''
-        } else {
-          const specializationOption = specializationByCode.get(specializationCode)
-          studentItem.student.specializationName = specializationOption?.specializationName ?? specializationCode
-        }
+        const normalizedCurrentStudyProgramName = normalizeRequiredText(studentItem.student.studyProgramName)
+        const normalizedCurrentSpecializationCode = normalizeRequiredText(studentItem.student.specializationCode)
+        const normalizedRowStudyProgramName = normalizeRequiredText(row.studyProgramName)
+        const normalizedRowSpecializationCode = normalizeRequiredText(row.specializationCode)
+        const hasStudyProfileChanged =
+          row.studyLanguage !== studentItem.student.studyLanguage ||
+          row.studyProgramType !== studentItem.student.studyProgramType ||
+          normalizedRowStudyProgramName !== normalizedCurrentStudyProgramName
+        const shouldClearSpecializationAfterProfileChange =
+          hasStudyProfileChanged && normalizedRowSpecializationCode === normalizedCurrentSpecializationCode
+
+        let nextStudyProfile = applyStudyLanguageChange(
+          {
+            studyLanguage: studentItem.student.studyLanguage,
+            studyProgramType: studentItem.student.studyProgramType,
+            studyProgramName: studentItem.student.studyProgramName,
+            specializationCode: studentItem.student.specializationCode
+          },
+          row.studyLanguage
+        )
+        nextStudyProfile = applyStudyProgramTypeChange(nextStudyProfile, row.studyProgramType)
+        nextStudyProfile = applyStudyProgramNameChange(nextStudyProfile, row.studyProgramName)
+        nextStudyProfile = applySpecializationCodeChange(
+          nextStudyProfile,
+          shouldClearSpecializationAfterProfileChange ? '' : row.specializationCode
+        )
+
+        studentItem.student.studyLanguage = nextStudyProfile.studyLanguage
+        studentItem.student.studyProgramType = nextStudyProfile.studyProgramType
+        studentItem.student.studyProgramName = nextStudyProfile.studyProgramName
+        studentItem.student.specializationCode = nextStudyProfile.specializationCode
+        studentItem.student.specializationName = resolveSpecializationNameForStudyProfile(
+          nextStudyProfile.studyProgramType,
+          nextStudyProfile.studyProgramName,
+          nextStudyProfile.specializationCode
+        )
 
         if (thesisTitleDisplayMode.value === 'BOTH') {
           studentItem.student.thesisTitleLocal = normalizeRequiredText(row.thesisTitleLocal)
@@ -134,15 +161,6 @@ export function useEditorStudentTable(
 
       committee.items = reorderedCommitteeItems
     }
-  })
-
-  const specializationOptions = computed<EditorSpecializationOption[]>(() => {
-    const committee = selectedCommittee.value
-    if (!committee) {
-      return []
-    }
-
-    return resolveEditorSpecializationOptions(committee.studyProgramType, committee.studyProgramName)
   })
 
   const columns = computed<TableColumn<StudentRow>[]>(() => {
@@ -199,6 +217,21 @@ export function useEditorStudentTable(
         meta: { class: { th: 'whitespace-nowrap' } }
       },
       {
+        accessorKey: 'studyLanguage',
+        header: t('editor.table.studyLanguage'),
+        meta: { class: { th: 'whitespace-nowrap' } }
+      },
+      {
+        accessorKey: 'studyProgramType',
+        header: t('editor.table.studyProgramType'),
+        meta: { class: { th: 'whitespace-nowrap' } }
+      },
+      {
+        accessorKey: 'studyProgramName',
+        header: t('editor.table.studyProgramName'),
+        meta: { class: { th: 'whitespace-nowrap' } }
+      },
+      {
         accessorKey: 'specializationCode',
         header: t('editor.table.specialization'),
         meta: { class: { th: 'whitespace-nowrap' } }
@@ -241,7 +274,6 @@ export function useEditorStudentTable(
 
   return {
     selectedStudents,
-    columns,
-    specializationOptions
+    columns
   }
 }

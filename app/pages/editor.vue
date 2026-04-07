@@ -157,7 +157,6 @@ const panelCommitteeLabel = computed(() => committeeList.selectedCommitteeLabel.
 const panelCommitteeDate = computed(() => committeeList.selectedCommitteeDate.value)
 const panelStudents = computed(() => studentTable.selectedStudents.value)
 const panelColumns = computed(() => studentTable.columns.value)
-const panelSpecializationOptions = computed(() => studentTable.specializationOptions.value)
 const panelThesisTitleDisplayMode = computed(() => draftSettings.thesisTitleDisplayMode.value)
 const panelInvigilators = computed(() => invigilators.selectedInvigilators.value)
 const panelInvigilatorsCountLabel = computed(() => invigilators.invigilatorsCountLabel.value)
@@ -205,7 +204,6 @@ const draftNameText = computed(() => draftName.value)
             :students-count-label="studentsCountLabel"
             :students="panelStudents"
             :columns="panelColumns"
-            :specialization-options="panelSpecializationOptions"
             :committee-labels="committeeLabels"
             :students-empty="studentsEmpty"
             :invigilator-labels="invigilatorLabels"

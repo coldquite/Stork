@@ -378,6 +378,17 @@
       "firstName": "Jméno",
       "email": "E-mail",
       "titlesAfter": "Titul za",
+      "studyLanguage": "Jazyk studia",
+      "studyLanguageOptions": {
+        "czech": "Čeština",
+        "english": "Angličtina"
+      },
+      "studyProgramType": "Typ studia",
+      "studyProgramTypeOptions": {
+        "bachelor": "Bakalářský",
+        "master": "Magisterský"
+      },
+      "studyProgramName": "Studijní program",
       "specialization": "Specializace",
       "thesisTitle": "Název práce",
       "thesisTitleLocal": "Název práce (CS/SK)",

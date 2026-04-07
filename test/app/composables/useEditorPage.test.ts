@@ -48,10 +48,10 @@ function createStudentItem(localId: string, position: number, firstName: string)
       reviewerName: 'Oponent',
       additionalSupervisorName: null,
       additionalReviewerName: null,
-      studyProgramName: 'Study Program',
+      studyProgramName: 'Informatika',
       studyProgramType: 'BACHELOR',
-      specializationName: 'SI',
-      specializationCode: 'SI',
+      specializationName: 'Softwarové inženýrství 2021',
+      specializationCode: 'BI-SI.21',
       studyLanguage: 'CZECH',
       thesisSubmissionAt: null,
       repeatType: 'NONE',
@@ -226,6 +226,94 @@ describe('useEditorPage', () => {
     expect(page.studentTable.selectedStudents.value[0]?.prepareTime).toBe('07:40')
     expect(page.studentTable.selectedStudents.value[0]?.examTime).toBe('08:30 - 08:55')
     expect(page.studentTable.selectedStudents.value[1]?.examTime).toBe('09:15 - 09:45')
+  })
+
+  it('updates student study profile independently from committee and resolves specialization by student context', async () => {
+    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const page = useEditorPage()
+
+    const [firstStudentRow, secondStudentRow] = page.studentTable.selectedStudents.value
+    expect(firstStudentRow).toBeDefined()
+    expect(secondStudentRow).toBeDefined()
+    if (!firstStudentRow || !secondStudentRow) {
+      throw new Error('Expected student rows to exist')
+    }
+
+    page.studentTable.selectedStudents.value = [
+      {
+        ...firstStudentRow,
+        studyLanguage: 'ENGLISH',
+        studyProgramType: 'BACHELOR',
+        studyProgramName: 'Informatics',
+        specializationCode: 'BIE-SI.21'
+      },
+      secondStudentRow
+    ]
+
+    const committee = scheduleDraftStoreMock.draft?.committees.find((entry) => entry.localId === 'committee-early')
+    const firstStudentItem = committee?.items.find((item) => item.localId === 'student-a')
+    expect(firstStudentItem).toBeDefined()
+    if (!firstStudentItem || firstStudentItem.type !== 'STUDENT') {
+      throw new Error('Expected first student item')
+    }
+
+    expect(committee?.studyProgramName).toBe('Informatika')
+    expect(committee?.studyProgramType).toBe('BACHELOR')
+    expect(firstStudentItem.student.studyLanguage).toBe('ENGLISH')
+    expect(firstStudentItem.student.studyProgramName).toBe('Informatics')
+    expect(firstStudentItem.student.studyProgramType).toBe('BACHELOR')
+    expect(firstStudentItem.student.specializationCode).toBe('BIE-SI.21')
+    expect(firstStudentItem.student.specializationName).toBe('Software Engineering 2021')
+  })
+
+  it('clears student study program and specialization when language becomes incompatible', async () => {
+    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const page = useEditorPage()
+
+    const [firstStudentRow, secondStudentRow] = page.studentTable.selectedStudents.value
+    expect(firstStudentRow).toBeDefined()
+    expect(secondStudentRow).toBeDefined()
+    if (!firstStudentRow || !secondStudentRow) {
+      throw new Error('Expected student rows to exist')
+    }
+
+    page.studentTable.selectedStudents.value = [
+      {
+        ...firstStudentRow,
+        studyLanguage: 'ENGLISH',
+        studyProgramType: 'BACHELOR',
+        studyProgramName: 'Informatics',
+        specializationCode: 'BIE-SI.21'
+      },
+      secondStudentRow
+    ]
+
+    const [updatedFirstStudentRow, updatedSecondStudentRow] = page.studentTable.selectedStudents.value
+    expect(updatedFirstStudentRow).toBeDefined()
+    expect(updatedSecondStudentRow).toBeDefined()
+    if (!updatedFirstStudentRow || !updatedSecondStudentRow) {
+      throw new Error('Expected updated student rows to exist')
+    }
+
+    page.studentTable.selectedStudents.value = [
+      {
+        ...updatedFirstStudentRow,
+        studyLanguage: 'CZECH'
+      },
+      updatedSecondStudentRow
+    ]
+
+    const committee = scheduleDraftStoreMock.draft?.committees.find((entry) => entry.localId === 'committee-early')
+    const firstStudentItem = committee?.items.find((item) => item.localId === 'student-a')
+    expect(firstStudentItem).toBeDefined()
+    if (!firstStudentItem || firstStudentItem.type !== 'STUDENT') {
+      throw new Error('Expected first student item')
+    }
+
+    expect(firstStudentItem.student.studyLanguage).toBe('CZECH')
+    expect(firstStudentItem.student.studyProgramName).toBe('')
+    expect(firstStudentItem.student.specializationCode).toBe('')
+    expect(firstStudentItem.student.specializationName).toBe('')
   })
 
   it('updates english thesis title when committee language is english', async () => {
