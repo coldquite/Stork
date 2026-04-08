@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { ScheduleDraftCommittee, ScheduleDraftItem } from '~/types/schedule-draft'
-import { buildStudentRowsForCommittee } from '~/utils/editor/student-table'
+import { buildEditorTableRowsForCommittee, buildStudentRowsForCommittee } from '~/utils/editor/student-table'
 
 function createStudentItem(options: {
   localId: string
@@ -162,5 +162,45 @@ describe('student-table rows', () => {
     expect(rows[0]?.specializationCode).toBe('BI-SI.21')
     expect(rows[0]?.additionalSupervisorName).toBe('')
     expect(rows[0]?.additionalReviewerName).toBe('')
+  })
+
+  it('builds mixed rows with pause details and keeps student order student-only', () => {
+    const committee = createCommittee({
+      items: [
+        createStudentItem({ localId: 'student-1', position: 1 }),
+        createPauseItem('pause-1', 2, 20),
+        createStudentItem({ localId: 'student-2', position: 3 })
+      ]
+    })
+
+    const rows = buildEditorTableRowsForCommittee(committee)
+
+    expect(rows).toHaveLength(3)
+    expect(rows[0]?.kind).toBe('STUDENT')
+    expect(rows[1]?.kind).toBe('PAUSE')
+    expect(rows[2]?.kind).toBe('STUDENT')
+
+    const firstStudent = rows[0]
+    const pause = rows[1]
+    const secondStudent = rows[2]
+    if (!firstStudent || firstStudent.kind !== 'STUDENT') {
+      throw new Error('Expected first row to be student')
+    }
+    if (!pause || pause.kind !== 'PAUSE') {
+      throw new Error('Expected second row to be pause')
+    }
+    if (!secondStudent || secondStudent.kind !== 'STUDENT') {
+      throw new Error('Expected third row to be student')
+    }
+
+    expect(firstStudent.studentOrder).toBe(1)
+    expect(firstStudent.examTime).toBe('08:45 - 09:15')
+    expect(pause.startTime).toBe('09:15')
+    expect(pause.endTime).toBe('09:35')
+    expect(pause.rangeLabel).toBe('09:15 - 09:35')
+    expect('studentOrder' in pause).toBe(false)
+    expect(secondStudent.studentOrder).toBe(2)
+    expect(secondStudent.prepareTime).toBe('08:50')
+    expect(secondStudent.examTime).toBe('09:35 - 10:05')
   })
 })

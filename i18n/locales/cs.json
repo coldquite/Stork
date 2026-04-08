@@ -426,6 +426,39 @@
         }
       }
     },
+    "pause": {
+      "add": {
+        "openAction": "Přidat pauzu",
+        "openAriaLabel": "Přidat pauzu do komise {name}",
+        "title": "Přidat pauzu",
+        "description": "Vyplňte údaje o pauze pro vybranou komisi. Pauza se přidá na konec seznamu položek v této komisi.",
+        "submit": "Přidat pauzu"
+      },
+      "edit": {
+        "title": "Upravit pauzu",
+        "description": "Upravte údaje vybrané pauzy.",
+        "submit": "Uložit změny"
+      },
+      "fields": {
+        "type": "Typ pauzy",
+        "customLabelToggle": "Chci nestandardní název pauzy (jiný než Přestávka/Oběd)",
+        "customLabel": "Vlastní název pauzy",
+        "durationMinutes": "Délka pauzy (min)"
+      },
+      "typeOptions": {
+        "break": "Přestávka",
+        "lunch": "Oběd"
+      },
+      "row": {
+        "duration": "Délka",
+        "range": "Čas"
+      },
+      "validation": {
+        "durationMinutesMin": "Délka pauzy musí být alespoň 1 minuta.",
+        "customLabelRequired": "Vlastní název pauzy je povinný.",
+        "customLabelLeadingTrailingWhitespace": "Vlastní název pauzy nesmí začínat ani končit mezerou."
+      }
+    },
     "table": {
       "order": "Pořadí",
       "prepareTime": "Příprava",

@@ -199,6 +199,41 @@ describe('useEditorPage', () => {
     expect(committee.items.map((item) => item.position)).toEqual([1, 2, 3])
   })
 
+  it('reorders mixed rows including pauses through selectedRows setter', async () => {
+    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const page = useEditorPage()
+
+    const rows = page.studentTable.selectedRows.value
+    expect(rows.map((row) => row.id)).toEqual(['student-a', 'pause-a', 'student-b'])
+
+    const [studentA, pauseA, studentB] = rows
+    expect(studentA?.kind).toBe('STUDENT')
+    expect(pauseA?.kind).toBe('PAUSE')
+    expect(studentB?.kind).toBe('STUDENT')
+    if (!studentA || studentA.kind !== 'STUDENT' || !pauseA || !studentB) {
+      throw new Error('Expected initial mixed rows')
+    }
+
+    page.studentTable.selectedRows.value = [pauseA, { ...studentA, lastName: '  Alenov  ' }, studentB]
+
+    const committee = scheduleDraftStoreMock.draft?.committees.find((entry) => entry.localId === 'committee-early')
+    expect(committee).toBeDefined()
+    if (!committee) {
+      throw new Error('Expected committee to exist')
+    }
+
+    expect(committee.items.map((item) => item.localId)).toEqual(['pause-a', 'student-a', 'student-b'])
+    expect(committee.items.map((item) => item.position)).toEqual([1, 2, 3])
+
+    const updatedStudentA = committee.items.find((item) => item.localId === 'student-a')
+    expect(updatedStudentA?.type).toBe('STUDENT')
+    if (!updatedStudentA || updatedStudentA.type !== 'STUDENT') {
+      throw new Error('Expected updated student item')
+    }
+
+    expect(updatedStudentA.student.lastName).toBe('Alenov')
+  })
+
   it('updates editable student row fields in draft', async () => {
     const { useEditorPage } = await import('~/composables/editor/useEditorPage')
     const page = useEditorPage()

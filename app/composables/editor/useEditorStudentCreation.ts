@@ -7,7 +7,12 @@ import type {
   EditorCreateStudentValidationErrors,
   EditorCreateStudentValidationField
 } from '~/types/editor'
-import { normalizeOptionalText, normalizeRequiredText, resolveCommitteeLabel } from '~/utils/editor/draft-committee'
+import {
+  normalizeOptionalText,
+  normalizeRequiredText,
+  resolveCommitteeLabel,
+  resolveNextCommitteeItemPosition
+} from '~/utils/editor/draft-committee'
 import { resolveRepeatTypeFromSelectValue } from '~/utils/editor/repeat-type'
 import {
   applySpecializationCodeChange,
@@ -77,11 +82,6 @@ function resolveIntegerFromInput(value: unknown, fallback: number): number {
   }
 
   return Math.max(Math.trunc(parsedValue), 0)
-}
-
-function resolveNextCommitteeItemPosition(committee: ScheduleDraftCommittee): number {
-  const maxPosition = committee.items.reduce((max, item) => Math.max(max, item.position), 0)
-  return maxPosition + 1
 }
 
 function createInitialStudentDraft(committee: ScheduleDraftCommittee): EditorCreateStudentDraft {

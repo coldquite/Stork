@@ -2,13 +2,20 @@
 import type { TableColumn } from '@nuxt/ui'
 import { useSortable } from '@vueuse/integrations/useSortable'
 import type {
+  PauseTypeDto,
   RepeatTypeDto,
   StudyLanguageDto,
   StudyProgramTypeDto,
   ThesisLanguageDto
 } from '#shared/types/time-schedules'
 import { STUDENT_TABLE_THESIS_COLUMN_WIDTH_CLASS } from '~/constants/editor-students-table'
-import type { EditorStudentHighlightRequest, EditorStudentsPanelStudentsEmptyLabels, StudentRow } from '~/types/editor'
+import type {
+  EditorPauseTableRow,
+  EditorStudentHighlightRequest,
+  EditorStudentTableRow,
+  EditorStudentsPanelStudentsEmptyLabels,
+  EditorTableRow
+} from '~/types/editor'
 import { resolveRepeatTypeFromSelectValue } from '~/utils/editor/repeat-type'
 import {
   applySpecializationCodeChange,
@@ -66,19 +73,20 @@ interface SortableUpdateEventLike {
 const props = defineProps<{
   /** Stable key when the parent committee changes (resets local row order). */
   committeeLocalId: string
-  modelValue: StudentRow[]
-  columns: TableColumn<StudentRow>[]
+  modelValue: EditorTableRow[]
+  columns: TableColumn<EditorTableRow>[]
   emptyLabels: EditorStudentsPanelStudentsEmptyLabels
   highlightRequest?: EditorStudentHighlightRequest | null
 }>()
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: StudentRow[]): void
+  (e: 'update:modelValue', value: EditorTableRow[]): void
+  (e: 'editPause', pauseId: string): void
 }>()
 
 const { t } = useI18n()
 const tableWrapper = ref<HTMLElement | null>(null)
-const localStudents = ref<StudentRow[]>([])
+const localStudents = ref<EditorTableRow[]>([])
 const editingRowId = ref<string | null>(null)
 const highlightedStudentId = ref<string | null>(null)
 const fadingHighlightedStudentId = ref<string | null>(null)
@@ -100,6 +108,14 @@ const studentTableTbodyHoverClass =
 
 function syncFromParent(): void {
   localStudents.value = props.modelValue.slice()
+}
+
+function isStudentRow(row: EditorTableRow): row is EditorStudentTableRow {
+  return row.kind === 'STUDENT'
+}
+
+function isPauseRow(row: EditorTableRow): row is EditorPauseTableRow {
+  return row.kind === 'PAUSE'
 }
 
 function clearRowHighlightTimer(): void {
@@ -335,6 +351,13 @@ const studyProgramTypeLabelsByValue = computed(() => {
   return new Map(studyProgramTypeOptions.value.map((option) => [option.value, option.label]))
 })
 
+const pauseTypeLabelsByValue = computed(() => {
+  return new Map<PauseTypeDto, string>([
+    ['BREAK', t('editor.pause.typeOptions.break')],
+    ['LUNCH', t('editor.pause.typeOptions.lunch')]
+  ])
+})
+
 const tbodyUiClass = computed(() => {
   if (isDragging.value || isHoverSuppressedAfterDrag.value) {
     return studentTableTbodyBaseClass
@@ -345,16 +368,22 @@ const tbodyUiClass = computed(() => {
 
 const tableMeta = computed(() => ({
   class: {
-    tr: (row: { original: StudentRow }) => {
+    tr: (row: { original: EditorTableRow }) => {
+      const rowClasses: string[] = []
+
+      if (isPauseRow(row.original)) {
+        rowClasses.push('editor-students-row-pause')
+      }
+
       if (row.original.id === highlightedStudentId.value) {
-        return 'editor-students-row-highlight'
+        rowClasses.push('editor-students-row-highlight')
       }
 
       if (row.original.id === fadingHighlightedStudentId.value) {
-        return 'editor-students-row-highlight-fade'
+        rowClasses.push('editor-students-row-highlight-fade')
       }
 
-      return ''
+      return rowClasses.join(' ')
     }
   }
 }))
@@ -411,7 +440,7 @@ function isClickOnDragHandle(target: EventTarget | null): boolean {
   return target instanceof Element && target.closest('.drag-handle') !== null
 }
 
-function resolveClickedRowId(target: EventTarget | null): string | null {
+function resolveClickedRow(target: EventTarget | null): EditorTableRow | null {
   if (!(target instanceof Element)) {
     return null
   }
@@ -432,7 +461,7 @@ function resolveClickedRowId(target: EventTarget | null): string | null {
     return null
   }
 
-  return localStudents.value[clickedRowIndex]?.id ?? null
+  return localStudents.value[clickedRowIndex] ?? null
 }
 
 function handleTableClick(event: MouseEvent): void {
@@ -440,13 +469,19 @@ function handleTableClick(event: MouseEvent): void {
     return
   }
 
-  const rowId = resolveClickedRowId(event.target)
-  if (!rowId) {
+  const row = resolveClickedRow(event.target)
+  if (!row) {
     clearActiveRow()
     return
   }
 
-  activateRow(rowId)
+  if (isPauseRow(row)) {
+    clearActiveRow()
+    emit('editPause', row.id)
+    return
+  }
+
+  activateRow(row.id)
 }
 
 function isClickInsideTable(target: EventTarget | null): boolean {
@@ -478,8 +513,14 @@ function isEditingRow(rowId: string): boolean {
   return editingRowId.value === rowId
 }
 
-function updateRow(rowId: string, updater: (row: StudentRow) => StudentRow): void {
-  localStudents.value = localStudents.value.map((row) => (row.id === rowId ? updater(row) : row))
+function updateRow(rowId: string, updater: (row: EditorStudentTableRow) => EditorStudentTableRow): void {
+  localStudents.value = localStudents.value.map((row) => {
+    if (row.id !== rowId || !isStudentRow(row)) {
+      return row
+    }
+
+    return updater(row)
+  })
   emitRowsUpdate()
 }
 
@@ -508,7 +549,7 @@ function updateMinuteField(rowId: string, field: EditableMinuteField, value: unk
   }))
 }
 
-function toStudyProfileFields(row: StudentRow): StudentStudyProfileFields {
+function toStudyProfileFields(row: EditorStudentTableRow): StudentStudyProfileFields {
   return {
     studyLanguage: row.studyLanguage,
     studyProgramType: row.studyProgramType,
@@ -517,7 +558,7 @@ function toStudyProfileFields(row: StudentRow): StudentStudyProfileFields {
   }
 }
 
-function withStudyProfileFields(row: StudentRow, profile: StudentStudyProfileFields): StudentRow {
+function withStudyProfileFields(row: EditorStudentTableRow, profile: StudentStudyProfileFields): EditorStudentTableRow {
   return {
     ...row,
     studyLanguage: profile.studyLanguage,
@@ -597,6 +638,10 @@ function resolveRepeatTypeLabel(value: RepeatTypeDto): string {
   return repeatTypeLabelsByValue.value.get(value) ?? value
 }
 
+function resolvePauseTypeLabel(value: PauseTypeDto): string {
+  return pauseTypeLabelsByValue.value.get(value) ?? value
+}
+
 function resolveThesisLanguageLabel(value: ThesisLanguageDto): string {
   return thesisLanguageLabelsByValue.value.get(value) ?? value
 }
@@ -614,12 +659,25 @@ function displayText(value: string): string {
   return normalized.length > 0 ? normalized : '-'
 }
 
-function studyProgramNameOptionsForRow(row: StudentRow): string[] {
+function studyProgramNameOptionsForRow(row: EditorStudentTableRow): string[] {
   return resolveStudyProgramNameOptionsForStudyProfile(row.studyProgramType, row.studyLanguage, row.studyProgramName)
 }
 
-function specializationOptionsForRow(row: StudentRow) {
+function specializationOptionsForRow(row: EditorStudentTableRow) {
   return resolveSpecializationOptionsForStudyProfile(row.studyProgramType, row.studyProgramName, row.specializationCode)
+}
+
+function resolvePauseDisplayLabel(row: EditorPauseTableRow): string {
+  const normalizedCustomLabel = row.label.trim()
+  if (normalizedCustomLabel.length > 0) {
+    return normalizedCustomLabel
+  }
+
+  return resolvePauseTypeLabel(row.pauseType)
+}
+
+function resolvePauseTypeIcon(value: PauseTypeDto): string {
+  return value === 'LUNCH' ? 'i-lucide-utensils-crossed' : 'i-lucide-hourglass'
 }
 
 onMounted(() => {
@@ -658,24 +716,38 @@ onBeforeUnmount(() => {
 
       <template #order-cell="{ row }">
         <span class="text-muted text-xs font-semibold">
-          {{ row.index + 1 }}
+          {{ isStudentRow(row.original) ? row.original.studentOrder : '' }}
         </span>
       </template>
 
       <template #prepareTime-cell="{ row }">
-        <span class="text-sm whitespace-nowrap" @click="activateRow(row.original.id)">
+        <div v-if="isPauseRow(row.original)" class="flex flex-wrap items-center gap-x-6 gap-y-1 py-1 text-base">
+          <span class="inline-flex items-center gap-2 font-medium">
+            <UIcon :name="resolvePauseTypeIcon(row.original.pauseType)" class="size-4" />
+            {{ resolvePauseDisplayLabel(row.original) }}
+          </span>
+          <span class="whitespace-nowrap">
+            <span class="font-medium">{{ t('editor.pause.row.duration') }}:</span>
+            {{ row.original.durationMinutes }} min
+          </span>
+          <span class="whitespace-nowrap">
+            <span class="font-medium">{{ t('editor.pause.row.range') }}:</span> {{ row.original.rangeLabel }}
+          </span>
+        </div>
+        <span v-else class="text-sm whitespace-nowrap" @click="activateRow(row.original.id)">
           {{ row.original.prepareTime }}
         </span>
       </template>
 
       <template #examTime-cell="{ row }">
-        <span class="text-sm whitespace-nowrap" @click="activateRow(row.original.id)">
+        <span v-if="isStudentRow(row.original)" class="text-sm whitespace-nowrap" @click="activateRow(row.original.id)">
           {{ row.original.examTime }}
         </span>
       </template>
 
       <template #titlesBefore-cell="{ row }">
         <EditorStudentTableInlineCell
+          v-if="isStudentRow(row.original)"
           :is-editing="isEditingRow(row.original.id)"
           :model-value="row.original.titlesBefore"
           cell-wrapper-class="min-w-[4rem] cursor-pointer"
@@ -688,6 +760,7 @@ onBeforeUnmount(() => {
 
       <template #lastName-cell="{ row }">
         <EditorStudentTableInlineCell
+          v-if="isStudentRow(row.original)"
           :is-editing="isEditingRow(row.original.id)"
           :model-value="row.original.lastName"
           cell-wrapper-class="min-w-[5rem] cursor-pointer"
@@ -700,6 +773,7 @@ onBeforeUnmount(() => {
 
       <template #firstName-cell="{ row }">
         <EditorStudentTableInlineCell
+          v-if="isStudentRow(row.original)"
           :is-editing="isEditingRow(row.original.id)"
           :model-value="row.original.firstName"
           cell-wrapper-class="min-w-[5rem] cursor-pointer"
@@ -712,6 +786,7 @@ onBeforeUnmount(() => {
 
       <template #email-cell="{ row }">
         <EditorStudentTableInlineCell
+          v-if="isStudentRow(row.original)"
           :is-editing="isEditingRow(row.original.id)"
           :model-value="row.original.email"
           cell-wrapper-class="min-w-[10rem] cursor-pointer"
@@ -724,6 +799,7 @@ onBeforeUnmount(() => {
 
       <template #titlesAfter-cell="{ row }">
         <EditorStudentTableInlineCell
+          v-if="isStudentRow(row.original)"
           :is-editing="isEditingRow(row.original.id)"
           :model-value="row.original.titlesAfter"
           cell-wrapper-class="min-w-[5rem] cursor-pointer"
@@ -736,6 +812,7 @@ onBeforeUnmount(() => {
 
       <template #studyLanguage-cell="{ row }">
         <EditorStudentTableInlineCell
+          v-if="isStudentRow(row.original)"
           :is-editing="isEditingRow(row.original.id)"
           :model-value="resolveStudyLanguageLabel(row.original.studyLanguage)"
           cell-wrapper-class="min-w-[8.5rem] cursor-pointer"
@@ -766,6 +843,7 @@ onBeforeUnmount(() => {
 
       <template #studyProgramType-cell="{ row }">
         <EditorStudentTableInlineCell
+          v-if="isStudentRow(row.original)"
           :is-editing="isEditingRow(row.original.id)"
           :model-value="resolveStudyProgramTypeLabel(row.original.studyProgramType)"
           cell-wrapper-class="min-w-[8.5rem] cursor-pointer"
@@ -796,6 +874,7 @@ onBeforeUnmount(() => {
 
       <template #studyProgramName-cell="{ row }">
         <EditorStudentTableInlineCell
+          v-if="isStudentRow(row.original)"
           :is-editing="isEditingRow(row.original.id)"
           :model-value="row.original.studyProgramName"
           cell-wrapper-class="min-w-[9.5rem] cursor-pointer"
@@ -824,6 +903,7 @@ onBeforeUnmount(() => {
 
       <template #specializationCode-cell="{ row }">
         <EditorStudentTableInlineCell
+          v-if="isStudentRow(row.original)"
           :is-editing="isEditingRow(row.original.id)"
           :model-value="row.original.specializationCode"
           cell-wrapper-class="min-w-32 cursor-pointer"
@@ -854,6 +934,7 @@ onBeforeUnmount(() => {
 
       <template #thesisTitle-cell="{ row }">
         <EditorStudentTableInlineCell
+          v-if="isStudentRow(row.original)"
           :is-editing="isEditingRow(row.original.id)"
           :model-value="row.original.thesisTitle"
           :cell-wrapper-class="thesisCellWrapperClass"
@@ -867,6 +948,7 @@ onBeforeUnmount(() => {
 
       <template #thesisTitleLocal-cell="{ row }">
         <EditorStudentTableInlineCell
+          v-if="isStudentRow(row.original)"
           :is-editing="isEditingRow(row.original.id)"
           :model-value="row.original.thesisTitleLocal"
           :cell-wrapper-class="thesisCellWrapperClass"
@@ -880,6 +962,7 @@ onBeforeUnmount(() => {
 
       <template #thesisTitleEn-cell="{ row }">
         <EditorStudentTableInlineCell
+          v-if="isStudentRow(row.original)"
           :is-editing="isEditingRow(row.original.id)"
           :model-value="row.original.thesisTitleEn"
           :cell-wrapper-class="thesisCellWrapperClass"
@@ -893,6 +976,7 @@ onBeforeUnmount(() => {
 
       <template #thesisLanguage-cell="{ row }">
         <EditorStudentTableInlineCell
+          v-if="isStudentRow(row.original)"
           :is-editing="isEditingRow(row.original.id)"
           :model-value="resolveThesisLanguageLabel(row.original.thesisLanguage)"
           cell-wrapper-class="min-w-[9rem] cursor-pointer"
@@ -923,6 +1007,7 @@ onBeforeUnmount(() => {
 
       <template #supervisorName-cell="{ row }">
         <EditorStudentTableInlineCell
+          v-if="isStudentRow(row.original)"
           :is-editing="isEditingRow(row.original.id)"
           :model-value="row.original.supervisorName"
           cell-wrapper-class="min-w-[11rem] cursor-pointer"
@@ -935,6 +1020,7 @@ onBeforeUnmount(() => {
 
       <template #additionalSupervisorName-cell="{ row }">
         <EditorStudentTableInlineCell
+          v-if="isStudentRow(row.original)"
           :is-editing="isEditingRow(row.original.id)"
           :model-value="row.original.additionalSupervisorName"
           cell-wrapper-class="min-w-[6.5rem] cursor-pointer"
@@ -947,6 +1033,7 @@ onBeforeUnmount(() => {
 
       <template #reviewerName-cell="{ row }">
         <EditorStudentTableInlineCell
+          v-if="isStudentRow(row.original)"
           :is-editing="isEditingRow(row.original.id)"
           :model-value="row.original.reviewerName"
           cell-wrapper-class="min-w-[11rem] cursor-pointer"
@@ -959,6 +1046,7 @@ onBeforeUnmount(() => {
 
       <template #additionalReviewerName-cell="{ row }">
         <EditorStudentTableInlineCell
+          v-if="isStudentRow(row.original)"
           :is-editing="isEditingRow(row.original.id)"
           :model-value="row.original.additionalReviewerName"
           cell-wrapper-class="min-w-[6.5rem] cursor-pointer"
@@ -971,6 +1059,7 @@ onBeforeUnmount(() => {
 
       <template #repeatType-cell="{ row }">
         <EditorStudentTableInlineCell
+          v-if="isStudentRow(row.original)"
           :is-editing="isEditingRow(row.original.id)"
           :model-value="resolveRepeatTypeLabel(row.original.repeatType)"
           cell-wrapper-class="min-w-[11rem] cursor-pointer"
@@ -1001,6 +1090,7 @@ onBeforeUnmount(() => {
 
       <template #prepareMinutes-cell="{ row }">
         <EditorStudentTableInlineCell
+          v-if="isStudentRow(row.original)"
           :is-editing="isEditingRow(row.original.id)"
           :model-value="row.original.prepareMinutes"
           cell-wrapper-class="min-w-[6.5rem] cursor-pointer"
@@ -1013,6 +1103,7 @@ onBeforeUnmount(() => {
 
       <template #examMinutes-cell="{ row }">
         <EditorStudentTableInlineCell
+          v-if="isStudentRow(row.original)"
           :is-editing="isEditingRow(row.original.id)"
           :model-value="row.original.examMinutes"
           cell-wrapper-class="min-w-[6.5rem] cursor-pointer"

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useEditorPage } from '~/composables/editor/useEditorPage'
-import type { EditorCommitteeStringFieldPayload, StudentRow } from '~/types/editor'
+import type { EditorCommitteeStringFieldPayload, EditorTableRow } from '~/types/editor'
 
 definePageMeta({
   middleware: 'editor-draft'
@@ -16,6 +16,7 @@ const {
   committeeFields,
   invigilators,
   studentCreation,
+  pauseCreation,
   scheduleDialogs,
   draftName,
   studentsCountLabel,
@@ -34,6 +35,8 @@ const committeeLabels = computed(() => ({
   startTimeMinute: t('editor.committee.startTimeMinute'),
   addStudentAction: t('editor.students.add.openAction'),
   addStudentAria: t('editor.students.add.openAriaLabel', { name: committeeList.selectedCommitteeLabel.value }),
+  addPauseAction: t('editor.pause.add.openAction'),
+  addPauseAria: t('editor.pause.add.openAriaLabel', { name: committeeList.selectedCommitteeLabel.value }),
   columnDisplaySettingsAction: t('editor.committee.columnDisplaySettingsAction'),
   thesisTitleDisplayMode: t('editor.committee.thesisTitleDisplayMode'),
   thesisTitleDisplayModeAuto: t('editor.committee.thesisTitleDisplayModeOptions.auto'),
@@ -151,8 +154,8 @@ function onCommitteeStringField(payload: EditorCommitteeStringFieldPayload): voi
   }
 }
 
-function setStudentRows(rows: StudentRow[]): void {
-  studentTable.selectedStudents.value = rows
+function setStudentRows(rows: EditorTableRow[]): void {
+  studentTable.selectedRows.value = rows
 }
 
 const committeesCount = computed(() => committeeList.committees.value.length)
@@ -166,7 +169,7 @@ const committeeSidebarItems = computed(() => committeeList.committeeSidebarItems
 const panelSelectedCommittee = computed(() => committeeList.selectedCommittee.value)
 const panelCommitteeLabel = computed(() => committeeList.selectedCommitteeLabel.value)
 const panelCommitteeDate = computed(() => committeeList.selectedCommitteeDate.value)
-const panelStudents = computed(() => studentTable.selectedStudents.value)
+const panelStudents = computed(() => studentTable.selectedRows.value)
 const panelColumns = computed(() => studentTable.columns.value)
 const panelThesisTitleDisplayMode = computed(() => draftSettings.thesisTitleDisplayMode.value)
 const panelTableViewMode = computed(() => draftSettings.tableViewMode.value)
@@ -236,6 +239,8 @@ const draftNameText = computed(() => draftName.value)
             @update:committee-language="committeeFields.updateSelectedCommitteeLanguage"
             @update:committee-study-program-type="committeeFields.updateSelectedCommitteeStudyProgramType"
             @add-student="studentCreation.openCreateStudentDialog"
+            @add-pause="pauseCreation.openCreatePauseDialog"
+            @edit-pause="pauseCreation.openEditPauseDialog($event)"
             @add-invigilator="invigilators.openAddInvigilatorDialog"
             @delete-invigilator="invigilators.openDeleteInvigilatorConfirm($event)"
             @rename-committee="committeeList.openRenameCommitteeDialog($event)"
@@ -260,6 +265,7 @@ const draftNameText = computed(() => draftName.value)
       :committee-list="committeeList"
       :invigilators="invigilators"
       :student-creation="studentCreation"
+      :pause-creation="pauseCreation"
       :schedule-dialogs="scheduleDialogs"
       :copy="dialogCopy"
       :committee-labels="committeeLabels"

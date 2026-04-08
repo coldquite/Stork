@@ -8,6 +8,7 @@ const props = defineProps<{
   committeeList: EditorPageGroups['committeeList']
   invigilators: EditorPageGroups['invigilators']
   studentCreation: EditorPageGroups['studentCreation']
+  pauseCreation: EditorPageGroups['pauseCreation']
   scheduleDialogs: EditorPageGroups['scheduleDialogs']
   copy: EditorScheduleDialogsCopy
   committeeLabels: EditorStudentsPanelCommitteeLabels
@@ -16,6 +17,7 @@ const props = defineProps<{
 const cl = props.committeeList
 const inv = props.invigilators
 const sc = props.studentCreation
+const pc = props.pauseCreation
 const sd = props.scheduleDialogs
 
 const renameCommitteeOpen = computed({
@@ -101,6 +103,20 @@ const createStudentValidationErrors = computed(() => sc.createStudentValidationE
 const createStudentCommitteeLabel = computed(() => sc.createStudentCommitteeLabel.value)
 const createStudentStudyProgramNameOptions = computed(() => sc.createStudentStudyProgramNameOptions.value)
 const createStudentSpecializationOptions = computed(() => sc.createStudentSpecializationOptions.value)
+
+const pauseDialogOpen = computed({
+  get: () => pc.isPauseDialogOpen.value,
+  set: (v: boolean) => {
+    if (v) {
+      return
+    }
+
+    pc.closePauseDialog()
+  }
+})
+const pauseDialogMode = computed(() => pc.pauseDialogMode.value)
+const pauseDraftModel = computed(() => pc.pauseDraft.value)
+const pauseValidationErrors = computed(() => pc.pauseValidationErrors.value)
 
 const deleteCommitteeConfirmOpen = computed({
   get: () => cl.isDeleteCommitteeConfirmOpen.value,
@@ -241,6 +257,19 @@ const deleteInvigilatorDescriptionText = computed(() => inv.deleteInvigilatorCon
     @update:repeat-type="sc.updateCreateStudentRepeatType($event)"
     @cancel="sc.closeCreateStudentDialog()"
     @submit="sc.submitCreateStudent()"
+  />
+
+  <EditorCreatePauseModal
+    v-model:open="pauseDialogOpen"
+    :mode="pauseDialogMode"
+    :draft="pauseDraftModel"
+    :validation-errors="pauseValidationErrors"
+    @update:pause-type="pc.updatePauseType($event)"
+    @update:custom-label-enabled="pc.updatePauseCustomLabelEnabled($event)"
+    @update:custom-label="pc.updatePauseCustomLabel($event)"
+    @update:duration-minutes="pc.updatePauseDurationMinutes($event)"
+    @cancel="pc.closePauseDialog()"
+    @submit="pc.submitPauseDialog()"
   />
 
   <CommonAppActionConfirmDialog

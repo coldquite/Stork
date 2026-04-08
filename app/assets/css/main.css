@@ -161,6 +161,39 @@
       0 12px 24px rgb(2 8 23 / 32%);
   }
 
+  .editor-students-tbody > tr.editor-students-row-pause {
+    background-color: rgb(0 101 189 / 17%) !important;
+  }
+
+  .dark .editor-students-tbody > tr.editor-students-row-pause {
+    background-color: rgb(0 101 189 / 34%) !important;
+  }
+
+  .editor-students-tbody.editor-students-hover-accent
+    > tr.editor-students-row-pause:hover:not(.sortable-chosen):not(.sortable-ghost):not(.sortable-drag) {
+    box-shadow:
+      inset 3px 0 0 rgb(0 101 189 / 66%),
+      inset 0 1px 0 rgb(255 255 255 / 35%);
+    position: relative;
+    z-index: 1;
+  }
+
+  .dark
+    .editor-students-tbody.editor-students-hover-accent
+    > tr.editor-students-row-pause:hover:not(.sortable-chosen):not(.sortable-ghost):not(.sortable-drag) {
+    box-shadow:
+      inset 3px 0 0 rgb(106 173 228 / 64%),
+      inset 0 1px 0 rgb(148 163 184 / 12%);
+  }
+
+  .editor-students-tbody > tr.editor-students-row-pause > td:nth-child(n + 4) {
+    display: none;
+  }
+
+  .editor-students-tbody > tr.editor-students-row-pause > td.editor-students-pause-details-cell {
+    white-space: normal;
+  }
+
   .editor-students-tbody > tr.editor-students-row-highlight {
     background-color: rgb(255 149 0 / 16%) !important;
     box-shadow:

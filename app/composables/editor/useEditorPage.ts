@@ -1,6 +1,7 @@
 import { useEditorCommitteeFields } from '~/composables/editor/useEditorCommitteeFields'
 import { useEditorCommitteeList } from '~/composables/editor/useEditorCommitteeList'
 import { useEditorInvigilators } from '~/composables/editor/useEditorInvigilators'
+import { useEditorPauseCreation } from '~/composables/editor/useEditorPauseCreation'
 import { useEditorScheduleDialogs } from '~/composables/editor/useEditorScheduleDialogs'
 import { useEditorStudentCreation } from '~/composables/editor/useEditorStudentCreation'
 import { useEditorStudentSearch } from '~/composables/editor/useEditorStudentSearch'
@@ -31,6 +32,7 @@ export function useEditorPage() {
   const committeeFields = useEditorCommitteeFields(committeeList.selectedCommittee)
   const invigilators = useEditorInvigilators(committeeList.selectedCommittee)
   const studentCreation = useEditorStudentCreation(committeeList.selectedCommittee)
+  const pauseCreation = useEditorPauseCreation(committeeList.selectedCommittee)
   const scheduleDialogs = useEditorScheduleDialogs()
   const studentSearch = useEditorStudentSearch(committeeList.selectedCommitteeId)
 
@@ -85,6 +87,7 @@ export function useEditorPage() {
     },
 
     studentTable: {
+      selectedRows: studentTable.selectedRows,
       selectedStudents: studentTable.selectedStudents,
       columns: studentTable.columns
     },
@@ -146,6 +149,21 @@ export function useEditorPage() {
       updateCreateStudentSpecializationCode: studentCreation.updateCreateStudentSpecializationCode,
       updateCreateStudentThesisLanguage: studentCreation.updateCreateStudentThesisLanguage,
       updateCreateStudentRepeatType: studentCreation.updateCreateStudentRepeatType
+    },
+
+    pauseCreation: {
+      isPauseDialogOpen: pauseCreation.isPauseDialogOpen,
+      pauseDialogMode: pauseCreation.pauseDialogMode,
+      pauseDraft: pauseCreation.pauseDraft,
+      pauseValidationErrors: pauseCreation.pauseValidationErrors,
+      openCreatePauseDialog: pauseCreation.openCreatePauseDialog,
+      openEditPauseDialog: pauseCreation.openEditPauseDialog,
+      closePauseDialog: pauseCreation.closePauseDialog,
+      submitPauseDialog: pauseCreation.submitPauseDialog,
+      updatePauseType: pauseCreation.updatePauseType,
+      updatePauseCustomLabelEnabled: pauseCreation.updatePauseCustomLabelEnabled,
+      updatePauseCustomLabel: pauseCreation.updatePauseCustomLabel,
+      updatePauseDurationMinutes: pauseCreation.updatePauseDurationMinutes
     },
 
     scheduleDialogs: {

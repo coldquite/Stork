@@ -3,10 +3,10 @@ import type { TableColumn } from '@nuxt/ui'
 import type {
   EditorCommitteeStringFieldPayload,
   EditorStudentHighlightRequest,
+  EditorTableRow,
   EditorStudentsPanelCommitteeLabels,
   EditorStudentsPanelInvigilatorLabels,
-  EditorStudentsPanelStudentsEmptyLabels,
-  StudentRow
+  EditorStudentsPanelStudentsEmptyLabels
 } from '~/types/editor'
 import type {
   ScheduleDraftCommittee,
@@ -24,8 +24,8 @@ const props = defineProps<{
   selectedCommitteeLabel?: string
   selectedCommitteeDate?: string
   studentsCountLabel: string
-  students: StudentRow[]
-  columns: TableColumn<StudentRow>[]
+  students: EditorTableRow[]
+  columns: TableColumn<EditorTableRow>[]
   committeeLabels: EditorStudentsPanelCommitteeLabels
   studentsEmpty: EditorStudentsPanelStudentsEmptyLabels
   invigilatorLabels: EditorStudentsPanelInvigilatorLabels
@@ -35,15 +35,18 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (event: 'update:students', value: StudentRow[]): void
+  (event: 'update:students', value: EditorTableRow[]): void
   (event: 'committeeStringField', payload: EditorCommitteeStringFieldPayload): void
-  (event: 'update:committeeDate' | 'deleteInvigilator' | 'renameCommittee' | 'deleteCommittee', value: string): void
+  (
+    event: 'update:committeeDate' | 'deleteInvigilator' | 'renameCommittee' | 'deleteCommittee' | 'editPause',
+    value: string
+  ): void
   (event: 'update:committeeStartMinute', value: number): void
   (event: 'update:thesisTitleDisplayMode', value: ScheduleDraftThesisTitleDisplayMode): void
   (event: 'update:tableViewMode', value: EditorStudentsTableViewMode): void
   (event: 'update:committeeLanguage', value: StudyLanguageDto): void
   (event: 'update:committeeStudyProgramType', value: StudyProgramTypeDto): void
-  (event: 'addStudent' | 'addInvigilator'): void
+  (event: 'addStudent' | 'addPause' | 'addInvigilator'): void
 }>()
 
 const labels = computed(() => props.committeeLabels)
@@ -176,6 +179,19 @@ function setTableViewMode(mode: EditorStudentsTableViewMode): void {
               {{ labels.addStudentAction }}
             </UButton>
 
+            <UButton
+              color="primary"
+              variant="soft"
+              size="md"
+              icon="i-lucide-hourglass"
+              class="ring-primary/35 hover:ring-primary/55 min-w-0 shrink-0 cursor-pointer whitespace-nowrap ring-2"
+              :aria-label="labels.addPauseAria"
+              :disabled="!hasSelectedCommittee"
+              @click="emit('addPause')"
+            >
+              {{ labels.addPauseAction }}
+            </UButton>
+
             <UPopover :content="{ side: 'bottom', align: 'end' }" class="ml-auto">
               <UButton
                 color="neutral"
@@ -252,6 +268,7 @@ function setTableViewMode(mode: EditorStudentsTableViewMode): void {
       :empty-labels="props.studentsEmpty"
       :highlight-request="props.highlightRequest"
       @update:model-value="emit('update:students', $event)"
+      @edit-pause="emit('editPause', $event)"
     />
   </UCard>
 </template>

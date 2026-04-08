@@ -1,12 +1,15 @@
 import type {
+  PauseTypeDto,
   RepeatTypeDto,
   StudyLanguageDto,
   StudyProgramTypeDto,
   ThesisLanguageDto
 } from '#shared/types/time-schedules'
 
-export interface StudentRow {
+export interface EditorStudentTableRow {
+  kind: 'STUDENT'
   id: string
+  studentOrder: number
   prepareTime: string
   examTime: string
   titlesBefore: string
@@ -30,6 +33,20 @@ export interface StudentRow {
   prepareMinutes: number
   examMinutes: number
 }
+
+export interface EditorPauseTableRow {
+  kind: 'PAUSE'
+  id: string
+  label: string
+  pauseType: PauseTypeDto
+  durationMinutes: number
+  startTime: string
+  endTime: string
+  rangeLabel: string
+}
+
+export type EditorTableRow = EditorStudentTableRow | EditorPauseTableRow
+export type StudentRow = EditorStudentTableRow
 
 export interface EditorStudentSearchResult {
   studentId: string
@@ -70,6 +87,8 @@ export interface EditorStudentsPanelCommitteeLabels {
   startTimeMinute: string
   addStudentAction: string
   addStudentAria: string
+  addPauseAction: string
+  addPauseAria: string
   columnDisplaySettingsAction: string
   thesisTitleDisplayMode: string
   thesisTitleDisplayModeAuto: string
@@ -177,6 +196,17 @@ export interface EditorCreateStudentDraft {
   prepareMinutes: number
   examMinutes: number
 }
+
+export interface EditorCreatePauseDraft {
+  pauseType: PauseTypeDto
+  durationMinutes: number
+  useCustomLabel: boolean
+  customLabel: string
+}
+
+export type EditorCreatePauseValidationField = 'customLabel' | 'durationMinutes'
+
+export type EditorCreatePauseValidationErrors = Partial<Record<EditorCreatePauseValidationField, string>>
 
 /** Pre-translated strings for [EditorScheduleDialogsHost.vue](app/components/editor/EditorScheduleDialogsHost.vue). */
 export interface EditorScheduleDialogsCopy {

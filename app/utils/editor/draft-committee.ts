@@ -6,6 +6,15 @@ export function isStudentItem(item: ScheduleDraftItem): item is ScheduleDraftIte
   return item.type === 'STUDENT' && item.student !== null
 }
 
+export function isPauseItem(item: ScheduleDraftItem): item is ScheduleDraftItem & { type: 'PAUSE' } {
+  return item.type === 'PAUSE' && item.pause !== null
+}
+
+export function resolveNextCommitteeItemPosition(committee: ScheduleDraftCommittee): number {
+  const maxPosition = committee.items.reduce((max, item) => Math.max(max, item.position), 0)
+  return maxPosition + 1
+}
+
 export function formatCommitteeDate(value: string): string {
   const parsed = parseISO(value)
   if (!isValid(parsed)) {
