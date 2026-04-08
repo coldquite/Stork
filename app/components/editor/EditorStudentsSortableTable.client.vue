@@ -29,6 +29,7 @@ import {
 import { resolveStudyLanguageFromSelectValue } from '~/utils/editor/study-language'
 import { resolveStudyProgramTypeFromSelectValue } from '~/utils/editor/study-program-type'
 import { resolveThesisLanguageFromSelectValue } from '~/utils/editor/thesis-language'
+import { resolveStudentDurationByStudyProgramAndRepeat } from '~/utils/student-duration'
 
 type EditableTextField =
   | 'titlesBefore'
@@ -88,6 +89,8 @@ const { t } = useI18n()
 const tableWrapper = ref<HTMLElement | null>(null)
 const localStudents = ref<EditorTableRow[]>([])
 const editingRowId = ref<string | null>(null)
+const openStudyProgramTypeSelectRowId = ref<string | null>(null)
+const openRepeatTypeSelectRowId = ref<string | null>(null)
 const highlightedStudentId = ref<string | null>(null)
 const fadingHighlightedStudentId = ref<string | null>(null)
 const isDragging = ref(false)
@@ -151,6 +154,8 @@ watch(
   () => {
     syncFromParent()
     editingRowId.value = null
+    openStudyProgramTypeSelectRowId.value = null
+    openRepeatTypeSelectRowId.value = null
     clearRowHighlight()
   },
   { immediate: true }
@@ -437,10 +442,20 @@ function reorderLocalStudents(oldIndex: number, newIndex: number): void {
 
 function activateRow(rowId: string): void {
   editingRowId.value = rowId
+
+  if (openStudyProgramTypeSelectRowId.value !== rowId) {
+    openStudyProgramTypeSelectRowId.value = null
+  }
+
+  if (openRepeatTypeSelectRowId.value !== rowId) {
+    openRepeatTypeSelectRowId.value = null
+  }
 }
 
 function clearActiveRow(): void {
   editingRowId.value = null
+  openStudyProgramTypeSelectRowId.value = null
+  openRepeatTypeSelectRowId.value = null
 }
 
 function isClickOnDragHandle(target: EventTarget | null): boolean {
@@ -520,6 +535,38 @@ function isEditingRow(rowId: string): boolean {
   return editingRowId.value === rowId
 }
 
+function isStudyProgramTypeSelectOpen(rowId: string): boolean {
+  return openStudyProgramTypeSelectRowId.value === rowId
+}
+
+function updateStudyProgramTypeSelectOpen(rowId: string, isOpen: boolean): void {
+  if (isOpen) {
+    openStudyProgramTypeSelectRowId.value = rowId
+    openRepeatTypeSelectRowId.value = null
+    return
+  }
+
+  if (openStudyProgramTypeSelectRowId.value === rowId) {
+    openStudyProgramTypeSelectRowId.value = null
+  }
+}
+
+function isRepeatTypeSelectOpen(rowId: string): boolean {
+  return openRepeatTypeSelectRowId.value === rowId
+}
+
+function updateRepeatTypeSelectOpen(rowId: string, isOpen: boolean): void {
+  if (isOpen) {
+    openStudyProgramTypeSelectRowId.value = null
+    openRepeatTypeSelectRowId.value = rowId
+    return
+  }
+
+  if (openRepeatTypeSelectRowId.value === rowId) {
+    openRepeatTypeSelectRowId.value = null
+  }
+}
+
 function updateRow(rowId: string, updater: (row: EditorStudentTableRow) => EditorStudentTableRow): void {
   localStudents.value = localStudents.value.map((row) => {
     if (row.id !== rowId || !isStudentRow(row)) {
@@ -595,6 +642,15 @@ function resolveStudyProgramNameFromSelectValue(value: unknown, fallback: string
   return fallback
 }
 
+function withMappedDuration(row: EditorStudentTableRow): EditorStudentTableRow {
+  const mappedDuration = resolveStudentDurationByStudyProgramAndRepeat(row.studyProgramType, row.repeatType)
+  return {
+    ...row,
+    prepareMinutes: mappedDuration.prepareMinutes,
+    examMinutes: mappedDuration.examMinutes
+  }
+}
+
 function updateStudyLanguage(rowId: string, value: unknown): void {
   updateRow(rowId, (row) => {
     const nextStudyLanguage = resolveStudyLanguageFromSelectValue(value, row.studyLanguage)
@@ -607,7 +663,12 @@ function updateStudyProgramType(rowId: string, value: unknown): void {
   updateRow(rowId, (row) => {
     const nextStudyProgramType = resolveStudyProgramTypeFromSelectValue(value, row.studyProgramType)
     const nextStudyProfile = applyStudyProgramTypeChange(toStudyProfileFields(row), nextStudyProgramType)
-    return withStudyProfileFields(row, nextStudyProfile)
+    const nextRow = withStudyProfileFields(row, nextStudyProfile)
+    if (nextStudyProfile.studyProgramType === row.studyProgramType) {
+      return nextRow
+    }
+
+    return withMappedDuration(nextRow)
   })
 }
 
@@ -628,10 +689,17 @@ function updateSpecializationCode(rowId: string, value: unknown): void {
 }
 
 function updateRepeatType(rowId: string, value: unknown): void {
-  updateRow(rowId, (row) => ({
-    ...row,
-    repeatType: resolveRepeatTypeFromSelectValue(value, row.repeatType)
-  }))
+  updateRow(rowId, (row) => {
+    const nextRepeatType = resolveRepeatTypeFromSelectValue(value, row.repeatType)
+    if (nextRepeatType === row.repeatType) {
+      return row
+    }
+
+    return withMappedDuration({
+      ...row,
+      repeatType: nextRepeatType
+    })
+  })
 }
 
 function updateThesisLanguage(rowId: string, value: unknown): void {
@@ -899,16 +967,21 @@ onBeforeUnmount(() => {
           @activate="activateRow(row.original.id)"
         >
           <template #edit>
-            <USelectMenu
-              :model-value="row.original.studyProgramType"
-              :items="studyProgramTypeOptions"
-              value-key="value"
-              label-key="label"
-              :search-input="false"
-              size="md"
-              :class="inlineEditSelectClass"
-              @update:model-value="(value) => updateStudyProgramType(row.original.id, value)"
-            />
+            <div class="relative w-full">
+              <USelectMenu
+                :model-value="row.original.studyProgramType"
+                :items="studyProgramTypeOptions"
+                value-key="value"
+                label-key="label"
+                :search-input="false"
+                size="md"
+                :class="inlineEditSelectClass"
+                @update:model-value="(value) => updateStudyProgramType(row.original.id, value)"
+                @update:open="(isOpen) => updateStudyProgramTypeSelectOpen(row.original.id, isOpen)"
+              />
+
+              <EditorRepeatTypeDurationWarningPopover :open="isStudyProgramTypeSelectOpen(row.original.id)" />
+            </div>
           </template>
           <template #display>
             <span :class="inlineReadonlyTextClass">
@@ -1115,16 +1188,21 @@ onBeforeUnmount(() => {
           @activate="activateRow(row.original.id)"
         >
           <template #edit>
-            <USelectMenu
-              :model-value="row.original.repeatType"
-              :items="repeatTypeOptions"
-              value-key="value"
-              label-key="label"
-              :search-input="false"
-              size="md"
-              :class="inlineEditSelectClass"
-              @update:model-value="(value) => updateRepeatType(row.original.id, value)"
-            />
+            <div class="relative w-full">
+              <USelectMenu
+                :model-value="row.original.repeatType"
+                :items="repeatTypeOptions"
+                value-key="value"
+                label-key="label"
+                :search-input="false"
+                size="md"
+                :class="inlineEditSelectClass"
+                @update:model-value="(value) => updateRepeatType(row.original.id, value)"
+                @update:open="(isOpen) => updateRepeatTypeSelectOpen(row.original.id, isOpen)"
+              />
+
+              <EditorRepeatTypeDurationWarningPopover :open="isRepeatTypeSelectOpen(row.original.id)" />
+            </div>
           </template>
           <template #display>
             <span :class="inlineReadonlyTextClass">

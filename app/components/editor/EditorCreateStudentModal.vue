@@ -75,6 +75,8 @@ const EMPTY_DRAFT: Readonly<EditorCreateStudentDraft> = {
 
 const draft = computed(() => props.draft ?? EMPTY_DRAFT)
 const isInputDisabled = computed(() => props.draft === null)
+const isStudyProgramTypeSelectOpen = ref(false)
+const isRepeatTypeSelectOpen = ref(false)
 const isSpecializationPickerDisabled = computed(
   () => isInputDisabled.value || draft.value.studyProgramName.trim().length < 1
 )
@@ -162,6 +164,16 @@ function submit(): void {
 function cancel(): void {
   emit('cancel')
 }
+
+watch(
+  () => props.open,
+  (isOpen) => {
+    if (!isOpen) {
+      isStudyProgramTypeSelectOpen.value = false
+      isRepeatTypeSelectOpen.value = false
+    }
+  }
+)
 </script>
 
 <template>
@@ -268,16 +280,21 @@ function cancel(): void {
 
           <div class="space-y-1">
             <span class="text-sm font-medium">{{ t('editor.students.add.fields.studyProgramType') }}</span>
-            <USelectMenu
-              :model-value="draft.studyProgramType"
-              :items="studyProgramTypeOptions"
-              value-key="value"
-              label-key="label"
-              :search-input="false"
-              :class="selectClass"
-              :disabled="isInputDisabled"
-              @update:model-value="emit('update:studyProgramType', $event)"
-            />
+            <div class="relative">
+              <USelectMenu
+                :model-value="draft.studyProgramType"
+                :items="studyProgramTypeOptions"
+                value-key="value"
+                label-key="label"
+                :search-input="false"
+                :class="selectClass"
+                :disabled="isInputDisabled"
+                @update:model-value="emit('update:studyProgramType', $event)"
+                @update:open="isStudyProgramTypeSelectOpen = $event"
+              />
+
+              <EditorRepeatTypeDurationWarningPopover :open="isStudyProgramTypeSelectOpen" />
+            </div>
           </div>
 
           <div class="space-y-1">
@@ -394,16 +411,21 @@ function cancel(): void {
 
           <div class="space-y-1">
             <span class="text-sm font-medium">{{ t('editor.students.add.fields.repeatType') }}</span>
-            <USelectMenu
-              :model-value="draft.repeatType"
-              :items="repeatTypeOptions"
-              value-key="value"
-              label-key="label"
-              :search-input="false"
-              :class="selectClass"
-              :disabled="isInputDisabled"
-              @update:model-value="emit('update:repeatType', $event)"
-            />
+            <div class="relative">
+              <USelectMenu
+                :model-value="draft.repeatType"
+                :items="repeatTypeOptions"
+                value-key="value"
+                label-key="label"
+                :search-input="false"
+                :class="selectClass"
+                :disabled="isInputDisabled"
+                @update:model-value="emit('update:repeatType', $event)"
+                @update:open="isRepeatTypeSelectOpen = $event"
+              />
+
+              <EditorRepeatTypeDurationWarningPopover :open="isRepeatTypeSelectOpen" />
+            </div>
           </div>
 
           <div class="space-y-1">

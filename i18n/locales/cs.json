@@ -520,12 +520,13 @@
       "repeatType": "Opakuje",
       "prepareMinutes": "Příprava v min",
       "examMinutes": "Zkouška v min",
+      "repeatTypeDurationOverwriteWarning": "Při změně hodnoty „Opakuje“ nebo „Typ studia“ se automaticky přepíší hodnoty polí „Příprava v min“ a „Zkouška v min“.",
       "repeatTypeOptions": {
         "none": "Neopakuje",
         "thesisDefense": "Opakuje obhajobu",
-        "oralExam": "Opakuje státnici",
-        "both": "Opakuje obhajobu i státnici",
-        "unknown": "Neznámé"
+        "oralExam": "Opakuje zkoušku",
+        "both": "Opakuje zkoušku i obhajobu",
+        "unknown": "Neznámý stav"
       }
     }
   },

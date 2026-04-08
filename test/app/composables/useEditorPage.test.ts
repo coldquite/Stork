@@ -234,7 +234,7 @@ describe('useEditorPage', () => {
     expect(updatedStudentA.student.lastName).toBe('Alenov')
   })
 
-  it('updates editable student row fields in draft', async () => {
+  it('updates editable student row fields in draft and overwrites minutes on repeatType change', async () => {
     const { useEditorPage } = await import('~/composables/editor/useEditorPage')
     const page = useEditorPage()
 
@@ -282,12 +282,81 @@ describe('useEditorPage', () => {
     expect(firstStudentItem.student.reviewerName).toBe('Ing. Oponent Nový')
     expect(firstStudentItem.student.additionalReviewerName).toBe('Ing. Druhý Oponent')
     expect(firstStudentItem.student.repeatType).toBe('BOTH')
-    expect(firstStudentItem.student.prepareMinutes).toBe(50)
-    expect(firstStudentItem.student.examMinutes).toBe(25)
+    expect(firstStudentItem.student.prepareMinutes).toBe(45)
+    expect(firstStudentItem.student.examMinutes).toBe(30)
 
-    expect(page.studentTable.selectedStudents.value[0]?.prepareTime).toBe('07:40')
-    expect(page.studentTable.selectedStudents.value[0]?.examTime).toBe('08:30 - 08:55')
-    expect(page.studentTable.selectedStudents.value[1]?.examTime).toBe('09:15 - 09:45')
+    expect(page.studentTable.selectedStudents.value[0]?.prepareTime).toBe('07:45')
+    expect(page.studentTable.selectedStudents.value[0]?.examTime).toBe('08:30 - 09:00')
+    expect(page.studentTable.selectedStudents.value[1]?.examTime).toBe('09:20 - 09:50')
+  })
+
+  it('keeps custom minutes when repeatType and studyProgramType do not change', async () => {
+    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const page = useEditorPage()
+
+    const [firstStudentRow, secondStudentRow] = page.studentTable.selectedStudents.value
+    expect(firstStudentRow).toBeDefined()
+    expect(secondStudentRow).toBeDefined()
+    if (!firstStudentRow || !secondStudentRow) {
+      throw new Error('Expected student rows to exist')
+    }
+
+    page.studentTable.selectedStudents.value = [
+      {
+        ...firstStudentRow,
+        repeatType: 'NONE',
+        studyProgramType: 'BACHELOR',
+        prepareMinutes: 52,
+        examMinutes: 28
+      },
+      secondStudentRow
+    ]
+
+    const committee = scheduleDraftStoreMock.draft?.committees.find((entry) => entry.localId === 'committee-early')
+    const firstStudentItem = committee?.items.find((item) => item.localId === 'student-a')
+    expect(firstStudentItem).toBeDefined()
+    if (!firstStudentItem || firstStudentItem.type !== 'STUDENT') {
+      throw new Error('Expected first student item')
+    }
+
+    expect(firstStudentItem.student.repeatType).toBe('NONE')
+    expect(firstStudentItem.student.studyProgramType).toBe('BACHELOR')
+    expect(firstStudentItem.student.prepareMinutes).toBe(52)
+    expect(firstStudentItem.student.examMinutes).toBe(28)
+  })
+
+  it('overwrites minutes when student studyProgramType changes in table editing', async () => {
+    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const page = useEditorPage()
+
+    const [firstStudentRow, secondStudentRow] = page.studentTable.selectedStudents.value
+    expect(firstStudentRow).toBeDefined()
+    expect(secondStudentRow).toBeDefined()
+    if (!firstStudentRow || !secondStudentRow) {
+      throw new Error('Expected student rows to exist')
+    }
+
+    page.studentTable.selectedStudents.value = [
+      {
+        ...firstStudentRow,
+        studyProgramType: 'MASTER',
+        prepareMinutes: 44,
+        examMinutes: 22
+      },
+      secondStudentRow
+    ]
+
+    const committee = scheduleDraftStoreMock.draft?.committees.find((entry) => entry.localId === 'committee-early')
+    const firstStudentItem = committee?.items.find((item) => item.localId === 'student-a')
+    expect(firstStudentItem).toBeDefined()
+    if (!firstStudentItem || firstStudentItem.type !== 'STUDENT') {
+      throw new Error('Expected first student item')
+    }
+
+    expect(firstStudentItem.student.repeatType).toBe('NONE')
+    expect(firstStudentItem.student.studyProgramType).toBe('MASTER')
+    expect(firstStudentItem.student.prepareMinutes).toBe(45)
+    expect(firstStudentItem.student.examMinutes).toBe(35)
   })
 
   it('updates student study profile independently from committee and resolves specialization by student context', async () => {

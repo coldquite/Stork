@@ -1,5 +1,4 @@
-import type { PostStudentItemDto, StudyProgramTypeDto } from '#shared/types/time-schedules'
-import { STUDENT_DURATION_MINUTES_BY_STUDY_PROGRAM_AND_REPEAT } from '~/utils/import-mapper/core/constants'
+import type { PostStudentItemDto } from '#shared/types/time-schedules'
 import { throwMappingError } from '~/utils/import-mapper/core/errors'
 import { readOptionalValue } from '~/utils/import-mapper/core/readers'
 import type { SourceRow } from '~/utils/import-mapper/core/types'
@@ -102,11 +101,4 @@ export function resolveStudentRepeatType(studentsCommitteesRow: SourceRow): Post
       firstTermGrade: firstTermGrade ?? null
     }
   })
-}
-
-export function resolveStudentDurationByStudyProgramAndRepeat(
-  studyProgramType: StudyProgramTypeDto,
-  repeatType: PostStudentItemDto['repeatType']
-): { prepareMinutes: number; examMinutes: number } {
-  return STUDENT_DURATION_MINUTES_BY_STUDY_PROGRAM_AND_REPEAT[studyProgramType][repeatType]
 }

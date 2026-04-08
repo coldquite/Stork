@@ -1,5 +1,6 @@
 import { mockNuxtImport } from '@nuxt/test-utils/runtime'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { StudyProgramTypeDto } from '#shared/types/time-schedules'
 import type { ScheduleDraftCommittee, ScheduleDraftItem } from '~/types/schedule-draft'
 import type { EditorCreateStudentTextField } from '~/types/editor'
 
@@ -58,7 +59,9 @@ function createPauseItem(localId: string, position: number): ScheduleDraftItem {
   }
 }
 
-function createCommittee(): ScheduleDraftCommittee {
+function createCommittee(options: { studyProgramType?: StudyProgramTypeDto } = {}): ScheduleDraftCommittee {
+  const studyProgramType = options.studyProgramType ?? 'BACHELOR'
+
   return {
     localId: 'committee-1',
     name: '1-BI-SI.21',
@@ -69,7 +72,7 @@ function createCommittee(): ScheduleDraftCommittee {
     invigilators: [],
     language: 'CZECH',
     studyProgramName: 'Informatika',
-    studyProgramType: 'BACHELOR',
+    studyProgramType,
     specializationName: 'Softwarové inženýrství 2021',
     specializationCode: 'BI-SI.21',
     defenseDepartmentCode: '18102',
@@ -115,6 +118,19 @@ describe('useEditorStudentCreation', () => {
     expect(creation.createStudentDraft.value?.repeatType).toBe('NONE')
     expect(creation.createStudentDraft.value?.prepareMinutes).toBe(45)
     expect(creation.createStudentDraft.value?.examMinutes).toBe(30)
+  })
+
+  it('opens with mapped duration defaults for master committee', async () => {
+    const selectedCommittee = ref<ScheduleDraftCommittee | null>(createCommittee({ studyProgramType: 'MASTER' }))
+    const { useEditorStudentCreation } = await import('~/composables/editor/useEditorStudentCreation')
+    const creation = useEditorStudentCreation(computed(() => selectedCommittee.value))
+
+    creation.openCreateStudentDialog()
+
+    expect(creation.createStudentDraft.value?.studyProgramType).toBe('MASTER')
+    expect(creation.createStudentDraft.value?.repeatType).toBe('NONE')
+    expect(creation.createStudentDraft.value?.prepareMinutes).toBe(45)
+    expect(creation.createStudentDraft.value?.examMinutes).toBe(35)
   })
 
   it('applies table-equivalent profile cleanup when language changes', async () => {
@@ -183,5 +199,48 @@ describe('useEditorStudentCreation', () => {
     expect(createdItem.student.prepareMinutes).toBe(50)
     expect(createdItem.student.examMinutes).toBe(35)
     expect(creation.isCreateStudentDialogOpen.value).toBe(false)
+  })
+
+  it('overwrites minutes when repeatType changes but keeps values for the same repeatType', async () => {
+    const selectedCommittee = ref<ScheduleDraftCommittee | null>(createCommittee())
+    const { useEditorStudentCreation } = await import('~/composables/editor/useEditorStudentCreation')
+    const creation = useEditorStudentCreation(computed(() => selectedCommittee.value))
+
+    creation.openCreateStudentDialog()
+    creation.updateCreateStudentMinutesField('prepareMinutes', '50')
+    creation.updateCreateStudentMinutesField('examMinutes', '35')
+
+    creation.updateCreateStudentRepeatType('NONE')
+    expect(creation.createStudentDraft.value?.prepareMinutes).toBe(50)
+    expect(creation.createStudentDraft.value?.examMinutes).toBe(35)
+
+    creation.updateCreateStudentRepeatType('THESIS_DEFENSE')
+    expect(creation.createStudentDraft.value?.repeatType).toBe('THESIS_DEFENSE')
+    expect(creation.createStudentDraft.value?.prepareMinutes).toBe(45)
+    expect(creation.createStudentDraft.value?.examMinutes).toBe(15)
+
+    creation.updateCreateStudentMinutesField('prepareMinutes', '44')
+    creation.updateCreateStudentMinutesField('examMinutes', '14')
+    creation.updateCreateStudentRepeatType('THESIS_DEFENSE')
+    expect(creation.createStudentDraft.value?.prepareMinutes).toBe(44)
+    expect(creation.createStudentDraft.value?.examMinutes).toBe(14)
+  })
+
+  it('overwrites minutes when studyProgramType changes', async () => {
+    const selectedCommittee = ref<ScheduleDraftCommittee | null>(createCommittee())
+    const { useEditorStudentCreation } = await import('~/composables/editor/useEditorStudentCreation')
+    const creation = useEditorStudentCreation(computed(() => selectedCommittee.value))
+
+    creation.openCreateStudentDialog()
+    creation.updateCreateStudentRepeatType('THESIS_DEFENSE')
+    creation.updateCreateStudentMinutesField('prepareMinutes', '51')
+    creation.updateCreateStudentMinutesField('examMinutes', '12')
+
+    creation.updateCreateStudentStudyProgramType('MASTER')
+
+    expect(creation.createStudentDraft.value?.studyProgramType).toBe('MASTER')
+    expect(creation.createStudentDraft.value?.repeatType).toBe('THESIS_DEFENSE')
+    expect(creation.createStudentDraft.value?.prepareMinutes).toBe(45)
+    expect(creation.createStudentDraft.value?.examMinutes).toBe(20)
   })
 })

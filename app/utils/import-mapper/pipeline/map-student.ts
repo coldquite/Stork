@@ -11,11 +11,9 @@ import {
 } from '~/utils/import-mapper/core/normalize'
 import { parseStudyLanguage, parseThesisLanguage } from '~/utils/import-mapper/core/parsers'
 import { readOptionalValue, readRequiredValue } from '~/utils/import-mapper/core/readers'
-import {
-  resolveStudentDurationByStudyProgramAndRepeat,
-  resolveStudentRepeatType
-} from '~/utils/import-mapper/core/student-repeat'
+import { resolveStudentRepeatType } from '~/utils/import-mapper/core/student-repeat'
 import type { MappedStudentPlacement, MatchedStudentRows } from '~/utils/import-mapper/core/types'
+import { resolveStudentDurationByStudyProgramAndRepeat } from '~/utils/student-duration'
 
 interface MapStudentInput {
   szzType: ImportSzzType

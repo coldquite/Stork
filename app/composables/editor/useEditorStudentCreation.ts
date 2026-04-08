@@ -27,9 +27,7 @@ import { resolveStudyLanguageFromSelectValue } from '~/utils/editor/study-langua
 import { resolveStudyProgramTypeFromSelectValue } from '~/utils/editor/study-program-type'
 import { resolveThesisLanguageFromSelectValue } from '~/utils/editor/thesis-language'
 import { createLocalId } from '~/utils/id'
-
-const DEFAULT_PREPARE_MINUTES = 45
-const DEFAULT_EXAM_MINUTES = 30
+import { resolveStudentDurationByStudyProgramAndRepeat } from '~/utils/student-duration'
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -85,6 +83,9 @@ function resolveIntegerFromInput(value: unknown, fallback: number): number {
 }
 
 function createInitialStudentDraft(committee: ScheduleDraftCommittee): EditorCreateStudentDraft {
+  const repeatType = 'NONE' as const
+  const defaultDuration = resolveStudentDurationByStudyProgramAndRepeat(committee.studyProgramType, repeatType)
+
   return {
     firstName: '',
     lastName: '',
@@ -102,9 +103,9 @@ function createInitialStudentDraft(committee: ScheduleDraftCommittee): EditorCre
     studyProgramType: committee.studyProgramType,
     specializationCode: '',
     studyLanguage: resolveDefaultStudyLanguage(committee),
-    repeatType: 'NONE',
-    prepareMinutes: DEFAULT_PREPARE_MINUTES,
-    examMinutes: DEFAULT_EXAM_MINUTES
+    repeatType,
+    prepareMinutes: defaultDuration.prepareMinutes,
+    examMinutes: defaultDuration.examMinutes
   }
 }
 
@@ -300,6 +301,7 @@ export function useEditorStudentCreation(selectedCommittee: ComputedRef<Schedule
       return
     }
 
+    const previousStudyProgramType = draft.studyProgramType
     const nextStudyProgramType = resolveStudyProgramTypeFromSelectValue(value, draft.studyProgramType)
     const nextStudyProfile = applyStudyProgramTypeChange(
       {
@@ -315,6 +317,16 @@ export function useEditorStudentCreation(selectedCommittee: ComputedRef<Schedule
     draft.studyProgramType = nextStudyProfile.studyProgramType
     draft.studyProgramName = nextStudyProfile.studyProgramName
     draft.specializationCode = nextStudyProfile.specializationCode
+
+    if (nextStudyProfile.studyProgramType !== previousStudyProgramType) {
+      const mappedDuration = resolveStudentDurationByStudyProgramAndRepeat(
+        nextStudyProfile.studyProgramType,
+        draft.repeatType
+      )
+      draft.prepareMinutes = mappedDuration.prepareMinutes
+      draft.examMinutes = mappedDuration.examMinutes
+    }
+
     clearValidationError('studyProgramName')
     clearValidationError('specializationCode')
   }
@@ -383,7 +395,15 @@ export function useEditorStudentCreation(selectedCommittee: ComputedRef<Schedule
       return
     }
 
-    draft.repeatType = resolveRepeatTypeFromSelectValue(value, draft.repeatType)
+    const nextRepeatType = resolveRepeatTypeFromSelectValue(value, draft.repeatType)
+    if (nextRepeatType === draft.repeatType) {
+      return
+    }
+
+    draft.repeatType = nextRepeatType
+    const mappedDuration = resolveStudentDurationByStudyProgramAndRepeat(draft.studyProgramType, nextRepeatType)
+    draft.prepareMinutes = mappedDuration.prepareMinutes
+    draft.examMinutes = mappedDuration.examMinutes
   }
 
   function submitCreateStudent(): void {

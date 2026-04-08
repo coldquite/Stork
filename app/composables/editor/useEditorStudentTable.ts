@@ -18,6 +18,7 @@ import {
 } from '~/utils/editor/student-study-profile'
 import { resolveThesisLanguage } from '~/utils/editor/thesis-language'
 import type { EditorStudentsTableViewMode } from '~/types/editor-table-preferences'
+import { resolveStudentDurationByStudyProgramAndRepeat } from '~/utils/student-duration'
 
 function resolveMinutes(value: number, fallback: number): number {
   if (!Number.isFinite(value)) {
@@ -75,6 +76,12 @@ function updateStudentItemFromRow(
     shouldClearSpecializationAfterProfileChange ? '' : row.specializationCode
   )
 
+  const previousStudyProgramType = studentItem.student.studyProgramType
+  const previousRepeatType = studentItem.student.repeatType
+  const nextRepeatType = resolveRepeatType(row.repeatType, previousRepeatType)
+  const shouldOverwriteDuration =
+    nextRepeatType !== previousRepeatType || nextStudyProfile.studyProgramType !== previousStudyProgramType
+
   studentItem.student.studyLanguage = nextStudyProfile.studyLanguage
   studentItem.student.studyProgramType = nextStudyProfile.studyProgramType
   studentItem.student.studyProgramName = nextStudyProfile.studyProgramName
@@ -102,7 +109,18 @@ function updateStudentItemFromRow(
   studentItem.student.reviewerName = normalizeRequiredText(row.reviewerName)
   studentItem.student.additionalReviewerName = normalizeOptionalText(row.additionalReviewerName)
   studentItem.student.thesisLanguage = resolveThesisLanguage(row.thesisLanguage, studentItem.student.thesisLanguage)
-  studentItem.student.repeatType = resolveRepeatType(row.repeatType, studentItem.student.repeatType)
+  studentItem.student.repeatType = nextRepeatType
+
+  if (shouldOverwriteDuration) {
+    const mappedDuration = resolveStudentDurationByStudyProgramAndRepeat(
+      nextStudyProfile.studyProgramType,
+      nextRepeatType
+    )
+    studentItem.student.prepareMinutes = mappedDuration.prepareMinutes
+    studentItem.student.examMinutes = mappedDuration.examMinutes
+    return
+  }
+
   studentItem.student.prepareMinutes = resolveMinutes(row.prepareMinutes, studentItem.student.prepareMinutes)
   studentItem.student.examMinutes = resolveMinutes(row.examMinutes, studentItem.student.examMinutes)
 }
