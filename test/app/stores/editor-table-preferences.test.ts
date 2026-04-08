@@ -7,11 +7,11 @@ describe('useEditorTablePreferencesStore', () => {
     setActivePinia(createPinia())
   })
 
-  it('uses optimized table view and AUTO thesis title mode by default', () => {
+  it('uses maximized table view and BOTH thesis title mode by default', () => {
     const store = useEditorTablePreferencesStore()
 
-    expect(store.tableViewMode).toBe('OPTIMIZED')
-    expect(store.thesisTitleDisplayMode).toBe('AUTO')
+    expect(store.tableViewMode).toBe('MAXIMIZED')
+    expect(store.thesisTitleDisplayMode).toBe('BOTH')
   })
 
   it('updates both preferences with valid values', () => {

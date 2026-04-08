@@ -8,8 +8,8 @@ import type { EditorStudentsTableViewMode } from '~/types/editor-table-preferenc
 export const useEditorTablePreferencesStore = defineStore(
   'editor-table-preferences',
   () => {
-    const thesisTitleDisplayMode = ref<ScheduleDraftThesisTitleDisplayMode>('AUTO')
-    const tableViewMode = ref<EditorStudentsTableViewMode>('OPTIMIZED')
+    const thesisTitleDisplayMode = ref<ScheduleDraftThesisTitleDisplayMode>('BOTH')
+    const tableViewMode = ref<EditorStudentsTableViewMode>('MAXIMIZED')
 
     function setThesisTitleDisplayMode(nextMode: ScheduleDraftThesisTitleDisplayMode): void {
       if (nextMode !== 'AUTO' && nextMode !== 'BOTH') {

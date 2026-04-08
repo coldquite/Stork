@@ -330,6 +330,11 @@ export function useEditorStudentTable(
         meta: { class: { th: 'whitespace-nowrap' } }
       },
       { accessorKey: 'email', header: t('editor.table.email'), meta: { class: { th: 'whitespace-nowrap' } } },
+      {
+        accessorKey: 'specializationCode',
+        header: t('editor.table.specialization'),
+        meta: { class: { th: 'whitespace-nowrap' } }
+      },
       { accessorKey: 'repeatType', header: t('editor.table.repeatType'), meta: { class: { th: 'whitespace-nowrap' } } },
       {
         accessorKey: 'prepareMinutes',
@@ -376,11 +381,6 @@ export function useEditorStudentTable(
       {
         accessorKey: 'studyProgramName',
         header: t('editor.table.studyProgramName'),
-        meta: { class: { th: 'whitespace-nowrap' } }
-      },
-      {
-        accessorKey: 'specializationCode',
-        header: t('editor.table.specialization'),
         meta: { class: { th: 'whitespace-nowrap' } }
       }
     ]
