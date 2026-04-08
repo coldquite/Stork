@@ -87,12 +87,12 @@ async function confirmLogout(): Promise<void> {
 </script>
 
 <template>
-  <div class="flex min-h-dvh min-h-screen flex-col">
+  <div class="flex min-h-dvh flex-col">
     <UHeader class="border-b-2" :ui="headerUi">
       <template #left>
         <div class="flex items-center gap-44">
           <NuxtLink to="/">
-            <CommonAppLogo />
+            <CommonAppLogo class="origin-left scale-115" />
           </NuxtLink>
 
           <div v-if="isEditorRoute" class="flex items-center gap-3">
@@ -100,6 +100,7 @@ async function confirmLogout(): Promise<void> {
               to="/"
               color="primary"
               variant="subtle"
+              size="xl"
               icon="i-lucide-house"
               :aria-label="editorBackToHomepageLabel"
               :class="editorHeaderActionButtonClass"
@@ -111,6 +112,7 @@ async function confirmLogout(): Promise<void> {
             <UButton
               color="primary"
               variant="subtle"
+              size="xl"
               icon="i-lucide-circle-plus"
               :aria-label="editorCreateScheduleFromImportLabel"
               :class="editorHeaderActionButtonClass"
@@ -123,6 +125,7 @@ async function confirmLogout(): Promise<void> {
             <UButton
               color="primary"
               variant="subtle"
+              size="xl"
               icon="i-lucide-folder-open"
               :aria-label="editorOpenSavedSchedulesLabel"
               :class="editorHeaderActionButtonClass"
@@ -136,6 +139,7 @@ async function confirmLogout(): Promise<void> {
               to="/teachers-dictionary"
               color="secondary"
               variant="subtle"
+              size="xl"
               icon="i-lucide-book-user"
               :aria-label="teachersDictionaryPageLabel"
               :class="teachersDictionaryHeaderButtonClass"
@@ -154,6 +158,7 @@ async function confirmLogout(): Promise<void> {
             to="/teachers-dictionary"
             color="secondary"
             variant="subtle"
+            size="xl"
             icon="i-lucide-book-user"
             :aria-label="teachersDictionaryPageLabel"
             :class="teachersDictionaryHeaderButtonClass"
@@ -165,6 +170,7 @@ async function confirmLogout(): Promise<void> {
           <UButton
             color="primary"
             variant="subtle"
+            size="xl"
             icon="i-lucide-log-out"
             :aria-label="logoutButtonLabel"
             :class="headerActionButtonClass"
@@ -177,7 +183,7 @@ async function confirmLogout(): Promise<void> {
         </div>
 
         <ClientOnly>
-          <UColorModeButton class="cursor-pointer" />
+          <UColorModeButton size="xl" class="cursor-pointer" :ui="{ leadingIcon: 'size-6' }" />
         </ClientOnly>
       </template>
     </UHeader>
