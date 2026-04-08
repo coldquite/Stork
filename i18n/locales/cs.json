@@ -309,6 +309,7 @@
         "openAction": "Přidat komisi"
       },
       "rename": {
+        "action": "Přejmenovat",
         "title": "Přejmenovat komisi",
         "description": "Upravte název komise „{name}“.",
         "placeholder": "Např. 1-BI-SI.21",
@@ -321,9 +322,10 @@
         }
       },
       "delete": {
-        "confirmAction": "Odstranit komisi",
-        "description": "Opravdu chcete odstranit komisi „{name}“ včetně všech studentů v této komisi? Tato akce je nevratná.",
-        "openAriaLabel": "Odstranit komisi {name}"
+        "action": "Smazat",
+        "confirmAction": "Smazat komisi",
+        "description": "Opravdu chcete smazat komisi „{name}“ včetně všech studentů v této komisi? Tato akce je nevratná.",
+        "openAriaLabel": "Smazat komisi {name}"
       }
     },
     "committee": {
@@ -379,9 +381,9 @@
           }
         },
         "delete": {
-          "ariaLabel": "Odstranit člena dozoru",
-          "confirmAction": "Odstranit člena dozoru",
-          "description": "Opravdu chcete odstranit člena dozoru „{name}“? Tato akce je nevratná."
+          "ariaLabel": "Smazat člena dozoru",
+          "confirmAction": "Smazat člena dozoru",
+          "description": "Opravdu chcete smazat člena dozoru „{name}“? Tato akce je nevratná."
         }
       }
     },

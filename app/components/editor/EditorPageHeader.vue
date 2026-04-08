@@ -49,7 +49,7 @@ function requestSearchStudents(): void {
             icon="i-lucide-pencil"
             :label="props.renameLabel"
             :aria-label="props.renameAriaLabel"
-            class="ml-4 shrink-0 cursor-pointer"
+            class="ml-3 shrink-0 cursor-pointer"
             :ui="{
               base: 'h-10 bg-default border-2 border-capaccent-300 text-capaccent-800 hover:border-capaccent-500 hover:bg-capaccent-50 dark:border-capaccent-400 dark:bg-default dark:text-capaccent-100 dark:hover:bg-capaccent-900/50'
             }"

@@ -92,6 +92,8 @@ function setTableViewMode(mode: EditorStudentsTableViewMode): void {
           :committee-title-label="labels.committeeTitle"
           :committee-label="props.selectedCommitteeLabel"
           :students-count-label="props.studentsCountLabel"
+          :rename-committee-label="labels.renameCommitteeAction"
+          :delete-committee-label="labels.deleteCommitteeAction"
           :rename-committee-aria-label="labels.renameCommitteeAria"
           :delete-committee-aria-label="labels.deleteCommitteeAria"
           :has-committee="hasSelectedCommittee"

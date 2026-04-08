@@ -3,6 +3,8 @@ const props = defineProps<{
   committeeTitleLabel: string
   committeeLabel?: string
   studentsCountLabel: string
+  renameCommitteeLabel: string
+  deleteCommitteeLabel: string
   renameCommitteeAriaLabel: string
   deleteCommitteeAriaLabel: string
   hasCommittee: boolean
@@ -12,11 +14,11 @@ const emit = defineEmits<{
   (e: 'renameCommittee' | 'deleteCommittee'): void
 }>()
 
-const renameActionButtonClass = 'shrink-0 px-2 cursor-pointer'
+const renameActionButtonClass = 'shrink-0 px-2 text-sm cursor-pointer'
 const renameActionButtonUi = {
   base: '!text-capaccent-800 ring-[2px] ring-capaccent-300/80 hover:!text-capaccent-800 hover:ring-capaccent-500 hover:bg-capaccent-50 dark:!text-capaccent-100 dark:ring-capaccent-400/80 dark:hover:!text-capaccent-100 dark:hover:bg-capaccent-500/25'
 }
-const actionButtonClass = 'shrink-0 px-2 cursor-pointer'
+const actionButtonClass = 'shrink-0 px-2 text-sm cursor-pointer'
 const deleteActionButtonUi = {
   base: 'text-error/80 ring-[2px] ring-current/45 hover:text-error hover:ring-current/80'
 }
@@ -28,8 +30,8 @@ const deleteActionButtonUi = {
       <p class="text-muted text-sm">
         {{ props.committeeTitleLabel }}
       </p>
-      <div class="flex flex-wrap items-center gap-2">
-        <h2 class="text-lg font-semibold">
+      <div class="flex flex-wrap items-center gap-3">
+        <h2 class="text-xl font-semibold">
           {{ props.committeeLabel }}
         </h2>
 
@@ -39,6 +41,7 @@ const deleteActionButtonUi = {
             variant="ghost"
             size="sm"
             icon="i-lucide-pencil"
+            :label="props.renameCommitteeLabel"
             :aria-label="props.renameCommitteeAriaLabel"
             :class="renameActionButtonClass"
             :ui="renameActionButtonUi"
@@ -50,6 +53,7 @@ const deleteActionButtonUi = {
             variant="ghost"
             size="sm"
             icon="i-lucide-trash-2"
+            :label="props.deleteCommitteeLabel"
             :aria-label="props.deleteCommitteeAriaLabel"
             :class="actionButtonClass"
             :ui="deleteActionButtonUi"

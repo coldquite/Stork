@@ -93,6 +93,8 @@ export interface EditorStudentsPanelCommitteeLabels {
   studyProgramName: string
   specializationCode: string
   department: string
+  renameCommitteeAction: string
+  deleteCommitteeAction: string
   renameCommitteeAria: string
   deleteCommitteeAria: string
 }

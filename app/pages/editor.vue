@@ -56,6 +56,8 @@ const committeeLabels = computed(() => ({
   studyProgramName: t('editor.committee.studyProgramName'),
   specializationCode: t('editor.committee.specializationCode'),
   department: t('editor.committee.department'),
+  renameCommitteeAction: t('editor.committees.rename.action'),
+  deleteCommitteeAction: t('editor.committees.delete.action'),
   renameCommitteeAria: t('editor.committees.rename.openAriaLabel', {
     name: committeeList.selectedCommitteeLabel.value
   }),
