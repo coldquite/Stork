@@ -68,6 +68,8 @@ export interface EditorStudentsPanelCommitteeLabels {
   startTime: string
   startTimeHour: string
   startTimeMinute: string
+  addStudentAction: string
+  addStudentAria: string
   columnDisplaySettingsAction: string
   thesisTitleDisplayMode: string
   thesisTitleDisplayModeAuto: string
@@ -124,6 +126,56 @@ export type EditorCommitteeStringField =
 export interface EditorCommitteeStringFieldPayload {
   field: EditorCommitteeStringField
   value: string
+}
+
+export type EditorCreateStudentTextField =
+  | 'firstName'
+  | 'lastName'
+  | 'email'
+  | 'titlesBefore'
+  | 'titlesAfter'
+  | 'thesisTitleLocal'
+  | 'thesisTitleEn'
+  | 'supervisorName'
+  | 'reviewerName'
+  | 'additionalSupervisorName'
+  | 'additionalReviewerName'
+
+export type EditorCreateStudentMinutesField = 'prepareMinutes' | 'examMinutes'
+
+export type EditorCreateStudentValidationField =
+  | 'firstName'
+  | 'lastName'
+  | 'email'
+  | 'thesisTitleLocal'
+  | 'thesisTitleEn'
+  | 'supervisorName'
+  | 'reviewerName'
+  | 'studyProgramName'
+  | 'specializationCode'
+
+export type EditorCreateStudentValidationErrors = Partial<Record<EditorCreateStudentValidationField, string>>
+
+export interface EditorCreateStudentDraft {
+  firstName: string
+  lastName: string
+  email: string
+  titlesBefore: string
+  titlesAfter: string
+  thesisTitleLocal: string
+  thesisTitleEn: string
+  thesisLanguage: ThesisLanguageDto
+  supervisorName: string
+  reviewerName: string
+  additionalSupervisorName: string
+  additionalReviewerName: string
+  studyProgramName: string
+  studyProgramType: StudyProgramTypeDto
+  specializationCode: string
+  studyLanguage: StudyLanguageDto
+  repeatType: RepeatTypeDto
+  prepareMinutes: number
+  examMinutes: number
 }
 
 /** Pre-translated strings for [EditorScheduleDialogsHost.vue](app/components/editor/EditorScheduleDialogsHost.vue). */

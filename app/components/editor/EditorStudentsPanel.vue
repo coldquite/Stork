@@ -43,7 +43,7 @@ const emit = defineEmits<{
   (event: 'update:tableViewMode', value: EditorStudentsTableViewMode): void
   (event: 'update:committeeLanguage', value: StudyLanguageDto): void
   (event: 'update:committeeStudyProgramType', value: StudyProgramTypeDto): void
-  (event: 'addInvigilator'): void
+  (event: 'addStudent' | 'addInvigilator'): void
 }>()
 
 const labels = computed(() => props.committeeLabels)
@@ -160,6 +160,21 @@ function setTableViewMode(mode: EditorStudentsTableViewMode): void {
               :start-time-minute-label="labels.startTimeMinute"
               @update:committee-start-minute="emit('update:committeeStartMinute', $event)"
             />
+
+            <div aria-hidden="true" class="border-default hidden h-8 border-l sm:block" />
+
+            <UButton
+              color="primary"
+              variant="soft"
+              size="md"
+              icon="i-lucide-user-plus"
+              class="ring-primary/35 hover:ring-primary/55 min-w-0 shrink-0 cursor-pointer whitespace-nowrap ring-2"
+              :aria-label="labels.addStudentAria"
+              :disabled="!hasSelectedCommittee"
+              @click="emit('addStudent')"
+            >
+              {{ labels.addStudentAction }}
+            </UButton>
 
             <UPopover :content="{ side: 'bottom', align: 'end' }" class="ml-auto">
               <UButton

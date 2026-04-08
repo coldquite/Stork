@@ -5,6 +5,8 @@ import {
   applyStudyProgramNameChange,
   applyStudyProgramTypeChange,
   resolveSpecializationNameForStudyProfile,
+  resolveSpecializationOptionsForStudyProfile,
+  resolveStudyProgramNameOptionsForStudyProfile,
   type StudentStudyProfileFields
 } from '~/utils/editor/student-study-profile'
 
@@ -63,5 +65,19 @@ describe('student-study-profile', () => {
     )
 
     expect(specializationName).toBe('Software Engineering 2021')
+  })
+
+  it('keeps current study program name in options when not in catalog', () => {
+    const options = resolveStudyProgramNameOptionsForStudyProfile('BACHELOR', 'CZECH', 'Vlastní program')
+
+    expect(options[0]).toBe('Vlastní program')
+    expect(options).toContain('Informatika')
+  })
+
+  it('keeps current specialization code in options when not in catalog', () => {
+    const options = resolveSpecializationOptionsForStudyProfile('BACHELOR', 'Informatika', 'CUSTOM-001')
+
+    expect(options[0]?.specializationCode).toBe('CUSTOM-001')
+    expect(options[0]?.specializationName).toBe('CUSTOM-001')
   })
 })

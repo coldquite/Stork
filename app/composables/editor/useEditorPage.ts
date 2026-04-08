@@ -2,6 +2,7 @@ import { useEditorCommitteeFields } from '~/composables/editor/useEditorCommitte
 import { useEditorCommitteeList } from '~/composables/editor/useEditorCommitteeList'
 import { useEditorInvigilators } from '~/composables/editor/useEditorInvigilators'
 import { useEditorScheduleDialogs } from '~/composables/editor/useEditorScheduleDialogs'
+import { useEditorStudentCreation } from '~/composables/editor/useEditorStudentCreation'
 import { useEditorStudentSearch } from '~/composables/editor/useEditorStudentSearch'
 import { useEditorStudentTable } from '~/composables/editor/useEditorStudentTable'
 import { useEditorTablePreferencesStore } from '~/stores/editor-table-preferences'
@@ -29,6 +30,7 @@ export function useEditorPage() {
   const studentTable = useEditorStudentTable(committeeList.selectedCommittee, thesisTitleDisplayMode, tableViewMode)
   const committeeFields = useEditorCommitteeFields(committeeList.selectedCommittee)
   const invigilators = useEditorInvigilators(committeeList.selectedCommittee)
+  const studentCreation = useEditorStudentCreation(committeeList.selectedCommittee)
   const scheduleDialogs = useEditorScheduleDialogs()
   const studentSearch = useEditorStudentSearch(committeeList.selectedCommitteeId)
 
@@ -124,6 +126,26 @@ export function useEditorPage() {
       closeDeleteInvigilatorConfirm: invigilators.closeDeleteInvigilatorConfirm,
       submitAddInvigilator: invigilators.submitAddInvigilator,
       submitDeleteInvigilator: invigilators.submitDeleteInvigilator
+    },
+
+    studentCreation: {
+      isCreateStudentDialogOpen: studentCreation.isCreateStudentDialogOpen,
+      createStudentDraft: studentCreation.createStudentDraft,
+      createStudentValidationErrors: studentCreation.createStudentValidationErrors,
+      createStudentCommitteeLabel: studentCreation.createStudentCommitteeLabel,
+      createStudentStudyProgramNameOptions: studentCreation.createStudentStudyProgramNameOptions,
+      createStudentSpecializationOptions: studentCreation.createStudentSpecializationOptions,
+      openCreateStudentDialog: studentCreation.openCreateStudentDialog,
+      closeCreateStudentDialog: studentCreation.closeCreateStudentDialog,
+      submitCreateStudent: studentCreation.submitCreateStudent,
+      updateCreateStudentTextField: studentCreation.updateCreateStudentTextField,
+      updateCreateStudentMinutesField: studentCreation.updateCreateStudentMinutesField,
+      updateCreateStudentStudyLanguage: studentCreation.updateCreateStudentStudyLanguage,
+      updateCreateStudentStudyProgramType: studentCreation.updateCreateStudentStudyProgramType,
+      updateCreateStudentStudyProgramName: studentCreation.updateCreateStudentStudyProgramName,
+      updateCreateStudentSpecializationCode: studentCreation.updateCreateStudentSpecializationCode,
+      updateCreateStudentThesisLanguage: studentCreation.updateCreateStudentThesisLanguage,
+      updateCreateStudentRepeatType: studentCreation.updateCreateStudentRepeatType
     },
 
     scheduleDialogs: {

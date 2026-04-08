@@ -7,6 +7,7 @@ type EditorPageGroups = ReturnType<typeof useEditorPage>
 const props = defineProps<{
   committeeList: EditorPageGroups['committeeList']
   invigilators: EditorPageGroups['invigilators']
+  studentCreation: EditorPageGroups['studentCreation']
   scheduleDialogs: EditorPageGroups['scheduleDialogs']
   copy: EditorScheduleDialogsCopy
   committeeLabels: EditorStudentsPanelCommitteeLabels
@@ -14,6 +15,7 @@ const props = defineProps<{
 
 const cl = props.committeeList
 const inv = props.invigilators
+const sc = props.studentCreation
 const sd = props.scheduleDialogs
 
 const renameCommitteeOpen = computed({
@@ -82,6 +84,23 @@ const createCommitteeNameModel = computed({
 })
 const createCommitteeDraftModel = computed(() => cl.createCommitteeDraft.value)
 const createCommitteeDateLabel = computed(() => cl.createCommitteeDateLabel.value)
+
+const createStudentOpen = computed({
+  get: () => sc.isCreateStudentDialogOpen.value,
+  set: (v: boolean) => {
+    if (v) {
+      sc.openCreateStudentDialog()
+      return
+    }
+
+    sc.closeCreateStudentDialog()
+  }
+})
+const createStudentDraftModel = computed(() => sc.createStudentDraft.value)
+const createStudentValidationErrors = computed(() => sc.createStudentValidationErrors.value)
+const createStudentCommitteeLabel = computed(() => sc.createStudentCommitteeLabel.value)
+const createStudentStudyProgramNameOptions = computed(() => sc.createStudentStudyProgramNameOptions.value)
+const createStudentSpecializationOptions = computed(() => sc.createStudentSpecializationOptions.value)
 
 const deleteCommitteeConfirmOpen = computed({
   get: () => cl.isDeleteCommitteeConfirmOpen.value,
@@ -203,6 +222,25 @@ const deleteInvigilatorDescriptionText = computed(() => inv.deleteInvigilatorCon
     @update:committee-study-program-type="cl.updateCreateCommitteeStudyProgramType($event)"
     @cancel="cl.closeCreateCommitteeDialog()"
     @submit="cl.submitCreateCommittee()"
+  />
+
+  <EditorCreateStudentModal
+    v-model:open="createStudentOpen"
+    :draft="createStudentDraftModel"
+    :committee-label="createStudentCommitteeLabel"
+    :validation-errors="createStudentValidationErrors"
+    :study-program-name-options="createStudentStudyProgramNameOptions"
+    :specialization-options="createStudentSpecializationOptions"
+    @update:text-field="sc.updateCreateStudentTextField($event.field, $event.value)"
+    @update:minutes-field="sc.updateCreateStudentMinutesField($event.field, $event.value)"
+    @update:study-language="sc.updateCreateStudentStudyLanguage($event)"
+    @update:study-program-type="sc.updateCreateStudentStudyProgramType($event)"
+    @update:study-program-name="sc.updateCreateStudentStudyProgramName($event)"
+    @update:specialization-code="sc.updateCreateStudentSpecializationCode($event)"
+    @update:thesis-language="sc.updateCreateStudentThesisLanguage($event)"
+    @update:repeat-type="sc.updateCreateStudentRepeatType($event)"
+    @cancel="sc.closeCreateStudentDialog()"
+    @submit="sc.submitCreateStudent()"
   />
 
   <CommonAppActionConfirmDialog

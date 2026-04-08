@@ -1,4 +1,9 @@
-import { resolveEditorSpecializationOptionByCode, resolveEditorStudyProgramNameOptions } from '#shared/constants/editor'
+import {
+  resolveEditorSpecializationOptionByCode,
+  resolveEditorSpecializationOptions,
+  resolveEditorStudyProgramNameOptions,
+  type EditorSpecializationOption
+} from '#shared/constants/editor'
 import type { StudyLanguageDto, StudyProgramTypeDto } from '#shared/types/time-schedules'
 import { normalizeRequiredText } from '~/utils/editor/draft-committee'
 
@@ -23,6 +28,48 @@ function isStudyProgramNameAllowed(
 ): boolean {
   const allowedStudyProgramNames = resolveEditorStudyProgramNameOptions(studyProgramType, studyLanguage)
   return allowedStudyProgramNames.includes(studyProgramName)
+}
+
+export function resolveStudyProgramNameOptionsForStudyProfile(
+  studyProgramType: StudyProgramTypeDto,
+  studyLanguage: StudyLanguageDto,
+  currentStudyProgramName: string
+): string[] {
+  const baseOptions = resolveEditorStudyProgramNameOptions(studyProgramType, studyLanguage)
+  const normalizedProgramName = normalizeRequiredText(currentStudyProgramName)
+  if (normalizedProgramName.length < 1 || baseOptions.includes(normalizedProgramName)) {
+    return baseOptions
+  }
+
+  return [normalizedProgramName, ...baseOptions]
+}
+
+export function resolveSpecializationOptionsForStudyProfile(
+  studyProgramType: StudyProgramTypeDto,
+  studyProgramName: string,
+  currentSpecializationCode: string
+): EditorSpecializationOption[] {
+  const baseOptions = resolveEditorSpecializationOptions(studyProgramType, studyProgramName)
+  const normalizedCode = normalizeRequiredText(currentSpecializationCode)
+  if (normalizedCode.length < 1) {
+    return baseOptions
+  }
+
+  const hasCodeInOptions = baseOptions.some((option) => option.specializationCode === normalizedCode)
+  if (hasCodeInOptions) {
+    return baseOptions
+  }
+
+  return [
+    {
+      specializationCode: normalizedCode,
+      specializationName: normalizedCode,
+      departmentCode: null,
+      departmentNameCs: null,
+      departmentNameEn: null
+    },
+    ...baseOptions
+  ]
 }
 
 export function applyStudyLanguageChange(

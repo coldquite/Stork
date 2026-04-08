@@ -15,6 +15,7 @@ const {
   studentSearch,
   committeeFields,
   invigilators,
+  studentCreation,
   scheduleDialogs,
   draftName,
   studentsCountLabel,
@@ -31,6 +32,8 @@ const committeeLabels = computed(() => ({
   startTime: t('editor.committee.startTime'),
   startTimeHour: t('editor.committee.startTimeHour'),
   startTimeMinute: t('editor.committee.startTimeMinute'),
+  addStudentAction: t('editor.students.add.openAction'),
+  addStudentAria: t('editor.students.add.openAriaLabel', { name: committeeList.selectedCommitteeLabel.value }),
   columnDisplaySettingsAction: t('editor.committee.columnDisplaySettingsAction'),
   thesisTitleDisplayMode: t('editor.committee.thesisTitleDisplayMode'),
   thesisTitleDisplayModeAuto: t('editor.committee.thesisTitleDisplayModeOptions.auto'),
@@ -232,6 +235,7 @@ const draftNameText = computed(() => draftName.value)
             @update:table-view-mode="draftSettings.updateTableViewMode"
             @update:committee-language="committeeFields.updateSelectedCommitteeLanguage"
             @update:committee-study-program-type="committeeFields.updateSelectedCommitteeStudyProgramType"
+            @add-student="studentCreation.openCreateStudentDialog"
             @add-invigilator="invigilators.openAddInvigilatorDialog"
             @delete-invigilator="invigilators.openDeleteInvigilatorConfirm($event)"
             @rename-committee="committeeList.openRenameCommitteeDialog($event)"
@@ -255,6 +259,7 @@ const draftNameText = computed(() => draftName.value)
     <EditorScheduleDialogsHost
       :committee-list="committeeList"
       :invigilators="invigilators"
+      :student-creation="studentCreation"
       :schedule-dialogs="scheduleDialogs"
       :copy="dialogCopy"
       :committee-labels="committeeLabels"

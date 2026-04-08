@@ -390,7 +390,41 @@
     "students": {
       "count": "{count} studentů",
       "emptyTitle": "Komise zatím nemá studenty",
-      "emptyDescription": "Jakmile přidáte studenty, zobrazí se zde."
+      "emptyDescription": "Jakmile přidáte studenty, zobrazí se zde.",
+      "add": {
+        "openAction": "Přidat studenta",
+        "openAriaLabel": "Přidat studenta do komise {name}",
+        "title": "Přidat studenta",
+        "description": "Vyplňte údaje o studentovi pro vybranou komisi. Student se přidá na konec seznamu studentů v této komisi.",
+        "submit": "Přidat studenta",
+        "fields": {
+          "committee": "Komise (automaticky podle aktuálního výběru v plánu)",
+          "firstName": "Jméno",
+          "lastName": "Příjmení",
+          "email": "E-mail studenta",
+          "titlesBefore": "Titul před",
+          "titlesAfter": "Titul za",
+          "thesisTitleLocal": "VŠKP: Český název práce",
+          "thesisTitleEn": "VŠKP: Anglický název práce",
+          "thesisLanguage": "Jazyk práce",
+          "studyLanguage": "Jazyk studia",
+          "supervisorName": "Vedoucí práce 1",
+          "additionalSupervisorName": "Vedoucí práce 2",
+          "reviewerName": "Oponent práce 1",
+          "additionalReviewerName": "Oponent práce 2",
+          "studyProgramType": "Typ studia",
+          "studyProgramName": "Studijní program",
+          "specializationCode": "Kód studijního plánu",
+          "repeatType": "Opakování",
+          "prepareMinutes": "Příprava (min)",
+          "examMinutes": "Zkouška (min)"
+        },
+        "validation": {
+          "required": "Pole musí obsahovat alespoň 1 znak bez mezer.",
+          "leadingTrailingWhitespace": "Pole nesmí začínat ani končit mezerou.",
+          "emailInvalid": "Zadejte e-mail ve správném formátu."
+        }
+      }
     },
     "table": {
       "order": "Pořadí",

@@ -1,11 +1,6 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
 import { useSortable } from '@vueuse/integrations/useSortable'
-import {
-  resolveEditorSpecializationOptions,
-  resolveEditorStudyProgramNameOptions,
-  type EditorSpecializationOption
-} from '#shared/constants/editor'
 import type {
   RepeatTypeDto,
   StudyLanguageDto,
@@ -20,6 +15,8 @@ import {
   applyStudyLanguageChange,
   applyStudyProgramNameChange,
   applyStudyProgramTypeChange,
+  resolveSpecializationOptionsForStudyProfile,
+  resolveStudyProgramNameOptionsForStudyProfile,
   type StudentStudyProfileFields
 } from '~/utils/editor/student-study-profile'
 import { resolveStudyLanguageFromSelectValue } from '~/utils/editor/study-language'
@@ -618,37 +615,11 @@ function displayText(value: string): string {
 }
 
 function studyProgramNameOptionsForRow(row: StudentRow): string[] {
-  const baseOptions = resolveEditorStudyProgramNameOptions(row.studyProgramType, row.studyLanguage)
-  const normalizedProgramName = row.studyProgramName.trim()
-  if (normalizedProgramName.length < 1 || baseOptions.includes(normalizedProgramName)) {
-    return baseOptions
-  }
-
-  return [normalizedProgramName, ...baseOptions]
+  return resolveStudyProgramNameOptionsForStudyProfile(row.studyProgramType, row.studyLanguage, row.studyProgramName)
 }
 
-function specializationOptionsForRow(row: StudentRow): EditorSpecializationOption[] {
-  const baseOptions = resolveEditorSpecializationOptions(row.studyProgramType, row.studyProgramName)
-  const normalizedCode = row.specializationCode.trim()
-  if (normalizedCode.length < 1) {
-    return baseOptions
-  }
-
-  const hasCodeInOptions = baseOptions.some((option) => option.specializationCode === normalizedCode)
-  if (hasCodeInOptions) {
-    return baseOptions
-  }
-
-  return [
-    {
-      specializationCode: normalizedCode,
-      specializationName: normalizedCode,
-      departmentCode: null,
-      departmentNameCs: null,
-      departmentNameEn: null
-    },
-    ...baseOptions
-  ]
+function specializationOptionsForRow(row: StudentRow) {
+  return resolveSpecializationOptionsForStudyProfile(row.studyProgramType, row.studyProgramName, row.specializationCode)
 }
 
 onMounted(() => {
