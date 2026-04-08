@@ -179,9 +179,10 @@ function setTableViewMode(mode: EditorStudentsTableViewMode): void {
             <UPopover :content="{ side: 'bottom', align: 'end' }" class="ml-auto">
               <UButton
                 color="neutral"
-                variant="outline"
+                variant="ghost"
+                size="md"
                 icon="i-lucide-sliders-horizontal"
-                class="min-w-0 shrink-0 cursor-pointer justify-center whitespace-nowrap"
+                class="bg-default min-w-0 shrink-0 cursor-pointer justify-center whitespace-nowrap ring-2 ring-slate-400/70 hover:bg-slate-100 hover:ring-slate-500 dark:ring-slate-500/80 dark:hover:bg-slate-800/45 dark:hover:ring-slate-400"
               >
                 {{ labels.columnDisplaySettingsAction }}
               </UButton>

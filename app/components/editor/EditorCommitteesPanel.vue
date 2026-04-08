@@ -52,7 +52,7 @@ function resolveSidebarItemKey(item: CommitteeSidebarItem): string {
           variant="outline"
           size="lg"
           leading-icon="i-lucide-scale"
-          class="bg-default !text-capaccent-800 ring-capaccent-300/80 dark:!text-capaccent-100 dark:ring-capaccent-400/80 self-stretch px-2.5 text-base font-semibold ring-[2px]"
+          class="bg-default !text-capaccent-800 ring-capaccent-400/80 dark:!text-capaccent-100 dark:ring-capaccent-500/80 self-stretch px-2.5 text-base font-semibold ring-[2px]"
         >
           {{ props.committeesCount }}
         </UBadge>
@@ -78,7 +78,7 @@ function resolveSidebarItemKey(item: CommitteeSidebarItem): string {
         <li v-for="item in props.committeeSidebarItems" :key="resolveSidebarItemKey(item)">
           <div
             v-if="item.kind === 'day-bookmark'"
-            class="border-secondary/35 bg-secondary/10 text-capaccent-900 dark:text-capaccent-100 border-y-2 px-3 py-2 text-sm font-semibold"
+            class="border-capaccent-400/80 dark:border-capaccent-500/80 bg-secondary/10 text-capaccent-900 dark:text-capaccent-100 border-y-2 px-3 py-2 text-sm font-semibold"
           >
             {{ item.dayLabel }}
           </div>

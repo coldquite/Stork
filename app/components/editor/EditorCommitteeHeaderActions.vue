@@ -16,7 +16,7 @@ const emit = defineEmits<{
 
 const renameActionButtonClass = 'shrink-0 px-2 text-sm cursor-pointer'
 const renameActionButtonUi = {
-  base: '!text-capaccent-800 ring-[2px] ring-capaccent-300/80 hover:!text-capaccent-800 hover:ring-capaccent-500 hover:bg-capaccent-50 dark:!text-capaccent-100 dark:ring-capaccent-400/80 dark:hover:!text-capaccent-100 dark:hover:bg-capaccent-500/25'
+  base: '!text-capaccent-800 ring-[2px] ring-capaccent-400/80 hover:!text-capaccent-800 hover:ring-capaccent-500 hover:bg-capaccent-50 dark:!text-capaccent-100 dark:ring-capaccent-500/80 dark:hover:!text-capaccent-100 dark:hover:bg-capaccent-500/25'
 }
 const actionButtonClass = 'shrink-0 px-2 text-sm cursor-pointer'
 const deleteActionButtonUi = {

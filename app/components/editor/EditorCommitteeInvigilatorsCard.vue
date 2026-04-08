@@ -75,7 +75,7 @@ function requestDelete(localId: string): void {
           variant="soft"
           size="sm"
           icon="i-lucide-plus"
-          class="ring-primary/35 hover:ring-primary/55 mt-2 w-full cursor-pointer justify-center font-semibold ring-2"
+          class="ring-primary/35 hover:ring-primary/55 mt-2 w-full cursor-pointer justify-center text-sm font-semibold ring-2"
           :disabled="!props.selectedCommittee"
           @click="requestAdd"
         >
