@@ -78,6 +78,7 @@ function mapCommitteeItemToCreateData(item: PostCommitteeItemDto) {
     pause: {
       create: {
         label: item.pause.label,
+        pauseType: item.pause.pauseType,
         durationMinutes: item.pause.durationMinutes
       }
     }
@@ -205,6 +206,7 @@ describe('GET /api/time-schedules (integration)', () => {
               student: null,
               pause: {
                 label: 'Přestávka A1',
+                pauseType: 'BREAK',
                 durationMinutes: 20
               }
             }
@@ -242,6 +244,7 @@ describe('GET /api/time-schedules (integration)', () => {
               student: null,
               pause: {
                 label: 'Přestávka A2',
+                pauseType: 'BREAK',
                 durationMinutes: 15
               }
             }

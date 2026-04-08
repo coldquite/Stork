@@ -89,6 +89,7 @@ function createApiSchedule(seed = 'A'): TimeScheduleDto {
             pause: {
               itemId: `pause-${seed}`,
               label: 'Přestávka',
+              pauseType: 'BREAK',
               durationMinutes: 20
             }
           }

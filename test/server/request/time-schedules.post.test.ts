@@ -65,6 +65,7 @@ function createPostPayload(nameSuffix: string): PostTimeScheduleRequestDto {
             student: null,
             pause: {
               label: 'Přestávka',
+              pauseType: 'BREAK',
               durationMinutes: 20
             }
           }
@@ -208,6 +209,7 @@ describe('POST /api/time-schedules (integration)', () => {
     expect(pauseItem?.id.length).toBeGreaterThan(0)
     expect(pauseItem?.pause).not.toBeNull()
     expect(pauseItem?.pause?.label).toBe('Přestávka')
+    expect(pauseItem?.pause?.pauseType).toBe('BREAK')
   })
 
   it('keeps provided schedule name for AUTO payloads', async () => {
@@ -476,6 +478,7 @@ describe('POST /api/time-schedules (integration)', () => {
                   ...studentItem,
                   pause: {
                     label: 'Wrong pause',
+                    pauseType: 'BREAK',
                     durationMinutes: 1
                   }
                 }
@@ -581,6 +584,58 @@ describe('POST /api/time-schedules (integration)', () => {
                   student: {
                     ...studentItem.student,
                     prepareMinutes: 30.5
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      name: 'pause pauseType is missing',
+      expectedIssueFragment: 'pauseType',
+      mutate: (payload: PostTimeScheduleRequestDto) => {
+        const firstCommittee = payload.committees[0] as PostCommitteeDraft
+        const pauseItem = firstCommittee.items[1] as Extract<PostCommitteeItemDraft, { type: 'PAUSE' }>
+
+        return {
+          ...payload,
+          committees: [
+            {
+              ...firstCommittee,
+              items: [
+                {
+                  ...pauseItem,
+                  pause: {
+                    label: pauseItem.pause.label,
+                    durationMinutes: pauseItem.pause.durationMinutes
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      name: 'pause pauseType has invalid enum value',
+      expectedIssueFragment: 'pauseType',
+      mutate: (payload: PostTimeScheduleRequestDto) => {
+        const firstCommittee = payload.committees[0] as PostCommitteeDraft
+        const pauseItem = firstCommittee.items[1] as Extract<PostCommitteeItemDraft, { type: 'PAUSE' }>
+
+        return {
+          ...payload,
+          committees: [
+            {
+              ...firstCommittee,
+              items: [
+                {
+                  ...pauseItem,
+                  pause: {
+                    ...pauseItem.pause,
+                    pauseType: 'COFFEE'
                   }
                 }
               ]

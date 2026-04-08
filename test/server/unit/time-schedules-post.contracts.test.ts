@@ -63,6 +63,7 @@ function createPayload(): PostTimeScheduleRequestDto {
             student: null,
             pause: {
               label: 'Přestávka',
+              pauseType: 'BREAK',
               durationMinutes: 20
             }
           }
@@ -263,6 +264,7 @@ describe('time-schedules post contracts', () => {
               ...firstItem,
               pause: {
                 label: 'Wrong pause',
+                pauseType: 'BREAK',
                 durationMinutes: 1
               }
             }
@@ -272,6 +274,74 @@ describe('time-schedules post contracts', () => {
     }
 
     expect(() => parsePostTimeSchedulePayload(invalidPayload)).toThrowError(/Invalid time schedule payload/)
+  })
+
+  it('rejects pause item when pauseType is missing', () => {
+    const payload = createPayload()
+    const firstCommittee = payload.committees[0]
+    if (!firstCommittee) {
+      throw new Error('Expected committee in payload')
+    }
+
+    const pauseItem = firstCommittee.items[1]
+    if (!pauseItem || pauseItem.type !== 'PAUSE') {
+      throw new Error('Expected second item to be PAUSE')
+    }
+
+    const statusMessage = getValidationStatusMessage({
+      ...payload,
+      committees: [
+        {
+          ...firstCommittee,
+          items: [
+            {
+              ...pauseItem,
+              pause: {
+                label: pauseItem.pause.label,
+                durationMinutes: pauseItem.pause.durationMinutes
+              }
+            }
+          ]
+        }
+      ]
+    })
+
+    expect(statusMessage).toContain('Invalid time schedule payload:')
+    expect(statusMessage).toContain('payload.committees[0].items[0].pause.pauseType')
+  })
+
+  it('rejects pause item when pauseType has invalid value', () => {
+    const payload = createPayload()
+    const firstCommittee = payload.committees[0]
+    if (!firstCommittee) {
+      throw new Error('Expected committee in payload')
+    }
+
+    const pauseItem = firstCommittee.items[1]
+    if (!pauseItem || pauseItem.type !== 'PAUSE') {
+      throw new Error('Expected second item to be PAUSE')
+    }
+
+    const statusMessage = getValidationStatusMessage({
+      ...payload,
+      committees: [
+        {
+          ...firstCommittee,
+          items: [
+            {
+              ...pauseItem,
+              pause: {
+                ...pauseItem.pause,
+                pauseType: 'COFFEE'
+              }
+            }
+          ]
+        }
+      ]
+    })
+
+    expect(statusMessage).toContain('Invalid time schedule payload:')
+    expect(statusMessage).toContain('payload.committees[0].items[0].pause.pauseType')
   })
 
   it('maps payload to prisma create data and parses committee date', () => {

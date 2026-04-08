@@ -5,6 +5,7 @@ import type { PostTimeScheduleRequestDto } from '#shared/types/time-schedules'
 const studyLanguageSchema = z.enum(['CZECH', 'ENGLISH'])
 const studyProgramTypeSchema = z.enum(['BACHELOR', 'MASTER'])
 const thesisLanguageSchema = z.enum(['CZECH', 'ENGLISH', 'SLOVAK'])
+const pauseTypeSchema = z.enum(['BREAK', 'LUNCH'])
 const repeatTypeSchema = z.enum(['NONE', 'THESIS_DEFENSE', 'ORAL_EXAM', 'BOTH', 'UNKNOWN'])
 const timeScheduleTypeSchema = z.enum(['MANUAL', 'AUTO'])
 
@@ -48,6 +49,7 @@ const studentItemSchema = z
 const pauseItemSchema = z
   .object({
     label: z.string(),
+    pauseType: pauseTypeSchema,
     durationMinutes: z.number().int({
       message: 'must be an integer'
     })

@@ -3,6 +3,7 @@ import { PrismaPg } from '@prisma/adapter-pg'
 import {
   PrismaClient,
   CommitteeItemType,
+  PauseType,
   RepeatType,
   ThesisLanguage,
   TimeScheduleType
@@ -131,6 +132,7 @@ async function createCommitteeWithItems(
       pause: {
         create: {
           label: 'Dumb pause name 1',
+          pauseType: PauseType.BREAK,
           durationMinutes: 15
         }
       }
@@ -158,6 +160,7 @@ async function createCommitteeWithItems(
       pause: {
         create: {
           label: 'Dumb pause name 2',
+          pauseType: PauseType.LUNCH,
           durationMinutes: 20
         }
       }

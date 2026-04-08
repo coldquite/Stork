@@ -50,6 +50,7 @@ function createPauseItem(localId: string, position: number, durationMinutes: num
     student: null,
     pause: {
       label: 'Pauza',
+      pauseType: 'BREAK',
       durationMinutes
     }
   }

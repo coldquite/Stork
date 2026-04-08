@@ -39,6 +39,7 @@ function mapItemCreateData(item: PostCommitteeItemDto): Prisma.CommitteeItemCrea
     pause: {
       create: {
         label: item.pause.label,
+        pauseType: item.pause.pauseType,
         durationMinutes: item.pause.durationMinutes
       }
     }

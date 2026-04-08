@@ -93,6 +93,7 @@ function createDraft(): ScheduleDraft {
             student: null,
             pause: {
               label: 'Přestávka',
+              pauseType: 'BREAK',
               durationMinutes: 15
             }
           },

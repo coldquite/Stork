@@ -97,6 +97,7 @@ async function createScheduleFixtureInDb(): Promise<string> {
                   pause: {
                     create: {
                       label: 'Přestávka',
+                      pauseType: 'BREAK',
                       durationMinutes: 20
                     }
                   }
@@ -239,6 +240,7 @@ describe('GET /api/time-schedules/:id (integration)', () => {
       expect(pauseItem.position).toBe(1)
       expect(pauseItem.student).toBeNull()
       expect(pauseItem.pause.label).toBe('Přestávka')
+      expect(pauseItem.pause.pauseType).toBe('BREAK')
       expect(pauseItem.pause.durationMinutes).toBe(20)
     }
   })

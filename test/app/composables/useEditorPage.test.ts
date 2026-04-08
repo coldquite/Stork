@@ -92,6 +92,7 @@ function createPauseItem(localId: string, position: number): ScheduleDraftItem {
     student: null,
     pause: {
       label: 'Přestávka',
+      pauseType: 'BREAK',
       durationMinutes: 20
     }
   }

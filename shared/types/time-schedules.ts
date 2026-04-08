@@ -3,6 +3,7 @@ export type RepeatTypeDto = 'NONE' | 'THESIS_DEFENSE' | 'ORAL_EXAM' | 'BOTH' | '
 export type ThesisLanguageDto = 'CZECH' | 'ENGLISH' | 'SLOVAK'
 export type StudyProgramTypeDto = 'BACHELOR' | 'MASTER'
 export type StudyLanguageDto = 'CZECH' | 'ENGLISH'
+export type PauseTypeDto = 'BREAK' | 'LUNCH'
 
 export interface TimeScheduleListItemDto {
   id: string
@@ -45,6 +46,7 @@ export interface PauseItemDto {
   itemId: string
   label: string
   durationMinutes: number
+  pauseType: PauseTypeDto
 }
 
 interface StudentCommitteeItemDto {

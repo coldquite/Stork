@@ -21,6 +21,11 @@ enum CommitteeItemType {
   PAUSE
 }
 
+enum PauseType {
+  BREAK
+  LUNCH
+}
+
 enum RepeatType {
   NONE
   THESIS_DEFENSE
@@ -141,6 +146,7 @@ model PauseItem {
 
   label           String
   durationMinutes Int
+  pauseType       PauseType
 }
 
 model TeachersDictionary {

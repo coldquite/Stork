@@ -97,6 +97,7 @@ function mapCommitteeItemToDto(item: LoadedCommitteeItem): TimeScheduleDto['comm
     pause: {
       itemId: item.pause.itemId,
       label: item.pause.label,
+      pauseType: item.pause.pauseType,
       durationMinutes: item.pause.durationMinutes
     }
   }
