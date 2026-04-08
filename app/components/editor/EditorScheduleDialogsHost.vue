@@ -166,7 +166,12 @@ const deleteItemDescriptionText = computed(() => cia.deleteItemConfirmDescriptio
 const moveStudentDialogTitle = computed(() => cia.moveStudentDialogTitle.value)
 const moveStudentDialogDescriptionText = computed(() => cia.moveStudentDialogDescription.value)
 const moveStudentSourceCommitteeId = computed(() => cia.moveStudentSourceCommitteeId.value)
+const moveStudentSelectedTargetCommitteeId = computed(() => cia.selectedMoveStudentTargetCommitteeId.value)
 const moveStudentCurrentCommitteeBadgeLabel = computed(() => cia.moveStudentCurrentCommitteeBadgeLabel.value)
+const moveStudentRewritePreview = computed(() => cia.moveStudentRewritePreview.value)
+const moveStudentHasRewriteChanges = computed(() => cia.moveStudentHasRewriteChanges.value)
+const moveStudentSubmitLabel = computed(() => cia.moveStudentSubmitLabel.value)
+const isMoveStudentSubmitDisabled = computed(() => cia.isMoveStudentSubmitDisabled.value)
 </script>
 
 <template>
@@ -301,12 +306,17 @@ const moveStudentCurrentCommitteeBadgeLabel = computed(() => cia.moveStudentCurr
     :title="moveStudentDialogTitle"
     :description="moveStudentDialogDescriptionText"
     :committee-sidebar-items="cl.committeeSidebarItems.value"
-    :selected-committee-id="cl.selectedCommitteeId.value"
+    :selected-target-committee-id="moveStudentSelectedTargetCommitteeId"
     :disabled-committee-id="moveStudentSourceCommitteeId"
     :current-committee-badge-label="moveStudentCurrentCommitteeBadgeLabel"
     :cancel-label="copy.commonCancel"
+    :submit-label="moveStudentSubmitLabel"
+    :submit-disabled="isMoveStudentSubmitDisabled"
+    :has-rewrite-changes="moveStudentHasRewriteChanges"
+    :rewrite-preview="moveStudentRewritePreview"
     @cancel="cia.closeMoveStudentDialog()"
-    @select-committee="cia.submitMoveStudentToCommittee($event)"
+    @select-committee="cia.selectMoveStudentTargetCommittee($event)"
+    @submit="cia.submitMoveStudentToCommittee()"
   />
 
   <CommonAppActionConfirmDialog

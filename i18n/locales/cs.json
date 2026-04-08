@@ -474,7 +474,25 @@
       "move": {
         "dialogTitle": "Přesunout studenta do jiné komise",
         "description": "Vyberte cílovou komisi pro studenta „{name}“. Aktuální komise: „{committee}“.",
+        "submit": "Přesunout studenta",
+        "submitWithOverwrite": "Přesunout studenta a přepsat studijní údaje",
         "currentCommitteeBadge": "Aktuální komise",
+        "preview": {
+          "title": "Přepsaná data po přesunu",
+          "fields": {
+            "studyProgramName": "Studijní program",
+            "studyProgramType": "Typ studia",
+            "specializationName": "Specializace (název)",
+            "specializationCode": "Specializace (kód)",
+            "studyLanguage": "Jazyk studia",
+            "prepareMinutes": "Příprava v min",
+            "examMinutes": "Zkouška v min"
+          }
+        },
+        "warning": {
+          "title": "Pozor na přepis hodnot",
+          "description": "Po potvrzení přesunu budou hodnoty studijního profilu a časů přepsány podle cílové komise."
+        },
         "emptyTitle": "Není dostupná cílová komise",
         "emptyDescription": "V plánu zatím není jiná komise, do které by šlo studenta přesunout.",
         "fallbackStudentName": "Neznámý student",

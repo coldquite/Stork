@@ -105,6 +105,11 @@ function createCommittee(options: {
   date: string
   items?: ScheduleDraftItem[]
   invigilators?: ScheduleDraftCommittee['invigilators']
+  language?: ScheduleDraftCommittee['language']
+  studyProgramName?: ScheduleDraftCommittee['studyProgramName']
+  studyProgramType?: ScheduleDraftCommittee['studyProgramType']
+  specializationName?: ScheduleDraftCommittee['specializationName']
+  specializationCode?: ScheduleDraftCommittee['specializationCode']
 }): ScheduleDraftCommittee {
   return {
     localId: options.localId,
@@ -114,11 +119,11 @@ function createCommittee(options: {
     room: 'TH:A-1435',
     secretaryName: 'Sekretář',
     invigilators: options.invigilators ?? [{ localId: 'invigilator-dozor', name: 'Dozor' }],
-    language: 'CZECH',
-    studyProgramName: 'Informatika',
-    studyProgramType: 'BACHELOR',
-    specializationName: 'Softwarové inženýrství 2021',
-    specializationCode: 'BI-SI.21',
+    language: options.language ?? 'CZECH',
+    studyProgramName: options.studyProgramName ?? 'Informatika',
+    studyProgramType: options.studyProgramType ?? 'BACHELOR',
+    specializationName: options.specializationName ?? 'Softwarové inženýrství 2021',
+    specializationCode: options.specializationCode ?? 'BI-SI.21',
     defenseDepartmentCode: '18102',
     defenseDepartmentName: 'Katedra softwarového inženýrství',
     chairName: 'Předseda',
@@ -671,18 +676,48 @@ describe('useEditorPage', () => {
     const targetCommittee = scheduleDraftStoreMock.draft?.committees.find((entry) => entry.localId === 'committee-late')
     expect(sourceCommittee?.items.map((item) => item.localId)).toEqual(['student-a', 'pause-a', 'student-b'])
     expect(targetCommittee?.items.map((item) => item.localId)).toEqual([])
+    if (!targetCommittee) {
+      throw new Error('Expected target committee to exist')
+    }
+
+    targetCommittee.language = 'ENGLISH'
+    targetCommittee.studyProgramName = 'Applied Informatics'
+    targetCommittee.studyProgramType = 'MASTER'
+    targetCommittee.specializationName = 'Knowledge Engineering'
+    targetCommittee.specializationCode = 'NI-ZI.24'
 
     page.committeeItemsActions.openMoveStudentDialog('student-a')
     expect(page.committeeItemsActions.isMoveStudentDialogOpen.value).toBe(true)
     expect(page.committeeItemsActions.moveStudentSourceCommitteeId.value).toBe('committee-early')
     expect(page.committeeItemsActions.moveStudentDialogDescription.value).toBe('editor.items.move.description')
+    expect(page.committeeItemsActions.selectedMoveStudentTargetCommitteeId.value).toBeNull()
+    expect(page.committeeItemsActions.isMoveStudentSubmitDisabled.value).toBe(true)
 
-    page.committeeItemsActions.submitMoveStudentToCommittee('committee-late')
+    page.committeeItemsActions.selectMoveStudentTargetCommittee('committee-late')
+
+    expect(page.committeeItemsActions.selectedMoveStudentTargetCommitteeId.value).toBe('committee-late')
+    expect(page.committeeItemsActions.moveStudentRewritePreview.value?.length).toBe(7)
+    expect(page.committeeItemsActions.moveStudentHasRewriteChanges.value).toBe(true)
+    expect(page.committeeItemsActions.moveStudentSubmitLabel.value).toBe('editor.items.move.submitWithOverwrite')
+    expect(page.committeeItemsActions.isMoveStudentSubmitDisabled.value).toBe(false)
+
+    page.committeeItemsActions.submitMoveStudentToCommittee()
 
     expect(sourceCommittee?.items.map((item) => item.localId)).toEqual(['pause-a', 'student-b'])
     expect(sourceCommittee?.items.map((item) => item.position)).toEqual([1, 2])
     expect(targetCommittee?.items.map((item) => item.localId)).toEqual(['student-a'])
     expect(targetCommittee?.items.map((item) => item.position)).toEqual([1])
+    if (targetCommittee?.items[0]?.type !== 'STUDENT') {
+      throw new Error('Expected moved student row in target committee')
+    }
+
+    expect(targetCommittee.items[0].student.studyProgramName).toBe('Applied Informatics')
+    expect(targetCommittee.items[0].student.studyProgramType).toBe('MASTER')
+    expect(targetCommittee.items[0].student.specializationName).toBe('Knowledge Engineering')
+    expect(targetCommittee.items[0].student.specializationCode).toBe('NI-ZI.24')
+    expect(targetCommittee.items[0].student.studyLanguage).toBe('ENGLISH')
+    expect(targetCommittee.items[0].student.prepareMinutes).toBe(45)
+    expect(targetCommittee.items[0].student.examMinutes).toBe(35)
     expect(page.committeeList.selectedCommitteeId.value).toBe('committee-late')
     expect(page.committeeItemsActions.isMoveStudentDialogOpen.value).toBe(false)
 
@@ -710,6 +745,30 @@ describe('useEditorPage', () => {
     expect(sourceCommittee?.items.map((item) => item.localId)).toEqual(initialIds)
     expect(sourceCommittee?.items.map((item) => item.position)).toEqual(initialPositions)
     expect(page.committeeItemsActions.isMoveStudentDialogOpen.value).toBe(true)
+  })
+
+  it('keeps move dialog open and does nothing when submit is called without selected target', async () => {
+    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const page = useEditorPage()
+
+    const sourceCommittee = scheduleDraftStoreMock.draft?.committees.find(
+      (entry) => entry.localId === 'committee-early'
+    )
+    const targetCommittee = scheduleDraftStoreMock.draft?.committees.find((entry) => entry.localId === 'committee-late')
+
+    const initialSourceIds = sourceCommittee?.items.map((item) => item.localId)
+    const initialTargetIds = targetCommittee?.items.map((item) => item.localId)
+
+    page.committeeItemsActions.openMoveStudentDialog('student-a')
+    page.committeeItemsActions.submitMoveStudentToCommittee()
+
+    expect(sourceCommittee?.items.map((item) => item.localId)).toEqual(initialSourceIds)
+    expect(targetCommittee?.items.map((item) => item.localId)).toEqual(initialTargetIds)
+    expect(page.committeeItemsActions.isMoveStudentDialogOpen.value).toBe(true)
+    expect(page.committeeItemsActions.isMoveStudentSubmitDisabled.value).toBe(true)
+    expect(page.committeeItemsActions.moveStudentRewritePreview.value).toBeNull()
+    expect(page.committeeItemsActions.moveStudentHasRewriteChanges.value).toBe(false)
+    expect(page.committeeItemsActions.moveStudentSubmitLabel.value).toBe('editor.items.move.submit')
   })
 
   it('renames draft with trimmed value', async () => {

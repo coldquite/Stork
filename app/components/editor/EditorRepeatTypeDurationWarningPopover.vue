@@ -14,11 +14,6 @@ const { t } = useI18n()
 const popoverContentUi = {
   content: 'w-96 max-w-[calc(100vw-2rem)] p-0'
 } as const
-
-const warningAlertUi = {
-  root: 'items-center',
-  icon: 'self-center'
-} as const
 </script>
 
 <template>
@@ -32,14 +27,7 @@ const warningAlertUi = {
     <span aria-hidden="true" class="block size-1 opacity-0" />
 
     <template #content>
-      <UAlert
-        icon="i-lucide-triangle-alert"
-        color="error"
-        variant="soft"
-        orientation="horizontal"
-        :ui="warningAlertUi"
-        :description="t('editor.table.repeatTypeDurationOverwriteWarning')"
-      />
+      <EditorWarningAlert :description="t('editor.table.repeatTypeDurationOverwriteWarning')" />
     </template>
   </UPopover>
 </template>

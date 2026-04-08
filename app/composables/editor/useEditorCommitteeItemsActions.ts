@@ -1,6 +1,12 @@
 import { useScheduleDraftStore } from '~/stores/schedule-draft'
 import type { ScheduleDraftCommittee } from '~/types/schedule-draft'
 import { isPauseItem, isStudentItem, resolveCommitteeLabel } from '~/utils/editor/draft-committee'
+import {
+  applyStudentCommitteeRewrite,
+  buildStudentCommitteeRewritePreview,
+  hasStudentCommitteeRewriteChanges,
+  toStudentCommitteeRewritePreviewList
+} from '~/utils/editor/student-committee-rewrite'
 
 type EditorDeleteItemTargetKind = 'STUDENT' | 'PAUSE'
 
@@ -56,7 +62,7 @@ function removeCommitteeItemByLocalId(committee: ScheduleDraftCommittee, itemLoc
 }
 
 /**
- * Actions for committee table items (student + pause): delete confirm flow and move-student placeholder.
+ * Actions for committee table items (student + pause): delete confirm flow and move-student flow.
  */
 export function useEditorCommitteeItemsActions(
   selectedCommittee: ComputedRef<ScheduleDraftCommittee | null>,
@@ -70,6 +76,7 @@ export function useEditorCommitteeItemsActions(
   const isMoveStudentDialogOpen = ref(false)
   const moveStudentLocalId = ref<string | null>(null)
   const moveStudentSourceCommitteeId = ref<string | null>(null)
+  const selectedMoveStudentTargetCommitteeId = ref<string | null>(null)
   const fallbackCommitteeLabel = computed(() => t('editor.untitled'))
 
   const deleteItemTarget = computed<EditorDeleteItemTarget | null>(() => {
@@ -200,6 +207,53 @@ export function useEditorCommitteeItemsActions(
   })
   const moveStudentCurrentCommitteeBadgeLabel = computed(() => t('editor.items.move.currentCommitteeBadge'))
 
+  const moveStudentTargetCommittee = computed(() => {
+    const draft = scheduleDraftStore.draft
+    const sourceCommitteeId = moveStudentSourceCommitteeId.value
+    const targetCommitteeId = selectedMoveStudentTargetCommitteeId.value
+    if (!draft || !sourceCommitteeId || !targetCommitteeId || sourceCommitteeId === targetCommitteeId) {
+      return null
+    }
+
+    return draft.committees.find((committee) => committee.localId === targetCommitteeId) ?? null
+  })
+
+  const moveStudentRewritePreviewObject = computed(() => {
+    const sourceItem = moveStudentSourceItem.value
+    const targetCommittee = moveStudentTargetCommittee.value
+    if (!sourceItem || !targetCommittee) {
+      return null
+    }
+
+    return buildStudentCommitteeRewritePreview(sourceItem.student, targetCommittee)
+  })
+
+  const moveStudentRewritePreview = computed(() => {
+    if (!moveStudentRewritePreviewObject.value) {
+      return null
+    }
+
+    return toStudentCommitteeRewritePreviewList(moveStudentRewritePreviewObject.value)
+  })
+
+  const moveStudentHasRewriteChanges = computed(() => {
+    if (!moveStudentRewritePreviewObject.value) {
+      return false
+    }
+
+    return hasStudentCommitteeRewriteChanges(moveStudentRewritePreviewObject.value)
+  })
+
+  const moveStudentSubmitLabel = computed(() => {
+    return moveStudentHasRewriteChanges.value
+      ? t('editor.items.move.submitWithOverwrite')
+      : t('editor.items.move.submit')
+  })
+
+  const isMoveStudentSubmitDisabled = computed(() => {
+    return !moveStudentTargetCommittee.value
+  })
+
   function openMoveStudentDialog(studentLocalId: string): void {
     const committee = selectedCommittee.value
     if (!committee) {
@@ -213,30 +267,48 @@ export function useEditorCommitteeItemsActions(
 
     moveStudentLocalId.value = studentLocalId
     moveStudentSourceCommitteeId.value = committee.localId
+    selectedMoveStudentTargetCommitteeId.value = null
     isMoveStudentDialogOpen.value = true
+  }
+
+  function selectMoveStudentTargetCommittee(targetCommitteeId: string): void {
+    const draft = scheduleDraftStore.draft
+    const sourceCommitteeId = moveStudentSourceCommitteeId.value
+    if (!draft || !sourceCommitteeId || targetCommitteeId === sourceCommitteeId) {
+      return
+    }
+
+    const targetCommitteeExists = draft.committees.some((committee) => committee.localId === targetCommitteeId)
+    if (!targetCommitteeExists) {
+      return
+    }
+
+    selectedMoveStudentTargetCommitteeId.value = targetCommitteeId
   }
 
   function closeMoveStudentDialog(): void {
     isMoveStudentDialogOpen.value = false
     moveStudentLocalId.value = null
     moveStudentSourceCommitteeId.value = null
+    selectedMoveStudentTargetCommitteeId.value = null
   }
 
-  function submitMoveStudentToCommittee(targetCommitteeId: string): void {
+  function submitMoveStudentToCommittee(targetCommitteeId?: string): void {
     const draft = scheduleDraftStore.draft
     const studentLocalId = moveStudentLocalId.value
     const sourceCommitteeId = moveStudentSourceCommitteeId.value
+    const resolvedTargetCommitteeId = targetCommitteeId ?? selectedMoveStudentTargetCommitteeId.value
     if (!draft || !studentLocalId || !sourceCommitteeId) {
       closeMoveStudentDialog()
       return
     }
 
-    if (sourceCommitteeId === targetCommitteeId) {
+    if (!resolvedTargetCommitteeId || sourceCommitteeId === resolvedTargetCommitteeId) {
       return
     }
 
     const sourceCommittee = draft.committees.find((committee) => committee.localId === sourceCommitteeId)
-    const targetCommittee = draft.committees.find((committee) => committee.localId === targetCommitteeId)
+    const targetCommittee = draft.committees.find((committee) => committee.localId === resolvedTargetCommitteeId)
     if (!sourceCommittee || !targetCommittee) {
       closeMoveStudentDialog()
       return
@@ -255,6 +327,7 @@ export function useEditorCommitteeItemsActions(
       return
     }
 
+    applyStudentCommitteeRewrite(movedStudentItem.student, targetCommittee)
     sourceCommittee.items = normalizeCommitteeItemsOrder(sourceItems)
 
     const targetItems = targetCommittee.items.slice().sort((left, right) => left.position - right.position)
@@ -262,7 +335,7 @@ export function useEditorCommitteeItemsActions(
     targetCommittee.items = normalizeCommitteeItemsOrder([...targetItems, movedStudentItem])
 
     closeMoveStudentDialog()
-    focusStudentInCommittee(targetCommitteeId, studentLocalId)
+    focusStudentInCommittee(resolvedTargetCommitteeId, studentLocalId)
   }
 
   return {
@@ -273,11 +346,17 @@ export function useEditorCommitteeItemsActions(
     moveStudentDialogTitle,
     moveStudentDialogDescription,
     moveStudentSourceCommitteeId,
+    selectedMoveStudentTargetCommitteeId,
     moveStudentCurrentCommitteeBadgeLabel,
+    moveStudentRewritePreview,
+    moveStudentHasRewriteChanges,
+    moveStudentSubmitLabel,
+    isMoveStudentSubmitDisabled,
     openDeleteItemConfirm,
     closeDeleteItemConfirm,
     submitDeleteItem,
     openMoveStudentDialog,
+    selectMoveStudentTargetCommittee,
     closeMoveStudentDialog,
     submitMoveStudentToCommittee,
     requestMoveStudentToAnotherCommittee: openMoveStudentDialog
