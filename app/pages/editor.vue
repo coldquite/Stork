@@ -164,7 +164,7 @@ function requestDeleteCommitteeItem(itemId: string): void {
 }
 
 function requestMoveStudentToAnotherCommittee(studentId: string): void {
-  committeeItemsActions.requestMoveStudentToAnotherCommittee(studentId)
+  committeeItemsActions.openMoveStudentDialog(studentId)
 }
 
 const committeesCount = computed(() => committeeList.committees.value.length)

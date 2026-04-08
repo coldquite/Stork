@@ -30,13 +30,16 @@ export function useEditorPage() {
   )
   const tableViewMode = computed<EditorStudentsTableViewMode>(() => editorTablePreferencesStore.tableViewMode)
   const studentTable = useEditorStudentTable(committeeList.selectedCommittee, thesisTitleDisplayMode, tableViewMode)
-  const committeeItemsActions = useEditorCommitteeItemsActions(committeeList.selectedCommittee)
+  const studentSearch = useEditorStudentSearch(committeeList.selectedCommitteeId)
+  const committeeItemsActions = useEditorCommitteeItemsActions(
+    committeeList.selectedCommittee,
+    studentSearch.focusStudentInCommittee
+  )
   const committeeFields = useEditorCommitteeFields(committeeList.selectedCommittee)
   const invigilators = useEditorInvigilators(committeeList.selectedCommittee)
   const studentCreation = useEditorStudentCreation(committeeList.selectedCommittee)
   const pauseCreation = useEditorPauseCreation(committeeList.selectedCommittee)
   const scheduleDialogs = useEditorScheduleDialogs()
-  const studentSearch = useEditorStudentSearch(committeeList.selectedCommitteeId)
 
   function updateThesisTitleDisplayMode(nextMode: ScheduleDraftThesisTitleDisplayMode): void {
     editorTablePreferencesStore.setThesisTitleDisplayMode(nextMode)
@@ -98,9 +101,17 @@ export function useEditorPage() {
       isDeleteItemConfirmOpen: committeeItemsActions.isDeleteItemConfirmOpen,
       deleteItemConfirmActionLabel: committeeItemsActions.deleteItemConfirmActionLabel,
       deleteItemConfirmDescription: committeeItemsActions.deleteItemConfirmDescription,
+      isMoveStudentDialogOpen: committeeItemsActions.isMoveStudentDialogOpen,
+      moveStudentDialogTitle: committeeItemsActions.moveStudentDialogTitle,
+      moveStudentDialogDescription: committeeItemsActions.moveStudentDialogDescription,
+      moveStudentSourceCommitteeId: committeeItemsActions.moveStudentSourceCommitteeId,
+      moveStudentCurrentCommitteeBadgeLabel: committeeItemsActions.moveStudentCurrentCommitteeBadgeLabel,
       openDeleteItemConfirm: committeeItemsActions.openDeleteItemConfirm,
       closeDeleteItemConfirm: committeeItemsActions.closeDeleteItemConfirm,
       submitDeleteItem: committeeItemsActions.submitDeleteItem,
+      openMoveStudentDialog: committeeItemsActions.openMoveStudentDialog,
+      closeMoveStudentDialog: committeeItemsActions.closeMoveStudentDialog,
+      submitMoveStudentToCommittee: committeeItemsActions.submitMoveStudentToCommittee,
       requestMoveStudentToAnotherCommittee: committeeItemsActions.requestMoveStudentToAnotherCommittee
     },
 

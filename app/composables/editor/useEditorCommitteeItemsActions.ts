@@ -1,11 +1,22 @@
+import { useScheduleDraftStore } from '~/stores/schedule-draft'
 import type { ScheduleDraftCommittee } from '~/types/schedule-draft'
-import { isPauseItem, isStudentItem } from '~/utils/editor/draft-committee'
+import { isPauseItem, isStudentItem, resolveCommitteeLabel } from '~/utils/editor/draft-committee'
 
 type EditorDeleteItemTargetKind = 'STUDENT' | 'PAUSE'
 
 interface EditorDeleteItemTarget {
   kind: EditorDeleteItemTargetKind
   label: string
+}
+
+function normalizeCommitteeItemsOrder(items: ScheduleDraftCommittee['items']): ScheduleDraftCommittee['items'] {
+  const orderedItems = items.slice().sort((left, right) => left.position - right.position)
+
+  orderedItems.forEach((item, index) => {
+    item.position = index + 1
+  })
+
+  return orderedItems
 }
 
 function resolveStudentLabel(committeeItem: ScheduleDraftCommittee['items'][number]): string {
@@ -34,28 +45,32 @@ function resolvePauseLabel(
 }
 
 function removeCommitteeItemByLocalId(committee: ScheduleDraftCommittee, itemLocalId: string): boolean {
-  const orderedItems = committee.items.slice().sort((left, right) => left.position - right.position)
-  const filteredItems = orderedItems.filter((item) => item.localId !== itemLocalId)
-  if (filteredItems.length === orderedItems.length) {
+  const currentItemsCount = committee.items.length
+  const filteredItems = committee.items.filter((item) => item.localId !== itemLocalId)
+  if (filteredItems.length === currentItemsCount) {
     return false
   }
 
-  filteredItems.forEach((item, index) => {
-    item.position = index + 1
-  })
-
-  committee.items = filteredItems
+  committee.items = normalizeCommitteeItemsOrder(filteredItems)
   return true
 }
 
 /**
  * Actions for committee table items (student + pause): delete confirm flow and move-student placeholder.
  */
-export function useEditorCommitteeItemsActions(selectedCommittee: ComputedRef<ScheduleDraftCommittee | null>) {
+export function useEditorCommitteeItemsActions(
+  selectedCommittee: ComputedRef<ScheduleDraftCommittee | null>,
+  focusStudentInCommittee: (committeeId: string, studentId: string) => void
+) {
   const { t } = useI18n()
+  const scheduleDraftStore = useScheduleDraftStore()
 
   const isDeleteItemConfirmOpen = ref(false)
   const deleteItemLocalId = ref<string | null>(null)
+  const isMoveStudentDialogOpen = ref(false)
+  const moveStudentLocalId = ref<string | null>(null)
+  const moveStudentSourceCommitteeId = ref<string | null>(null)
+  const fallbackCommitteeLabel = computed(() => t('editor.untitled'))
 
   const deleteItemTarget = computed<EditorDeleteItemTarget | null>(() => {
     const committee = selectedCommittee.value
@@ -136,7 +151,56 @@ export function useEditorCommitteeItemsActions(selectedCommittee: ComputedRef<Sc
     closeDeleteItemConfirm()
   }
 
-  function requestMoveStudentToAnotherCommittee(studentLocalId: string): void {
+  const moveStudentSourceCommittee = computed(() => {
+    const draft = scheduleDraftStore.draft
+    const sourceCommitteeId = moveStudentSourceCommitteeId.value
+    if (!draft || !sourceCommitteeId) {
+      return null
+    }
+
+    return draft.committees.find((committee) => committee.localId === sourceCommitteeId) ?? null
+  })
+
+  const moveStudentSourceCommitteeLabel = computed(() => {
+    const sourceCommittee = moveStudentSourceCommittee.value
+    if (!sourceCommittee) {
+      return t('editor.items.move.fallbackCommitteeName')
+    }
+
+    return resolveCommitteeLabel(sourceCommittee, fallbackCommitteeLabel.value)
+  })
+
+  const moveStudentSourceItem = computed(() => {
+    const sourceCommittee = moveStudentSourceCommittee.value
+    const studentLocalId = moveStudentLocalId.value
+    if (!sourceCommittee || !studentLocalId) {
+      return null
+    }
+
+    const sourceItem = sourceCommittee.items.find((item) => item.localId === studentLocalId)
+    return sourceItem && isStudentItem(sourceItem) ? sourceItem : null
+  })
+
+  const moveStudentLabel = computed(() => {
+    const sourceItem = moveStudentSourceItem.value
+    if (!sourceItem) {
+      return t('editor.items.move.fallbackStudentName')
+    }
+
+    const normalizedName = `${sourceItem.student.firstName} ${sourceItem.student.lastName}`.trim()
+    return normalizedName.length > 0 ? normalizedName : t('editor.items.move.fallbackStudentName')
+  })
+
+  const moveStudentDialogTitle = computed(() => t('editor.items.move.dialogTitle'))
+  const moveStudentDialogDescription = computed(() => {
+    return t('editor.items.move.description', {
+      name: moveStudentLabel.value,
+      committee: moveStudentSourceCommitteeLabel.value
+    })
+  })
+  const moveStudentCurrentCommitteeBadgeLabel = computed(() => t('editor.items.move.currentCommitteeBadge'))
+
+  function openMoveStudentDialog(studentLocalId: string): void {
     const committee = selectedCommittee.value
     if (!committee) {
       return
@@ -147,16 +211,75 @@ export function useEditorCommitteeItemsActions(selectedCommittee: ComputedRef<Sc
       return
     }
 
-    // Placeholder: move between committees will be implemented in a dedicated follow-up.
+    moveStudentLocalId.value = studentLocalId
+    moveStudentSourceCommitteeId.value = committee.localId
+    isMoveStudentDialogOpen.value = true
+  }
+
+  function closeMoveStudentDialog(): void {
+    isMoveStudentDialogOpen.value = false
+    moveStudentLocalId.value = null
+    moveStudentSourceCommitteeId.value = null
+  }
+
+  function submitMoveStudentToCommittee(targetCommitteeId: string): void {
+    const draft = scheduleDraftStore.draft
+    const studentLocalId = moveStudentLocalId.value
+    const sourceCommitteeId = moveStudentSourceCommitteeId.value
+    if (!draft || !studentLocalId || !sourceCommitteeId) {
+      closeMoveStudentDialog()
+      return
+    }
+
+    if (sourceCommitteeId === targetCommitteeId) {
+      return
+    }
+
+    const sourceCommittee = draft.committees.find((committee) => committee.localId === sourceCommitteeId)
+    const targetCommittee = draft.committees.find((committee) => committee.localId === targetCommitteeId)
+    if (!sourceCommittee || !targetCommittee) {
+      closeMoveStudentDialog()
+      return
+    }
+
+    const sourceItems = sourceCommittee.items.slice().sort((left, right) => left.position - right.position)
+    const sourceItemIndex = sourceItems.findIndex((item) => item.localId === studentLocalId && isStudentItem(item))
+    if (sourceItemIndex < 0) {
+      closeMoveStudentDialog()
+      return
+    }
+
+    const [movedStudentItem] = sourceItems.splice(sourceItemIndex, 1)
+    if (!movedStudentItem || !isStudentItem(movedStudentItem)) {
+      closeMoveStudentDialog()
+      return
+    }
+
+    sourceCommittee.items = normalizeCommitteeItemsOrder(sourceItems)
+
+    const targetItems = targetCommittee.items.slice().sort((left, right) => left.position - right.position)
+    movedStudentItem.position = targetItems.length + 1
+    targetCommittee.items = normalizeCommitteeItemsOrder([...targetItems, movedStudentItem])
+
+    closeMoveStudentDialog()
+    focusStudentInCommittee(targetCommitteeId, studentLocalId)
   }
 
   return {
     isDeleteItemConfirmOpen,
     deleteItemConfirmActionLabel,
     deleteItemConfirmDescription,
+    isMoveStudentDialogOpen,
+    moveStudentDialogTitle,
+    moveStudentDialogDescription,
+    moveStudentSourceCommitteeId,
+    moveStudentCurrentCommitteeBadgeLabel,
     openDeleteItemConfirm,
     closeDeleteItemConfirm,
     submitDeleteItem,
-    requestMoveStudentToAnotherCommittee
+    openMoveStudentDialog,
+    closeMoveStudentDialog,
+    submitMoveStudentToCommittee,
+    requestMoveStudentToAnotherCommittee: openMoveStudentDialog
   }
 }

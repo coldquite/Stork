@@ -224,7 +224,7 @@ describe('useEditorStudentSearch', () => {
     expect(search.studentSearchResults.value.map((entry) => entry.studentId)).toEqual(['student-b1'])
   })
 
-  it('selects result, switches committee, emits highlight request and resets dialog state', () => {
+  it('selects result, switches committee, emits highlight request and resets dialog state', async () => {
     const selectedCommitteeId = ref('committee-a')
     const search = useEditorStudentSearch(selectedCommitteeId)
 
@@ -238,6 +238,7 @@ describe('useEditorStudentSearch', () => {
 
     search.selectStudentSearchResult(result)
 
+    await nextTick()
     expect(selectedCommitteeId.value).toBe('committee-b')
     expect(search.highlightRequest.value).toEqual({
       requestId: 1,
@@ -247,5 +248,20 @@ describe('useEditorStudentSearch', () => {
     expect(search.isStudentSearchDialogOpen.value).toBe(false)
     expect(search.studentSearchQuery.value).toBe('')
     expect(search.isStudentSearchLoading.value).toBe(false)
+  })
+
+  it('focuses student in committee using shared navigation method', async () => {
+    const selectedCommitteeId = ref('committee-a')
+    const search = useEditorStudentSearch(selectedCommitteeId)
+
+    search.focusStudentInCommittee('committee-b', 'student-b1')
+
+    expect(selectedCommitteeId.value).toBe('committee-b')
+    await nextTick()
+    expect(search.highlightRequest.value).toEqual({
+      requestId: 1,
+      committeeId: 'committee-b',
+      studentId: 'student-b1'
+    })
   })
 })

@@ -1,15 +1,10 @@
 import { addMinutes, format, startOfDay, subMinutes } from 'date-fns'
 import type { StudyLanguageDto } from '#shared/types/time-schedules'
-import { STUDENT_EXAM_GAP_MINUTES } from '~/constants/editor-students-table'
 import type { EditorPauseTableRow, EditorStudentTableRow, EditorTableRow } from '~/types/editor'
 import type { ScheduleDraftCommittee, ScheduleDraftItem } from '~/types/schedule-draft'
-import { isPauseItem, isStudentItem } from '~/utils/editor/draft-committee'
+import { buildCommitteeTimelineEntries, formatEditorMinuteLabel } from '~/utils/editor/committee-timeline'
 
 const REFERENCE_DAY_START = startOfDay(new Date(0))
-
-function formatMinuteOfDay(minuteOfDay: number): string {
-  return format(addMinutes(REFERENCE_DAY_START, minuteOfDay), 'HH:mm')
-}
 
 function formatPrepareTime(examStartMinute: number, prepareMinutes: number): string {
   return format(subMinutes(addMinutes(REFERENCE_DAY_START, examStartMinute), prepareMinutes), 'HH:mm')
@@ -53,7 +48,7 @@ function buildStudentRow(
     id: item.localId,
     studentOrder,
     prepareTime: formatPrepareTime(examStartMinute, item.student.prepareMinutes),
-    examTime: `${formatMinuteOfDay(examStartMinute)} - ${formatMinuteOfDay(examEndMinute)}`,
+    examTime: `${formatEditorMinuteLabel(examStartMinute)} - ${formatEditorMinuteLabel(examEndMinute)}`,
     titlesBefore: item.student.titlesBefore?.trim() ?? '',
     lastName: item.student.lastName,
     firstName: item.student.firstName,
@@ -82,8 +77,8 @@ function buildPauseRow(
   pauseStartMinute: number,
   pauseEndMinute: number
 ): EditorPauseTableRow {
-  const startTime = formatMinuteOfDay(pauseStartMinute)
-  const endTime = formatMinuteOfDay(pauseEndMinute)
+  const startTime = formatEditorMinuteLabel(pauseStartMinute)
+  const endTime = formatEditorMinuteLabel(pauseEndMinute)
 
   return {
     kind: 'PAUSE',
@@ -98,35 +93,26 @@ function buildPauseRow(
 }
 
 export function buildEditorTableRowsForCommittee(committee: ScheduleDraftCommittee): EditorTableRow[] {
-  const orderedItems = committee.items.slice().sort((left, right) => left.position - right.position)
+  const timelineEntries = buildCommitteeTimelineEntries(committee)
   const rows: EditorTableRow[] = []
-  let currentMinute = committee.startMinute
   let studentOrder = 0
 
-  for (const [index, item] of orderedItems.entries()) {
-    if (isPauseItem(item)) {
-      const pauseStartMinute = currentMinute
-      const pauseEndMinute = pauseStartMinute + item.pause.durationMinutes
-      rows.push(buildPauseRow(item, pauseStartMinute, pauseEndMinute))
-      currentMinute += item.pause.durationMinutes
-      continue
-    }
-
-    if (!isStudentItem(item)) {
+  for (const timelineEntry of timelineEntries) {
+    if (timelineEntry.kind === 'PAUSE') {
+      rows.push(buildPauseRow(timelineEntry.item, timelineEntry.startMinute, timelineEntry.endMinute))
       continue
     }
 
     studentOrder += 1
-    const examStartMinute = currentMinute
-    const examEndMinute = examStartMinute + item.student.examMinutes
-    const nextItem = orderedItems[index + 1]
-
-    rows.push(buildStudentRow(item, committee.language, examStartMinute, examEndMinute, studentOrder))
-
-    currentMinute = examEndMinute
-    if (nextItem && isStudentItem(nextItem)) {
-      currentMinute += STUDENT_EXAM_GAP_MINUTES
-    }
+    rows.push(
+      buildStudentRow(
+        timelineEntry.item,
+        committee.language,
+        timelineEntry.startMinute,
+        timelineEntry.endMinute,
+        studentOrder
+      )
+    )
   }
 
   return rows

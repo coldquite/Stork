@@ -592,18 +592,55 @@ describe('useEditorPage', () => {
     expect(page.committeeItemsActions.isDeleteItemConfirmOpen.value).toBe(false)
   })
 
-  it('keeps committee items unchanged for move-student placeholder action', async () => {
+  it('moves student to target committee, switches selection and emits highlight request', async () => {
     const { useEditorPage } = await import('~/composables/editor/useEditorPage')
     const page = useEditorPage()
 
-    const committee = scheduleDraftStoreMock.draft?.committees.find((entry) => entry.localId === 'committee-early')
-    const initialIds = committee?.items.map((item) => item.localId)
-    const initialPositions = committee?.items.map((item) => item.position)
+    const sourceCommittee = scheduleDraftStoreMock.draft?.committees.find(
+      (entry) => entry.localId === 'committee-early'
+    )
+    const targetCommittee = scheduleDraftStoreMock.draft?.committees.find((entry) => entry.localId === 'committee-late')
+    expect(sourceCommittee?.items.map((item) => item.localId)).toEqual(['student-a', 'pause-a', 'student-b'])
+    expect(targetCommittee?.items.map((item) => item.localId)).toEqual([])
 
-    page.committeeItemsActions.requestMoveStudentToAnotherCommittee('student-a')
+    page.committeeItemsActions.openMoveStudentDialog('student-a')
+    expect(page.committeeItemsActions.isMoveStudentDialogOpen.value).toBe(true)
+    expect(page.committeeItemsActions.moveStudentSourceCommitteeId.value).toBe('committee-early')
+    expect(page.committeeItemsActions.moveStudentDialogDescription.value).toBe('editor.items.move.description')
 
-    expect(committee?.items.map((item) => item.localId)).toEqual(initialIds)
-    expect(committee?.items.map((item) => item.position)).toEqual(initialPositions)
+    page.committeeItemsActions.submitMoveStudentToCommittee('committee-late')
+
+    expect(sourceCommittee?.items.map((item) => item.localId)).toEqual(['pause-a', 'student-b'])
+    expect(sourceCommittee?.items.map((item) => item.position)).toEqual([1, 2])
+    expect(targetCommittee?.items.map((item) => item.localId)).toEqual(['student-a'])
+    expect(targetCommittee?.items.map((item) => item.position)).toEqual([1])
+    expect(page.committeeList.selectedCommitteeId.value).toBe('committee-late')
+    expect(page.committeeItemsActions.isMoveStudentDialogOpen.value).toBe(false)
+
+    await nextTick()
+    expect(page.studentSearch.highlightRequest.value).toEqual({
+      requestId: 1,
+      committeeId: 'committee-late',
+      studentId: 'student-a'
+    })
+  })
+
+  it('ignores move submit when target committee is source committee', async () => {
+    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const page = useEditorPage()
+
+    const sourceCommittee = scheduleDraftStoreMock.draft?.committees.find(
+      (entry) => entry.localId === 'committee-early'
+    )
+    const initialIds = sourceCommittee?.items.map((item) => item.localId)
+    const initialPositions = sourceCommittee?.items.map((item) => item.position)
+
+    page.committeeItemsActions.openMoveStudentDialog('student-a')
+    page.committeeItemsActions.submitMoveStudentToCommittee('committee-early')
+
+    expect(sourceCommittee?.items.map((item) => item.localId)).toEqual(initialIds)
+    expect(sourceCommittee?.items.map((item) => item.position)).toEqual(initialPositions)
+    expect(page.committeeItemsActions.isMoveStudentDialogOpen.value).toBe(true)
   })
 
   it('renames draft with trimmed value', async () => {

@@ -1,6 +1,7 @@
 import { format, isValid, parseISO } from 'date-fns'
 import type { CommitteeSidebarItem } from '~/types/editor'
 import type { ScheduleDraftCommittee, ScheduleDraftItem } from '~/types/schedule-draft'
+import { formatEditorMinuteLabel, resolveCommitteeTimelineRange } from '~/utils/editor/committee-timeline'
 
 export function isStudentItem(item: ScheduleDraftItem): item is ScheduleDraftItem & { type: 'STUDENT' } {
   return item.type === 'STUDENT' && item.student !== null
@@ -42,6 +43,29 @@ export function normalizeOptionalText(value: string | null | undefined): string 
   return normalized.length > 0 ? normalized : null
 }
 
+function resolveCommitteeRoomLabel(committee: ScheduleDraftCommittee): string {
+  const normalizedRoom = committee.room?.trim() ?? ''
+  return normalizedRoom.length > 0 ? normalizedRoom : '—'
+}
+
+function resolveCommitteeTimelineLabels(committee: ScheduleDraftCommittee): {
+  timelineStartLabel: string
+  timelineEndLabel: string
+} {
+  const timelineRange = resolveCommitteeTimelineRange(committee)
+  if (!timelineRange) {
+    return {
+      timelineStartLabel: '—',
+      timelineEndLabel: '—'
+    }
+  }
+
+  return {
+    timelineStartLabel: formatEditorMinuteLabel(timelineRange.startMinute),
+    timelineEndLabel: formatEditorMinuteLabel(timelineRange.endMinute)
+  }
+}
+
 function resolveCommitteeDayTimestamp(committee: ScheduleDraftCommittee): number {
   const parsedDate = parseISO(committee.date)
   return isValid(parsedDate) ? parsedDate.getTime() : Number.POSITIVE_INFINITY
@@ -71,6 +95,9 @@ export interface EditorCommitteeListEntry {
   label: string
   dateLabel: string
   studentsCount: number
+  roomLabel: string
+  timelineStartLabel: string
+  timelineEndLabel: string
 }
 
 export function buildEditorCommitteeListEntries(
@@ -80,12 +107,19 @@ export function buildEditorCommitteeListEntries(
   return draftCommittees
     .slice()
     .sort(compareCommitteesByTimeline)
-    .map((committee) => ({
-      committee,
-      label: resolveCommitteeLabel(committee, fallbackLabel),
-      dateLabel: formatCommitteeDate(committee.date),
-      studentsCount: committee.items.filter(isStudentItem).length
-    }))
+    .map((committee) => {
+      const timelineLabels = resolveCommitteeTimelineLabels(committee)
+
+      return {
+        committee,
+        label: resolveCommitteeLabel(committee, fallbackLabel),
+        dateLabel: formatCommitteeDate(committee.date),
+        studentsCount: committee.items.filter(isStudentItem).length,
+        roomLabel: resolveCommitteeRoomLabel(committee),
+        timelineStartLabel: timelineLabels.timelineStartLabel,
+        timelineEndLabel: timelineLabels.timelineEndLabel
+      }
+    })
 }
 
 export function buildEditorCommitteeSidebarItems(
@@ -110,7 +144,10 @@ export function buildEditorCommitteeSidebarItems(
       kind: 'committee',
       label: entry.label,
       value: entry.committee.localId,
-      studentsCount: entry.studentsCount
+      studentsCount: entry.studentsCount,
+      roomLabel: entry.roomLabel,
+      timelineStartLabel: entry.timelineStartLabel,
+      timelineEndLabel: entry.timelineEndLabel
     })
   }
 

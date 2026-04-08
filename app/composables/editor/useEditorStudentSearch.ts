@@ -105,17 +105,23 @@ export function useEditorStudentSearch(selectedCommitteeId: Ref<string>) {
     }, EDITOR_STUDENT_SEARCH_DEBOUNCE_MS)
   }
 
+  function focusStudentInCommittee(committeeId: string, studentId: string): void {
+    selectedCommitteeId.value = committeeId
+    const nextRequestId = highlightRequestCounter.value + 1
+
+    nextTick(() => {
+      highlightRequestCounter.value = nextRequestId
+      highlightRequest.value = {
+        requestId: nextRequestId,
+        committeeId,
+        studentId
+      }
+    })
+  }
+
   function selectStudentSearchResult(result: EditorStudentSearchResult): void {
-    selectedCommitteeId.value = result.committeeId
-    highlightRequestCounter.value += 1
-
-    highlightRequest.value = {
-      requestId: highlightRequestCounter.value,
-      committeeId: result.committeeId,
-      studentId: result.studentId
-    }
-
     closeStudentSearchDialog()
+    focusStudentInCommittee(result.committeeId, result.studentId)
   }
 
   return {
@@ -127,6 +133,7 @@ export function useEditorStudentSearch(selectedCommitteeId: Ref<string>) {
     openStudentSearchDialog,
     closeStudentSearchDialog,
     updateStudentSearchQuery,
+    focusStudentInCommittee,
     selectStudentSearchResult
   }
 }

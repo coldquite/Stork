@@ -1,19 +1,66 @@
 import { describe, expect, it } from 'vitest'
-import type { ScheduleDraftCommittee } from '~/types/schedule-draft'
+import type { ScheduleDraftCommittee, ScheduleDraftItem } from '~/types/schedule-draft'
 import { buildEditorCommitteeSidebarItems } from '~/utils/editor/draft-committee'
+
+function createPauseItem(localId: string, position: number, durationMinutes: number): ScheduleDraftItem {
+  return {
+    localId,
+    type: 'PAUSE',
+    position,
+    student: null,
+    pause: {
+      label: '',
+      pauseType: 'BREAK',
+      durationMinutes
+    }
+  }
+}
+
+function createStudentItem(localId: string, position: number, examMinutes: number): ScheduleDraftItem {
+  return {
+    localId,
+    type: 'STUDENT',
+    position,
+    student: {
+      firstName: 'Jan',
+      lastName: 'Novák',
+      email: 'jan.novak@fit.cvut.cz',
+      titlesBefore: null,
+      titlesAfter: null,
+      thesisTitleLocal: 'Lokální název',
+      thesisTitleEn: 'English title',
+      thesisLanguage: 'CZECH',
+      supervisorName: 'Vedoucí',
+      reviewerName: 'Oponent',
+      additionalSupervisorName: null,
+      additionalReviewerName: null,
+      studyProgramName: 'Informatika',
+      studyProgramType: 'BACHELOR',
+      specializationName: 'Softwarové inženýrství 2021',
+      specializationCode: 'BI-SI.21',
+      studyLanguage: 'CZECH',
+      repeatType: 'NONE',
+      prepareMinutes: 45,
+      examMinutes
+    },
+    pause: null
+  }
+}
 
 function createCommittee(options: {
   localId: string
   name: string
   date: string
   startMinute: number
+  room?: string | null
+  items?: ScheduleDraftItem[]
 }): ScheduleDraftCommittee {
   return {
     localId: options.localId,
     name: options.name,
     startMinute: options.startMinute,
     date: options.date,
-    room: null,
+    room: options.room ?? null,
     secretaryName: null,
     invigilators: [],
     language: 'CZECH',
@@ -28,7 +75,7 @@ function createCommittee(options: {
     member1Name: '',
     member2Name: '',
     member3Name: '',
-    items: []
+    items: options.items ?? []
   }
 }
 
@@ -54,8 +101,24 @@ describe('draft-committee sidebar items', () => {
 
     expect(items).toEqual([
       { kind: 'day-bookmark', id: 'day-10.06.2026', dayLabel: '10.06.2026' },
-      { kind: 'committee', label: 'Komise A', value: 'committee-early', studentsCount: 0 },
-      { kind: 'committee', label: 'Komise B', value: 'committee-late', studentsCount: 0 }
+      {
+        kind: 'committee',
+        label: 'Komise A',
+        value: 'committee-early',
+        studentsCount: 0,
+        roomLabel: '—',
+        timelineStartLabel: '—',
+        timelineEndLabel: '—'
+      },
+      {
+        kind: 'committee',
+        label: 'Komise B',
+        value: 'committee-late',
+        studentsCount: 0,
+        roomLabel: '—',
+        timelineStartLabel: '—',
+        timelineEndLabel: '—'
+      }
     ])
   })
 
@@ -80,9 +143,25 @@ describe('draft-committee sidebar items', () => {
 
     expect(items).toEqual([
       { kind: 'day-bookmark', id: 'day-10.06.2026', dayLabel: '10.06.2026' },
-      { kind: 'committee', label: 'Komise 1', value: 'committee-day-1', studentsCount: 0 },
+      {
+        kind: 'committee',
+        label: 'Komise 1',
+        value: 'committee-day-1',
+        studentsCount: 0,
+        roomLabel: '—',
+        timelineStartLabel: '—',
+        timelineEndLabel: '—'
+      },
       { kind: 'day-bookmark', id: 'day-11.06.2026', dayLabel: '11.06.2026' },
-      { kind: 'committee', label: 'Komise 2', value: 'committee-day-2', studentsCount: 0 }
+      {
+        kind: 'committee',
+        label: 'Komise 2',
+        value: 'committee-day-2',
+        studentsCount: 0,
+        roomLabel: '—',
+        timelineStartLabel: '—',
+        timelineEndLabel: '—'
+      }
     ])
   })
 
@@ -101,7 +180,49 @@ describe('draft-committee sidebar items', () => {
 
     expect(items).toEqual([
       { kind: 'day-bookmark', id: 'day-12.06.2026', dayLabel: '12.06.2026' },
-      { kind: 'committee', label: 'Bez názvu', value: 'committee-empty-name', studentsCount: 0 }
+      {
+        kind: 'committee',
+        label: 'Bez názvu',
+        value: 'committee-empty-name',
+        studentsCount: 0,
+        roomLabel: '—',
+        timelineStartLabel: '—',
+        timelineEndLabel: '—'
+      }
+    ])
+  })
+
+  it('uses room and computes timeline range from first to last committee item', () => {
+    const items = buildEditorCommitteeSidebarItems(
+      [
+        createCommittee({
+          localId: 'committee-with-items',
+          name: 'Komise C',
+          date: '2026-06-13T00:00:00.000Z',
+          startMinute: 540,
+          room: 'TH:A-1435',
+          items: [
+            createPauseItem('pause-1', 1, 20),
+            createStudentItem('student-1', 2, 30),
+            createPauseItem('pause-2', 3, 10),
+            createStudentItem('student-2', 4, 25)
+          ]
+        })
+      ],
+      'Bez názvu'
+    )
+
+    expect(items).toEqual([
+      { kind: 'day-bookmark', id: 'day-13.06.2026', dayLabel: '13.06.2026' },
+      {
+        kind: 'committee',
+        label: 'Komise C',
+        value: 'committee-with-items',
+        studentsCount: 2,
+        roomLabel: 'TH:A-1435',
+        timelineStartLabel: '09:00',
+        timelineEndLabel: '10:25'
+      }
     ])
   })
 })

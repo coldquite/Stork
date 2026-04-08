@@ -75,6 +75,9 @@ export interface CommitteeSidebarCommitteeItem {
   label: string
   value: string
   studentsCount: number
+  roomLabel: string
+  timelineStartLabel: string
+  timelineEndLabel: string
 }
 
 export type CommitteeSidebarItem = CommitteeSidebarDayBookmarkItem | CommitteeSidebarCommitteeItem

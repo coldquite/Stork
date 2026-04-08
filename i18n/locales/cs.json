@@ -300,6 +300,9 @@
     "committees": {
       "title": "Komise",
       "sortHint": "Seřazeno podle času zahájení",
+      "sidebar": {
+        "details": "{room}  {'|'}  {start} - {end}"
+      },
       "create": {
         "title": "Přidat komisi",
         "description": "Zadejte název nové komise.",
@@ -467,6 +470,15 @@
         "pauseDescription": "Opravdu chcete smazat pauzu „{name}“? Tato akce je nevratná.",
         "fallbackStudentName": "Neznámý student",
         "fallbackPauseName": "Pauza"
+      },
+      "move": {
+        "dialogTitle": "Přesunout studenta do jiné komise",
+        "description": "Vyberte cílovou komisi pro studenta „{name}“. Aktuální komise: „{committee}“.",
+        "currentCommitteeBadge": "Aktuální komise",
+        "emptyTitle": "Není dostupná cílová komise",
+        "emptyDescription": "V plánu zatím není jiná komise, do které by šlo studenta přesunout.",
+        "fallbackStudentName": "Neznámý student",
+        "fallbackCommitteeName": "Neznámá komise"
       }
     },
     "table": {

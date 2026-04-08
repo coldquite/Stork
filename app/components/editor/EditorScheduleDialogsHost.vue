@@ -139,6 +139,16 @@ const deleteItemConfirmOpen = computed({
     cia.isDeleteItemConfirmOpen.value = v
   }
 })
+const moveStudentDialogOpen = computed({
+  get: () => cia.isMoveStudentDialogOpen.value,
+  set: (v: boolean) => {
+    if (v) {
+      return
+    }
+
+    cia.closeMoveStudentDialog()
+  }
+})
 
 const renameCommitteeDescriptionText = computed(() => cl.renameCommitteeDialogDescription.value)
 const renameCommitteeValidationText = computed(() => cl.renameCommitteeValidationError.value)
@@ -153,6 +163,10 @@ const deleteCommitteeDescriptionText = computed(() => cl.deleteCommitteeConfirmD
 const deleteInvigilatorDescriptionText = computed(() => inv.deleteInvigilatorConfirmDescription.value)
 const deleteItemActionLabel = computed(() => cia.deleteItemConfirmActionLabel.value)
 const deleteItemDescriptionText = computed(() => cia.deleteItemConfirmDescription.value)
+const moveStudentDialogTitle = computed(() => cia.moveStudentDialogTitle.value)
+const moveStudentDialogDescriptionText = computed(() => cia.moveStudentDialogDescription.value)
+const moveStudentSourceCommitteeId = computed(() => cia.moveStudentSourceCommitteeId.value)
+const moveStudentCurrentCommitteeBadgeLabel = computed(() => cia.moveStudentCurrentCommitteeBadgeLabel.value)
 </script>
 
 <template>
@@ -280,6 +294,19 @@ const deleteItemDescriptionText = computed(() => cia.deleteItemConfirmDescriptio
     @update:duration-minutes="pc.updatePauseDurationMinutes($event)"
     @cancel="pc.closePauseDialog()"
     @submit="pc.submitPauseDialog()"
+  />
+
+  <EditorMoveStudentDialog
+    v-model:open="moveStudentDialogOpen"
+    :title="moveStudentDialogTitle"
+    :description="moveStudentDialogDescriptionText"
+    :committee-sidebar-items="cl.committeeSidebarItems.value"
+    :selected-committee-id="cl.selectedCommitteeId.value"
+    :disabled-committee-id="moveStudentSourceCommitteeId"
+    :current-committee-badge-label="moveStudentCurrentCommitteeBadgeLabel"
+    :cancel-label="copy.commonCancel"
+    @cancel="cia.closeMoveStudentDialog()"
+    @select-committee="cia.submitMoveStudentToCommittee($event)"
   />
 
   <CommonAppActionConfirmDialog

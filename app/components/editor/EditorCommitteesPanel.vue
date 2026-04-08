@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { vAutoAnimate } from '@formkit/auto-animate/vue'
 import type { CommitteeSidebarItem } from '~/types/editor'
 
 const props = defineProps<{
@@ -28,10 +27,6 @@ function selectCommittee(committeeId: string): void {
 
 function requestCreateCommittee(): void {
   emit('createCommittee')
-}
-
-function resolveSidebarItemKey(item: CommitteeSidebarItem): string {
-  return item.kind === 'day-bookmark' ? item.id : item.value
 }
 </script>
 
@@ -74,42 +69,12 @@ function resolveSidebarItemKey(item: CommitteeSidebarItem): string {
         </UButton>
       </div>
 
-      <ul v-auto-animate role="list" :aria-label="props.title" class="w-full">
-        <li v-for="item in props.committeeSidebarItems" :key="resolveSidebarItemKey(item)">
-          <div
-            v-if="item.kind === 'day-bookmark'"
-            class="border-capaccent-400/80 dark:border-capaccent-500/80 bg-secondary/10 text-capaccent-900 dark:text-capaccent-100 border-y-2 px-3 py-2 text-sm font-semibold"
-          >
-            {{ item.dayLabel }}
-          </div>
-
-          <UButton
-            v-else
-            :variant="item.value === selectedCommitteeIdModel ? 'soft' : 'ghost'"
-            color="primary"
-            size="lg"
-            block
-            :aria-current="item.value === selectedCommitteeIdModel ? 'true' : undefined"
-            class="focus-visible:ring-primary/50 w-full cursor-pointer justify-between rounded-none px-3 py-3 text-base font-semibold ring-0 focus-visible:ring-2 focus-visible:ring-inset"
-            :class="item.value === selectedCommitteeIdModel ? 'ring-primary/50 ring-2 ring-inset' : 'hover:bg-accented'"
-            @click="selectCommittee(item.value)"
-          >
-            <span class="truncate text-left">
-              {{ item.label }}
-            </span>
-
-            <UBadge
-              color="primary"
-              variant="outline"
-              size="lg"
-              leading-icon="i-lucide-users"
-              class="bg-default px-2.5 py-1 text-base font-semibold ring-[2px] ring-current/45"
-            >
-              {{ item.studentsCount }}
-            </UBadge>
-          </UButton>
-        </li>
-      </ul>
+      <EditorCommitteeSidebarList
+        :items="props.committeeSidebarItems"
+        :list-aria-label="props.title"
+        :selected-committee-id="selectedCommitteeIdModel"
+        @select-committee="selectCommittee"
+      />
     </div>
   </UCard>
 </template>
