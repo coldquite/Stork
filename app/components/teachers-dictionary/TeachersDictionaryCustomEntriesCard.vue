@@ -31,7 +31,7 @@ const pendingDeleteEntry = ref<TeachersDictionaryEntryDto | null>(null)
 const deleteError = ref<string | null>(null)
 const deleteActionButtonClass = 'shrink-0 px-2 cursor-pointer'
 const deleteActionButtonUi = {
-  base: 'text-error/80 ring-[2px] ring-current/45 hover:text-error hover:ring-current/80'
+  base: 'text-error ring-[2px] ring-error/70 hover:text-error hover:ring-error/85 dark:text-error dark:ring-error/85 dark:hover:text-error dark:hover:ring-error'
 }
 
 const deleteConfirmDescription = computed(() => {

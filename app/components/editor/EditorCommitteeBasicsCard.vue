@@ -75,7 +75,7 @@ const isRoomInvalid = computed(() => hasSelectedCommittee.value && isEmptyValue(
 const isSecretaryInvalid = computed(() => hasSelectedCommittee.value && isEmptyValue(secretaryInputValue.value))
 
 const invalidInputUi = {
-  base: 'ring-2 ring-inset ring-error/70'
+  base: 'ring-2 ring-inset ring-error/70 dark:ring-error/85'
 } as const
 const rootClass = computed(() =>
   props.fullWidth

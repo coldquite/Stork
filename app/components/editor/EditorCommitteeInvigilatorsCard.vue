@@ -18,7 +18,7 @@ const emit = defineEmits<{
 const readOnlyInputClass = 'min-w-0 flex-1 overflow-hidden rounded-md bg-accented'
 const actionButtonClass = 'shrink-0 px-2 cursor-pointer'
 const deleteActionButtonUi = {
-  base: 'text-error/80 ring-[2px] ring-current/45 hover:text-error hover:ring-current/80'
+  base: 'text-error ring-[2px] ring-error/70 hover:text-error hover:ring-error/85 dark:text-error dark:ring-error/85 dark:hover:text-error dark:hover:ring-error'
 }
 
 function requestAdd(): void {
@@ -42,7 +42,7 @@ function requestDelete(localId: string): void {
   <div
     :class="[
       'border-default w-fit max-w-full min-w-0 rounded-md border p-2',
-      props.isInvigilatorsEmpty ? 'border-error/70 ring-error/40 ring-2 ring-inset' : ''
+      props.isInvigilatorsEmpty ? 'border-error/70 ring-error/40 dark:border-error dark:ring-error/80 ring-2 ring-inset' : ''
     ]"
   >
     <div class="flex flex-col gap-3">

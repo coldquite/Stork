@@ -48,7 +48,7 @@ const committeeMembersInputWidthCh = computed(() => {
 })
 
 const invalidInputUi = {
-  base: 'ring-2 ring-inset ring-error/70'
+  base: 'ring-2 ring-inset ring-error/70 dark:ring-error/85'
 } as const
 const inputWidthPadding = '1.25rem + 2px'
 const leaderInputWidthStyle = computed(() => {

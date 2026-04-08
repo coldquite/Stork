@@ -20,7 +20,7 @@ const renameActionButtonUi = {
 }
 const actionButtonClass = 'shrink-0 px-2 text-sm cursor-pointer'
 const deleteActionButtonUi = {
-  base: 'text-error/80 ring-[2px] ring-current/45 hover:text-error hover:ring-current/80'
+  base: 'text-error/90 ring-[2px] ring-error/70 hover:text-error hover:ring-error/85 dark:text-error dark:ring-error/85 dark:hover:text-error dark:hover:ring-error'
 }
 </script>
 
