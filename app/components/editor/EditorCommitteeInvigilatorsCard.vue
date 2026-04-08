@@ -65,6 +65,7 @@ function requestDelete(localId: string): void {
               variant="ghost"
               icon="i-lucide-trash-2"
               :aria-label="props.deleteInvigilatorAriaLabel"
+              :title="props.deleteInvigilatorAriaLabel"
               :class="actionButtonClass"
               :ui="deleteActionButtonUi"
               @click="requestDelete(invigilator.localId)"

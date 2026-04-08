@@ -459,8 +459,20 @@
         "customLabelLeadingTrailingWhitespace": "Vlastní název pauzy nesmí začínat ani končit mezerou."
       }
     },
+    "items": {
+      "delete": {
+        "confirmAction": "Smazat položku",
+        "fallbackDescription": "Opravdu chcete smazat vybranou položku? Tato akce je nevratná.",
+        "studentDescription": "Opravdu chcete smazat studenta „{name}“? Tato akce je nevratná.",
+        "pauseDescription": "Opravdu chcete smazat pauzu „{name}“? Tato akce je nevratná.",
+        "fallbackStudentName": "Neznámý student",
+        "fallbackPauseName": "Pauza"
+      }
+    },
     "table": {
       "order": "Pořadí",
+      "deleteItemAriaLabel": "Smazat položku",
+      "moveStudentAriaLabel": "Přesunout studenta do jiné komise",
       "prepareTime": "Příprava",
       "examTime": "Zkouška",
       "titlesBefore": "Titul",

@@ -38,7 +38,14 @@ const emit = defineEmits<{
   (event: 'update:students', value: EditorTableRow[]): void
   (event: 'committeeStringField', payload: EditorCommitteeStringFieldPayload): void
   (
-    event: 'update:committeeDate' | 'deleteInvigilator' | 'renameCommittee' | 'deleteCommittee' | 'editPause',
+    event:
+      | 'update:committeeDate'
+      | 'deleteInvigilator'
+      | 'renameCommittee'
+      | 'deleteCommittee'
+      | 'editPause'
+      | 'requestDeleteItem'
+      | 'requestMoveStudent',
     value: string
   ): void
   (event: 'update:committeeStartMinute', value: number): void
@@ -269,6 +276,8 @@ function setTableViewMode(mode: EditorStudentsTableViewMode): void {
       :highlight-request="props.highlightRequest"
       @update:model-value="emit('update:students', $event)"
       @edit-pause="emit('editPause', $event)"
+      @request-delete-item="emit('requestDeleteItem', $event)"
+      @request-move-student="emit('requestMoveStudent', $event)"
     />
   </UCard>
 </template>

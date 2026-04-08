@@ -7,6 +7,7 @@ type EditorPageGroups = ReturnType<typeof useEditorPage>
 const props = defineProps<{
   committeeList: EditorPageGroups['committeeList']
   invigilators: EditorPageGroups['invigilators']
+  committeeItemsActions: EditorPageGroups['committeeItemsActions']
   studentCreation: EditorPageGroups['studentCreation']
   pauseCreation: EditorPageGroups['pauseCreation']
   scheduleDialogs: EditorPageGroups['scheduleDialogs']
@@ -16,6 +17,7 @@ const props = defineProps<{
 
 const cl = props.committeeList
 const inv = props.invigilators
+const cia = props.committeeItemsActions
 const sc = props.studentCreation
 const pc = props.pauseCreation
 const sd = props.scheduleDialogs
@@ -131,6 +133,12 @@ const deleteInvigilatorConfirmOpen = computed({
     inv.isDeleteInvigilatorConfirmOpen.value = v
   }
 })
+const deleteItemConfirmOpen = computed({
+  get: () => cia.isDeleteItemConfirmOpen.value,
+  set: (v: boolean) => {
+    cia.isDeleteItemConfirmOpen.value = v
+  }
+})
 
 const renameCommitteeDescriptionText = computed(() => cl.renameCommitteeDialogDescription.value)
 const renameCommitteeValidationText = computed(() => cl.renameCommitteeValidationError.value)
@@ -143,6 +151,8 @@ const createCommitteeSubmitDisabled = computed(() => cl.isCreateCommitteeSubmitD
 
 const deleteCommitteeDescriptionText = computed(() => cl.deleteCommitteeConfirmDescription.value)
 const deleteInvigilatorDescriptionText = computed(() => inv.deleteInvigilatorConfirmDescription.value)
+const deleteItemActionLabel = computed(() => cia.deleteItemConfirmActionLabel.value)
+const deleteItemDescriptionText = computed(() => cia.deleteItemConfirmDescription.value)
 </script>
 
 <template>
@@ -288,5 +298,14 @@ const deleteInvigilatorDescriptionText = computed(() => inv.deleteInvigilatorCon
     :confirm-label="copy.deleteInvigilatorConfirmAction"
     @cancel="inv.closeDeleteInvigilatorConfirm()"
     @confirm="inv.submitDeleteInvigilator()"
+  />
+
+  <CommonAppActionConfirmDialog
+    v-model:open="deleteItemConfirmOpen"
+    :action-label="deleteItemActionLabel"
+    :description="deleteItemDescriptionText"
+    :confirm-label="deleteItemActionLabel"
+    @cancel="cia.closeDeleteItemConfirm()"
+    @confirm="cia.submitDeleteItem()"
   />
 </template>

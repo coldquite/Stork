@@ -555,6 +555,57 @@ describe('useEditorPage', () => {
     expect(page.committeeList.isDeleteCommitteeConfirmOpen.value).toBe(false)
   })
 
+  it('deletes pause item from selected committee after confirm', async () => {
+    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const page = useEditorPage()
+
+    const committee = scheduleDraftStoreMock.draft?.committees.find((entry) => entry.localId === 'committee-early')
+    expect(committee?.items.map((item) => item.localId)).toEqual(['student-a', 'pause-a', 'student-b'])
+
+    page.committeeItemsActions.openDeleteItemConfirm('pause-a')
+    expect(page.committeeItemsActions.isDeleteItemConfirmOpen.value).toBe(true)
+    expect(page.committeeItemsActions.deleteItemConfirmDescription.value).toBe('editor.items.delete.pauseDescription')
+
+    page.committeeItemsActions.submitDeleteItem()
+
+    expect(committee?.items.map((item) => item.localId)).toEqual(['student-a', 'student-b'])
+    expect(committee?.items.map((item) => item.position)).toEqual([1, 2])
+    expect(page.committeeItemsActions.isDeleteItemConfirmOpen.value).toBe(false)
+  })
+
+  it('deletes student item from selected committee after confirm', async () => {
+    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const page = useEditorPage()
+
+    const committee = scheduleDraftStoreMock.draft?.committees.find((entry) => entry.localId === 'committee-early')
+    expect(committee?.items.map((item) => item.localId)).toEqual(['student-a', 'pause-a', 'student-b'])
+
+    page.committeeItemsActions.openDeleteItemConfirm('student-a')
+    expect(page.committeeItemsActions.isDeleteItemConfirmOpen.value).toBe(true)
+    expect(page.committeeItemsActions.deleteItemConfirmDescription.value).toBe('editor.items.delete.studentDescription')
+
+    page.committeeItemsActions.submitDeleteItem()
+
+    expect(committee?.items.map((item) => item.localId)).toEqual(['pause-a', 'student-b'])
+    expect(committee?.items.map((item) => item.position)).toEqual([1, 2])
+    expect(page.studentTable.selectedStudents.value.map((row) => row.id)).toEqual(['student-b'])
+    expect(page.committeeItemsActions.isDeleteItemConfirmOpen.value).toBe(false)
+  })
+
+  it('keeps committee items unchanged for move-student placeholder action', async () => {
+    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const page = useEditorPage()
+
+    const committee = scheduleDraftStoreMock.draft?.committees.find((entry) => entry.localId === 'committee-early')
+    const initialIds = committee?.items.map((item) => item.localId)
+    const initialPositions = committee?.items.map((item) => item.position)
+
+    page.committeeItemsActions.requestMoveStudentToAnotherCommittee('student-a')
+
+    expect(committee?.items.map((item) => item.localId)).toEqual(initialIds)
+    expect(committee?.items.map((item) => item.position)).toEqual(initialPositions)
+  })
+
   it('renames draft with trimmed value', async () => {
     const { useEditorPage } = await import('~/composables/editor/useEditorPage')
     const page = useEditorPage()

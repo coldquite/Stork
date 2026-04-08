@@ -1,4 +1,5 @@
 import { useEditorCommitteeFields } from '~/composables/editor/useEditorCommitteeFields'
+import { useEditorCommitteeItemsActions } from '~/composables/editor/useEditorCommitteeItemsActions'
 import { useEditorCommitteeList } from '~/composables/editor/useEditorCommitteeList'
 import { useEditorInvigilators } from '~/composables/editor/useEditorInvigilators'
 import { useEditorPauseCreation } from '~/composables/editor/useEditorPauseCreation'
@@ -29,6 +30,7 @@ export function useEditorPage() {
   )
   const tableViewMode = computed<EditorStudentsTableViewMode>(() => editorTablePreferencesStore.tableViewMode)
   const studentTable = useEditorStudentTable(committeeList.selectedCommittee, thesisTitleDisplayMode, tableViewMode)
+  const committeeItemsActions = useEditorCommitteeItemsActions(committeeList.selectedCommittee)
   const committeeFields = useEditorCommitteeFields(committeeList.selectedCommittee)
   const invigilators = useEditorInvigilators(committeeList.selectedCommittee)
   const studentCreation = useEditorStudentCreation(committeeList.selectedCommittee)
@@ -90,6 +92,16 @@ export function useEditorPage() {
       selectedRows: studentTable.selectedRows,
       selectedStudents: studentTable.selectedStudents,
       columns: studentTable.columns
+    },
+
+    committeeItemsActions: {
+      isDeleteItemConfirmOpen: committeeItemsActions.isDeleteItemConfirmOpen,
+      deleteItemConfirmActionLabel: committeeItemsActions.deleteItemConfirmActionLabel,
+      deleteItemConfirmDescription: committeeItemsActions.deleteItemConfirmDescription,
+      openDeleteItemConfirm: committeeItemsActions.openDeleteItemConfirm,
+      closeDeleteItemConfirm: committeeItemsActions.closeDeleteItemConfirm,
+      submitDeleteItem: committeeItemsActions.submitDeleteItem,
+      requestMoveStudentToAnotherCommittee: committeeItemsActions.requestMoveStudentToAnotherCommittee
     },
 
     draftSettings: {

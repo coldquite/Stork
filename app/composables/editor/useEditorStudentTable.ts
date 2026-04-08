@@ -266,7 +266,12 @@ export function useEditorStudentTable(
       {
         id: 'order',
         header: t('editor.table.order'),
-        meta: { class: { th: 'w-16 whitespace-nowrap', td: 'text-muted text-xs font-semibold whitespace-nowrap' } }
+        meta: {
+          class: {
+            th: 'w-36 whitespace-nowrap',
+            td: 'px-0 py-0 text-muted text-sm font-semibold whitespace-nowrap'
+          }
+        }
       },
       {
         accessorKey: 'prepareTime',

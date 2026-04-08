@@ -81,7 +81,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: EditorTableRow[]): void
-  (e: 'editPause', pauseId: string): void
+  (e: 'editPause' | 'requestDeleteItem' | 'requestMoveStudent', value: string): void
 }>()
 
 const { t } = useI18n()
@@ -101,6 +101,13 @@ const inlineReadonlyFrameClass = 'w-full min-h-8 px-2.5 py-1.5'
 const inlineReadonlySelectFrameClass = `${inlineReadonlyFrameClass} pe-9`
 const inlineReadonlyTextClass = 'block text-sm whitespace-nowrap'
 const thesisCellWrapperClass = `${STUDENT_TABLE_THESIS_COLUMN_WIDTH_CLASS} cursor-pointer`
+const orderCellDeleteActionButtonUi = {
+  base: 'cursor-pointer text-error ring-[2px] ring-inset ring-error/70 hover:text-error hover:ring-error/85 dark:text-error dark:ring-error/85 dark:hover:text-error dark:hover:ring-error'
+}
+const orderCellMoveActionButtonUi = {
+  base: 'cursor-pointer text-primary ring-[2px] ring-inset ring-primary/60 hover:text-primary hover:ring-primary/75 dark:text-primary dark:ring-primary/70 dark:hover:text-primary dark:hover:ring-primary/85'
+}
+const orderCellActionButtonClass = 'size-9 shrink-0 cursor-pointer justify-center rounded-md'
 const studentTableTbodyBaseClass =
   'editor-students-tbody divide-y divide-default [&_tr:nth-child(odd)]:bg-primary/5 [&_tr:nth-child(even)]:bg-white dark:[&_tr:nth-child(odd)]:bg-primary/10 dark:[&_tr:nth-child(even)]:bg-default'
 const studentTableTbodyHoverClass =
@@ -369,7 +376,7 @@ const tbodyUiClass = computed(() => {
 const tableMeta = computed(() => ({
   class: {
     tr: (row: { original: EditorTableRow }) => {
-      const rowClasses: string[] = []
+      const rowClasses = ['group']
 
       if (isPauseRow(row.original)) {
         rowClasses.push('editor-students-row-pause')
@@ -680,6 +687,14 @@ function resolvePauseTypeIcon(value: PauseTypeDto): string {
   return value === 'LUNCH' ? 'i-lucide-utensils-crossed' : 'i-lucide-hourglass'
 }
 
+function requestDeleteItem(itemId: string): void {
+  emit('requestDeleteItem', itemId)
+}
+
+function requestMoveStudent(studentId: string): void {
+  emit('requestMoveStudent', studentId)
+}
+
 onMounted(() => {
   window.addEventListener('click', handleDocumentClick)
 })
@@ -715,9 +730,40 @@ onBeforeUnmount(() => {
       </template>
 
       <template #order-cell="{ row }">
-        <span class="text-muted text-xs font-semibold">
-          {{ isStudentRow(row.original) ? row.original.studentOrder : '' }}
-        </span>
+        <div class="relative flex h-full min-h-10 w-full items-center justify-center">
+          <span class="text-muted text-md font-semibold transition-opacity duration-150 group-hover:opacity-0">
+            {{ isStudentRow(row.original) ? row.original.studentOrder : '' }}
+          </span>
+
+          <div
+            class="pointer-events-none absolute inset-0 flex items-center justify-center gap-1 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100"
+          >
+            <UButton
+              v-if="isStudentRow(row.original)"
+              color="primary"
+              variant="ghost"
+              size="sm"
+              icon="i-lucide-scale"
+              :class="orderCellActionButtonClass"
+              :aria-label="t('editor.table.moveStudentAriaLabel')"
+              :title="t('editor.table.moveStudentAriaLabel')"
+              :ui="orderCellMoveActionButtonUi"
+              @click.stop="requestMoveStudent(row.original.id)"
+            />
+
+            <UButton
+              color="error"
+              variant="ghost"
+              size="sm"
+              icon="i-lucide-trash-2"
+              :class="orderCellActionButtonClass"
+              :aria-label="t('editor.table.deleteItemAriaLabel')"
+              :title="t('editor.table.deleteItemAriaLabel')"
+              :ui="orderCellDeleteActionButtonUi"
+              @click.stop="requestDeleteItem(row.original.id)"
+            />
+          </div>
+        </div>
       </template>
 
       <template #prepareTime-cell="{ row }">

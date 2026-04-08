@@ -11,6 +11,7 @@ const page = useEditorPage()
 const {
   committeeList,
   studentTable,
+  committeeItemsActions,
   draftSettings,
   studentSearch,
   committeeFields,
@@ -158,6 +159,14 @@ function setStudentRows(rows: EditorTableRow[]): void {
   studentTable.selectedRows.value = rows
 }
 
+function requestDeleteCommitteeItem(itemId: string): void {
+  committeeItemsActions.openDeleteItemConfirm(itemId)
+}
+
+function requestMoveStudentToAnotherCommittee(studentId: string): void {
+  committeeItemsActions.requestMoveStudentToAnotherCommittee(studentId)
+}
+
 const committeesCount = computed(() => committeeList.committees.value.length)
 const selectedCommitteeIdModel = computed({
   get: () => committeeList.selectedCommitteeId.value,
@@ -241,6 +250,8 @@ const draftNameText = computed(() => draftName.value)
             @add-student="studentCreation.openCreateStudentDialog"
             @add-pause="pauseCreation.openCreatePauseDialog"
             @edit-pause="pauseCreation.openEditPauseDialog($event)"
+            @request-delete-item="requestDeleteCommitteeItem"
+            @request-move-student="requestMoveStudentToAnotherCommittee"
             @add-invigilator="invigilators.openAddInvigilatorDialog"
             @delete-invigilator="invigilators.openDeleteInvigilatorConfirm($event)"
             @rename-committee="committeeList.openRenameCommitteeDialog($event)"
@@ -264,6 +275,7 @@ const draftNameText = computed(() => draftName.value)
     <EditorScheduleDialogsHost
       :committee-list="committeeList"
       :invigilators="invigilators"
+      :committee-items-actions="committeeItemsActions"
       :student-creation="studentCreation"
       :pause-creation="pauseCreation"
       :schedule-dialogs="scheduleDialogs"
