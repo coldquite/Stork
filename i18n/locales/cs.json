@@ -315,10 +315,16 @@
       "startTime": "Začátek první zkoušky před komisí",
       "startTimeHour": "Hodina",
       "startTimeMinute": "Minuta",
+      "columnDisplaySettingsAction": "Nastavení sloupců",
       "thesisTitleDisplayMode": "Ukazovat sloupec „Název práce“",
       "thesisTitleDisplayModeOptions": {
         "auto": "Jenom v jazyce komise",
         "both": "CS/SK + EN názvy"
+      },
+      "tableViewMode": "Režim zobrazení tabulky",
+      "tableViewModeOptions": {
+        "optimized": "Optimalizované zobrazení",
+        "maximized": "Maximální zobrazení"
       },
       "room": "Místnost konání",
       "date": "Datum konání",

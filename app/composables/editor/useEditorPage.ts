@@ -3,8 +3,10 @@ import { useEditorCommitteeList } from '~/composables/editor/useEditorCommitteeL
 import { useEditorInvigilators } from '~/composables/editor/useEditorInvigilators'
 import { useEditorScheduleDialogs } from '~/composables/editor/useEditorScheduleDialogs'
 import { useEditorStudentTable } from '~/composables/editor/useEditorStudentTable'
+import { useEditorTablePreferencesStore } from '~/stores/editor-table-preferences'
 import { useScheduleDraftStore } from '~/stores/schedule-draft'
 import type { ScheduleDraftThesisTitleDisplayMode } from '~/types/schedule-draft'
+import type { EditorStudentsTableViewMode } from '~/types/editor-table-preferences'
 
 /**
  * Facade composable for the schedule editor page: composes committee list, student table,
@@ -16,26 +18,24 @@ import type { ScheduleDraftThesisTitleDisplayMode } from '~/types/schedule-draft
 export function useEditorPage() {
   const { t } = useI18n()
   const scheduleDraftStore = useScheduleDraftStore()
+  const editorTablePreferencesStore = useEditorTablePreferencesStore()
 
   const committeeList = useEditorCommitteeList()
   const thesisTitleDisplayMode = computed<ScheduleDraftThesisTitleDisplayMode>(
-    () => scheduleDraftStore.draft?.thesisTitleDisplayMode ?? 'AUTO'
+    () => editorTablePreferencesStore.thesisTitleDisplayMode
   )
-  const studentTable = useEditorStudentTable(committeeList.selectedCommittee, thesisTitleDisplayMode)
+  const tableViewMode = computed<EditorStudentsTableViewMode>(() => editorTablePreferencesStore.tableViewMode)
+  const studentTable = useEditorStudentTable(committeeList.selectedCommittee, thesisTitleDisplayMode, tableViewMode)
   const committeeFields = useEditorCommitteeFields(committeeList.selectedCommittee)
   const invigilators = useEditorInvigilators(committeeList.selectedCommittee)
   const scheduleDialogs = useEditorScheduleDialogs()
 
   function updateThesisTitleDisplayMode(nextMode: ScheduleDraftThesisTitleDisplayMode): void {
-    if (nextMode !== 'AUTO' && nextMode !== 'BOTH') {
-      return
-    }
+    editorTablePreferencesStore.setThesisTitleDisplayMode(nextMode)
+  }
 
-    if (!scheduleDraftStore.draft) {
-      return
-    }
-
-    scheduleDraftStore.draft.thesisTitleDisplayMode = nextMode
+  function updateTableViewMode(nextMode: EditorStudentsTableViewMode): void {
+    editorTablePreferencesStore.setTableViewMode(nextMode)
   }
 
   const draftName = computed(() => scheduleDraftStore.draft?.name ?? t('editor.untitled'))
@@ -87,7 +87,9 @@ export function useEditorPage() {
 
     draftSettings: {
       thesisTitleDisplayMode,
-      updateThesisTitleDisplayMode
+      updateThesisTitleDisplayMode,
+      tableViewMode,
+      updateTableViewMode
     },
 
     committeeFields: {

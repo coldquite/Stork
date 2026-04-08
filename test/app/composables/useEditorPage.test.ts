@@ -1,6 +1,12 @@
 import { mockNuxtImport } from '@nuxt/test-utils/runtime'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { ScheduleDraft, ScheduleDraftCommittee, ScheduleDraftItem } from '~/types/schedule-draft'
+import type {
+  ScheduleDraft,
+  ScheduleDraftCommittee,
+  ScheduleDraftItem,
+  ScheduleDraftThesisTitleDisplayMode
+} from '~/types/schedule-draft'
+import type { EditorStudentsTableViewMode } from '~/types/editor-table-preferences'
 
 const { i18nTranslateMock } = vi.hoisted(() => ({
   i18nTranslateMock: vi.fn((key: string) => key)
@@ -18,6 +24,17 @@ const scheduleDraftStoreMock = reactive({
   saveManualDraft: saveManualDraftMock
 })
 
+const editorTablePreferencesStoreMock = reactive({
+  thesisTitleDisplayMode: 'AUTO' as ScheduleDraftThesisTitleDisplayMode,
+  tableViewMode: 'OPTIMIZED' as EditorStudentsTableViewMode,
+  setThesisTitleDisplayMode: vi.fn((nextMode: ScheduleDraftThesisTitleDisplayMode) => {
+    editorTablePreferencesStoreMock.thesisTitleDisplayMode = nextMode
+  }),
+  setTableViewMode: vi.fn((nextMode: EditorStudentsTableViewMode) => {
+    editorTablePreferencesStoreMock.tableViewMode = nextMode
+  })
+})
+
 mockNuxtImport('useI18n', () => {
   return () => ({
     t: i18nTranslateMock
@@ -27,6 +44,12 @@ mockNuxtImport('useI18n', () => {
 vi.mock('~/stores/schedule-draft', () => {
   return {
     useScheduleDraftStore: () => scheduleDraftStoreMock
+  }
+})
+
+vi.mock('~/stores/editor-table-preferences', () => {
+  return {
+    useEditorTablePreferencesStore: () => editorTablePreferencesStoreMock
   }
 })
 
@@ -147,6 +170,10 @@ describe('useEditorPage', () => {
     scheduleDraftStoreMock.isManualSaveLoading = false
     scheduleDraftStoreMock.isAutoSaveRunning = false
     scheduleDraftStoreMock.draft = createDraftWithTwoCommittees()
+    editorTablePreferencesStoreMock.thesisTitleDisplayMode = 'AUTO'
+    editorTablePreferencesStoreMock.tableViewMode = 'OPTIMIZED'
+    editorTablePreferencesStoreMock.setThesisTitleDisplayMode.mockClear()
+    editorTablePreferencesStoreMock.setTableViewMode.mockClear()
   })
 
   it('reorders only student items and keeps pauses in place', async () => {
@@ -376,7 +403,17 @@ describe('useEditorPage', () => {
 
     expect(firstStudentItem.student.thesisTitleLocal).toBe('Nový lokální název')
     expect(firstStudentItem.student.thesisTitleEn).toBe('New English title')
-    expect(scheduleDraftStoreMock.draft?.thesisTitleDisplayMode).toBe('BOTH')
+    expect(editorTablePreferencesStoreMock.thesisTitleDisplayMode).toBe('BOTH')
+  })
+
+  it('updates table view mode in preferences store', async () => {
+    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const page = useEditorPage()
+
+    page.draftSettings.updateTableViewMode('MAXIMIZED')
+
+    expect(editorTablePreferencesStoreMock.setTableViewMode).toHaveBeenCalledWith('MAXIMIZED')
+    expect(editorTablePreferencesStoreMock.tableViewMode).toBe('MAXIMIZED')
   })
 
   it('creates committee with trimmed name and selects it', async () => {

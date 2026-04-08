@@ -17,6 +17,7 @@ import {
   resolveSpecializationNameForStudyProfile
 } from '~/utils/editor/student-study-profile'
 import { resolveThesisLanguage } from '~/utils/editor/thesis-language'
+import type { EditorStudentsTableViewMode } from '~/types/editor-table-preferences'
 
 function resolveMinutes(value: number, fallback: number): number {
   if (!Number.isFinite(value)) {
@@ -36,7 +37,8 @@ function resolveRequiredText(nextValue: string, fallback: string): string {
  */
 export function useEditorStudentTable(
   selectedCommittee: ComputedRef<ScheduleDraftCommittee | null>,
-  thesisTitleDisplayMode: ComputedRef<ScheduleDraftThesisTitleDisplayMode>
+  thesisTitleDisplayMode: ComputedRef<ScheduleDraftThesisTitleDisplayMode>,
+  tableViewMode: ComputedRef<EditorStudentsTableViewMode>
 ) {
   const { t } = useI18n()
 
@@ -186,7 +188,7 @@ export function useEditorStudentTable(
             }
           ]
 
-    return [
+    const allColumns: TableColumn<StudentRow>[] = [
       {
         id: 'drag',
         header: '',
@@ -209,31 +211,22 @@ export function useEditorStudentTable(
         meta: { class: { th: 'whitespace-nowrap' } }
       },
       { accessorKey: 'firstName', header: t('editor.table.firstName'), meta: { class: { th: 'whitespace-nowrap' } } },
-      { accessorKey: 'email', header: t('editor.table.email'), meta: { class: { th: 'whitespace-nowrap' } } },
       { accessorKey: 'lastName', header: t('editor.table.lastName'), meta: { class: { th: 'whitespace-nowrap' } } },
       {
         accessorKey: 'titlesAfter',
         header: t('editor.table.titlesAfter'),
         meta: { class: { th: 'whitespace-nowrap' } }
       },
+      { accessorKey: 'email', header: t('editor.table.email'), meta: { class: { th: 'whitespace-nowrap' } } },
+      { accessorKey: 'repeatType', header: t('editor.table.repeatType'), meta: { class: { th: 'whitespace-nowrap' } } },
       {
-        accessorKey: 'studyLanguage',
-        header: t('editor.table.studyLanguage'),
+        accessorKey: 'prepareMinutes',
+        header: t('editor.table.prepareMinutes'),
         meta: { class: { th: 'whitespace-nowrap' } }
       },
       {
-        accessorKey: 'studyProgramType',
-        header: t('editor.table.studyProgramType'),
-        meta: { class: { th: 'whitespace-nowrap' } }
-      },
-      {
-        accessorKey: 'studyProgramName',
-        header: t('editor.table.studyProgramName'),
-        meta: { class: { th: 'whitespace-nowrap' } }
-      },
-      {
-        accessorKey: 'specializationCode',
-        header: t('editor.table.specialization'),
+        accessorKey: 'examMinutes',
+        header: t('editor.table.examMinutes'),
         meta: { class: { th: 'whitespace-nowrap' } }
       },
       ...thesisTitleColumns,
@@ -258,18 +251,48 @@ export function useEditorStudentTable(
         header: t('editor.table.additionalReviewer'),
         meta: { class: { th: 'min-w-[6.5rem] whitespace-nowrap' } }
       },
-      { accessorKey: 'repeatType', header: t('editor.table.repeatType'), meta: { class: { th: 'whitespace-nowrap' } } },
       {
-        accessorKey: 'prepareMinutes',
-        header: t('editor.table.prepareMinutes'),
+        accessorKey: 'studyLanguage',
+        header: t('editor.table.studyLanguage'),
         meta: { class: { th: 'whitespace-nowrap' } }
       },
       {
-        accessorKey: 'examMinutes',
-        header: t('editor.table.examMinutes'),
+        accessorKey: 'studyProgramType',
+        header: t('editor.table.studyProgramType'),
+        meta: { class: { th: 'whitespace-nowrap' } }
+      },
+      {
+        accessorKey: 'studyProgramName',
+        header: t('editor.table.studyProgramName'),
+        meta: { class: { th: 'whitespace-nowrap' } }
+      },
+      {
+        accessorKey: 'specializationCode',
+        header: t('editor.table.specialization'),
         meta: { class: { th: 'whitespace-nowrap' } }
       }
     ]
+
+    if (tableViewMode.value !== 'OPTIMIZED') {
+      return allColumns
+    }
+
+    const hiddenColumns = new Set([
+      'thesisLanguage',
+      'studyLanguage',
+      'studyProgramType',
+      'studyProgramName',
+      'specializationCode'
+    ])
+
+    return allColumns.filter((column) => {
+      const accessorKey = (column as { accessorKey?: unknown }).accessorKey
+      if (typeof accessorKey !== 'string') {
+        return true
+      }
+
+      return !hiddenColumns.has(accessorKey)
+    })
   })
 
   return {

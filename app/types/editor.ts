@@ -52,9 +52,13 @@ export interface EditorStudentsPanelCommitteeLabels {
   startTime: string
   startTimeHour: string
   startTimeMinute: string
+  columnDisplaySettingsAction: string
   thesisTitleDisplayMode: string
   thesisTitleDisplayModeAuto: string
   thesisTitleDisplayModeBoth: string
+  tableViewMode: string
+  tableViewModeOptimized: string
+  tableViewModeMaximized: string
   room: string
   date: string
   secretary: string

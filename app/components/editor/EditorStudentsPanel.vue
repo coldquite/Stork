@@ -13,11 +13,13 @@ import type {
   ScheduleDraftThesisTitleDisplayMode
 } from '~/types/schedule-draft'
 import type { StudyLanguageDto, StudyProgramTypeDto } from '#shared/types/time-schedules'
+import type { EditorStudentsTableViewMode } from '~/types/editor-table-preferences'
 
 const props = defineProps<{
   cardRootClass: string
   selectedCommittee: ScheduleDraftCommittee | null
   thesisTitleDisplayMode: ScheduleDraftThesisTitleDisplayMode
+  tableViewMode: EditorStudentsTableViewMode
   selectedCommitteeLabel?: string
   selectedCommitteeDate?: string
   studentsCountLabel: string
@@ -36,6 +38,7 @@ const emit = defineEmits<{
   (event: 'update:committeeDate' | 'deleteInvigilator' | 'renameCommittee' | 'deleteCommittee', value: string): void
   (event: 'update:committeeStartMinute', value: number): void
   (event: 'update:thesisTitleDisplayMode', value: ScheduleDraftThesisTitleDisplayMode): void
+  (event: 'update:tableViewMode', value: EditorStudentsTableViewMode): void
   (event: 'update:committeeLanguage', value: StudyLanguageDto): void
   (event: 'update:committeeStudyProgramType', value: StudyProgramTypeDto): void
   (event: 'addInvigilator'): void
@@ -46,6 +49,7 @@ const labels = computed(() => props.committeeLabels)
 const hasSelectedCommittee = computed(() => Boolean(props.selectedCommittee))
 const isInvigilatorsEmpty = computed(() => hasSelectedCommittee.value && props.invigilators.length < 1)
 const thesisTitleDisplayMode = computed<ScheduleDraftThesisTitleDisplayMode>(() => props.thesisTitleDisplayMode)
+const tableViewMode = computed<EditorStudentsTableViewMode>(() => props.tableViewMode)
 
 const committeeLocalId = computed(() => props.selectedCommittee?.localId ?? '')
 
@@ -71,6 +75,10 @@ function requestDeleteCommittee(): void {
 
 function setThesisTitleDisplayMode(mode: ScheduleDraftThesisTitleDisplayMode): void {
   emit('update:thesisTitleDisplayMode', mode)
+}
+
+function setTableViewMode(mode: EditorStudentsTableViewMode): void {
+  emit('update:tableViewMode', mode)
 }
 </script>
 
@@ -140,7 +148,7 @@ function setThesisTitleDisplayMode(mode: ScheduleDraftThesisTitleDisplayMode): v
         </div>
 
         <div class="border-default w-full min-w-0 border-t pt-3">
-          <div class="flex w-full min-w-0 flex-wrap items-start justify-between gap-3">
+          <div class="flex w-full min-w-0 flex-wrap items-center justify-between gap-3">
             <EditorCommitteeStartTimeRow
               :selected-committee="props.selectedCommittee"
               :start-time-label="labels.startTime"
@@ -149,31 +157,68 @@ function setThesisTitleDisplayMode(mode: ScheduleDraftThesisTitleDisplayMode): v
               @update:committee-start-minute="emit('update:committeeStartMinute', $event)"
             />
 
-            <div class="ml-auto flex min-w-0 items-center gap-2">
-              <span class="text-sm whitespace-nowrap">{{ labels.thesisTitleDisplayMode }}:</span>
-              <div class="border-default flex min-w-0 items-center gap-1 rounded-md border p-1">
-                <UButton
-                  color="primary"
-                  size="xs"
-                  :variant="thesisTitleDisplayMode === 'AUTO' ? 'solid' : 'ghost'"
-                  :disabled="!hasSelectedCommittee"
-                  class="min-w-0 cursor-pointer justify-center whitespace-nowrap"
-                  @click="setThesisTitleDisplayMode('AUTO')"
-                >
-                  {{ labels.thesisTitleDisplayModeAuto }}
-                </UButton>
-                <UButton
-                  color="primary"
-                  size="xs"
-                  :variant="thesisTitleDisplayMode === 'BOTH' ? 'solid' : 'ghost'"
-                  :disabled="!hasSelectedCommittee"
-                  class="min-w-0 cursor-pointer justify-center whitespace-nowrap"
-                  @click="setThesisTitleDisplayMode('BOTH')"
-                >
-                  {{ labels.thesisTitleDisplayModeBoth }}
-                </UButton>
-              </div>
-            </div>
+            <UPopover :content="{ side: 'bottom', align: 'end' }" class="ml-auto">
+              <UButton
+                color="neutral"
+                variant="outline"
+                icon="i-lucide-sliders-horizontal"
+                class="min-w-0 shrink-0 cursor-pointer justify-center whitespace-nowrap"
+              >
+                {{ labels.columnDisplaySettingsAction }}
+              </UButton>
+
+              <template #content>
+                <div class="w-[22rem] max-w-[90vw] space-y-4 p-3">
+                  <div class="space-y-2">
+                    <span class="text-sm font-medium whitespace-nowrap">{{ labels.thesisTitleDisplayMode }}:</span>
+                    <div class="border-default flex min-w-0 items-center gap-1 rounded-md border p-1">
+                      <UButton
+                        color="primary"
+                        size="xs"
+                        :variant="thesisTitleDisplayMode === 'AUTO' ? 'solid' : 'ghost'"
+                        class="min-w-0 flex-1 cursor-pointer justify-center whitespace-nowrap"
+                        @click="setThesisTitleDisplayMode('AUTO')"
+                      >
+                        {{ labels.thesisTitleDisplayModeAuto }}
+                      </UButton>
+                      <UButton
+                        color="primary"
+                        size="xs"
+                        :variant="thesisTitleDisplayMode === 'BOTH' ? 'solid' : 'ghost'"
+                        class="min-w-0 flex-1 cursor-pointer justify-center whitespace-nowrap"
+                        @click="setThesisTitleDisplayMode('BOTH')"
+                      >
+                        {{ labels.thesisTitleDisplayModeBoth }}
+                      </UButton>
+                    </div>
+                  </div>
+
+                  <div class="space-y-2">
+                    <span class="text-sm font-medium whitespace-nowrap">{{ labels.tableViewMode }}:</span>
+                    <div class="border-default flex min-w-0 items-center gap-1 rounded-md border p-1">
+                      <UButton
+                        color="primary"
+                        size="xs"
+                        :variant="tableViewMode === 'OPTIMIZED' ? 'solid' : 'ghost'"
+                        class="min-w-0 flex-1 cursor-pointer justify-center whitespace-nowrap"
+                        @click="setTableViewMode('OPTIMIZED')"
+                      >
+                        {{ labels.tableViewModeOptimized }}
+                      </UButton>
+                      <UButton
+                        color="primary"
+                        size="xs"
+                        :variant="tableViewMode === 'MAXIMIZED' ? 'solid' : 'ghost'"
+                        class="min-w-0 flex-1 cursor-pointer justify-center whitespace-nowrap"
+                        @click="setTableViewMode('MAXIMIZED')"
+                      >
+                        {{ labels.tableViewModeMaximized }}
+                      </UButton>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </UPopover>
           </div>
         </div>
       </div>

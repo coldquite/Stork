@@ -29,9 +29,13 @@ const committeeLabels = computed(() => ({
   startTime: t('editor.committee.startTime'),
   startTimeHour: t('editor.committee.startTimeHour'),
   startTimeMinute: t('editor.committee.startTimeMinute'),
+  columnDisplaySettingsAction: t('editor.committee.columnDisplaySettingsAction'),
   thesisTitleDisplayMode: t('editor.committee.thesisTitleDisplayMode'),
   thesisTitleDisplayModeAuto: t('editor.committee.thesisTitleDisplayModeOptions.auto'),
   thesisTitleDisplayModeBoth: t('editor.committee.thesisTitleDisplayModeOptions.both'),
+  tableViewMode: t('editor.committee.tableViewMode'),
+  tableViewModeOptimized: t('editor.committee.tableViewModeOptions.optimized'),
+  tableViewModeMaximized: t('editor.committee.tableViewModeOptions.maximized'),
   room: t('editor.committee.room'),
   date: t('editor.committee.date'),
   secretary: t('editor.committee.secretary'),
@@ -158,6 +162,7 @@ const panelCommitteeDate = computed(() => committeeList.selectedCommitteeDate.va
 const panelStudents = computed(() => studentTable.selectedStudents.value)
 const panelColumns = computed(() => studentTable.columns.value)
 const panelThesisTitleDisplayMode = computed(() => draftSettings.thesisTitleDisplayMode.value)
+const panelTableViewMode = computed(() => draftSettings.tableViewMode.value)
 const panelInvigilators = computed(() => invigilators.selectedInvigilators.value)
 const panelInvigilatorsCountLabel = computed(() => invigilators.invigilatorsCountLabel.value)
 const cloudSaveLoading = computed(() => scheduleDialogs.isCloudSaveLoading.value)
@@ -201,6 +206,7 @@ const draftNameText = computed(() => draftName.value)
             :selected-committee-label="panelCommitteeLabel"
             :selected-committee-date="panelCommitteeDate"
             :thesis-title-display-mode="panelThesisTitleDisplayMode"
+            :table-view-mode="panelTableViewMode"
             :students-count-label="studentsCountLabel"
             :students="panelStudents"
             :columns="panelColumns"
@@ -214,6 +220,7 @@ const draftNameText = computed(() => draftName.value)
             @update:committee-date="committeeFields.updateSelectedCommitteeDate"
             @update:committee-start-minute="committeeFields.updateSelectedCommitteeStartMinute"
             @update:thesis-title-display-mode="draftSettings.updateThesisTitleDisplayMode"
+            @update:table-view-mode="draftSettings.updateTableViewMode"
             @update:committee-language="committeeFields.updateSelectedCommitteeLanguage"
             @update:committee-study-program-type="committeeFields.updateSelectedCommitteeStudyProgramType"
             @add-invigilator="invigilators.openAddInvigilatorDialog"
