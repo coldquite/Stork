@@ -104,6 +104,7 @@ const inlineReadonlyFrameClass = 'w-full min-h-8 px-2.5 py-1.5'
 const inlineReadonlySelectFrameClass = `${inlineReadonlyFrameClass} pe-9`
 const inlineReadonlyTextClass = 'block text-sm whitespace-nowrap'
 const thesisCellWrapperClass = `${STUDENT_TABLE_THESIS_COLUMN_WIDTH_CLASS} cursor-pointer`
+const thesisTitleWarningMarker = '[?]'
 const orderCellDeleteActionButtonUi = {
   base: 'cursor-pointer text-error ring-[2px] ring-inset ring-error/70 hover:text-error hover:ring-error/85 dark:text-error dark:ring-error/85 dark:hover:text-error dark:hover:ring-error'
 }
@@ -1058,6 +1059,7 @@ onBeforeUnmount(() => {
           :model-value="row.original.thesisTitle"
           :cell-wrapper-class="thesisCellWrapperClass"
           :input-class="inlineEditInputClass"
+          :warning-marker="thesisTitleWarningMarker"
           mode="text"
           multiline
           @activate="activateRow(row.original.id)"
@@ -1072,6 +1074,7 @@ onBeforeUnmount(() => {
           :model-value="row.original.thesisTitleLocal"
           :cell-wrapper-class="thesisCellWrapperClass"
           :input-class="inlineEditInputClass"
+          :warning-marker="thesisTitleWarningMarker"
           mode="text"
           multiline
           @activate="activateRow(row.original.id)"
@@ -1086,6 +1089,7 @@ onBeforeUnmount(() => {
           :model-value="row.original.thesisTitleEn"
           :cell-wrapper-class="thesisCellWrapperClass"
           :input-class="inlineEditInputClass"
+          :warning-marker="thesisTitleWarningMarker"
           mode="text"
           multiline
           @activate="activateRow(row.original.id)"

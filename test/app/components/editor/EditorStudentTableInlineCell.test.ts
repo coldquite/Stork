@@ -5,6 +5,12 @@ import EditorStudentTableInlineCell from '~/components/editor/EditorStudentTable
 
 function mountInlineCell(
   isEditing: boolean,
+  extraProps?: Partial<{
+    modelValue: string | number
+    mode: 'text' | 'number'
+    multiline: boolean
+    warningMarker: string
+  }>,
   slots?: {
     display?: () => ReturnType<typeof h>
     edit?: () => ReturnType<typeof h>
@@ -16,7 +22,8 @@ function mountInlineCell(
       modelValue: 'Test value',
       cellWrapperClass: 'min-w-[9rem]',
       inputClass: 'w-full',
-      mode: 'text'
+      mode: 'text',
+      ...extraProps
     },
     slots,
     global: {
@@ -48,12 +55,33 @@ describe('EditorStudentTableInlineCell', () => {
   })
 
   it('supports custom display/edit slots for select-like cells', () => {
-    const wrapper = mountInlineCell(true, {
+    const wrapper = mountInlineCell(true, undefined, {
       display: () => h('span', { 'data-test': 'custom-display' }, 'Readonly label'),
       edit: () => h('button', { 'data-test': 'custom-edit' }, 'Edit control')
     })
 
     expect(wrapper.find('[data-test="custom-display"]').exists()).toBe(true)
     expect(wrapper.find('[data-test="custom-edit"]').exists()).toBe(true)
+  })
+
+  it('highlights text and input in red when warning marker is present', () => {
+    const readonlyWrapper = mountInlineCell(false, {
+      modelValue: 'Název práce [?]',
+      warningMarker: '[?]',
+      multiline: true
+    })
+
+    const readonlyText = readonlyWrapper.find('span.block.text-sm')
+    expect(readonlyText.exists()).toBe(true)
+    expect(readonlyText.classes()).toContain('text-error')
+
+    const editingWrapper = mountInlineCell(true, {
+      modelValue: 'Název práce [?]',
+      warningMarker: '[?]'
+    })
+
+    const editInput = editingWrapper.find('[data-test="u-input"]')
+    expect(editInput.exists()).toBe(true)
+    expect(editInput.classes()).toContain('[&_input]:text-error')
   })
 })

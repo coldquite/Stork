@@ -13,11 +13,14 @@ const props = withDefaults(
     displayFrameClass?: string
     /** Overlay classes for the interactive edit control layer. */
     editOverlayClass?: string
+    /** When provided, text containing this marker is highlighted as an inline warning. */
+    warningMarker?: string
   }>(),
   {
     displayFrameClass: 'w-full min-h-8 px-2.5 py-1.5',
     // Keep edit controls vertically centered when readonly placeholder is taller (e.g. wrapped thesis title)
-    editOverlayClass: 'absolute inset-0 flex items-center'
+    editOverlayClass: 'absolute inset-0 flex items-center',
+    warningMarker: undefined
   }
 )
 
@@ -31,16 +34,34 @@ function displayText(value: string): string {
   return normalized.length > 0 ? normalized : '-'
 }
 
+const hasWarningMarker = computed(() => {
+  if (props.mode !== 'text' || typeof props.warningMarker !== 'string' || props.warningMarker.length < 1) {
+    return false
+  }
+
+  return String(props.modelValue).includes(props.warningMarker)
+})
+
 const displayContentClass = computed(() => {
   if (props.mode === 'number') {
     return 'block text-sm whitespace-nowrap'
   }
 
   if (props.multiline) {
-    return 'block text-sm break-words whitespace-normal'
+    return hasWarningMarker.value
+      ? 'block text-sm break-words whitespace-normal text-error'
+      : 'block text-sm break-words whitespace-normal'
   }
 
-  return 'block text-sm whitespace-nowrap'
+  return hasWarningMarker.value ? 'block text-sm whitespace-nowrap text-error' : 'block text-sm whitespace-nowrap'
+})
+
+const resolvedInputClass = computed(() => {
+  if (!hasWarningMarker.value) {
+    return props.inputClass
+  }
+
+  return `${props.inputClass} [&_input]:text-error`
 })
 </script>
 
@@ -65,7 +86,7 @@ const displayContentClass = computed(() => {
             v-if="props.mode === 'text'"
             :model-value="String(props.modelValue)"
             size="sm"
-            :class="props.inputClass"
+            :class="resolvedInputClass"
             @update:model-value="emit('update:modelValue', $event)"
           />
           <UInput
