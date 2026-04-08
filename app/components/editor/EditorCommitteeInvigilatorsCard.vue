@@ -42,14 +42,16 @@ function requestDelete(localId: string): void {
   <div
     :class="[
       'border-default w-fit max-w-full min-w-0 rounded-md border p-2',
-      props.isInvigilatorsEmpty ? 'border-error/70 ring-error/40 dark:border-error dark:ring-error/80 ring-2 ring-inset' : ''
+      props.isInvigilatorsEmpty
+        ? 'border-error/70 ring-error/40 dark:border-error dark:ring-error/80 ring-2 ring-inset'
+        : ''
     ]"
   >
     <div class="flex flex-col gap-3">
       <div class="space-y-2">
-        <span class="text-sm font-medium">
+        <p class="text-sm font-medium">
           {{ props.invigilatorsCountLabel }}
-        </span>
+        </p>
 
         <ul v-if="props.invigilators.length > 0" class="space-y-2">
           <li v-for="invigilator in props.invigilators" :key="invigilator.localId" class="flex items-center gap-2">
@@ -70,17 +72,19 @@ function requestDelete(localId: string): void {
           </li>
         </ul>
 
-        <UButton
-          color="primary"
-          variant="soft"
-          size="sm"
-          icon="i-lucide-plus"
-          class="ring-primary/35 hover:ring-primary/55 mt-2 w-full cursor-pointer justify-center text-sm font-semibold ring-2"
-          :disabled="!props.selectedCommittee"
-          @click="requestAdd"
-        >
-          {{ props.addActionLabel }}
-        </UButton>
+        <div>
+          <UButton
+            color="primary"
+            variant="soft"
+            size="sm"
+            icon="i-lucide-plus"
+            class="ring-primary/35 hover:ring-primary/55 w-full cursor-pointer justify-center text-sm font-semibold ring-2"
+            :disabled="!props.selectedCommittee"
+            @click="requestAdd"
+          >
+            {{ props.addActionLabel }}
+          </UButton>
+        </div>
       </div>
     </div>
   </div>
