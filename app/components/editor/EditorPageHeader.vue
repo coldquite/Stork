@@ -5,13 +5,15 @@ const props = defineProps<{
   backAriaLabel: string
   renameAriaLabel: string
   renameLabel: string
+  searchStudentsAriaLabel: string
+  searchStudentsLabel: string
   cloudSaveAriaLabel: string
   cloudSaveLabel: string
   cloudSaveLoading: boolean
 }>()
 
 const emit = defineEmits<{
-  (event: 'renameDraft' | 'saveToCloud'): void
+  (event: 'renameDraft' | 'searchStudents' | 'saveToCloud'): void
 }>()
 
 function requestRenameDraft(): void {
@@ -20,6 +22,10 @@ function requestRenameDraft(): void {
 
 function requestSaveToCloud(): void {
   emit('saveToCloud')
+}
+
+function requestSearchStudents(): void {
+  emit('searchStudents')
 }
 </script>
 
@@ -48,6 +54,19 @@ function requestSaveToCloud(): void {
               base: 'h-10 bg-default border-2 border-capaccent-300 text-capaccent-800 hover:border-capaccent-500 hover:bg-capaccent-50 dark:border-capaccent-400 dark:bg-default dark:text-capaccent-100 dark:hover:bg-capaccent-900/50'
             }"
             @click="requestRenameDraft"
+          />
+          <UButton
+            color="neutral"
+            variant="ghost"
+            size="md"
+            icon="i-lucide-search"
+            :label="props.searchStudentsLabel"
+            :aria-label="props.searchStudentsAriaLabel"
+            class="shrink-0 cursor-pointer"
+            :ui="{
+              base: 'h-10 bg-default border-2 border-primary-600 text-primary-800 hover:border-stork-600 hover:bg-stork-100 dark:border-stork-400 dark:bg-default dark:text-stork-100 dark:hover:border-stork-300 dark:hover:bg-stork-800/35'
+            }"
+            @click="requestSearchStudents"
           />
           <UButton
             color="neutral"

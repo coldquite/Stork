@@ -281,6 +281,22 @@
         }
       }
     },
+    "studentSearch": {
+      "action": "Najít studenta",
+      "openAriaLabel": "Najít studenta podle jména, příjmení nebo e-mailu",
+      "dialog": {
+        "title": "Hledání studenta",
+        "description": "Vyhledejte studenta podle jména, příjmení nebo e-mailu a přejděte přímo na jeho komisi.",
+        "searchLabel": "Hledat podle jména, příjmení nebo e-mailu",
+        "searchPlaceholder": "Např. bliznicenko nebo jan.bliznicenko{'@'}fit.cvut.cz",
+        "loading": "Hledám studenty…",
+        "emptyTitle": "Nenalezen žádný student",
+        "emptyDescription": "Zkuste upravit hledaný výraz."
+      },
+      "results": {
+        "order": "Pořadí: {order}"
+      }
+    },
     "committees": {
       "title": "Komise",
       "sortHint": "Seřazeno podle času zahájení",

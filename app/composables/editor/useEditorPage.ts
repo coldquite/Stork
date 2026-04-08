@@ -2,6 +2,7 @@ import { useEditorCommitteeFields } from '~/composables/editor/useEditorCommitte
 import { useEditorCommitteeList } from '~/composables/editor/useEditorCommitteeList'
 import { useEditorInvigilators } from '~/composables/editor/useEditorInvigilators'
 import { useEditorScheduleDialogs } from '~/composables/editor/useEditorScheduleDialogs'
+import { useEditorStudentSearch } from '~/composables/editor/useEditorStudentSearch'
 import { useEditorStudentTable } from '~/composables/editor/useEditorStudentTable'
 import { useEditorTablePreferencesStore } from '~/stores/editor-table-preferences'
 import { useScheduleDraftStore } from '~/stores/schedule-draft'
@@ -29,6 +30,7 @@ export function useEditorPage() {
   const committeeFields = useEditorCommitteeFields(committeeList.selectedCommittee)
   const invigilators = useEditorInvigilators(committeeList.selectedCommittee)
   const scheduleDialogs = useEditorScheduleDialogs()
+  const studentSearch = useEditorStudentSearch(committeeList.selectedCommitteeId)
 
   function updateThesisTitleDisplayMode(nextMode: ScheduleDraftThesisTitleDisplayMode): void {
     editorTablePreferencesStore.setThesisTitleDisplayMode(nextMode)
@@ -139,6 +141,18 @@ export function useEditorPage() {
       submitRenameDraft: scheduleDialogs.submitRenameDraft,
       submitCloudSave: scheduleDialogs.submitCloudSave,
       draftNameMaxLength: scheduleDialogs.draftNameMaxLength
+    },
+
+    studentSearch: {
+      isStudentSearchDialogOpen: studentSearch.isStudentSearchDialogOpen,
+      studentSearchQuery: studentSearch.studentSearchQuery,
+      isStudentSearchLoading: studentSearch.isStudentSearchLoading,
+      studentSearchResults: studentSearch.studentSearchResults,
+      highlightRequest: studentSearch.highlightRequest,
+      openStudentSearchDialog: studentSearch.openStudentSearchDialog,
+      closeStudentSearchDialog: studentSearch.closeStudentSearchDialog,
+      updateStudentSearchQuery: studentSearch.updateStudentSearchQuery,
+      selectStudentSearchResult: studentSearch.selectStudentSearchResult
     },
 
     draftName,

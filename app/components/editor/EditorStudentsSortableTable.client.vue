@@ -13,7 +13,7 @@ import type {
   ThesisLanguageDto
 } from '#shared/types/time-schedules'
 import { STUDENT_TABLE_THESIS_COLUMN_WIDTH_CLASS } from '~/constants/editor-students-table'
-import type { EditorStudentsPanelStudentsEmptyLabels, StudentRow } from '~/types/editor'
+import type { EditorStudentHighlightRequest, EditorStudentsPanelStudentsEmptyLabels, StudentRow } from '~/types/editor'
 import { resolveRepeatTypeFromSelectValue } from '~/utils/editor/repeat-type'
 import {
   applySpecializationCodeChange,
@@ -72,6 +72,7 @@ const props = defineProps<{
   modelValue: StudentRow[]
   columns: TableColumn<StudentRow>[]
   emptyLabels: EditorStudentsPanelStudentsEmptyLabels
+  highlightRequest?: EditorStudentHighlightRequest | null
 }>()
 
 const emit = defineEmits<{
@@ -82,9 +83,13 @@ const { t } = useI18n()
 const tableWrapper = ref<HTMLElement | null>(null)
 const localStudents = ref<StudentRow[]>([])
 const editingRowId = ref<string | null>(null)
+const highlightedStudentId = ref<string | null>(null)
+const fadingHighlightedStudentId = ref<string | null>(null)
 const isDragging = ref(false)
 const isHoverSuppressedAfterDrag = ref(false)
 const activeDragCommitteeId = ref<string | null>(null)
+let clearHighlightedRowTimer: ReturnType<typeof setTimeout> | null = null
+let clearHighlightFadeTimer: ReturnType<typeof setTimeout> | null = null
 const inlineEditInputClass = 'w-full [&_input]:text-sm'
 const inlineEditSelectClass = 'w-full [&_[role=combobox]]:text-sm [&_[role=combobox]_span]:text-sm'
 const inlineReadonlyFrameClass = 'w-full min-h-8 px-2.5 py-1.5'
@@ -100,11 +105,33 @@ function syncFromParent(): void {
   localStudents.value = props.modelValue.slice()
 }
 
+function clearRowHighlightTimer(): void {
+  if (clearHighlightedRowTimer !== null) {
+    clearTimeout(clearHighlightedRowTimer)
+    clearHighlightedRowTimer = null
+  }
+}
+
+function clearRowHighlightFadeTimer(): void {
+  if (clearHighlightFadeTimer !== null) {
+    clearTimeout(clearHighlightFadeTimer)
+    clearHighlightFadeTimer = null
+  }
+}
+
+function clearRowHighlight(): void {
+  clearRowHighlightTimer()
+  clearRowHighlightFadeTimer()
+  highlightedStudentId.value = null
+  fadingHighlightedStudentId.value = null
+}
+
 watch(
   () => props.committeeLocalId,
   () => {
     syncFromParent()
     editingRowId.value = null
+    clearRowHighlight()
   },
   { immediate: true }
 )
@@ -115,6 +142,65 @@ watch(
     syncFromParent()
   },
   { flush: 'post' }
+)
+
+function resolveStudentRowElementById(studentId: string): HTMLTableRowElement | null {
+  const tableBody = tableWrapper.value?.querySelector('tbody')
+  if (!(tableBody instanceof HTMLTableSectionElement)) {
+    return null
+  }
+
+  const studentIndex = localStudents.value.findIndex((student) => student.id === studentId)
+  if (studentIndex < 0) {
+    return null
+  }
+
+  const rowElements = Array.from(tableBody.querySelectorAll(':scope > tr'))
+  const rowElement = rowElements[studentIndex]
+  return rowElement instanceof HTMLTableRowElement ? rowElement : null
+}
+
+function highlightStudentRow(studentId: string): void {
+  clearRowHighlightTimer()
+  clearRowHighlightFadeTimer()
+  fadingHighlightedStudentId.value = null
+  highlightedStudentId.value = studentId
+
+  clearHighlightedRowTimer = setTimeout(() => {
+    highlightedStudentId.value = null
+    fadingHighlightedStudentId.value = studentId
+    clearHighlightedRowTimer = null
+
+    clearHighlightFadeTimer = setTimeout(() => {
+      if (fadingHighlightedStudentId.value === studentId) {
+        fadingHighlightedStudentId.value = null
+      }
+
+      clearHighlightFadeTimer = null
+    }, 500)
+  }, 2100)
+}
+
+function focusStudentById(studentId: string): void {
+  const rowElement = resolveStudentRowElementById(studentId)
+  if (!rowElement) {
+    return
+  }
+
+  rowElement.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' })
+  highlightStudentRow(studentId)
+}
+
+watch(
+  () => props.highlightRequest,
+  async (nextHighlightRequest) => {
+    if (!nextHighlightRequest || nextHighlightRequest.committeeId !== props.committeeLocalId) {
+      return
+    }
+
+    await nextTick()
+    focusStudentById(nextHighlightRequest.studentId)
+  }
 )
 
 const sortableTarget = computed(() => {
@@ -259,6 +345,22 @@ const tbodyUiClass = computed(() => {
 
   return `${studentTableTbodyBaseClass} ${studentTableTbodyHoverClass}`
 })
+
+const tableMeta = computed(() => ({
+  class: {
+    tr: (row: { original: StudentRow }) => {
+      if (row.original.id === highlightedStudentId.value) {
+        return 'editor-students-row-highlight'
+      }
+
+      if (row.original.id === fadingHighlightedStudentId.value) {
+        return 'editor-students-row-highlight-fade'
+      }
+
+      return ''
+    }
+  }
+}))
 
 function stopSuppressingHoverAfterDrag(): void {
   isHoverSuppressedAfterDrag.value = false
@@ -554,6 +656,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  clearRowHighlight()
   stopSuppressingHoverAfterDrag()
   window.removeEventListener('click', handleDocumentClick)
 })
@@ -565,6 +668,7 @@ onBeforeUnmount(() => {
       :key="tableRenderKey"
       :data="localStudents"
       :columns="props.columns"
+      :meta="tableMeta"
       :get-row-id="(row) => row.id"
       :ui="{
         tbody: tbodyUiClass,

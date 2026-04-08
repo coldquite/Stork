@@ -31,6 +31,22 @@ export interface StudentRow {
   examMinutes: number
 }
 
+export interface EditorStudentSearchResult {
+  studentId: string
+  committeeId: string
+  fullName: string
+  email: string
+  committeeLabel: string
+  committeeDateLabel: string
+  orderLabel: string
+}
+
+export interface EditorStudentHighlightRequest {
+  requestId: number
+  committeeId: string
+  studentId: string
+}
+
 export interface CommitteeSidebarDayBookmarkItem {
   kind: 'day-bookmark'
   id: string

@@ -2,6 +2,7 @@
 import type { TableColumn } from '@nuxt/ui'
 import type {
   EditorCommitteeStringFieldPayload,
+  EditorStudentHighlightRequest,
   EditorStudentsPanelCommitteeLabels,
   EditorStudentsPanelInvigilatorLabels,
   EditorStudentsPanelStudentsEmptyLabels,
@@ -30,6 +31,7 @@ const props = defineProps<{
   invigilatorLabels: EditorStudentsPanelInvigilatorLabels
   invigilators: ScheduleDraftInvigilator[]
   invigilatorsCountLabel: string
+  highlightRequest?: EditorStudentHighlightRequest | null
 }>()
 
 const emit = defineEmits<{
@@ -230,6 +232,7 @@ function setTableViewMode(mode: EditorStudentsTableViewMode): void {
       :model-value="props.students"
       :columns="props.columns"
       :empty-labels="props.studentsEmpty"
+      :highlight-request="props.highlightRequest"
       @update:model-value="emit('update:students', $event)"
     />
   </UCard>

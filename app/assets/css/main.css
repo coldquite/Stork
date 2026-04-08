@@ -139,7 +139,9 @@
   }
 
   .editor-students-tbody.editor-students-hover-accent
-    > tr:hover:not(.sortable-chosen):not(.sortable-ghost):not(.sortable-drag) {
+    > tr:hover:not(.sortable-chosen):not(.sortable-ghost):not(.sortable-drag):not(.editor-students-row-highlight):not(
+      .editor-students-row-highlight-fade
+    ) {
     box-shadow:
       inset 3px 0 0 rgb(0 101 189 / 72%),
       inset 0 1px 0 rgb(255 255 255 / 40%),
@@ -150,10 +152,47 @@
 
   .dark
     .editor-students-tbody.editor-students-hover-accent
-    > tr:hover:not(.sortable-chosen):not(.sortable-ghost):not(.sortable-drag) {
+    > tr:hover:not(.sortable-chosen):not(.sortable-ghost):not(.sortable-drag):not(.editor-students-row-highlight):not(
+      .editor-students-row-highlight-fade
+    ) {
     box-shadow:
       inset 3px 0 0 rgb(106 173 228 / 70%),
       inset 0 1px 0 rgb(148 163 184 / 18%),
       0 12px 24px rgb(2 8 23 / 32%);
+  }
+
+  .editor-students-tbody > tr.editor-students-row-highlight {
+    background-color: rgb(255 149 0 / 16%) !important;
+    box-shadow:
+      inset 3px 0 0 rgb(255 149 0 / 84%),
+      inset 0 0 0 1px rgb(255 149 0 / 30%);
+    position: relative;
+    z-index: 2;
+  }
+
+  .editor-students-tbody > tr.editor-students-row-highlight-fade {
+    transition-property: background-color, box-shadow;
+    transition-duration: 500ms;
+    transition-timing-function: ease-out;
+    background-color: rgb(255 149 0 / 0%) !important;
+    box-shadow:
+      inset 3px 0 0 rgb(255 149 0 / 0%),
+      inset 0 0 0 1px rgb(255 149 0 / 0%);
+    position: relative;
+    z-index: 2;
+  }
+
+  .dark .editor-students-tbody > tr.editor-students-row-highlight {
+    background-color: rgb(255 170 54 / 26%) !important;
+    box-shadow:
+      inset 3px 0 0 rgb(255 193 104 / 90%),
+      inset 0 0 0 1px rgb(255 216 154 / 38%);
+  }
+
+  .dark .editor-students-tbody > tr.editor-students-row-highlight-fade {
+    background-color: rgb(255 170 54 / 0%) !important;
+    box-shadow:
+      inset 3px 0 0 rgb(255 193 104 / 0%),
+      inset 0 0 0 1px rgb(255 216 154 / 0%);
   }
 }

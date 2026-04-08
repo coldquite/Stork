@@ -12,6 +12,7 @@ const {
   committeeList,
   studentTable,
   draftSettings,
+  studentSearch,
   committeeFields,
   invigilators,
   scheduleDialogs,
@@ -22,6 +23,7 @@ const {
 
 const cardAccentRootClass = 'h-full rounded-none ring-0 shadow-none divide-y-2 divide-default bg-default'
 const draftRenameAriaLabel = computed(() => t('editor.schedule.rename.openAriaLabel', { name: draftName.value }))
+const searchStudentsAriaLabel = computed(() => t('editor.studentSearch.openAriaLabel'))
 const cloudSaveAriaLabel = computed(() => t('editor.schedule.cloudSave.ariaLabel', { name: draftName.value }))
 
 const committeeLabels = computed(() => ({
@@ -165,6 +167,7 @@ const panelThesisTitleDisplayMode = computed(() => draftSettings.thesisTitleDisp
 const panelTableViewMode = computed(() => draftSettings.tableViewMode.value)
 const panelInvigilators = computed(() => invigilators.selectedInvigilators.value)
 const panelInvigilatorsCountLabel = computed(() => invigilators.invigilatorsCountLabel.value)
+const panelHighlightRequest = computed(() => studentSearch.highlightRequest.value)
 const cloudSaveLoading = computed(() => scheduleDialogs.isCloudSaveLoading.value)
 const draftNameText = computed(() => draftName.value)
 </script>
@@ -180,10 +183,13 @@ const draftNameText = computed(() => draftName.value)
         :back-aria-label="t('editor.navigation.backToHomepage')"
         :rename-aria-label="draftRenameAriaLabel"
         :rename-label="t('editor.schedule.rename.action')"
+        :search-students-aria-label="searchStudentsAriaLabel"
+        :search-students-label="t('editor.studentSearch.action')"
         :cloud-save-aria-label="cloudSaveAriaLabel"
         :cloud-save-label="t('editor.schedule.cloudSave.action')"
         :cloud-save-loading="cloudSaveLoading"
         @rename-draft="scheduleDialogs.openRenameDraftDialog"
+        @search-students="studentSearch.openStudentSearchDialog"
         @save-to-cloud="scheduleDialogs.openCloudSaveDialog"
       />
 
@@ -215,6 +221,7 @@ const draftNameText = computed(() => draftName.value)
             :invigilator-labels="invigilatorLabels"
             :invigilators="panelInvigilators"
             :invigilators-count-label="panelInvigilatorsCountLabel"
+            :highlight-request="panelHighlightRequest"
             @update:students="setStudentRows"
             @committee-string-field="onCommitteeStringField"
             @update:committee-date="committeeFields.updateSelectedCommitteeDate"
@@ -233,6 +240,15 @@ const draftNameText = computed(() => draftName.value)
 
       <EditorBottomGlow />
     </div>
+
+    <EditorStudentSearchDialog
+      v-model:open="studentSearch.isStudentSearchDialogOpen.value"
+      :results="studentSearch.studentSearchResults.value"
+      :search-query="studentSearch.studentSearchQuery.value"
+      :is-loading="studentSearch.isStudentSearchLoading.value"
+      @search-change="studentSearch.updateStudentSearchQuery"
+      @select-result="studentSearch.selectStudentSearchResult"
+    />
 
     <EditorScheduleDialogsHost
       :committee-list="committeeList"
