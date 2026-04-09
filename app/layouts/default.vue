@@ -18,9 +18,11 @@ const editorBackToHomepageLabel = computed(() => t('editor.navigation.backToHome
 const editorOpenSavedSchedulesLabel = computed(() => t('editor.navigation.openSavedSchedulesTitle'))
 const editorCreateScheduleFromImportLabel = computed(() => t('editor.navigation.createScheduleFromImportTitle'))
 const teachersDictionaryPageLabel = computed(() => t('teachersDictionary.navigation.openPage'))
+const userManualPageLabel = computed(() => t('userManual.navigation.openPage'))
 const headerActionButtonClass = 'cursor-pointer hover:bg-primary/20 hover:ring-primary/40'
 const editorHeaderActionButtonClass = `${headerActionButtonClass} whitespace-nowrap shrink-0`
-const teachersDictionaryHeaderButtonClass = `${editorHeaderActionButtonClass} bg-secondary/20 ring-secondary/30 hover:bg-secondary/30 hover:ring-secondary/70`
+const secondaryHeaderButtonClass = `${editorHeaderActionButtonClass} bg-secondary/20 ring-secondary/30 hover:bg-secondary/30 hover:ring-secondary/70`
+const logoutHeaderButtonClass = `${headerActionButtonClass} whitespace-nowrap shrink-0`
 
 const {
   manualSchedules,
@@ -140,9 +142,9 @@ async function confirmLogout(): Promise<void> {
               color="secondary"
               variant="subtle"
               size="xl"
-              icon="i-lucide-book-user"
+              icon="i-lucide-graduation-cap"
               :aria-label="teachersDictionaryPageLabel"
-              :class="teachersDictionaryHeaderButtonClass"
+              :class="secondaryHeaderButtonClass"
               :ui="{ leadingIcon: 'text-toned' }"
             >
               <span class="text-default">{{ teachersDictionaryPageLabel }}</span>
@@ -159,12 +161,25 @@ async function confirmLogout(): Promise<void> {
             color="secondary"
             variant="subtle"
             size="xl"
-            icon="i-lucide-book-user"
+            icon="i-lucide-graduation-cap"
             :aria-label="teachersDictionaryPageLabel"
-            :class="teachersDictionaryHeaderButtonClass"
+            :class="secondaryHeaderButtonClass"
             :ui="{ leadingIcon: 'text-toned' }"
           >
             <span class="text-default">{{ teachersDictionaryPageLabel }}</span>
+          </UButton>
+
+          <UButton
+            to="/user-manual"
+            color="secondary"
+            variant="subtle"
+            size="xl"
+            icon="i-lucide-book-user"
+            :aria-label="userManualPageLabel"
+            :class="secondaryHeaderButtonClass"
+            :ui="{ leadingIcon: 'text-toned' }"
+          >
+            <span class="text-default">{{ userManualPageLabel }}</span>
           </UButton>
 
           <UButton
@@ -173,7 +188,7 @@ async function confirmLogout(): Promise<void> {
             size="xl"
             icon="i-lucide-log-out"
             :aria-label="logoutButtonLabel"
-            :class="headerActionButtonClass"
+            :class="logoutHeaderButtonClass"
             :loading="authStore.isLogoutLoading"
             @click="openLogoutDialog"
           >

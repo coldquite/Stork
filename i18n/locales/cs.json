@@ -612,6 +612,15 @@
       "emptyDescription": "Jakmile budou během vytváření plánu přidány ruční záznamy, zobrazí se zde."
     }
   },
+  "userManual": {
+    "navigation": {
+      "openPage": "Uživatelská příručka"
+    },
+    "page": {
+      "title": "Uživatelská příručka",
+      "placeholder": "TODO"
+    }
+  },
   "dashboard": {
     "logoutButton": "Odhlásit se",
     "logoutConfirmDescription": "Opravdu se chcete odhlásit? Ztratíte všechna neuložená rozpracovaná data."
