@@ -810,6 +810,110 @@ describe('useEditorPage', () => {
     expect(page.scheduleDialogs.cloudSaveValidationError.value).toBeNull()
   })
 
+  it('opens csv export dialog with all committees preselected and clears selection on close', async () => {
+    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const page = useEditorPage()
+
+    page.scheduleDialogs.openCsvExportDialog()
+
+    expect(page.scheduleDialogs.isCsvExportDialogOpen.value).toBe(true)
+    expect(page.scheduleDialogs.selectedCsvExportCommitteeIds.value).toEqual(['committee-early', 'committee-late'])
+    expect(page.scheduleDialogs.isCsvExportSubmitDisabled.value).toBe(false)
+
+    page.scheduleDialogs.clearCsvExportCommittees()
+    expect(page.scheduleDialogs.selectedCsvExportCommitteeIds.value).toEqual([])
+    expect(page.scheduleDialogs.isCsvExportSubmitDisabled.value).toBe(true)
+
+    page.scheduleDialogs.selectAllCsvExportCommittees()
+    expect(page.scheduleDialogs.selectedCsvExportCommitteeIds.value).toEqual(['committee-early', 'committee-late'])
+    expect(page.scheduleDialogs.isCsvExportSubmitDisabled.value).toBe(false)
+
+    page.scheduleDialogs.closeCsvExportDialog()
+    expect(page.scheduleDialogs.isCsvExportDialogOpen.value).toBe(false)
+    expect(page.scheduleDialogs.selectedCsvExportCommitteeIds.value).toEqual([])
+  })
+
+  it('keeps csv export submit disabled when there are no committees', async () => {
+    scheduleDraftStoreMock.draft = {
+      ...createDraftWithTwoCommittees(),
+      committees: []
+    }
+
+    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const page = useEditorPage()
+
+    page.scheduleDialogs.openCsvExportDialog()
+
+    expect(page.scheduleDialogs.isCsvExportDialogOpen.value).toBe(true)
+    expect(page.scheduleDialogs.csvExportCommitteeItems.value).toEqual([])
+    expect(page.scheduleDialogs.selectedCsvExportCommitteeIds.value).toEqual([])
+    expect(page.scheduleDialogs.isCsvExportSubmitDisabled.value).toBe(true)
+
+    page.scheduleDialogs.submitCsvExportSelection()
+    expect(page.scheduleDialogs.isCsvExportDialogOpen.value).toBe(true)
+  })
+
+  it('opens public pdf export dialog with all committees preselected and clears selection on close', async () => {
+    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const page = useEditorPage()
+
+    page.scheduleDialogs.openPdfPublicExportDialog()
+
+    expect(page.scheduleDialogs.isPdfPublicExportDialogOpen.value).toBe(true)
+    expect(page.scheduleDialogs.selectedPdfPublicExportCommitteeIds.value).toEqual([
+      'committee-early',
+      'committee-late'
+    ])
+    expect(page.scheduleDialogs.isPdfPublicExportSubmitDisabled.value).toBe(false)
+
+    page.scheduleDialogs.clearPdfPublicExportCommittees()
+    expect(page.scheduleDialogs.selectedPdfPublicExportCommitteeIds.value).toEqual([])
+    expect(page.scheduleDialogs.isPdfPublicExportSubmitDisabled.value).toBe(true)
+
+    page.scheduleDialogs.selectAllPdfPublicExportCommittees()
+    expect(page.scheduleDialogs.selectedPdfPublicExportCommitteeIds.value).toEqual([
+      'committee-early',
+      'committee-late'
+    ])
+
+    page.scheduleDialogs.closePdfPublicExportDialog()
+    expect(page.scheduleDialogs.isPdfPublicExportDialogOpen.value).toBe(false)
+    expect(page.scheduleDialogs.selectedPdfPublicExportCommitteeIds.value).toEqual([])
+  })
+
+  it('opens invigilators pdf export dialog with day groups and supports per-selection updates', async () => {
+    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const page = useEditorPage()
+
+    page.scheduleDialogs.openPdfInvigilatorsExportDialog()
+
+    expect(page.scheduleDialogs.isPdfInvigilatorsExportDialogOpen.value).toBe(true)
+    expect(page.scheduleDialogs.selectedPdfInvigilatorsExportCommitteeIds.value).toEqual([
+      'committee-early',
+      'committee-late'
+    ])
+    expect(page.scheduleDialogs.isPdfInvigilatorsExportSubmitDisabled.value).toBe(false)
+
+    expect(page.scheduleDialogs.pdfInvigilatorsExportDayGroups.value).toHaveLength(2)
+    expect(page.scheduleDialogs.pdfInvigilatorsExportDayGroups.value[0]?.committees.map((entry) => entry.id)).toEqual([
+      'committee-early'
+    ])
+    expect(page.scheduleDialogs.pdfInvigilatorsExportDayGroups.value[1]?.committees.map((entry) => entry.id)).toEqual([
+      'committee-late'
+    ])
+
+    page.scheduleDialogs.updateSelectedPdfInvigilatorsExportCommitteeIds(['committee-late', 'missing-id'])
+    expect(page.scheduleDialogs.selectedPdfInvigilatorsExportCommitteeIds.value).toEqual(['committee-late'])
+
+    page.scheduleDialogs.clearPdfInvigilatorsExportCommittees()
+    expect(page.scheduleDialogs.selectedPdfInvigilatorsExportCommitteeIds.value).toEqual([])
+    expect(page.scheduleDialogs.isPdfInvigilatorsExportSubmitDisabled.value).toBe(true)
+
+    page.scheduleDialogs.closePdfInvigilatorsExportDialog()
+    expect(page.scheduleDialogs.isPdfInvigilatorsExportDialogOpen.value).toBe(false)
+    expect(page.scheduleDialogs.selectedPdfInvigilatorsExportCommitteeIds.value).toEqual([])
+  })
+
   it('adds invigilator with trimmed value to selected committee', async () => {
     const { useEditorPage } = await import('~/composables/editor/useEditorPage')
     const page = useEditorPage()

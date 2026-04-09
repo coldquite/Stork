@@ -211,6 +211,19 @@ export type EditorCreatePauseValidationField = 'customLabel' | 'durationMinutes'
 
 export type EditorCreatePauseValidationErrors = Partial<Record<EditorCreatePauseValidationField, string>>
 
+export interface EditorExportCommitteesDialogCopy {
+  title: string
+  description: string
+  selectedCount: string
+  orderingHint: string
+  checklistAriaLabel: string
+  selectAll: string
+  clearAll: string
+  submit: string
+  emptyTitle: string
+  emptyDescription: string
+}
+
 /** Pre-translated strings for [EditorScheduleDialogsHost.vue](app/components/editor/EditorScheduleDialogsHost.vue). */
 export interface EditorScheduleDialogsCopy {
   commonCancel: string
@@ -248,6 +261,9 @@ export interface EditorScheduleDialogsCopy {
     hint: string
     submit: string
   }
+  csvExportCommittees: EditorExportCommitteesDialogCopy
+  pdfPublicExportCommittees: EditorExportCommitteesDialogCopy
+  pdfInvigilatorsExportCommittees: EditorExportCommitteesDialogCopy
   deleteCommitteeConfirmAction: string
   deleteInvigilatorConfirmAction: string
 }

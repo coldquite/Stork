@@ -1,9 +1,23 @@
 import { EDITOR_DRAFT_NAME_MAX_LENGTH } from '#shared/constants/editor'
 import { useValidationField } from '~/composables/useValidationField'
 import { useScheduleDraftStore } from '~/stores/schedule-draft'
+import { buildEditorCommitteeListEntries } from '~/utils/editor/draft-committee'
+import type { EditorCommitteeListEntry } from '~/utils/editor/draft-committee'
+
+interface EditorExportCommitteeItem {
+  id: string
+  label: string
+  description: string
+}
+
+interface EditorExportCommitteeDayGroup {
+  id: string
+  dayLabel: string
+  committees: EditorExportCommitteeItem[]
+}
 
 /**
- * Draft rename and manual cloud-save modal flows (validation + store calls).
+ * Draft rename, manual cloud-save, and export modal flows.
  */
 export function useEditorScheduleDialogs() {
   const { t } = useI18n()
@@ -15,8 +29,118 @@ export function useEditorScheduleDialogs() {
   const isCloudSaveDialogOpen = ref(false)
   const cloudSaveName = ref('')
   const cloudSaveValidationError = ref<string | null>(null)
+  const isCsvExportDialogOpen = ref(false)
+  const selectedCsvExportCommitteeIds = ref<string[]>([])
+  const isPdfPublicExportDialogOpen = ref(false)
+  const selectedPdfPublicExportCommitteeIds = ref<string[]>([])
+  const isPdfInvigilatorsExportDialogOpen = ref(false)
+  const selectedPdfInvigilatorsExportCommitteeIds = ref<string[]>([])
 
   const isCloudSaveLoading = computed(() => scheduleDraftStore.isManualSaveLoading)
+  const fallbackCommitteeLabel = computed(() => t('editor.untitled'))
+  const exportCommitteeEntries = computed(() => {
+    const draftCommittees = scheduleDraftStore.draft?.committees ?? []
+    return buildEditorCommitteeListEntries(draftCommittees, fallbackCommitteeLabel.value)
+  })
+
+  function buildExportCommitteeDescription(entry: EditorCommitteeListEntry): string {
+    return t('editor.schedule.export.csvCommitteesDialog.committeeDescription', {
+      date: entry.dateLabel,
+      room: entry.roomLabel,
+      start: entry.timelineStartLabel,
+      end: entry.timelineEndLabel,
+      students: t('editor.students.count', { count: entry.studentsCount })
+    })
+  }
+
+  const exportCommitteeItems = computed<EditorExportCommitteeItem[]>(() => {
+    return exportCommitteeEntries.value.map((entry) => ({
+      id: entry.committee.localId,
+      label: entry.label,
+      description: buildExportCommitteeDescription(entry)
+    }))
+  })
+
+  const csvExportCommitteeItems = computed(() => exportCommitteeItems.value)
+  const pdfPublicExportCommitteeItems = computed(() => exportCommitteeItems.value)
+  const pdfInvigilatorsExportDayGroups = computed<EditorExportCommitteeDayGroup[]>(() => {
+    const groups: EditorExportCommitteeDayGroup[] = []
+    let currentGroup: EditorExportCommitteeDayGroup | null = null
+
+    for (const entry of exportCommitteeEntries.value) {
+      if (!currentGroup || currentGroup.dayLabel !== entry.dateLabel) {
+        currentGroup = {
+          id: `day-${entry.dateLabel}`,
+          dayLabel: entry.dateLabel,
+          committees: []
+        }
+        groups.push(currentGroup)
+      }
+
+      currentGroup.committees.push({
+        id: entry.committee.localId,
+        label: entry.label,
+        description: buildExportCommitteeDescription(entry)
+      })
+    }
+
+    return groups
+  })
+
+  function resolveAllExportCommitteeIds(): string[] {
+    return exportCommitteeItems.value.map((entry) => entry.id)
+  }
+
+  function sanitizeSelectedExportCommitteeIds(nextIds: string[]): string[] {
+    const availableCommitteeIds = new Set(resolveAllExportCommitteeIds())
+    const uniqueIds: string[] = []
+
+    for (const committeeId of nextIds) {
+      if (!availableCommitteeIds.has(committeeId) || uniqueIds.includes(committeeId)) {
+        continue
+      }
+
+      uniqueIds.push(committeeId)
+    }
+
+    return uniqueIds
+  }
+
+  function openExportDialog(openState: { value: boolean }, selectedIdsState: { value: string[] }): void {
+    if (!scheduleDraftStore.draft) {
+      return
+    }
+
+    selectedIdsState.value = resolveAllExportCommitteeIds()
+    openState.value = true
+  }
+
+  function closeExportDialog(openState: { value: boolean }, selectedIdsState: { value: string[] }): void {
+    openState.value = false
+    selectedIdsState.value = []
+  }
+
+  function updateSelectedExportCommitteeIds(selectedIdsState: { value: string[] }, nextIds: string[]): void {
+    selectedIdsState.value = sanitizeSelectedExportCommitteeIds(nextIds)
+  }
+
+  function selectAllExportCommittees(selectedIdsState: { value: string[] }): void {
+    selectedIdsState.value = resolveAllExportCommitteeIds()
+  }
+
+  function clearExportCommittees(selectedIdsState: { value: string[] }): void {
+    selectedIdsState.value = []
+  }
+
+  const isCsvExportSubmitDisabled = computed(() => {
+    return exportCommitteeItems.value.length < 1 || selectedCsvExportCommitteeIds.value.length < 1
+  })
+  const isPdfPublicExportSubmitDisabled = computed(() => {
+    return exportCommitteeItems.value.length < 1 || selectedPdfPublicExportCommitteeIds.value.length < 1
+  })
+  const isPdfInvigilatorsExportSubmitDisabled = computed(() => {
+    return exportCommitteeItems.value.length < 1 || selectedPdfInvigilatorsExportCommitteeIds.value.length < 1
+  })
 
   useValidationField(renameDraftName, renameDraftValidationError)
   useValidationField(cloudSaveName, cloudSaveValidationError)
@@ -77,6 +201,66 @@ export function useEditorScheduleDialogs() {
     cloudSaveValidationError.value = null
   }
 
+  function openCsvExportDialog(): void {
+    openExportDialog(isCsvExportDialogOpen, selectedCsvExportCommitteeIds)
+  }
+
+  function closeCsvExportDialog(): void {
+    closeExportDialog(isCsvExportDialogOpen, selectedCsvExportCommitteeIds)
+  }
+
+  function updateSelectedCsvExportCommitteeIds(nextIds: string[]): void {
+    updateSelectedExportCommitteeIds(selectedCsvExportCommitteeIds, nextIds)
+  }
+
+  function selectAllCsvExportCommittees(): void {
+    selectAllExportCommittees(selectedCsvExportCommitteeIds)
+  }
+
+  function clearCsvExportCommittees(): void {
+    clearExportCommittees(selectedCsvExportCommitteeIds)
+  }
+
+  function openPdfPublicExportDialog(): void {
+    openExportDialog(isPdfPublicExportDialogOpen, selectedPdfPublicExportCommitteeIds)
+  }
+
+  function closePdfPublicExportDialog(): void {
+    closeExportDialog(isPdfPublicExportDialogOpen, selectedPdfPublicExportCommitteeIds)
+  }
+
+  function updateSelectedPdfPublicExportCommitteeIds(nextIds: string[]): void {
+    updateSelectedExportCommitteeIds(selectedPdfPublicExportCommitteeIds, nextIds)
+  }
+
+  function selectAllPdfPublicExportCommittees(): void {
+    selectAllExportCommittees(selectedPdfPublicExportCommitteeIds)
+  }
+
+  function clearPdfPublicExportCommittees(): void {
+    clearExportCommittees(selectedPdfPublicExportCommitteeIds)
+  }
+
+  function openPdfInvigilatorsExportDialog(): void {
+    openExportDialog(isPdfInvigilatorsExportDialogOpen, selectedPdfInvigilatorsExportCommitteeIds)
+  }
+
+  function closePdfInvigilatorsExportDialog(): void {
+    closeExportDialog(isPdfInvigilatorsExportDialogOpen, selectedPdfInvigilatorsExportCommitteeIds)
+  }
+
+  function updateSelectedPdfInvigilatorsExportCommitteeIds(nextIds: string[]): void {
+    updateSelectedExportCommitteeIds(selectedPdfInvigilatorsExportCommitteeIds, nextIds)
+  }
+
+  function selectAllPdfInvigilatorsExportCommittees(): void {
+    selectAllExportCommittees(selectedPdfInvigilatorsExportCommitteeIds)
+  }
+
+  function clearPdfInvigilatorsExportCommittees(): void {
+    clearExportCommittees(selectedPdfInvigilatorsExportCommitteeIds)
+  }
+
   function submitRenameDraft(): void {
     const draft = scheduleDraftStore.draft
     if (!draft) {
@@ -118,6 +302,30 @@ export function useEditorScheduleDialogs() {
     closeCloudSaveDialog()
   }
 
+  function submitCsvExportSelection(): void {
+    if (isCsvExportSubmitDisabled.value) {
+      return
+    }
+
+    closeCsvExportDialog()
+  }
+
+  function submitPdfPublicExportSelection(): void {
+    if (isPdfPublicExportSubmitDisabled.value) {
+      return
+    }
+
+    closePdfPublicExportDialog()
+  }
+
+  function submitPdfInvigilatorsExportSelection(): void {
+    if (isPdfInvigilatorsExportSubmitDisabled.value) {
+      return
+    }
+
+    closePdfInvigilatorsExportDialog()
+  }
+
   return {
     isRenameDraftDialogOpen,
     renameDraftName,
@@ -126,12 +334,42 @@ export function useEditorScheduleDialogs() {
     cloudSaveName,
     cloudSaveValidationError,
     isCloudSaveLoading,
+    isCsvExportDialogOpen,
+    selectedCsvExportCommitteeIds,
+    csvExportCommitteeItems,
+    isCsvExportSubmitDisabled,
+    isPdfPublicExportDialogOpen,
+    selectedPdfPublicExportCommitteeIds,
+    pdfPublicExportCommitteeItems,
+    isPdfPublicExportSubmitDisabled,
+    isPdfInvigilatorsExportDialogOpen,
+    selectedPdfInvigilatorsExportCommitteeIds,
+    pdfInvigilatorsExportDayGroups,
+    isPdfInvigilatorsExportSubmitDisabled,
     openRenameDraftDialog,
     closeRenameDraftDialog,
     openCloudSaveDialog,
     closeCloudSaveDialog,
+    openCsvExportDialog,
+    closeCsvExportDialog,
+    updateSelectedCsvExportCommitteeIds,
+    selectAllCsvExportCommittees,
+    clearCsvExportCommittees,
+    openPdfPublicExportDialog,
+    closePdfPublicExportDialog,
+    updateSelectedPdfPublicExportCommitteeIds,
+    selectAllPdfPublicExportCommittees,
+    clearPdfPublicExportCommittees,
+    openPdfInvigilatorsExportDialog,
+    closePdfInvigilatorsExportDialog,
+    updateSelectedPdfInvigilatorsExportCommitteeIds,
+    selectAllPdfInvigilatorsExportCommittees,
+    clearPdfInvigilatorsExportCommittees,
     submitRenameDraft,
     submitCloudSave,
+    submitCsvExportSelection,
+    submitPdfPublicExportSelection,
+    submitPdfInvigilatorsExportSelection,
     draftNameMaxLength: EDITOR_DRAFT_NAME_MAX_LENGTH
   }
 }

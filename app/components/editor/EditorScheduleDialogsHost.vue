@@ -61,6 +61,48 @@ const cloudSaveNameModel = computed({
   }
 })
 
+const csvExportOpen = computed({
+  get: () => sd.isCsvExportDialogOpen.value,
+  set: (v: boolean) => {
+    if (v) {
+      sd.isCsvExportDialogOpen.value = true
+      return
+    }
+
+    sd.closeCsvExportDialog()
+  }
+})
+const csvExportSelectedCommitteeIds = computed(() => sd.selectedCsvExportCommitteeIds.value)
+const csvExportCommittees = computed(() => sd.csvExportCommitteeItems.value)
+
+const pdfPublicExportOpen = computed({
+  get: () => sd.isPdfPublicExportDialogOpen.value,
+  set: (v: boolean) => {
+    if (v) {
+      sd.isPdfPublicExportDialogOpen.value = true
+      return
+    }
+
+    sd.closePdfPublicExportDialog()
+  }
+})
+const pdfPublicExportSelectedCommitteeIds = computed(() => sd.selectedPdfPublicExportCommitteeIds.value)
+const pdfPublicExportCommittees = computed(() => sd.pdfPublicExportCommitteeItems.value)
+
+const pdfInvigilatorsExportOpen = computed({
+  get: () => sd.isPdfInvigilatorsExportDialogOpen.value,
+  set: (v: boolean) => {
+    if (v) {
+      sd.isPdfInvigilatorsExportDialogOpen.value = true
+      return
+    }
+
+    sd.closePdfInvigilatorsExportDialog()
+  }
+})
+const pdfInvigilatorsExportSelectedCommitteeIds = computed(() => sd.selectedPdfInvigilatorsExportCommitteeIds.value)
+const pdfInvigilatorsExportDayGroups = computed(() => sd.pdfInvigilatorsExportDayGroups.value)
+
 const addInvigilatorOpen = computed({
   get: () => inv.isAddInvigilatorDialogOpen.value,
   set: (v: boolean) => {
@@ -155,6 +197,9 @@ const renameCommitteeValidationText = computed(() => cl.renameCommitteeValidatio
 const renameDraftValidationText = computed(() => sd.renameDraftValidationError.value)
 const cloudSaveLoadingFlag = computed(() => sd.isCloudSaveLoading.value)
 const cloudSaveValidationText = computed(() => sd.cloudSaveValidationError.value)
+const isCsvExportSubmitDisabled = computed(() => sd.isCsvExportSubmitDisabled.value)
+const isPdfPublicExportSubmitDisabled = computed(() => sd.isPdfPublicExportSubmitDisabled.value)
+const isPdfInvigilatorsExportSubmitDisabled = computed(() => sd.isPdfInvigilatorsExportSubmitDisabled.value)
 const invigilatorValidationText = computed(() => inv.invigilatorValidationError.value)
 const createCommitteeValidationText = computed(() => cl.createCommitteeValidationError.value)
 const createCommitteeSubmitDisabled = computed(() => cl.isCreateCommitteeSubmitDisabled.value)
@@ -216,6 +261,75 @@ const isMoveStudentSubmitDisabled = computed(() => cia.isMoveStudentSubmitDisabl
     :validation-error="cloudSaveValidationText"
     @cancel="sd.closeCloudSaveDialog()"
     @submit="sd.submitCloudSave()"
+  />
+
+  <EditorCsvExportCommitteesModal
+    v-model:open="csvExportOpen"
+    :title="copy.csvExportCommittees.title"
+    :description="copy.csvExportCommittees.description"
+    :committees="csvExportCommittees"
+    :selected-committee-ids="csvExportSelectedCommitteeIds"
+    :selected-count-label="copy.csvExportCommittees.selectedCount"
+    :ordering-hint-label="copy.csvExportCommittees.orderingHint"
+    :checklist-aria-label="copy.csvExportCommittees.checklistAriaLabel"
+    :select-all-label="copy.csvExportCommittees.selectAll"
+    :clear-all-label="copy.csvExportCommittees.clearAll"
+    :cancel-label="copy.commonCancel"
+    :submit-label="copy.csvExportCommittees.submit"
+    :empty-title="copy.csvExportCommittees.emptyTitle"
+    :empty-description="copy.csvExportCommittees.emptyDescription"
+    :submit-disabled="isCsvExportSubmitDisabled"
+    @update-selected-committee-ids="sd.updateSelectedCsvExportCommitteeIds($event)"
+    @select-all="sd.selectAllCsvExportCommittees()"
+    @clear-all="sd.clearCsvExportCommittees()"
+    @cancel="sd.closeCsvExportDialog()"
+    @submit="sd.submitCsvExportSelection()"
+  />
+
+  <EditorCsvExportCommitteesModal
+    v-model:open="pdfPublicExportOpen"
+    :title="copy.pdfPublicExportCommittees.title"
+    :description="copy.pdfPublicExportCommittees.description"
+    :committees="pdfPublicExportCommittees"
+    :selected-committee-ids="pdfPublicExportSelectedCommitteeIds"
+    :selected-count-label="copy.pdfPublicExportCommittees.selectedCount"
+    :ordering-hint-label="copy.pdfPublicExportCommittees.orderingHint"
+    :checklist-aria-label="copy.pdfPublicExportCommittees.checklistAriaLabel"
+    :select-all-label="copy.pdfPublicExportCommittees.selectAll"
+    :clear-all-label="copy.pdfPublicExportCommittees.clearAll"
+    :cancel-label="copy.commonCancel"
+    :submit-label="copy.pdfPublicExportCommittees.submit"
+    :empty-title="copy.pdfPublicExportCommittees.emptyTitle"
+    :empty-description="copy.pdfPublicExportCommittees.emptyDescription"
+    :submit-disabled="isPdfPublicExportSubmitDisabled"
+    @update-selected-committee-ids="sd.updateSelectedPdfPublicExportCommitteeIds($event)"
+    @select-all="sd.selectAllPdfPublicExportCommittees()"
+    @clear-all="sd.clearPdfPublicExportCommittees()"
+    @cancel="sd.closePdfPublicExportDialog()"
+    @submit="sd.submitPdfPublicExportSelection()"
+  />
+
+  <EditorPdfInvigilatorsExportModal
+    v-model:open="pdfInvigilatorsExportOpen"
+    :title="copy.pdfInvigilatorsExportCommittees.title"
+    :description="copy.pdfInvigilatorsExportCommittees.description"
+    :day-groups="pdfInvigilatorsExportDayGroups"
+    :selected-committee-ids="pdfInvigilatorsExportSelectedCommitteeIds"
+    :selected-count-label="copy.pdfInvigilatorsExportCommittees.selectedCount"
+    :ordering-hint-label="copy.pdfInvigilatorsExportCommittees.orderingHint"
+    :checklist-aria-label="copy.pdfInvigilatorsExportCommittees.checklistAriaLabel"
+    :select-all-label="copy.pdfInvigilatorsExportCommittees.selectAll"
+    :clear-all-label="copy.pdfInvigilatorsExportCommittees.clearAll"
+    :cancel-label="copy.commonCancel"
+    :submit-label="copy.pdfInvigilatorsExportCommittees.submit"
+    :empty-title="copy.pdfInvigilatorsExportCommittees.emptyTitle"
+    :empty-description="copy.pdfInvigilatorsExportCommittees.emptyDescription"
+    :submit-disabled="isPdfInvigilatorsExportSubmitDisabled"
+    @update-selected-committee-ids="sd.updateSelectedPdfInvigilatorsExportCommitteeIds($event)"
+    @select-all="sd.selectAllPdfInvigilatorsExportCommittees()"
+    @clear-all="sd.clearPdfInvigilatorsExportCommittees()"
+    @cancel="sd.closePdfInvigilatorsExportDialog()"
+    @submit="sd.submitPdfInvigilatorsExportSelection()"
   />
 
   <EditorCommitteeNameModal

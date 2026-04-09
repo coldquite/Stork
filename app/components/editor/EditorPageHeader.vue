@@ -10,10 +10,23 @@ const props = defineProps<{
   cloudSaveAriaLabel: string
   cloudSaveLabel: string
   cloudSaveLoading: boolean
+  exportAriaLabel: string
+  exportLabel: string
+  exportPublicPdfLabel: string
+  exportInvigilatorsPdfLabel: string
+  exportCsvQuestionsEnvelopeLabel: string
 }>()
 
 const emit = defineEmits<{
-  (event: 'renameDraft' | 'searchStudents' | 'saveToCloud'): void
+  (
+    event:
+      | 'renameDraft'
+      | 'searchStudents'
+      | 'saveToCloud'
+      | 'exportPublicPdf'
+      | 'exportInvigilatorsPdf'
+      | 'exportCsvQuestionsEnvelope'
+  ): void
 }>()
 
 function requestRenameDraft(): void {
@@ -26,6 +39,21 @@ function requestSaveToCloud(): void {
 
 function requestSearchStudents(): void {
   emit('searchStudents')
+}
+
+function requestExportPublicPdf(close: () => void): void {
+  close()
+  emit('exportPublicPdf')
+}
+
+function requestExportInvigilatorsPdf(close: () => void): void {
+  close()
+  emit('exportInvigilatorsPdf')
+}
+
+function requestExportCsvQuestionsEnvelope(close: () => void): void {
+  close()
+  emit('exportCsvQuestionsEnvelope')
 }
 </script>
 
@@ -82,6 +110,61 @@ function requestSearchStudents(): void {
             }"
             @click="requestSaveToCloud"
           />
+
+          <UPopover :content="{ side: 'top', align: 'start' }">
+            <UButton
+              color="neutral"
+              variant="ghost"
+              size="md"
+              icon="i-lucide-download"
+              :label="props.exportLabel"
+              :aria-label="props.exportAriaLabel"
+              class="shrink-0 cursor-pointer"
+              :ui="{
+                base: 'h-10 bg-default border-2 border-capaccent-400 text-capaccent-800 hover:border-capaccent-500 hover:bg-capaccent-50 dark:border-capaccent-500 dark:bg-default dark:text-capaccent-100 dark:hover:bg-capaccent-900/50'
+              }"
+            />
+
+            <template #content="{ close }">
+              <div class="w-[28rem] max-w-[94vw] space-y-1.5 p-2">
+                <UButton
+                  color="neutral"
+                  variant="ghost"
+                  block
+                  size="lg"
+                  class="w-full cursor-pointer justify-start gap-2.5"
+                  @click="requestExportPublicPdf(close)"
+                >
+                  <UIcon name="i-bi-filetype-pdf" class="text-error size-6 shrink-0" />
+                  <span class="truncate">{{ props.exportPublicPdfLabel }}</span>
+                </UButton>
+
+                <UButton
+                  color="neutral"
+                  variant="ghost"
+                  block
+                  size="lg"
+                  class="w-full cursor-pointer justify-start gap-2.5"
+                  @click="requestExportInvigilatorsPdf(close)"
+                >
+                  <UIcon name="i-bi-filetype-pdf" class="text-error size-6 shrink-0" />
+                  <span class="truncate">{{ props.exportInvigilatorsPdfLabel }}</span>
+                </UButton>
+
+                <UButton
+                  color="neutral"
+                  variant="ghost"
+                  block
+                  size="lg"
+                  class="w-full cursor-pointer justify-start gap-2.5"
+                  @click="requestExportCsvQuestionsEnvelope(close)"
+                >
+                  <UIcon name="i-bi-filetype-csv" class="text-success-600 dark:text-success-400 size-6 shrink-0" />
+                  <span class="truncate">{{ props.exportCsvQuestionsEnvelopeLabel }}</span>
+                </UButton>
+              </div>
+            </template>
+          </UPopover>
         </div>
       </div>
     </div>

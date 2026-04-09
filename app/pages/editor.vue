@@ -28,6 +28,7 @@ const cardAccentRootClass = 'h-full rounded-none ring-0 shadow-none divide-y-2 d
 const draftRenameAriaLabel = computed(() => t('editor.schedule.rename.openAriaLabel', { name: draftName.value }))
 const searchStudentsAriaLabel = computed(() => t('editor.studentSearch.openAriaLabel'))
 const cloudSaveAriaLabel = computed(() => t('editor.schedule.cloudSave.ariaLabel', { name: draftName.value }))
+const exportAriaLabel = computed(() => t('editor.schedule.export.ariaLabel', { name: draftName.value }))
 
 const committeeLabels = computed(() => ({
   committeeTitle: t('editor.committee.title'),
@@ -109,6 +110,48 @@ const dialogCopy = computed(() => ({
     placeholder: t('editor.schedule.cloudSave.dialog.placeholder'),
     hint: t('editor.schedule.cloudSave.dialog.hint', { max: scheduleDialogs.draftNameMaxLength }),
     submit: t('editor.schedule.cloudSave.dialog.submit')
+  },
+  csvExportCommittees: {
+    title: t('editor.schedule.export.csvCommitteesDialog.title'),
+    description: t('editor.schedule.export.csvCommitteesDialog.description'),
+    selectedCount: t('editor.schedule.export.csvCommitteesDialog.selectedCount', {
+      count: scheduleDialogs.selectedCsvExportCommitteeIds.value.length
+    }),
+    orderingHint: t('editor.schedule.export.csvCommitteesDialog.orderingHint'),
+    checklistAriaLabel: t('editor.schedule.export.csvCommitteesDialog.checklistAriaLabel'),
+    selectAll: t('editor.schedule.export.csvCommitteesDialog.selectAll'),
+    clearAll: t('editor.schedule.export.csvCommitteesDialog.clearAll'),
+    submit: t('editor.schedule.export.csvCommitteesDialog.submit'),
+    emptyTitle: t('editor.schedule.export.csvCommitteesDialog.emptyTitle'),
+    emptyDescription: t('editor.schedule.export.csvCommitteesDialog.emptyDescription')
+  },
+  pdfPublicExportCommittees: {
+    title: t('editor.schedule.export.pdfPublicDialog.title'),
+    description: t('editor.schedule.export.pdfPublicDialog.description'),
+    selectedCount: t('editor.schedule.export.pdfPublicDialog.selectedCount', {
+      count: scheduleDialogs.selectedPdfPublicExportCommitteeIds.value.length
+    }),
+    orderingHint: t('editor.schedule.export.pdfPublicDialog.orderingHint'),
+    checklistAriaLabel: t('editor.schedule.export.pdfPublicDialog.checklistAriaLabel'),
+    selectAll: t('editor.schedule.export.pdfPublicDialog.selectAll'),
+    clearAll: t('editor.schedule.export.pdfPublicDialog.clearAll'),
+    submit: t('editor.schedule.export.pdfPublicDialog.submit'),
+    emptyTitle: t('editor.schedule.export.pdfPublicDialog.emptyTitle'),
+    emptyDescription: t('editor.schedule.export.pdfPublicDialog.emptyDescription')
+  },
+  pdfInvigilatorsExportCommittees: {
+    title: t('editor.schedule.export.pdfInvigilatorsDialog.title'),
+    description: t('editor.schedule.export.pdfInvigilatorsDialog.description'),
+    selectedCount: t('editor.schedule.export.pdfInvigilatorsDialog.selectedCount', {
+      count: scheduleDialogs.selectedPdfInvigilatorsExportCommitteeIds.value.length
+    }),
+    orderingHint: t('editor.schedule.export.pdfInvigilatorsDialog.orderingHint'),
+    checklistAriaLabel: t('editor.schedule.export.pdfInvigilatorsDialog.checklistAriaLabel'),
+    selectAll: t('editor.schedule.export.pdfInvigilatorsDialog.selectAll'),
+    clearAll: t('editor.schedule.export.pdfInvigilatorsDialog.clearAll'),
+    submit: t('editor.schedule.export.pdfInvigilatorsDialog.submit'),
+    emptyTitle: t('editor.schedule.export.pdfInvigilatorsDialog.emptyTitle'),
+    emptyDescription: t('editor.schedule.export.pdfInvigilatorsDialog.emptyDescription')
   },
   addInvigilator: {
     title: t('editor.committee.invigilators.add.title'),
@@ -205,9 +248,17 @@ const draftNameText = computed(() => draftName.value)
         :cloud-save-aria-label="cloudSaveAriaLabel"
         :cloud-save-label="t('editor.schedule.cloudSave.action')"
         :cloud-save-loading="cloudSaveLoading"
+        :export-aria-label="exportAriaLabel"
+        :export-label="t('editor.schedule.export.action')"
+        :export-public-pdf-label="t('editor.schedule.export.options.publicPdf')"
+        :export-invigilators-pdf-label="t('editor.schedule.export.options.invigilatorsPdf')"
+        :export-csv-questions-envelope-label="t('editor.schedule.export.options.questionsEnvelopeCsv')"
         @rename-draft="scheduleDialogs.openRenameDraftDialog"
         @search-students="studentSearch.openStudentSearchDialog"
         @save-to-cloud="scheduleDialogs.openCloudSaveDialog"
+        @export-public-pdf="scheduleDialogs.openPdfPublicExportDialog"
+        @export-invigilators-pdf="scheduleDialogs.openPdfInvigilatorsExportDialog"
+        @export-csv-questions-envelope="scheduleDialogs.openCsvExportDialog"
       />
 
       <div class="ring-default overflow-hidden rounded-lg ring-2">

@@ -271,6 +271,53 @@
           "submit": "Uložit do cloudu"
         }
       },
+      "export": {
+        "action": "Export",
+        "ariaLabel": "Exportovat plán {name}",
+        "options": {
+          "publicPdf": "PDF pro veřejnost",
+          "invigilatorsPdf": "PDF pro dozor",
+          "questionsEnvelopeCsv": "CSV pro tisk obálek na otázky"
+        },
+        "csvCommitteesDialog": {
+          "title": "Export CSV pro tisk obálek na otázky",
+          "description": "Vyberte komise, které chcete zahrnout do exportu CSV pro tisk obálek na otázky",
+          "selectedCount": "Vybráno komisí: {count}",
+          "orderingHint": "Komise jsou seřazeny podle data a času začátku (stejně jako v bočním panelu editoru). Studenti v CSV jsou řazeni nejprve podle komise a poté podle pořadí v komisi.",
+          "checklistAriaLabel": "Výběr komisí pro export CSV",
+          "selectAll": "Vybrat všechny komise",
+          "clearAll": "Zrušit výběr všech komisí",
+          "submit": "Exportovat CSV",
+          "emptyTitle": "V plánu zatím nejsou žádné komise",
+          "emptyDescription": "Jakmile přidáte první komisi, bude možné pokračovat v exportu.",
+          "committeeDescription": "{date}  {'|'}  {room}  {'|'}  {start} - {end}  {'|'}  {students}"
+        },
+        "pdfPublicDialog": {
+          "title": "Export PDF pro veřejnost",
+          "description": "Vyberte komise, které chcete zahrnout do exportu PDF pro veřejnost.",
+          "selectedCount": "Vybráno komisí: {count}",
+          "orderingHint": "Komise jsou seřazeny podle data a času začátku (stejně jako v bočním panelu editoru). Studenti v CSV jsou řazeni nejprve podle komise a poté podle pořadí v komisi.",
+          "checklistAriaLabel": "Výběr komisí pro export PDF pro veřejnost",
+          "selectAll": "Vybrat všechny komise",
+          "clearAll": "Zrušit výběr všech komisí",
+          "submit": "Exportovat PDF pro veřejnost",
+          "emptyTitle": "V plánu zatím nejsou žádné komise",
+          "emptyDescription": "Jakmile přidáte první komisi, bude možné pokračovat v exportu."
+        },
+        "pdfInvigilatorsDialog": {
+          "title": "Export PDF pro dozor",
+          "description": "Vyberte komise pro export PDF pro dozor.",
+          "selectedCount": "Vybráno komisí: {count}",
+          "orderingHint": "Komise jsou seskupeny podle dne. V každém dni můžete vybrat všechny nebo jen část komisí.",
+          "checklistAriaLabel": "Výběr komisí pro export PDF pro dozor",
+          "selectAll": "Vybrat všechny komise",
+          "clearAll": "Zrušit výběr všech komisí",
+          "submit": "Exportovat PDF pro dozor",
+          "emptyTitle": "V plánu zatím nejsou žádné komise",
+          "emptyDescription": "Jakmile přidáte první komisi, bude možné pokračovat v exportu.",
+          "daySelectedCount": "Vybráno {selected}/{total}"
+        }
+      },
       "rename": {
         "action": "Přejmenovat",
         "title": "Přejmenovat plán",
