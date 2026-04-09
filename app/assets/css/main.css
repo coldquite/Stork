@@ -9,12 +9,32 @@
   --ui-border: var(--color-stork-250);
   --ui-border-muted: var(--color-stork-100);
   --ui-border-accented: var(--color-stork-300);
+  --editor-drag-overlay-bg: color-mix(in srgb, var(--color-stork-500) 5%, transparent);
+  --editor-row-hover-accent-border: color-mix(in srgb, var(--color-stork-500) 72%, transparent);
+  --editor-row-pause-bg: color-mix(in srgb, var(--color-stork-500) 17%, transparent);
+  --editor-row-pause-hover-border: color-mix(in srgb, var(--color-stork-500) 66%, transparent);
+  --editor-row-highlight-bg: color-mix(in srgb, var(--color-capaccent-500) 16%, transparent);
+  --editor-row-highlight-border: color-mix(in srgb, var(--color-capaccent-500) 84%, transparent);
+  --editor-row-highlight-outline: color-mix(in srgb, var(--color-capaccent-500) 30%, transparent);
+  --editor-row-highlight-fade-bg: color-mix(in srgb, var(--color-capaccent-500) 0%, transparent);
+  --editor-row-highlight-fade-border: color-mix(in srgb, var(--color-capaccent-500) 0%, transparent);
+  --editor-row-highlight-fade-outline: color-mix(in srgb, var(--color-capaccent-500) 0%, transparent);
 }
 
 .dark {
   --ui-border: #304963;
   --ui-border-muted: #3a5b7c;
   --ui-border-accented: #4a73a0;
+  --editor-drag-overlay-bg: color-mix(in srgb, var(--color-stork-500) 14%, transparent);
+  --editor-row-hover-accent-border: color-mix(in srgb, var(--color-stork-400) 70%, transparent);
+  --editor-row-pause-bg: color-mix(in srgb, var(--color-stork-500) 34%, transparent);
+  --editor-row-pause-hover-border: color-mix(in srgb, var(--color-stork-400) 64%, transparent);
+  --editor-row-highlight-bg: color-mix(in srgb, var(--color-capaccent-400) 26%, transparent);
+  --editor-row-highlight-border: color-mix(in srgb, var(--color-capaccent-300) 90%, transparent);
+  --editor-row-highlight-outline: color-mix(in srgb, var(--color-capaccent-200) 38%, transparent);
+  --editor-row-highlight-fade-bg: color-mix(in srgb, var(--color-capaccent-400) 0%, transparent);
+  --editor-row-highlight-fade-border: color-mix(in srgb, var(--color-capaccent-300) 0%, transparent);
+  --editor-row-highlight-fade-outline: color-mix(in srgb, var(--color-capaccent-200) 0%, transparent);
 }
 
 @theme static {
@@ -119,16 +139,12 @@
 @layer components {
   .editor-students-table-drag-overlay {
     opacity: 0;
-    background-color: rgb(0 101 189 / 5%);
+    background-color: var(--editor-drag-overlay-bg);
     transition: opacity 220ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .editor-students-table-drag-overlay--visible {
     opacity: 1;
-  }
-
-  .dark .editor-students-table-drag-overlay {
-    background-color: rgb(0 101 189 / 14%);
   }
 
   .editor-students-tbody.editor-students-hover-accent > tr {
@@ -143,47 +159,24 @@
       .editor-students-row-highlight-fade
     ) {
     box-shadow:
-      inset 3px 0 0 rgb(0 101 189 / 72%),
+      inset 3px 0 0 var(--editor-row-hover-accent-border),
       inset 0 1px 0 rgb(255 255 255 / 40%),
       0 10px 20px rgb(0 35 61 / 14%);
     position: relative;
     z-index: 1;
   }
 
-  .dark
-    .editor-students-tbody.editor-students-hover-accent
-    > tr:hover:not(.sortable-chosen):not(.sortable-ghost):not(.sortable-drag):not(.editor-students-row-highlight):not(
-      .editor-students-row-highlight-fade
-    ) {
-    box-shadow:
-      inset 3px 0 0 rgb(106 173 228 / 70%),
-      inset 0 1px 0 rgb(148 163 184 / 18%),
-      0 12px 24px rgb(2 8 23 / 32%);
-  }
-
   .editor-students-tbody > tr.editor-students-row-pause {
-    background-color: rgb(0 101 189 / 17%) !important;
-  }
-
-  .dark .editor-students-tbody > tr.editor-students-row-pause {
-    background-color: rgb(0 101 189 / 34%) !important;
+    background-color: var(--editor-row-pause-bg) !important;
   }
 
   .editor-students-tbody.editor-students-hover-accent
     > tr.editor-students-row-pause:hover:not(.sortable-chosen):not(.sortable-ghost):not(.sortable-drag) {
     box-shadow:
-      inset 3px 0 0 rgb(0 101 189 / 66%),
+      inset 3px 0 0 var(--editor-row-pause-hover-border),
       inset 0 1px 0 rgb(255 255 255 / 35%);
     position: relative;
     z-index: 1;
-  }
-
-  .dark
-    .editor-students-tbody.editor-students-hover-accent
-    > tr.editor-students-row-pause:hover:not(.sortable-chosen):not(.sortable-ghost):not(.sortable-drag) {
-    box-shadow:
-      inset 3px 0 0 rgb(106 173 228 / 64%),
-      inset 0 1px 0 rgb(148 163 184 / 12%);
   }
 
   .editor-students-tbody > tr.editor-students-row-pause > td:nth-child(n + 4) {
@@ -195,10 +188,10 @@
   }
 
   .editor-students-tbody > tr.editor-students-row-highlight {
-    background-color: rgb(255 149 0 / 16%) !important;
+    background-color: var(--editor-row-highlight-bg) !important;
     box-shadow:
-      inset 3px 0 0 rgb(255 149 0 / 84%),
-      inset 0 0 0 1px rgb(255 149 0 / 30%);
+      inset 3px 0 0 var(--editor-row-highlight-border),
+      inset 0 0 0 1px var(--editor-row-highlight-outline);
     position: relative;
     z-index: 2;
   }
@@ -207,25 +200,11 @@
     transition-property: background-color, box-shadow;
     transition-duration: 500ms;
     transition-timing-function: ease-out;
-    background-color: rgb(255 149 0 / 0%) !important;
+    background-color: var(--editor-row-highlight-fade-bg) !important;
     box-shadow:
-      inset 3px 0 0 rgb(255 149 0 / 0%),
-      inset 0 0 0 1px rgb(255 149 0 / 0%);
+      inset 3px 0 0 var(--editor-row-highlight-fade-border),
+      inset 0 0 0 1px var(--editor-row-highlight-fade-outline);
     position: relative;
     z-index: 2;
-  }
-
-  .dark .editor-students-tbody > tr.editor-students-row-highlight {
-    background-color: rgb(255 170 54 / 26%) !important;
-    box-shadow:
-      inset 3px 0 0 rgb(255 193 104 / 90%),
-      inset 0 0 0 1px rgb(255 216 154 / 38%);
-  }
-
-  .dark .editor-students-tbody > tr.editor-students-row-highlight-fade {
-    background-color: rgb(255 170 54 / 0%) !important;
-    box-shadow:
-      inset 3px 0 0 rgb(255 193 104 / 0%),
-      inset 0 0 0 1px rgb(255 216 154 / 0%);
   }
 }
