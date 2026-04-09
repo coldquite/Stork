@@ -111,8 +111,9 @@ function setTableViewMode(mode: EditorStudentsTableViewMode): void {
           @delete-committee="requestDeleteCommittee"
         />
 
-        <div class="text-muted flex flex-wrap items-start gap-2">
+        <div class="text-muted flex flex-wrap items-stretch gap-2">
           <EditorCommitteeBasicsCard
+            class="self-stretch"
             :selected-committee="props.selectedCommittee"
             :selected-committee-date="props.selectedCommitteeDate"
             :date-label="labels.date"
@@ -127,6 +128,7 @@ function setTableViewMode(mode: EditorStudentsTableViewMode): void {
           />
 
           <EditorCommitteeStudyProgramCard
+            class="self-stretch"
             :selected-committee="props.selectedCommittee"
             :study-program-type-label="labels.studyProgramType"
             :study-program-type-bachelor-label="labels.studyProgramTypeBachelor"
@@ -139,6 +141,7 @@ function setTableViewMode(mode: EditorStudentsTableViewMode): void {
           />
 
           <EditorCommitteeMembersCard
+            class="self-stretch"
             :selected-committee="props.selectedCommittee"
             :members-section-label="labels.members"
             :chair-label="labels.chair"
@@ -150,6 +153,7 @@ function setTableViewMode(mode: EditorStudentsTableViewMode): void {
           />
 
           <EditorCommitteeInvigilatorsCard
+            class="self-stretch"
             :selected-committee="props.selectedCommittee"
             :invigilators="props.invigilators"
             :invigilators-count-label="props.invigilatorsCountLabel"
