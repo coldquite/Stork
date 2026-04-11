@@ -2,6 +2,7 @@ import { createError } from 'h3'
 import { z } from 'zod'
 import type { PutTeachersDictionaryBulkRequestDto } from '#shared/types/teachers-dictionary'
 import { buildTeachersDictionaryLookupKey } from '#shared/utils/teachers-dictionary'
+import { formatZodIssuePath } from '#server/utils/validation/format-zod-issue-path'
 
 const nonEmptyTrimmedStringSchema = z.string().trim().min(1, {
   message: 'must have at least 1 non-whitespace character'
@@ -27,29 +28,6 @@ const putTeachersDictionaryBulkPayloadSchema = z
     })
   })
 
-function formatIssuePath(path: readonly PropertyKey[]): string {
-  if (path.length === 0) {
-    return 'payload'
-  }
-
-  let result = 'payload'
-  for (const segment of path) {
-    if (typeof segment === 'number') {
-      result += `[${segment}]`
-      continue
-    }
-
-    if (typeof segment === 'symbol') {
-      result += '.[symbol]'
-      continue
-    }
-
-    result += `.${segment}`
-  }
-
-  return result
-}
-
 function invalidPayload(reason: string): never {
   throw createError({
     statusCode: 400,
@@ -66,7 +44,7 @@ export function parsePutTeachersDictionaryBulkPayload(payload: unknown): PutTeac
       invalidPayload('unknown validation error')
     }
 
-    invalidPayload(`${formatIssuePath(firstIssue.path)} ${firstIssue.message}`)
+    invalidPayload(`${formatZodIssuePath(firstIssue.path)} ${firstIssue.message}`)
   }
 
   return parseResult.data as PutTeachersDictionaryBulkRequestDto
