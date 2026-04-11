@@ -123,7 +123,9 @@ const dialogCopy = computed(() => ({
     clearAll: t('editor.schedule.export.csvCommitteesDialog.clearAll'),
     submit: t('editor.schedule.export.csvCommitteesDialog.submit'),
     emptyTitle: t('editor.schedule.export.csvCommitteesDialog.emptyTitle'),
-    emptyDescription: t('editor.schedule.export.csvCommitteesDialog.emptyDescription')
+    emptyDescription: t('editor.schedule.export.csvCommitteesDialog.emptyDescription'),
+    errorTitle: t('editor.schedule.export.questionsEnvelopeCsvExport.errors.title'),
+    errorDescription: t('editor.schedule.export.questionsEnvelopeCsvExport.errors.description')
   },
   pdfPublicExportCommittees: {
     title: t('editor.schedule.export.pdfPublicDialog.title'),

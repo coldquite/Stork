@@ -205,6 +205,7 @@ export function useEditorPage() {
       isCloudSaveLoading: scheduleDialogs.isCloudSaveLoading,
       isCsvExportDialogOpen: scheduleDialogs.isCsvExportDialogOpen,
       selectedCsvExportCommitteeIds: scheduleDialogs.selectedCsvExportCommitteeIds,
+      csvExportErrorItems: scheduleDialogs.csvExportErrorItems,
       csvExportCommitteeItems: scheduleDialogs.csvExportCommitteeItems,
       isCsvExportSubmitDisabled: scheduleDialogs.isCsvExportSubmitDisabled,
       isPdfPublicExportDialogOpen: scheduleDialogs.isPdfPublicExportDialogOpen,

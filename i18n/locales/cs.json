@@ -292,6 +292,32 @@
           "emptyDescription": "Jakmile přidáte první komisi, bude možné pokračovat v exportu.",
           "committeeDescription": "{date}  {'|'}  {room}  {'|'}  {start} - {end}  {'|'}  {students}"
         },
+        "questionsEnvelopeCsvExport": {
+          "enums": {
+            "studyProgramType": {
+              "BACHELOR": "Bakalářský",
+              "MASTER": "Magisterský"
+            },
+            "thesisLanguage": {
+              "CZECH": "Čeština",
+              "ENGLISH": "Angličtina",
+              "SLOVAK": "Slovenština"
+            },
+            "repeatType": {
+              "NONE": "Neopakuje",
+              "THESIS_DEFENSE": "Opakuje obhajobu",
+              "ORAL_EXAM": "Opakuje zkoušku",
+              "BOTH": "Opakuje zkoušku i obhajobu",
+              "UNKNOWN": "Neznámý stav"
+            }
+          },
+          "errors": {
+            "title": "Export CSV byl zastaven: u některých studentů nelze určit katedru",
+            "description": "Zkontrolujte u uvedených studentů studijní profil (typ, název programu, kód specializace). Katedra se určuje právě podle specializace.",
+            "departmentMappingIssue": "Student: {student} | Email: {email} | Komise: {committee} ({committeeDate}) | Pořadí v komisi: {committeeOrder} | Kód specializace: {specializationCode} | Studijní plán: {studyProgramName} ({studyProgramType})",
+            "unknown": "Export CSV se nepodařilo dokončit kvůli neočekávané chybě."
+          }
+        },
         "pdfPublicDialog": {
           "title": "Export PDF pro veřejnost",
           "description": "Vyberte komise, které chcete zahrnout do exportu PDF pro veřejnost.",

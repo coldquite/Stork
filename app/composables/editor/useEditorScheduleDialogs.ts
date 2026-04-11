@@ -2,6 +2,11 @@ import { EDITOR_DRAFT_NAME_MAX_LENGTH } from '#shared/constants/editor'
 import { useValidationField } from '~/composables/useValidationField'
 import { useScheduleDraftStore } from '~/stores/schedule-draft'
 import { buildEditorCommitteeListEntries } from '~/utils/editor/draft-committee'
+import { createQuestionsEnvelopeCsvEnumLabelResolver } from '~/utils/editor/questions-envelope-csv-enums'
+import {
+  QuestionsEnvelopeCsvDepartmentMappingError,
+  exportQuestionsEnvelopeCsv
+} from '~/utils/editor/questions-envelope-csv-export'
 import type { EditorCommitteeListEntry } from '~/utils/editor/draft-committee'
 
 interface EditorExportCommitteeItem {
@@ -31,12 +36,14 @@ export function useEditorScheduleDialogs() {
   const cloudSaveValidationError = ref<string | null>(null)
   const isCsvExportDialogOpen = ref(false)
   const selectedCsvExportCommitteeIds = ref<string[]>([])
+  const csvExportErrorItems = ref<string[]>([])
   const isPdfPublicExportDialogOpen = ref(false)
   const selectedPdfPublicExportCommitteeIds = ref<string[]>([])
   const isPdfInvigilatorsExportDialogOpen = ref(false)
   const selectedPdfInvigilatorsExportCommitteeIds = ref<string[]>([])
 
   const isCloudSaveLoading = computed(() => scheduleDraftStore.isManualSaveLoading)
+  const questionsEnvelopeCsvEnumLabelResolver = createQuestionsEnvelopeCsvEnumLabelResolver((key) => t(key))
   const fallbackCommitteeLabel = computed(() => t('editor.untitled'))
   const exportCommitteeEntries = computed(() => {
     const draftCommittees = scheduleDraftStore.draft?.committees ?? []
@@ -202,23 +209,28 @@ export function useEditorScheduleDialogs() {
   }
 
   function openCsvExportDialog(): void {
+    csvExportErrorItems.value = []
     openExportDialog(isCsvExportDialogOpen, selectedCsvExportCommitteeIds)
   }
 
   function closeCsvExportDialog(): void {
     closeExportDialog(isCsvExportDialogOpen, selectedCsvExportCommitteeIds)
+    csvExportErrorItems.value = []
   }
 
   function updateSelectedCsvExportCommitteeIds(nextIds: string[]): void {
     updateSelectedExportCommitteeIds(selectedCsvExportCommitteeIds, nextIds)
+    csvExportErrorItems.value = []
   }
 
   function selectAllCsvExportCommittees(): void {
     selectAllExportCommittees(selectedCsvExportCommitteeIds)
+    csvExportErrorItems.value = []
   }
 
   function clearCsvExportCommittees(): void {
     clearExportCommittees(selectedCsvExportCommitteeIds)
+    csvExportErrorItems.value = []
   }
 
   function openPdfPublicExportDialog(): void {
@@ -307,6 +319,47 @@ export function useEditorScheduleDialogs() {
       return
     }
 
+    csvExportErrorItems.value = []
+
+    const draft = scheduleDraftStore.draft
+    if (!draft) {
+      closeCsvExportDialog()
+      return
+    }
+
+    const selectedCommitteeIdsSet = new Set(selectedCsvExportCommitteeIds.value)
+    const selectedCommittees = exportCommitteeEntries.value
+      .filter((entry) => selectedCommitteeIdsSet.has(entry.committee.localId))
+      .map((entry) => entry.committee)
+
+    try {
+      exportQuestionsEnvelopeCsv({
+        committees: selectedCommittees,
+        fallbackCommitteeLabel: fallbackCommitteeLabel.value,
+        enumLabelResolver: questionsEnvelopeCsvEnumLabelResolver,
+        draftName: draft.name
+      })
+    } catch (error: unknown) {
+      if (error instanceof QuestionsEnvelopeCsvDepartmentMappingError) {
+        csvExportErrorItems.value = error.issues.map((issue) =>
+          t('editor.schedule.export.questionsEnvelopeCsvExport.errors.departmentMappingIssue', {
+            student: issue.studentFullName,
+            email: issue.studentEmail || '-',
+            committee: issue.committeeLabel,
+            committeeDate: issue.committeeDate || '-',
+            committeeOrder: issue.committeeStudentOrder ? String(issue.committeeStudentOrder) : '-',
+            specializationCode: issue.specializationCode || '-',
+            studyProgramName: issue.studyProgramName || '-',
+            studyProgramType: questionsEnvelopeCsvEnumLabelResolver.resolveStudyProgramTypeLabel(issue.studyProgramType)
+          })
+        )
+        return
+      }
+
+      csvExportErrorItems.value = [t('editor.schedule.export.questionsEnvelopeCsvExport.errors.unknown')]
+      return
+    }
+
     closeCsvExportDialog()
   }
 
@@ -336,6 +389,7 @@ export function useEditorScheduleDialogs() {
     isCloudSaveLoading,
     isCsvExportDialogOpen,
     selectedCsvExportCommitteeIds,
+    csvExportErrorItems,
     csvExportCommitteeItems,
     isCsvExportSubmitDisabled,
     isPdfPublicExportDialogOpen,

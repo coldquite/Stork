@@ -222,6 +222,8 @@ export interface EditorExportCommitteesDialogCopy {
   submit: string
   emptyTitle: string
   emptyDescription: string
+  errorTitle?: string
+  errorDescription?: string
 }
 
 /** Pre-translated strings for [EditorScheduleDialogsHost.vue](app/components/editor/EditorScheduleDialogsHost.vue). */

@@ -16,6 +16,36 @@ const { saveManualDraftMock } = vi.hoisted(() => ({
   saveManualDraftMock: vi.fn()
 }))
 
+const { exportQuestionsEnvelopeCsvMock } = vi.hoisted(() => ({
+  exportQuestionsEnvelopeCsvMock: vi.fn()
+}))
+
+const { QuestionsEnvelopeCsvDepartmentMappingErrorMock } = vi.hoisted(() => ({
+  QuestionsEnvelopeCsvDepartmentMappingErrorMock: class QuestionsEnvelopeCsvDepartmentMappingError extends Error {
+    readonly issues: Array<{
+      studentFullName: string
+      committeeLabel: string
+      specializationCode: string
+      studyProgramName: string
+      studyProgramType: 'BACHELOR' | 'MASTER'
+    }>
+
+    constructor(
+      issues: Array<{
+        studentFullName: string
+        committeeLabel: string
+        specializationCode: string
+        studyProgramName: string
+        studyProgramType: 'BACHELOR' | 'MASTER'
+      }>
+    ) {
+      super('QUESTIONS_ENVELOPE_CSV_DEPARTMENT_MAPPING_FAILED')
+      this.name = 'QuestionsEnvelopeCsvDepartmentMappingError'
+      this.issues = issues
+    }
+  }
+}))
+
 const scheduleDraftStoreMock = reactive({
   draft: null as ScheduleDraft | null,
   isDraftLoading: false,
@@ -50,6 +80,13 @@ vi.mock('~/stores/schedule-draft', () => {
 vi.mock('~/stores/editor-table-preferences', () => {
   return {
     useEditorTablePreferencesStore: () => editorTablePreferencesStoreMock
+  }
+})
+
+vi.mock('~/utils/editor/questions-envelope-csv-export', () => {
+  return {
+    exportQuestionsEnvelopeCsv: exportQuestionsEnvelopeCsvMock,
+    QuestionsEnvelopeCsvDepartmentMappingError: QuestionsEnvelopeCsvDepartmentMappingErrorMock
   }
 })
 
@@ -168,6 +205,7 @@ describe('useEditorPage', () => {
   beforeEach(() => {
     i18nTranslateMock.mockClear()
     saveManualDraftMock.mockReset()
+    exportQuestionsEnvelopeCsvMock.mockReset()
     saveManualDraftMock.mockResolvedValue({
       id: 'saved-auto',
       createdAt: '2026-06-12T09:00:00.000Z'
@@ -833,6 +871,68 @@ describe('useEditorPage', () => {
     expect(page.scheduleDialogs.selectedCsvExportCommitteeIds.value).toEqual([])
   })
 
+  it('exports selected committees to questions-envelope csv and closes dialog', async () => {
+    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const page = useEditorPage()
+
+    page.scheduleDialogs.openCsvExportDialog()
+    page.scheduleDialogs.updateSelectedCsvExportCommitteeIds(['committee-late'])
+    page.scheduleDialogs.submitCsvExportSelection()
+
+    expect(exportQuestionsEnvelopeCsvMock).toHaveBeenCalledTimes(1)
+    expect(exportQuestionsEnvelopeCsvMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        draftName: 'Plán',
+        fallbackCommitteeLabel: 'editor.untitled',
+        committees: [expect.objectContaining({ localId: 'committee-late' })]
+      })
+    )
+    expect(page.scheduleDialogs.isCsvExportDialogOpen.value).toBe(false)
+    expect(page.scheduleDialogs.selectedCsvExportCommitteeIds.value).toEqual([])
+  })
+
+  it('keeps csv export dialog open and lists all problematic students when department mapping fails', async () => {
+    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const page = useEditorPage()
+
+    exportQuestionsEnvelopeCsvMock.mockImplementationOnce(() => {
+      throw new QuestionsEnvelopeCsvDepartmentMappingErrorMock([
+        {
+          studentFullName: 'Novák Jan',
+          committeeLabel: '2-NI-SI',
+          specializationCode: 'UNKNOWN-1',
+          studyProgramName: 'Informatika',
+          studyProgramType: 'BACHELOR'
+        },
+        {
+          studentFullName: 'Svobodová Eva',
+          committeeLabel: '2-NI-SI',
+          specializationCode: 'UNKNOWN-2',
+          studyProgramName: 'Informatika',
+          studyProgramType: 'MASTER'
+        }
+      ])
+    })
+
+    page.scheduleDialogs.openCsvExportDialog()
+    page.scheduleDialogs.submitCsvExportSelection()
+
+    expect(page.scheduleDialogs.isCsvExportDialogOpen.value).toBe(true)
+    expect(page.scheduleDialogs.csvExportErrorItems.value).toHaveLength(2)
+    expect(page.scheduleDialogs.csvExportErrorItems.value).toEqual([
+      'editor.schedule.export.questionsEnvelopeCsvExport.errors.departmentMappingIssue',
+      'editor.schedule.export.questionsEnvelopeCsvExport.errors.departmentMappingIssue'
+    ])
+    expect(i18nTranslateMock).toHaveBeenCalledWith(
+      'editor.schedule.export.questionsEnvelopeCsvExport.errors.departmentMappingIssue',
+      expect.objectContaining({ student: 'Novák Jan', specializationCode: 'UNKNOWN-1' })
+    )
+    expect(i18nTranslateMock).toHaveBeenCalledWith(
+      'editor.schedule.export.questionsEnvelopeCsvExport.errors.departmentMappingIssue',
+      expect.objectContaining({ student: 'Svobodová Eva', specializationCode: 'UNKNOWN-2' })
+    )
+  })
+
   it('keeps csv export submit disabled when there are no committees', async () => {
     scheduleDraftStoreMock.draft = {
       ...createDraftWithTwoCommittees(),
@@ -851,6 +951,7 @@ describe('useEditorPage', () => {
 
     page.scheduleDialogs.submitCsvExportSelection()
     expect(page.scheduleDialogs.isCsvExportDialogOpen.value).toBe(true)
+    expect(exportQuestionsEnvelopeCsvMock).not.toHaveBeenCalled()
   })
 
   it('opens public pdf export dialog with all committees preselected and clears selection on close', async () => {

@@ -5,22 +5,32 @@ interface EditorCsvExportCommitteeItem {
   description: string
 }
 
-const props = defineProps<{
-  title: string
-  description: string
-  committees: EditorCsvExportCommitteeItem[]
-  selectedCommitteeIds: string[]
-  selectedCountLabel: string
-  orderingHintLabel: string
-  checklistAriaLabel: string
-  selectAllLabel: string
-  clearAllLabel: string
-  cancelLabel: string
-  submitLabel: string
-  emptyTitle: string
-  emptyDescription: string
-  submitDisabled: boolean
-}>()
+const props = withDefaults(
+  defineProps<{
+    title: string
+    description: string
+    committees: EditorCsvExportCommitteeItem[]
+    selectedCommitteeIds: string[]
+    selectedCountLabel: string
+    orderingHintLabel: string
+    checklistAriaLabel: string
+    selectAllLabel: string
+    clearAllLabel: string
+    cancelLabel: string
+    submitLabel: string
+    emptyTitle: string
+    emptyDescription: string
+    errorTitle?: string
+    errorDescription?: string
+    errorItems?: string[]
+    submitDisabled: boolean
+  }>(),
+  {
+    errorTitle: '',
+    errorDescription: '',
+    errorItems: () => []
+  }
+)
 
 const emit = defineEmits<{
   cancel: []
@@ -80,6 +90,25 @@ function handleClearAll(): void {
   >
     <template #body>
       <div v-if="hasCommittees" class="space-y-4">
+        <div
+          v-if="props.errorItems.length > 0"
+          class="border-error/50 bg-error/10 space-y-2 rounded-md border p-3"
+          role="alert"
+          aria-live="assertive"
+        >
+          <p class="text-error text-sm font-semibold">
+            {{ props.errorTitle }}
+          </p>
+          <p v-if="props.errorDescription" class="text-error text-sm leading-snug">
+            {{ props.errorDescription }}
+          </p>
+          <ul class="text-error list-disc space-y-1.5 ps-5 text-sm leading-snug">
+            <li v-for="(item, index) in props.errorItems" :key="`${index}-${item}`">
+              {{ item }}
+            </li>
+          </ul>
+        </div>
+
         <div class="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
           <div class="max-w-2xl min-w-0 space-y-1">
             <p class="text-muted text-xl font-semibold">

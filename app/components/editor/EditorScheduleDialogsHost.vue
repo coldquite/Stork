@@ -74,6 +74,7 @@ const csvExportOpen = computed({
 })
 const csvExportSelectedCommitteeIds = computed(() => sd.selectedCsvExportCommitteeIds.value)
 const csvExportCommittees = computed(() => sd.csvExportCommitteeItems.value)
+const csvExportErrorItems = computed(() => sd.csvExportErrorItems.value)
 
 const pdfPublicExportOpen = computed({
   get: () => sd.isPdfPublicExportDialogOpen.value,
@@ -278,6 +279,9 @@ const isMoveStudentSubmitDisabled = computed(() => cia.isMoveStudentSubmitDisabl
     :submit-label="copy.csvExportCommittees.submit"
     :empty-title="copy.csvExportCommittees.emptyTitle"
     :empty-description="copy.csvExportCommittees.emptyDescription"
+    :error-title="copy.csvExportCommittees.errorTitle ?? ''"
+    :error-description="copy.csvExportCommittees.errorDescription ?? ''"
+    :error-items="csvExportErrorItems"
     :submit-disabled="isCsvExportSubmitDisabled"
     @update-selected-committee-ids="sd.updateSelectedCsvExportCommitteeIds($event)"
     @select-all="sd.selectAllCsvExportCommittees()"
