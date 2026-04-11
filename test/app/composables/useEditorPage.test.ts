@@ -83,7 +83,7 @@ vi.mock('~/stores/editor-table-preferences', () => {
   }
 })
 
-vi.mock('~/utils/editor/questions-envelope-csv-export', () => {
+vi.mock('~/utils/export/questions-envelope-csv-export', () => {
   return {
     exportQuestionsEnvelopeCsv: exportQuestionsEnvelopeCsvMock,
     QuestionsEnvelopeCsvDepartmentMappingError: QuestionsEnvelopeCsvDepartmentMappingErrorMock

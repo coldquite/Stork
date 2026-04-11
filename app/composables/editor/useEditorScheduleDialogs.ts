@@ -2,11 +2,16 @@ import { EDITOR_DRAFT_NAME_MAX_LENGTH } from '#shared/constants/editor'
 import { useValidationField } from '~/composables/useValidationField'
 import { useScheduleDraftStore } from '~/stores/schedule-draft'
 import { buildEditorCommitteeListEntries } from '~/utils/editor/draft-committee'
-import { createQuestionsEnvelopeCsvEnumLabelResolver } from '~/utils/editor/questions-envelope-csv-enums'
+import { createQuestionsEnvelopeCsvEnumLabelResolver } from '~/utils/export/questions-envelope-csv-enums'
+import {
+  buildPdfInvigilatorsExportPayload,
+  buildPdfInvigilatorsFileName,
+  downloadPdfFile
+} from '~/utils/export/pdf-invigilators-export'
 import {
   QuestionsEnvelopeCsvDepartmentMappingError,
   exportQuestionsEnvelopeCsv
-} from '~/utils/editor/questions-envelope-csv-export'
+} from '~/utils/export/questions-envelope-csv-export'
 import type { EditorCommitteeListEntry } from '~/utils/editor/draft-committee'
 
 interface EditorExportCommitteeItem {
@@ -39,8 +44,10 @@ export function useEditorScheduleDialogs() {
   const csvExportErrorItems = ref<string[]>([])
   const isPdfPublicExportDialogOpen = ref(false)
   const selectedPdfPublicExportCommitteeIds = ref<string[]>([])
+  const isPdfPublicExportLoading = ref(false)
   const isPdfInvigilatorsExportDialogOpen = ref(false)
   const selectedPdfInvigilatorsExportCommitteeIds = ref<string[]>([])
+  const isPdfInvigilatorsExportLoading = ref(false)
 
   const isCloudSaveLoading = computed(() => scheduleDraftStore.isManualSaveLoading)
   const questionsEnvelopeCsvEnumLabelResolver = createQuestionsEnvelopeCsvEnumLabelResolver((key) => t(key))
@@ -143,10 +150,18 @@ export function useEditorScheduleDialogs() {
     return exportCommitteeItems.value.length < 1 || selectedCsvExportCommitteeIds.value.length < 1
   })
   const isPdfPublicExportSubmitDisabled = computed(() => {
-    return exportCommitteeItems.value.length < 1 || selectedPdfPublicExportCommitteeIds.value.length < 1
+    return (
+      isPdfPublicExportLoading.value ||
+      exportCommitteeItems.value.length < 1 ||
+      selectedPdfPublicExportCommitteeIds.value.length < 1
+    )
   })
   const isPdfInvigilatorsExportSubmitDisabled = computed(() => {
-    return exportCommitteeItems.value.length < 1 || selectedPdfInvigilatorsExportCommitteeIds.value.length < 1
+    return (
+      isPdfInvigilatorsExportLoading.value ||
+      exportCommitteeItems.value.length < 1 ||
+      selectedPdfInvigilatorsExportCommitteeIds.value.length < 1
+    )
   })
 
   useValidationField(renameDraftName, renameDraftValidationError)
@@ -238,6 +253,10 @@ export function useEditorScheduleDialogs() {
   }
 
   function closePdfPublicExportDialog(): void {
+    if (isPdfPublicExportLoading.value) {
+      return
+    }
+
     closeExportDialog(isPdfPublicExportDialogOpen, selectedPdfPublicExportCommitteeIds)
   }
 
@@ -258,6 +277,10 @@ export function useEditorScheduleDialogs() {
   }
 
   function closePdfInvigilatorsExportDialog(): void {
+    if (isPdfInvigilatorsExportLoading.value) {
+      return
+    }
+
     closeExportDialog(isPdfInvigilatorsExportDialogOpen, selectedPdfInvigilatorsExportCommitteeIds)
   }
 
@@ -371,9 +394,46 @@ export function useEditorScheduleDialogs() {
     closePdfPublicExportDialog()
   }
 
-  function submitPdfInvigilatorsExportSelection(): void {
-    if (isPdfInvigilatorsExportSubmitDisabled.value) {
+  async function submitPdfInvigilatorsExportSelection(): Promise<void> {
+    if (isPdfInvigilatorsExportSubmitDisabled.value || isPdfInvigilatorsExportLoading.value) {
       return
+    }
+
+    const draft = scheduleDraftStore.draft
+    if (!draft) {
+      closePdfInvigilatorsExportDialog()
+      return
+    }
+
+    const selectedCommitteeIdsSet = new Set(selectedPdfInvigilatorsExportCommitteeIds.value)
+    const selectedCommittees = exportCommitteeEntries.value
+      .filter((entry) => selectedCommitteeIdsSet.has(entry.committee.localId))
+      .map((entry) => entry.committee)
+    const payload = buildPdfInvigilatorsExportPayload({
+      draftName: draft.name,
+      committees: selectedCommittees,
+      fallbackCommitteeLabel: fallbackCommitteeLabel.value,
+      repeatTypeLabelResolver: questionsEnvelopeCsvEnumLabelResolver.resolveRepeatTypeLabel
+    })
+    if (payload.sections.length < 1) {
+      return
+    }
+
+    isPdfInvigilatorsExportLoading.value = true
+
+    try {
+      const requestFetch = useRequestFetch()
+      const pdfContent = await requestFetch<ArrayBuffer>('/api/editor/export/pdf/invigilators', {
+        method: 'POST',
+        body: payload,
+        responseType: 'arrayBuffer'
+      })
+      const fileName = buildPdfInvigilatorsFileName(draft.name)
+      downloadPdfFile(pdfContent, fileName)
+    } catch {
+      return
+    } finally {
+      isPdfInvigilatorsExportLoading.value = false
     }
 
     closePdfInvigilatorsExportDialog()
@@ -394,10 +454,12 @@ export function useEditorScheduleDialogs() {
     isCsvExportSubmitDisabled,
     isPdfPublicExportDialogOpen,
     selectedPdfPublicExportCommitteeIds,
+    isPdfPublicExportLoading,
     pdfPublicExportCommitteeItems,
     isPdfPublicExportSubmitDisabled,
     isPdfInvigilatorsExportDialogOpen,
     selectedPdfInvigilatorsExportCommitteeIds,
+    isPdfInvigilatorsExportLoading,
     pdfInvigilatorsExportDayGroups,
     isPdfInvigilatorsExportSubmitDisabled,
     openRenameDraftDialog,

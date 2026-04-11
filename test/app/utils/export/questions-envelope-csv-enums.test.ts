@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createQuestionsEnvelopeCsvEnumLabelResolver } from '~/utils/editor/questions-envelope-csv-enums'
+import { createQuestionsEnvelopeCsvEnumLabelResolver } from '~/utils/export/questions-envelope-csv-enums'
 
 const translationMap: Record<string, string> = {
   'editor.schedule.export.questionsEnvelopeCsvExport.enums.studyProgramType.BACHELOR': 'Bakalářský',

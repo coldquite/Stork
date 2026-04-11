@@ -13,7 +13,7 @@ import {
   normalizeRequiredText,
   resolveCommitteeLabel
 } from '~/utils/editor/draft-committee'
-import type { QuestionsEnvelopeCsvEnumLabelResolver } from '~/utils/editor/questions-envelope-csv-enums'
+import type { QuestionsEnvelopeCsvEnumLabelResolver } from '~/utils/export/questions-envelope-csv-enums'
 
 const QUESTIONS_ENVELOPE_CSV_COLUMNS = [
   'Příjmení',

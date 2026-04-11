@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import type { ScheduleDraftCommittee, ScheduleDraftItem } from '~/types/schedule-draft'
-import type { QuestionsEnvelopeCsvEnumLabelResolver } from '~/utils/editor/questions-envelope-csv-enums'
+import type { QuestionsEnvelopeCsvEnumLabelResolver } from '~/utils/export/questions-envelope-csv-enums'
 import {
   addUtf8Bom,
   buildQuestionsEnvelopeCsvFileName,
   buildQuestionsEnvelopeCsvRows,
   QuestionsEnvelopeCsvDepartmentMappingError,
   serializeQuestionsEnvelopeCsv
-} from '~/utils/editor/questions-envelope-csv-export'
+} from '~/utils/export/questions-envelope-csv-export'
 
 const enumLabelResolver: QuestionsEnvelopeCsvEnumLabelResolver = {
   resolveStudyProgramTypeLabel(value) {
