@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import { resolveEditorSpecializationOptions, resolveEditorStudyProgramNameOptions } from '#shared/constants/editor'
+import {
+  resolveEditorSpecializationOptions,
+  resolveEditorSpecializationOptionForDepartment,
+  resolveEditorStudyProgramNameOptions
+} from '#shared/constants/editor'
 import type { ScheduleDraftCommittee } from '~/types/schedule-draft'
 import type { StudyProgramTypeDto } from '#shared/types/time-schedules'
 import type { EditorCommitteeStringFieldPayload } from '~/types/editor'
@@ -35,15 +39,19 @@ const isStudyProgramInvalid = computed(
 const isSpecializationInvalid = computed(
   () => hasSelectedCommittee.value && isEmptyValue(committeeSpecializationCodeValue.value)
 )
+const resolvedDepartment = computed(() => {
+  return resolveEditorSpecializationOptionForDepartment(
+    committeeStudyProgramTypeValue.value,
+    committeeStudyProgramNameValue.value,
+    committeeSpecializationCodeValue.value
+  )
+})
 const isDepartmentInvalid = computed(() => {
   if (!hasSelectedCommittee.value) {
     return false
   }
 
-  const departmentName = props.selectedCommittee?.defenseDepartmentName?.trim() ?? ''
-  const departmentCode = props.selectedCommittee?.defenseDepartmentCode?.trim() ?? ''
-
-  return departmentName.length < 1 && departmentCode.length < 1
+  return resolvedDepartment.value === null
 })
 
 const invalidInputUi = {
@@ -92,8 +100,8 @@ const committeeSpecializationCodeOptions = computed(() => {
 })
 
 const committeeDepartmentDisplayLabel = computed(() => {
-  const departmentName = props.selectedCommittee?.defenseDepartmentName?.trim() ?? ''
-  const departmentCode = props.selectedCommittee?.defenseDepartmentCode?.trim() ?? ''
+  const departmentName = resolvedDepartment.value?.departmentNameCs?.trim() ?? ''
+  const departmentCode = resolvedDepartment.value?.departmentCode?.trim() ?? ''
 
   if (departmentName.length < 1 && departmentCode.length < 1) {
     return '—'
@@ -202,11 +210,11 @@ function emitSpecializationCode(value: string): void {
           aria-readonly="true"
           aria-disabled="true"
           tabindex="-1"
-          class="relative inline-flex min-w-0 flex-1 cursor-not-allowed items-start overflow-hidden rounded-md bg-accented select-none"
+          class="bg-accented relative inline-flex min-w-0 flex-1 cursor-not-allowed items-start overflow-hidden rounded-md select-none"
           :class="isDepartmentInvalid ? invalidInputUi.base : undefined"
         >
           <span
-            class="pointer-events-none w-full appearance-none rounded-md border-0 bg-default px-2.5 py-1.5 text-sm/4 text-highlighted break-words whitespace-normal opacity-75 ring ring-inset ring-accented md:text-xs"
+            class="bg-default text-highlighted ring-accented pointer-events-none w-full appearance-none rounded-md border-0 px-2.5 py-1.5 text-sm/4 break-words whitespace-normal opacity-75 ring ring-inset md:text-xs"
           >
             {{ committeeDepartmentDisplayLabel }}
           </span>

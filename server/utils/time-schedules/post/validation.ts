@@ -95,8 +95,6 @@ const committeeSchema = z
     studyProgramType: studyProgramTypeSchema,
     specializationName: z.string(),
     specializationCode: z.string(),
-    defenseDepartmentCode: z.string().nullable(),
-    defenseDepartmentName: z.string().nullable(),
     chairName: z.string(),
     viceChairName: z.string(),
     member1Name: z.string(),

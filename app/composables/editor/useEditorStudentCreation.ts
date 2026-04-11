@@ -1,4 +1,5 @@
 import type { StudyLanguageDto, ThesisLanguageDto } from '#shared/types/time-schedules'
+import { resolveEditorSpecializationOptionForDepartment } from '#shared/constants/editor'
 import type { ScheduleDraftCommittee, ScheduleDraftItem } from '~/types/schedule-draft'
 import type {
   EditorCreateStudentDraft,
@@ -225,6 +226,18 @@ export function useEditorStudentCreation(selectedCommittee: ComputedRef<Schedule
     const emailValidationError = validateEmailField(draft.email)
     if (emailValidationError) {
       setValidationError('email', emailValidationError)
+    }
+
+    const hasSpecializationValidationError = Boolean(createStudentValidationErrors.value.specializationCode)
+    if (!hasSpecializationValidationError) {
+      const specializationOption = resolveEditorSpecializationOptionForDepartment(
+        draft.studyProgramType,
+        normalizeRequiredText(draft.studyProgramName),
+        normalizeRequiredText(draft.specializationCode)
+      )
+      if (!specializationOption) {
+        setValidationError('specializationCode', t('editor.students.add.validation.unresolvedDepartment'))
+      }
     }
 
     return Object.keys(createStudentValidationErrors.value).length < 1

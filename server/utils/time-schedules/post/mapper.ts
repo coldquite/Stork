@@ -59,8 +59,6 @@ function mapCommitteeCreateData(committee: PostCommitteeDto): Prisma.CommitteeCr
     studyProgramType: committee.studyProgramType,
     specializationName: committee.specializationName,
     specializationCode: committee.specializationCode,
-    defenseDepartmentCode: committee.defenseDepartmentCode,
-    defenseDepartmentName: committee.defenseDepartmentName,
     chairName: committee.chairName,
     viceChairName: committee.viceChairName,
     member1Name: committee.member1Name,

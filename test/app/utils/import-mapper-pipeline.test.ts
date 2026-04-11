@@ -139,7 +139,7 @@ describe('import mapper pipeline modules', () => {
     expect(student?.examMinutes).toBe(30)
   })
 
-  it('mapCommittees fails when defense department code is empty in both studenti-komise and komise', () => {
+  it('mapCommittees ignores legacy defense department columns and still maps committee', () => {
     const payload = createPipelinePayload()
     payload.committees.rows[0] = {
       ...payload.committees.rows[0],
@@ -151,17 +151,11 @@ describe('import mapper pipeline modules', () => {
     }
 
     const datasets = collectDatasets(payload, 'BACHELOR')
+    const committeesMapping = mapCommittees('BACHELOR', payload.committees, datasets.studentsCommitteesRows)
 
-    try {
-      mapCommittees('BACHELOR', payload.committees, datasets.studentsCommitteesRows)
-      throw new Error('Expected mapping failure')
-    } catch (error: unknown) {
-      expect(error).toBeInstanceOf(ImportMappingFailure)
-      const mappingError = (error as ImportMappingFailure).mappingError
-      expect(mappingError.code).toBe('MISSING_REQUIRED_VALUE')
-      expect(mappingError.datasetKey).toBe('studentsCommittees')
-      expect(mappingError.column).toBe('VŠKP-typ A: Katedra obhajoby - kod')
-      expect(mappingError.context.fallbackColumn).toBe('Kat')
-    }
+    expect(committeesMapping.committees).toHaveLength(1)
+    expect(committeesMapping.committees[0]?.name).toBe('5-BI-PI.21')
+    expect(committeesMapping.committees[0]).not.toHaveProperty('defenseDepartmentCode')
+    expect(committeesMapping.committees[0]).not.toHaveProperty('defenseDepartmentName')
   })
 })

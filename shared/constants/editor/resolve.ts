@@ -36,3 +36,64 @@ export function resolveEditorSpecializationOptionByCode(
   const options = resolveEditorSpecializationOptions(studyProgramType, studyProgramName)
   return options.find((option) => option.specializationCode === specializationCode) ?? null
 }
+
+/**
+ * Normalizes specialization code for department lookup.
+ * Example: BI-SI21 => BI-SI.21
+ */
+export function normalizeEditorSpecializationCodeForDepartmentLookup(value: string): string {
+  const normalizedValue = value.trim().toUpperCase()
+  const matchedValue = normalizedValue.match(/^(.*?)(\d+)$/)
+  if (!matchedValue) {
+    return normalizedValue
+  }
+
+  const prefix = matchedValue[1] ?? ''
+  const digits = matchedValue[2] ?? ''
+  if (prefix.endsWith('.')) {
+    return `${prefix}${digits}`
+  }
+
+  return `${prefix}.${digits}`
+}
+
+const EDITOR_SPECIALIZATION_OPTIONS_BY_CODE = (() => {
+  const optionsByCode = new Map<string, EditorSpecializationOption>()
+
+  for (const optionsByProgramName of Object.values(EDITOR_SPECIALIZATION_OPTIONS_BY_TYPE_AND_STUDY_PROGRAM_NAME)) {
+    for (const options of Object.values(optionsByProgramName)) {
+      for (const option of options) {
+        if (!optionsByCode.has(option.specializationCode)) {
+          optionsByCode.set(option.specializationCode, option)
+        }
+      }
+    }
+  }
+
+  return optionsByCode
+})()
+
+/**
+ * Resolves specialization option by code in the selected study profile context, then globally as fallback.
+ */
+export function resolveEditorSpecializationOptionForDepartment(
+  studyProgramType: StudyProgramTypeDto | null | undefined,
+  studyProgramName: string,
+  specializationCode: string
+): EditorSpecializationOption | null {
+  const normalizedSpecializationCode = normalizeEditorSpecializationCodeForDepartmentLookup(specializationCode)
+  if (normalizedSpecializationCode.length < 1) {
+    return null
+  }
+
+  const specializationInCurrentProgram = resolveEditorSpecializationOptionByCode(
+    studyProgramType,
+    studyProgramName,
+    normalizedSpecializationCode
+  )
+  if (specializationInCurrentProgram) {
+    return specializationInCurrentProgram
+  }
+
+  return EDITOR_SPECIALIZATION_OPTIONS_BY_CODE.get(normalizedSpecializationCode) ?? null
+}

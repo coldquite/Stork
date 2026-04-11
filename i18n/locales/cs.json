@@ -507,7 +507,8 @@
         "validation": {
           "required": "Pole musí obsahovat alespoň 1 znak bez mezer.",
           "leadingTrailingWhitespace": "Pole nesmí začínat ani končit mezerou.",
-          "emailInvalid": "Zadejte e-mail ve správném formátu."
+          "emailInvalid": "Zadejte e-mail ve správném formátu.",
+          "unresolvedDepartment": "Pro zadanou specializaci nelze určit katedru. Vyberte platnou specializaci z nabídky."
         }
       }
     },

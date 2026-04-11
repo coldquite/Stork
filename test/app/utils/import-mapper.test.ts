@@ -864,7 +864,7 @@ describe('mapImportPayloadToDraftSource', () => {
     expect(mappedFirstItem.student.reviewerName).toBe('Dr. rer. nat. Rodrigo Augusto Da Silva Alves')
   })
 
-  it('does not fail when defense department code and name are empty in studenti-komise', () => {
+  it('does not fail when legacy defense department columns are empty in studenti-komise', () => {
     const payload = createValidPayload()
     payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
       'VŠKP-typ A: Katedra obhajoby - kod': '',
@@ -882,11 +882,12 @@ describe('mapImportPayloadToDraftSource', () => {
       throw new Error('Expected mapping success')
     }
 
-    expect(result.draft.committees[0]?.defenseDepartmentCode).toBe('KSI')
-    expect(result.draft.committees[0]?.defenseDepartmentName).toBe('')
+    expect(result.draft.committees[0]?.specializationCode).toBe('BI-SI.21')
+    expect(result.draft.committees[0]).not.toHaveProperty('defenseDepartmentCode')
+    expect(result.draft.committees[0]).not.toHaveProperty('defenseDepartmentName')
   })
 
-  it('fails when defense department code is missing in both studenti-komise and komise', () => {
+  it('does not require legacy committee Kat column for successful mapping', () => {
     const payload = createValidPayload()
     payload.committees.rows[0] = createCommitteesRow({
       Kat: ''
@@ -902,51 +903,26 @@ describe('mapImportPayloadToDraftSource', () => {
       payload
     })
 
-    expect(result.ok).toBe(false)
-    if (result.ok) {
-      throw new Error('Expected mapping failure')
+    expect(result.ok).toBe(true)
+    if (!result.ok) {
+      throw new Error('Expected mapping success')
     }
 
-    expect(result.error.code).toBe('MISSING_REQUIRED_VALUE')
-    expect(result.error.datasetKey).toBe('studentsCommittees')
-    expect(result.error.column).toBe('VŠKP-typ A: Katedra obhajoby - kod')
-    expect(result.error.context.reason).toBe('required_value_is_empty')
-    expect(result.error.context.fallbackColumn).toBe('Kat')
+    expect(result.draft.committees[0]?.specializationCode).toBe('BI-SI.21')
   })
 
-  it('maps committee defense department name from known code when studenti-komise name is empty', () => {
+  it('ignores legacy defense department columns and uses specialization code mapping only', () => {
     const payload = createValidPayload()
     payload.committees.rows[0] = createCommitteesRow({
       Kat: '18102'
     })
-    payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
-      'VŠKP-typ A: Katedra obhajoby - kod': '',
-      'VŠKP-typ A: Katedra obhajoby - název': ''
-    })
-
-    const result = mapImportPayloadToDraftSource({
-      scheduleName: 'SZZ červen 2025',
-      szzType: 'BACHELOR',
-      payload
-    })
-
-    expect(result.ok).toBe(true)
-    if (!result.ok) {
-      throw new Error('Expected mapping success')
-    }
-
-    expect(result.draft.committees[0]?.defenseDepartmentCode).toBe('18102')
-    expect(result.draft.committees[0]?.defenseDepartmentName).toBe('Katedra softwarového inženýrství')
-  })
-
-  it('maps committee defense department name from studenti-komise code when name is empty', () => {
-    const payload = createValidPayload()
-    payload.committees.rows[0] = createCommitteesRow({
-      Kat: '18104'
+    payload.studentsStork.bachelor!.rows[0] = createStudentsStorkRow({
+      'Kód studijního plánu': 'BI-UI.21'
     })
     payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
       'VŠKP-typ A: Katedra obhajoby - kod': '18104',
-      'VŠKP-typ A: Katedra obhajoby - název': ''
+      'VŠKP-typ A: Katedra obhajoby - název': '',
+      'Obor/spec - kód': 'BI-UI21'
     })
 
     const result = mapImportPayloadToDraftSource({
@@ -960,8 +936,9 @@ describe('mapImportPayloadToDraftSource', () => {
       throw new Error('Expected mapping success')
     }
 
-    expect(result.draft.committees[0]?.defenseDepartmentCode).toBe('18104')
-    expect(result.draft.committees[0]?.defenseDepartmentName).toBe('Katedra počítačových systémů')
+    expect(result.draft.committees[0]?.specializationCode).toBe('BI-UI.21')
+    expect(result.draft.committees[0]).not.toHaveProperty('defenseDepartmentCode')
+    expect(result.draft.committees[0]).not.toHaveProperty('defenseDepartmentName')
   })
 
   it('returns MISSING_DATASET with correct datasetKey when required file is missing', () => {

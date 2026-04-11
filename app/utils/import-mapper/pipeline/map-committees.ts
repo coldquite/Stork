@@ -1,5 +1,4 @@
 import type { PostCommitteeDto } from '#shared/types/time-schedules'
-import { resolveEditorDepartmentNameByCode } from '#shared/constants/editor'
 import type { ImportDataset, ImportSzzType } from '~/types/import'
 import { COMMITTEE_START_MINUTE } from '~/utils/import-mapper/core/constants'
 import { throwMappingError } from '~/utils/import-mapper/core/errors'
@@ -137,45 +136,6 @@ export function mapCommittees(
       'COMMITTEE_FIELD_MISMATCH'
     )
 
-    const studentsDefenseDepartmentCode = readOptionalValue(
-      representativeStudentsRow,
-      'VŠKP-typ A: Katedra obhajoby - kod'
-    )
-    const committeesDefenseDepartmentCode = readOptionalValue(committeeRow, 'Kat')
-    if (studentsDefenseDepartmentCode) {
-      assertFieldEquality(
-        committeeName,
-        {
-          source: representativeStudentsRow,
-          column: 'VŠKP-typ A: Katedra obhajoby - kod',
-          value: studentsDefenseDepartmentCode
-        },
-        {
-          source: committeeRow,
-          column: 'Kat',
-          value: committeesDefenseDepartmentCode ?? ''
-        },
-        'COMMITTEE_FIELD_MISMATCH'
-      )
-    }
-
-    const studentsDefenseDepartmentName = readOptionalValue(
-      representativeStudentsRow,
-      'VŠKP-typ A: Katedra obhajoby - název'
-    )
-    const defenseDepartmentCode = studentsDefenseDepartmentCode ?? committeesDefenseDepartmentCode ?? ''
-    if (defenseDepartmentCode.length < 1) {
-      throwMappingError('MISSING_REQUIRED_VALUE', representativeStudentsRow, {
-        column: 'VŠKP-typ A: Katedra obhajoby - kod',
-        context: {
-          reason: 'required_value_is_empty',
-          fallbackColumn: 'Kat'
-        }
-      })
-    }
-    const defenseDepartmentName =
-      studentsDefenseDepartmentName ?? resolveEditorDepartmentNameByCode(defenseDepartmentCode) ?? ''
-
     const studyProgramTypeValue = readRequiredValue(representativeStudentsRow, 'St. program - typ')
     const studyProgramType = parseStudyProgramType(studyProgramTypeValue)
     if (!studyProgramType) {
@@ -236,8 +196,6 @@ export function mapCommittees(
       studyProgramType,
       specializationName: committeesSpecializationName,
       specializationCode: normalizeSpecializationCode(readRequiredValue(representativeStudentsRow, 'Obor/spec - kód')),
-      defenseDepartmentCode,
-      defenseDepartmentName,
       chairName: readRequiredValue(representativeStudentsRow, 'Komise - předseda'),
       viceChairName: readRequiredValue(representativeStudentsRow, 'Komise - místopředseda'),
       member1Name: readRequiredValue(representativeStudentsRow, 'Komise - člen 1'),

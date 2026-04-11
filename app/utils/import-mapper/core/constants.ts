@@ -7,8 +7,6 @@ export const COMMITTEE_CONSISTENCY_CHECK_COLUMNS: readonly string[] = [
   'St. program - typ',
   'Obor/spec - název',
   'Obor/spec - kód',
-  'VŠKP-typ A: Katedra obhajoby - kod',
-  'VŠKP-typ A: Katedra obhajoby - název',
   'Jazyk výuky',
   'Komise - předseda',
   'Komise - místopředseda',

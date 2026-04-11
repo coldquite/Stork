@@ -101,8 +101,6 @@ export const IMPORT_SCHEMAS: ImportSchemaMap = {
     'Komise - člen 1',
     'Komise - člen 2',
     'Komise - člen 3',
-    'VŠKP-typ A: Katedra obhajoby - kod',
-    'VŠKP-typ A: Katedra obhajoby - název',
     'Obor/spec - kód',
     'Obor/spec - název',
     'St. program - kód',

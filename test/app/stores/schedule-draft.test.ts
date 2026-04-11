@@ -9,13 +9,18 @@ import type {
 import type { ScheduleDraftOperationErrorCode } from '~/types/schedule-draft'
 import { useScheduleDraftStore } from '~/stores/schedule-draft'
 
-const { requestFetchMock } = vi.hoisted(() => ({
-  requestFetchMock: vi.fn()
+const { requestFetchMock, captureExceptionMock } = vi.hoisted(() => ({
+  requestFetchMock: vi.fn(),
+  captureExceptionMock: vi.fn()
 }))
 
 mockNuxtImport('useRequestFetch', () => {
   return () => requestFetchMock
 })
+
+vi.mock('@sentry/nuxt', () => ({
+  captureException: captureExceptionMock
+}))
 
 async function expectRejectsWithCode(promise: Promise<unknown>, code: ScheduleDraftOperationErrorCode): Promise<void> {
   await expect(promise).rejects.toMatchObject({ code })
@@ -41,9 +46,7 @@ function createApiSchedule(seed = 'A'): TimeScheduleDto {
         studyProgramName: `Study program ${seed}`,
         studyProgramType: 'BACHELOR',
         specializationName: `Specialization ${seed}`,
-        specializationCode: `SPEC-${seed}`,
-        defenseDepartmentCode: `KAT-${seed}`,
-        defenseDepartmentName: `Department ${seed}`,
+        specializationCode: 'BI-SI21',
         chairName: 'Předseda',
         viceChairName: 'Místopředseda',
         member1Name: 'Člen 1',
@@ -72,7 +75,7 @@ function createApiSchedule(seed = 'A'): TimeScheduleDto {
               studyProgramName: `Study program ${seed}`,
               studyProgramType: 'BACHELOR',
               specializationName: 'Softwarové inženýrství',
-              specializationCode: `SPEC-${seed}`,
+              specializationCode: 'BI-SI21',
               studyLanguage: 'CZECH',
               repeatType: 'NONE',
               prepareMinutes: 45,
@@ -115,6 +118,7 @@ describe('useScheduleDraftStore', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     requestFetchMock.mockReset()
+    captureExceptionMock.mockReset()
   })
 
   afterEach(() => {
@@ -452,6 +456,37 @@ describe('useScheduleDraftStore', () => {
     expect(store.isManualSaveLoading).toBe(false)
   })
 
+  it('blocks manual save when department cannot be resolved and reports to sentry', async () => {
+    const store = useScheduleDraftStore()
+    store.initializeFromSource(createApiSchedule('DEPARTMENT-BLOCK'))
+
+    if (!store.draft) {
+      throw new Error('Expected draft to be initialized')
+    }
+
+    const firstCommittee = store.draft.committees[0]
+    if (!firstCommittee) {
+      throw new Error('Expected first committee in draft')
+    }
+
+    firstCommittee.specializationCode = 'UNKNOWN-SPECIALIZATION'
+    await nextTick()
+
+    await expectRejectsWithCode(store.saveManualDraft(), 'REQUEST_FAILED')
+
+    expect(requestFetchMock).not.toHaveBeenCalled()
+    expect(store.manualSaveErrorCode).toBe('REQUEST_FAILED')
+    expect(captureExceptionMock).toHaveBeenCalledTimes(1)
+
+    const [reportedError, reportContext] = captureExceptionMock.mock.calls[0] ?? []
+    expect(reportedError).toBeInstanceOf(Error)
+    expect(reportContext).toMatchObject({
+      tags: {
+        workflow: 'schedule-draft-save'
+      }
+    })
+  })
+
   it('schedules autosave retry and recovers after transient autosave error', async () => {
     vi.useFakeTimers()
 
@@ -489,6 +524,51 @@ describe('useScheduleDraftStore', () => {
     expect(store.autoSaveErrorCode).toBeNull()
     expect(store.isDirty).toBe(false)
     expect(store.lastSavedAt).toBe('2026-06-11T12:00:00.000Z')
+  })
+
+  it('does not schedule autosave retry when department resolution fails', async () => {
+    vi.useFakeTimers()
+
+    try {
+      const store = useScheduleDraftStore()
+      store.setAutoSavePolicy({
+        enabled: true,
+        debounceMs: 50,
+        minIntervalMs: 0,
+        retryAfterErrorMs: 200
+      })
+      store.initializeFromSource(createApiSchedule('DEPARTMENT-AUTOSAVE'))
+
+      if (!store.draft) {
+        throw new Error('Expected draft to be initialized')
+      }
+
+      const firstCommittee = store.draft.committees[0]
+      if (!firstCommittee) {
+        throw new Error('Expected first committee in draft')
+      }
+
+      firstCommittee.specializationCode = 'UNKNOWN-SPECIALIZATION'
+      store.draft.name = 'Autosave without retry'
+      await nextTick()
+
+      expect(store.nextAutoSaveAt).not.toBeNull()
+
+      await vi.advanceTimersByTimeAsync(60)
+
+      expect(requestFetchMock).not.toHaveBeenCalled()
+      expect(store.autoSaveErrorCode).toBe('REQUEST_FAILED')
+      expect(store.nextAutoSaveAt).toBeNull()
+      expect(captureExceptionMock).toHaveBeenCalledTimes(1)
+
+      await vi.advanceTimersByTimeAsync(500)
+
+      expect(requestFetchMock).not.toHaveBeenCalled()
+      expect(store.nextAutoSaveAt).toBeNull()
+      expect(captureExceptionMock).toHaveBeenCalledTimes(1)
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it('resets isDraftLoading when load by id fails', async () => {

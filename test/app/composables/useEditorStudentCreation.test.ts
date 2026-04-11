@@ -75,8 +75,6 @@ function createCommittee(options: { studyProgramType?: StudyProgramTypeDto } = {
     studyProgramType,
     specializationName: 'Softwarové inženýrství 2021',
     specializationCode: 'BI-SI.21',
-    defenseDepartmentCode: '18102',
-    defenseDepartmentName: 'Katedra softwarového inženýrství',
     chairName: 'Předseda',
     viceChairName: 'Místopředseda',
     member1Name: 'Člen 1',

@@ -24,8 +24,6 @@ function createPostPayload(nameSuffix: string): PostTimeScheduleRequestDto {
         studyProgramType: 'BACHELOR',
         specializationName: `Specialization ${nameSuffix}`,
         specializationCode: `SPEC-${nameSuffix}`,
-        defenseDepartmentCode: `KAT-${nameSuffix}`,
-        defenseDepartmentName: `Department ${nameSuffix}`,
         chairName: 'Předseda',
         viceChairName: 'Místopředseda',
         member1Name: 'Člen 1',

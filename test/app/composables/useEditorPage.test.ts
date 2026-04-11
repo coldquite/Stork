@@ -161,8 +161,6 @@ function createCommittee(options: {
     studyProgramType: options.studyProgramType ?? 'BACHELOR',
     specializationName: options.specializationName ?? 'Softwarové inženýrství 2021',
     specializationCode: options.specializationCode ?? 'BI-SI.21',
-    defenseDepartmentCode: '18102',
-    defenseDepartmentName: 'Katedra softwarového inženýrství',
     chairName: 'Předseda',
     viceChairName: 'Místopředseda',
     member1Name: 'Člen 1',
@@ -604,7 +602,7 @@ describe('useEditorPage', () => {
     expect(scheduleDraftStoreMock.draft?.committees).toHaveLength(3)
   })
 
-  it('creates committee with selected study fields and auto-filled department', async () => {
+  it('creates committee with selected study fields', async () => {
     const { useEditorPage } = await import('~/composables/editor/useEditorPage')
     const page = useEditorPage()
 
@@ -625,8 +623,6 @@ describe('useEditorPage', () => {
     expect(createdCommittee?.studyProgramName).toBe('Informatics')
     expect(createdCommittee?.specializationCode).toBe('NIE-SI')
     expect(createdCommittee?.specializationName).toBe('Software Engineering 2021')
-    expect(createdCommittee?.defenseDepartmentCode).toBe('18102')
-    expect(createdCommittee?.defenseDepartmentName).toBe('Katedra softwarového inženýrství')
     expect(createdCommittee?.room).toBeNull()
     expect(createdCommittee?.secretaryName).toBeNull()
     expect(createdCommittee?.chairName).toBe('')
@@ -1170,24 +1166,21 @@ describe('useEditorPage', () => {
     expect(page.committeeList.selectedCommittee.value?.studyProgramName).toBe('Informatika')
   })
 
-  it('clears study program, specialization and department when language changes to incompatible one', async () => {
+  it('clears study program and specialization when language changes to incompatible one', async () => {
     const { useEditorPage } = await import('~/composables/editor/useEditorPage')
     const page = useEditorPage()
 
     expect(page.committeeList.selectedCommittee.value?.studyProgramName).toBe('Informatika')
     expect(page.committeeList.selectedCommittee.value?.specializationCode).toBe('BI-SI.21')
-    expect(page.committeeList.selectedCommittee.value?.defenseDepartmentCode).toBe('18102')
 
     page.committeeFields.updateSelectedCommitteeLanguage('ENGLISH')
 
     expect(page.committeeList.selectedCommittee.value?.studyProgramName).toBe('')
     expect(page.committeeList.selectedCommittee.value?.specializationCode).toBe('')
     expect(page.committeeList.selectedCommittee.value?.specializationName).toBe('')
-    expect(page.committeeList.selectedCommittee.value?.defenseDepartmentCode).toBe('')
-    expect(page.committeeList.selectedCommittee.value?.defenseDepartmentName).toBe('')
   })
 
-  it('clears specialization and department when study program type changes', async () => {
+  it('clears specialization when study program type changes', async () => {
     const { useEditorPage } = await import('~/composables/editor/useEditorPage')
     const page = useEditorPage()
 
@@ -1201,8 +1194,6 @@ describe('useEditorPage', () => {
     expect(page.committeeList.selectedCommittee.value?.studyProgramName).toBe('Informatika')
     expect(page.committeeList.selectedCommittee.value?.specializationCode).toBe('')
     expect(page.committeeList.selectedCommittee.value?.specializationName).toBe('')
-    expect(page.committeeList.selectedCommittee.value?.defenseDepartmentCode).toBe('')
-    expect(page.committeeList.selectedCommittee.value?.defenseDepartmentName).toBe('')
   })
 
   it('updates selected committee specialization from selected study program', async () => {
@@ -1215,22 +1206,12 @@ describe('useEditorPage', () => {
 
     expect(page.committeeList.selectedCommittee.value?.specializationCode).toBe('BI-SI.21')
     expect(page.committeeList.selectedCommittee.value?.specializationName).toBe('Softwarové inženýrství 2021')
-    expect(page.committeeList.selectedCommittee.value?.defenseDepartmentCode).toBe('18102')
-    expect(page.committeeList.selectedCommittee.value?.defenseDepartmentName).toBe('Katedra softwarového inženýrství')
     expect(
       scheduleDraftStoreMock.draft?.committees.find((entry) => entry.localId === 'committee-early')?.specializationCode
     ).toBe('BI-SI.21')
     expect(
       scheduleDraftStoreMock.draft?.committees.find((entry) => entry.localId === 'committee-early')?.specializationName
     ).toBe('Softwarové inženýrství 2021')
-    expect(
-      scheduleDraftStoreMock.draft?.committees.find((entry) => entry.localId === 'committee-early')
-        ?.defenseDepartmentCode
-    ).toBe('18102')
-    expect(
-      scheduleDraftStoreMock.draft?.committees.find((entry) => entry.localId === 'committee-early')
-        ?.defenseDepartmentName
-    ).toBe('Katedra softwarového inženýrství')
   })
 
   it('saves to cloud using modal name and keeps current draft name unchanged', async () => {

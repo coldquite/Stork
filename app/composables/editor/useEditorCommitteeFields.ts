@@ -9,11 +9,9 @@ export function useEditorCommitteeFields(selectedCommittee: ComputedRef<Schedule
   const MIN_START_MINUTE = 0
   const MAX_START_MINUTE = 24 * 60 - 1
 
-  function clearCommitteeSpecializationAndDepartment(committee: ScheduleDraftCommittee): void {
+  function clearCommitteeSpecialization(committee: ScheduleDraftCommittee): void {
     committee.specializationCode = ''
     committee.specializationName = ''
-    committee.defenseDepartmentCode = ''
-    committee.defenseDepartmentName = ''
   }
 
   function withSelectedCommittee(action: (committee: ScheduleDraftCommittee) => void): void {
@@ -100,7 +98,7 @@ export function useEditorCommitteeFields(selectedCommittee: ComputedRef<Schedule
       }
 
       committee.studyProgramName = ''
-      clearCommitteeSpecializationAndDepartment(committee)
+      clearCommitteeSpecialization(committee)
     })
   }
 
@@ -115,7 +113,7 @@ export function useEditorCommitteeFields(selectedCommittee: ComputedRef<Schedule
         return
       }
 
-      clearCommitteeSpecializationAndDepartment(committee)
+      clearCommitteeSpecialization(committee)
 
       const allowedStudyProgramNames = resolveEditorStudyProgramNameOptions(
         committee.studyProgramType,
@@ -143,7 +141,7 @@ export function useEditorCommitteeFields(selectedCommittee: ComputedRef<Schedule
       }
 
       if (committee.studyProgramName !== normalizedStudyProgramName) {
-        clearCommitteeSpecializationAndDepartment(committee)
+        clearCommitteeSpecialization(committee)
       }
 
       committee.studyProgramName = normalizedStudyProgramName
@@ -156,8 +154,6 @@ export function useEditorCommitteeFields(selectedCommittee: ComputedRef<Schedule
       committee.specializationCode = normalizedSpecializationCode
       if (normalizedSpecializationCode.length < 1) {
         committee.specializationName = ''
-        committee.defenseDepartmentCode = ''
-        committee.defenseDepartmentName = ''
         return
       }
 
@@ -167,8 +163,6 @@ export function useEditorCommitteeFields(selectedCommittee: ComputedRef<Schedule
         normalizedSpecializationCode
       )
       committee.specializationName = specializationOption?.specializationName ?? normalizedSpecializationCode
-      committee.defenseDepartmentCode = specializationOption?.departmentCode ?? ''
-      committee.defenseDepartmentName = specializationOption?.departmentNameCs ?? ''
     })
   }
 

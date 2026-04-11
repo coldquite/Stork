@@ -118,8 +118,6 @@ function createCommittee(
     studyProgramType: 'BACHELOR',
     specializationName: 'Softwarové inženýrství',
     specializationCode: 'BI-SI.21',
-    defenseDepartmentCode: '18102',
-    defenseDepartmentName: 'KSI',
     chairName: 'Předseda',
     viceChairName: 'Místopředseda',
     member1Name: 'Člen 1',

@@ -20,6 +20,8 @@
  */
 
 import { addMilliseconds, differenceInMilliseconds, format, isValid, parseISO } from 'date-fns'
+import * as Sentry from '@sentry/nuxt'
+import { resolveEditorSpecializationOptionForDepartment } from '#shared/constants/editor'
 import type {
   PostCommitteeDto,
   PostCommitteeItemDto,
@@ -122,8 +124,6 @@ function toDraftCommittee(committee: DraftCommitteeSource): ScheduleDraftCommitt
     studyProgramType: committee.studyProgramType,
     specializationName: committee.specializationName,
     specializationCode: committee.specializationCode,
-    defenseDepartmentCode: committee.defenseDepartmentCode,
-    defenseDepartmentName: committee.defenseDepartmentName,
     chairName: committee.chairName,
     viceChairName: committee.viceChairName,
     member1Name: committee.member1Name,
@@ -200,8 +200,6 @@ function toPostCommittee(committee: ScheduleDraftCommittee): PostCommitteeDto {
     studyProgramType: committee.studyProgramType,
     specializationName: committee.specializationName,
     specializationCode: committee.specializationCode,
-    defenseDepartmentCode: committee.defenseDepartmentCode,
-    defenseDepartmentName: committee.defenseDepartmentName,
     chairName: committee.chairName,
     viceChairName: committee.viceChairName,
     member1Name: committee.member1Name,
@@ -214,11 +212,107 @@ function toPostCommittee(committee: ScheduleDraftCommittee): PostCommitteeDto {
   }
 }
 
+interface ScheduleDraftDepartmentResolutionIssue {
+  scope: 'COMMITTEE' | 'STUDENT'
+  committeeName: string
+  studyProgramType: PostCommitteeDto['studyProgramType']
+  studyProgramName: string
+  specializationCode: string
+  studentName: string | null
+  studentEmail: string | null
+}
+
+class ScheduleDraftDepartmentResolutionError extends Error {
+  readonly issues: ScheduleDraftDepartmentResolutionIssue[]
+
+  constructor(issues: ScheduleDraftDepartmentResolutionIssue[]) {
+    super('SCHEDULE_DRAFT_DEPARTMENT_RESOLUTION_FAILED')
+    this.name = 'ScheduleDraftDepartmentResolutionError'
+    this.issues = issues
+  }
+}
+
+function resolveStudentDisplayName(student: PostStudentItemDto): string {
+  const normalizedName = `${student.lastName.trim()} ${student.firstName.trim()}`.trim()
+  return normalizedName.length > 0 ? normalizedName : 'Unknown student'
+}
+
+function collectDraftDepartmentResolutionIssues(draft: ScheduleDraft): ScheduleDraftDepartmentResolutionIssue[] {
+  const issues: ScheduleDraftDepartmentResolutionIssue[] = []
+
+  for (const committee of draft.committees) {
+    const committeeDepartment = resolveEditorSpecializationOptionForDepartment(
+      committee.studyProgramType,
+      committee.studyProgramName,
+      committee.specializationCode
+    )
+    if (!committeeDepartment) {
+      issues.push({
+        scope: 'COMMITTEE',
+        committeeName: committee.name,
+        studyProgramType: committee.studyProgramType,
+        studyProgramName: committee.studyProgramName,
+        specializationCode: committee.specializationCode,
+        studentName: null,
+        studentEmail: null
+      })
+    }
+
+    for (const item of committee.items) {
+      if (item.type !== 'STUDENT') {
+        continue
+      }
+
+      const studentDepartment = resolveEditorSpecializationOptionForDepartment(
+        item.student.studyProgramType,
+        item.student.studyProgramName,
+        item.student.specializationCode
+      )
+      if (studentDepartment) {
+        continue
+      }
+
+      issues.push({
+        scope: 'STUDENT',
+        committeeName: committee.name,
+        studyProgramType: item.student.studyProgramType,
+        studyProgramName: item.student.studyProgramName,
+        specializationCode: item.student.specializationCode,
+        studentName: resolveStudentDisplayName(item.student),
+        studentEmail: item.student.email
+      })
+    }
+  }
+
+  return issues
+}
+
+function assertDraftDepartmentsResolvable(draft: ScheduleDraft): void {
+  const issues = collectDraftDepartmentResolutionIssues(draft)
+  if (issues.length < 1) {
+    return
+  }
+
+  const error = new ScheduleDraftDepartmentResolutionError(issues)
+  Sentry.captureException(error, {
+    tags: {
+      workflow: 'schedule-draft-save'
+    },
+    extra: {
+      issues
+    }
+  })
+
+  throw createScheduleDraftOperationError('REQUEST_FAILED', error)
+}
+
 function toPostPayload(
   draft: ScheduleDraft,
   scheduleType: TimeScheduleTypeDto,
   explicitName?: string | null
 ): PostTimeScheduleRequestDto {
+  assertDraftDepartmentsResolvable(draft)
+
   const payload = deepClone(draft)
   const targetName = explicitName !== undefined ? explicitName : payload.name
 
@@ -256,6 +350,18 @@ function resolveScheduleDraftErrorCode(
   }
 
   return fallbackCode
+}
+
+function isScheduleDraftDepartmentResolutionError(error: unknown): boolean {
+  if (error instanceof ScheduleDraftDepartmentResolutionError) {
+    return true
+  }
+
+  if (error instanceof ScheduleDraftOperationError) {
+    return error.cause instanceof ScheduleDraftDepartmentResolutionError
+  }
+
+  return false
 }
 
 export const useScheduleDraftStore = defineStore(
@@ -440,7 +546,9 @@ export const useScheduleDraftStore = defineStore(
         return await persistDraft('AUTO', createAutoScheduleName(draft.value.name))
       } catch (error: unknown) {
         autoSaveErrorCode.value = resolveScheduleDraftErrorCode(error, 'REQUEST_FAILED')
-        scheduleAutoSave(autoSavePolicy.value.retryAfterErrorMs)
+        if (!isScheduleDraftDepartmentResolutionError(error)) {
+          scheduleAutoSave(autoSavePolicy.value.retryAfterErrorMs)
+        }
         return null
       } finally {
         isAutoSaveRunning.value = false

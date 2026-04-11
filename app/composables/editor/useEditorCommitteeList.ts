@@ -1,4 +1,7 @@
-import { DEFAULT_COMMITTEE_START_MINUTE } from '#shared/constants/editor'
+import {
+  DEFAULT_COMMITTEE_START_MINUTE,
+  resolveEditorSpecializationOptionForDepartment
+} from '#shared/constants/editor'
 import type { StudyLanguageDto, StudyProgramTypeDto } from '#shared/types/time-schedules'
 import { useEditorCommitteeFields } from '~/composables/editor/useEditorCommitteeFields'
 import { useValidationField } from '~/composables/useValidationField'
@@ -109,10 +112,14 @@ export function useEditorCommitteeList() {
 
     const hasStudyProgram = committeeDraft.studyProgramName.trim().length > 0
     const hasSpecialization = committeeDraft.specializationCode.trim().length > 0
-    const hasDepartment =
-      committeeDraft.defenseDepartmentCode.trim().length > 0 || committeeDraft.defenseDepartmentName.trim().length > 0
+    const hasResolvedDepartment =
+      resolveEditorSpecializationOptionForDepartment(
+        committeeDraft.studyProgramType,
+        committeeDraft.studyProgramName,
+        committeeDraft.specializationCode
+      ) !== null
 
-    return !hasStudyProgram || !hasSpecialization || !hasDepartment
+    return !hasStudyProgram || !hasSpecialization || !hasResolvedDepartment
   })
 
   function validateCommitteeName(nextName: string, committeeId: string): string | null {
@@ -149,8 +156,6 @@ export function useEditorCommitteeList() {
       studyProgramType: lastCommittee?.studyProgramType ?? 'BACHELOR',
       specializationName: lastCommittee?.specializationName ?? '',
       specializationCode: lastCommittee?.specializationCode ?? '',
-      defenseDepartmentCode: lastCommittee?.defenseDepartmentCode ?? '',
-      defenseDepartmentName: lastCommittee?.defenseDepartmentName ?? '',
       chairName: '',
       viceChairName: '',
       member1Name: '',
@@ -271,8 +276,6 @@ export function useEditorCommitteeList() {
       studyProgramType: createDraft.studyProgramType,
       specializationName: createDraft.specializationName,
       specializationCode: createDraft.specializationCode,
-      defenseDepartmentCode: createDraft.defenseDepartmentCode,
-      defenseDepartmentName: createDraft.defenseDepartmentName,
       chairName: '',
       viceChairName: '',
       member1Name: '',

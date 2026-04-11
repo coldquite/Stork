@@ -79,9 +79,6 @@ model Committee {
   specializationName String // studenti-komise: Obor/spec - název + komise: Název oboru/specializace [e.g. Softwarové inženýrství 2021]
   specializationCode String // studenti-komise: Obor/spec - kód + komise: St. program (kód, název) [e.g. BI-SI21]
 
-  defenseDepartmentCode String // studenti-komise: VŠKP-typ A: Katedra obhajoby - kod + komise: Kat
-  defenseDepartmentName String // studenti-komise: VŠKP-typ A: Katedra obhajoby - název
-
   chairName     String // studenti-komise: Komise - předseda (preprocess)
   viceChairName String // studenti-komise: Komise - místopředseda (preprocess)
   member1Name   String // studenti-komise: Komise - člen 1 (preprocess)

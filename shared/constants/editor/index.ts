@@ -19,5 +19,7 @@ export { EDITOR_SPECIALIZATION_RAW } from './specialization-raw'
 export {
   resolveEditorSpecializationOptions,
   resolveEditorStudyProgramNameOptions,
-  resolveEditorSpecializationOptionByCode
+  resolveEditorSpecializationOptionByCode,
+  normalizeEditorSpecializationCodeForDepartmentLookup,
+  resolveEditorSpecializationOptionForDepartment
 } from './resolve'

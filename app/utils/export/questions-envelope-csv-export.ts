@@ -1,7 +1,6 @@
 import Papa from 'papaparse'
 import {
-  EDITOR_SPECIALIZATION_OPTIONS_BY_TYPE_AND_STUDY_PROGRAM_NAME,
-  resolveEditorSpecializationOptionByCode,
+  resolveEditorSpecializationOptionForDepartment,
   type EditorSpecializationOption
 } from '#shared/constants/editor'
 import type { StudyProgramTypeDto } from '#shared/types/time-schedules'
@@ -79,41 +78,8 @@ const CZECH_TIME_ZONE = 'Europe/Prague'
 const FILE_NAME_UNSAFE_CHARACTERS_REGEX = /[<>:"/\\|?*]/g
 const FILE_NAME_TRAILING_DOTS_REGEX = /\.+$/u
 
-const SPECIALIZATION_OPTIONS_BY_CODE = (() => {
-  const optionsByCode = new Map<string, EditorSpecializationOption>()
-  const optionsByType = EDITOR_SPECIALIZATION_OPTIONS_BY_TYPE_AND_STUDY_PROGRAM_NAME
-
-  for (const optionsByProgramName of Object.values(optionsByType)) {
-    for (const options of Object.values(optionsByProgramName)) {
-      for (const option of options) {
-        if (!optionsByCode.has(option.specializationCode)) {
-          optionsByCode.set(option.specializationCode, option)
-        }
-      }
-    }
-  }
-
-  return optionsByCode
-})()
-
 function normalizeCsvCell(value: string | null | undefined): string {
   return value?.trim() ?? ''
-}
-
-function normalizeSpecializationCodeForDepartmentLookup(value: string): string {
-  const normalizedValue = normalizeRequiredText(value).toUpperCase()
-  const matchedValue = normalizedValue.match(/^(.*?)(\d+)$/)
-  if (!matchedValue) {
-    return normalizedValue
-  }
-
-  const prefix = matchedValue[1] ?? ''
-  const digits = matchedValue[2] ?? ''
-  if (prefix.endsWith('.')) {
-    return `${prefix}${digits}`
-  }
-
-  return `${prefix}.${digits}`
 }
 
 function resolveStudentDepartmentFromSpecialization(
@@ -121,21 +87,7 @@ function resolveStudentDepartmentFromSpecialization(
   studyProgramName: string,
   specializationCode: string
 ): EditorSpecializationOption | null {
-  const normalizedSpecializationCode = normalizeSpecializationCodeForDepartmentLookup(specializationCode)
-  if (normalizedSpecializationCode.length < 1) {
-    return null
-  }
-
-  const specializationInCurrentProgram = resolveEditorSpecializationOptionByCode(
-    studyProgramType,
-    studyProgramName,
-    normalizedSpecializationCode
-  )
-  if (specializationInCurrentProgram) {
-    return specializationInCurrentProgram
-  }
-
-  return SPECIALIZATION_OPTIONS_BY_CODE.get(normalizedSpecializationCode) ?? null
+  return resolveEditorSpecializationOptionForDepartment(studyProgramType, studyProgramName, specializationCode)
 }
 
 function resolveStudentFullName(lastName: string, firstName: string): string {

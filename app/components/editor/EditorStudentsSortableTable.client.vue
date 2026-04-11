@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
 import { useSortable } from '@vueuse/integrations/useSortable'
+import { resolveEditorSpecializationOptionForDepartment } from '#shared/constants/editor'
 import type {
   PauseTypeDto,
   RepeatTypeDto,
@@ -102,6 +103,7 @@ const inlineEditInputClass = 'w-full [&_input]:text-sm'
 const inlineEditSelectClass = 'w-full [&_[role=combobox]]:text-sm [&_[role=combobox]_span]:text-sm'
 const inlineReadonlyFrameClass = 'w-full min-h-8 px-2.5 py-1.5'
 const inlineReadonlySelectFrameClass = `${inlineReadonlyFrameClass} pe-9`
+const invalidInlineReadonlySelectFrameClass = `${inlineReadonlySelectFrameClass} ring-2 ring-inset ring-error/70 dark:ring-error/85`
 const inlineReadonlyTextClass = 'block text-sm whitespace-nowrap'
 const thesisCellWrapperClass = `${STUDENT_TABLE_THESIS_COLUMN_WIDTH_CLASS} cursor-pointer`
 const thesisTitleWarningMarker = '[?]'
@@ -116,6 +118,9 @@ const studentTableTbodyBaseClass =
   'editor-students-tbody divide-y divide-default [&_tr:nth-child(odd)]:bg-primary/5 [&_tr:nth-child(even)]:bg-white dark:[&_tr:nth-child(odd)]:bg-primary/10 dark:[&_tr:nth-child(even)]:bg-default'
 const studentTableTbodyHoverClass =
   'editor-students-hover-accent [&_tr:hover]:bg-primary/12 dark:[&_tr:hover]:bg-primary/18'
+const invalidSelectUi = {
+  base: 'ring-2 ring-inset ring-error/70 dark:ring-error/85'
+} as const
 
 function syncFromParent(): void {
   localStudents.value = props.modelValue.slice()
@@ -127,6 +132,20 @@ function isStudentRow(row: EditorTableRow): row is EditorStudentTableRow {
 
 function isPauseRow(row: EditorTableRow): row is EditorPauseTableRow {
   return row.kind === 'PAUSE'
+}
+
+function isStudentDepartmentResolvable(row: EditorStudentTableRow): boolean {
+  return (
+    resolveEditorSpecializationOptionForDepartment(
+      row.studyProgramType,
+      row.studyProgramName,
+      row.specializationCode
+    ) !== null
+  )
+}
+
+function resolveSpecializationDisplayFrameClass(row: EditorStudentTableRow): string {
+  return isStudentDepartmentResolvable(row) ? inlineReadonlySelectFrameClass : invalidInlineReadonlySelectFrameClass
 }
 
 function clearRowHighlightTimer(): void {
@@ -1028,7 +1047,7 @@ onBeforeUnmount(() => {
           :model-value="row.original.specializationCode"
           cell-wrapper-class="min-w-32 cursor-pointer"
           :input-class="inlineEditSelectClass"
-          :display-frame-class="inlineReadonlySelectFrameClass"
+          :display-frame-class="resolveSpecializationDisplayFrameClass(row.original)"
           mode="text"
           @activate="activateRow(row.original.id)"
         >
@@ -1041,6 +1060,7 @@ onBeforeUnmount(() => {
               :search-input="false"
               size="md"
               :class="inlineEditSelectClass"
+              :ui="isStudentDepartmentResolvable(row.original) ? undefined : invalidSelectUi"
               @update:model-value="(value) => updateSpecializationCode(row.original.id, value)"
             />
           </template>
