@@ -69,6 +69,7 @@ describe('useEditorStudentTable', () => {
       'lastName',
       'titlesAfter',
       'email',
+      'specializationCode',
       'repeatType',
       'prepareMinutes',
       'examMinutes',
@@ -80,8 +81,7 @@ describe('useEditorStudentTable', () => {
       'additionalReviewerName',
       'studyLanguage',
       'studyProgramType',
-      'studyProgramName',
-      'specializationCode'
+      'studyProgramName'
     ])
   })
 
@@ -98,6 +98,7 @@ describe('useEditorStudentTable', () => {
       'lastName',
       'titlesAfter',
       'email',
+      'specializationCode',
       'repeatType',
       'prepareMinutes',
       'examMinutes',
@@ -110,8 +111,7 @@ describe('useEditorStudentTable', () => {
       'additionalReviewerName',
       'studyLanguage',
       'studyProgramType',
-      'studyProgramName',
-      'specializationCode'
+      'studyProgramName'
     ])
   })
 
