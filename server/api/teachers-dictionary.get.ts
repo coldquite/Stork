@@ -89,7 +89,7 @@ export default defineEventHandler(
       }
     }
 
-    const entries = await prisma.teachersDictionary.findMany({
+    return prisma.teachersDictionary.findMany({
       where: Object.keys(where).length > 0 ? where : undefined,
       orderBy: [{ normalizedLookupKey: 'asc' }, { id: 'asc' }],
       select: {
@@ -99,7 +99,5 @@ export default defineEventHandler(
         isCustom: true
       }
     })
-
-    return entries
   }
 )

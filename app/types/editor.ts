@@ -46,7 +46,7 @@ export interface EditorPauseTableRow {
 }
 
 export type EditorTableRow = EditorStudentTableRow | EditorPauseTableRow
-export type StudentRow = EditorStudentTableRow
+export type EditorStudentsTableViewMode = 'OPTIMIZED' | 'MAXIMIZED'
 
 export interface EditorStudentSearchResult {
   studentId: string

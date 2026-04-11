@@ -1,12 +1,12 @@
 import { mockNuxtImport } from '@nuxt/test-utils/runtime'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { EditorStudentsTableViewMode } from '~/types/editor'
 import type {
   ScheduleDraft,
   ScheduleDraftCommittee,
   ScheduleDraftItem,
   ScheduleDraftThesisTitleDisplayMode
 } from '~/types/schedule-draft'
-import type { EditorStudentsTableViewMode } from '~/types/editor-table-preferences'
 
 const { i18nTranslateMock } = vi.hoisted(() => ({
   i18nTranslateMock: vi.fn((key: string) => key)

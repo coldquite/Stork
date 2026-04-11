@@ -1,8 +1,8 @@
 import type { ScheduleDraftThesisTitleDisplayMode } from '~/types/schedule-draft'
-import type { EditorStudentsTableViewMode } from '~/types/editor-table-preferences'
+import type { EditorStudentsTableViewMode } from '~/types/editor'
 
 /**
- * Stores global editor table UI preferences independent from any particular schedule draft.
+ * Stores global editor table UI preferences independent of any particular schedule draft.
  * Values are persisted in localStorage and intentionally survive logout.
  */
 export const useEditorTablePreferencesStore = defineStore(

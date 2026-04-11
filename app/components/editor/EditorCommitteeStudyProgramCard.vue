@@ -183,7 +183,7 @@ function emitSpecializationCode(value: string): void {
           placeholder="—"
           :ui="isStudyProgramInvalid ? invalidSelectUi : undefined"
           :disabled="!props.selectedCommittee"
-          @update:model-value="(value) => emitStudyProgramName(String(value ?? ''))"
+          @update:model-value="emitStudyProgramName(String($event ?? ''))"
         />
       </div>
 
@@ -199,7 +199,7 @@ function emitSpecializationCode(value: string): void {
           placeholder="—"
           :ui="isSpecializationInvalid ? invalidSelectUi : undefined"
           :disabled="isSpecializationPickerDisabled"
-          @update:model-value="(value) => emitSpecializationCode(String(value ?? ''))"
+          @update:model-value="emitSpecializationCode(String($event ?? ''))"
         />
       </div>
 
@@ -214,7 +214,7 @@ function emitSpecializationCode(value: string): void {
           :class="isDepartmentInvalid ? invalidInputUi.base : undefined"
         >
           <span
-            class="bg-default text-highlighted ring-accented pointer-events-none w-full appearance-none rounded-md border-0 px-2.5 py-1.5 text-sm/4 break-words whitespace-normal opacity-75 ring ring-inset md:text-xs"
+            class="bg-default text-highlighted ring-accented pointer-events-none w-full appearance-none rounded-md border-0 px-2.5 py-1.5 text-sm/4 wrap-break-word whitespace-normal opacity-75 ring ring-inset md:text-xs"
           >
             {{ committeeDepartmentDisplayLabel }}
           </span>

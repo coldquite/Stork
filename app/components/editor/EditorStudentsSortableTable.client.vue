@@ -280,7 +280,7 @@ function applySortableOptions(): void {
     isDragging.value = false
     suppressHoverAfterDragUntilPointerMove()
 
-    nextTick(() => {
+    void nextTick(() => {
       // Drag can finish after committee switch; ignore stale emit to avoid writing rows to another committee.
       if (dragCommitteeLocalId !== props.committeeLocalId) {
         return
@@ -300,7 +300,7 @@ watch(
 
     // useSortable initializes Sortable for target in a post-flush watch.
     // Re-applying options here ensures handlers survive tbody rebinds.
-    nextTick(() => {
+    void nextTick(() => {
       applySortableOptions()
     })
   },
@@ -783,6 +783,10 @@ function requestMoveStudent(studentId: string): void {
   emit('requestMoveStudent', studentId)
 }
 
+function getEditorRowId(row: EditorTableRow): string {
+  return row.id
+}
+
 onMounted(() => {
   window.addEventListener('click', handleDocumentClick)
 })
@@ -801,7 +805,7 @@ onBeforeUnmount(() => {
       :data="localStudents"
       :columns="props.columns"
       :meta="tableMeta"
-      :get-row-id="(row) => row.id"
+      :get-row-id="getEditorRowId"
       :ui="{
         tbody: tbodyUiClass,
         separator: 'bg-default'
@@ -888,7 +892,7 @@ onBeforeUnmount(() => {
           :input-class="inlineEditInputClass"
           mode="text"
           @activate="activateRow(row.original.id)"
-          @update:model-value="(value) => updateTextField(row.original.id, 'titlesBefore', value)"
+          @update:model-value="updateTextField(row.original.id, 'titlesBefore', $event)"
         />
       </template>
 
@@ -901,7 +905,7 @@ onBeforeUnmount(() => {
           :input-class="inlineEditInputClass"
           mode="text"
           @activate="activateRow(row.original.id)"
-          @update:model-value="(value) => updateTextField(row.original.id, 'lastName', value)"
+          @update:model-value="updateTextField(row.original.id, 'lastName', $event)"
         />
       </template>
 
@@ -914,7 +918,7 @@ onBeforeUnmount(() => {
           :input-class="inlineEditInputClass"
           mode="text"
           @activate="activateRow(row.original.id)"
-          @update:model-value="(value) => updateTextField(row.original.id, 'firstName', value)"
+          @update:model-value="updateTextField(row.original.id, 'firstName', $event)"
         />
       </template>
 
@@ -927,7 +931,7 @@ onBeforeUnmount(() => {
           :input-class="inlineEditInputClass"
           mode="text"
           @activate="activateRow(row.original.id)"
-          @update:model-value="(value) => updateTextField(row.original.id, 'email', value)"
+          @update:model-value="updateTextField(row.original.id, 'email', $event)"
         />
       </template>
 
@@ -940,7 +944,7 @@ onBeforeUnmount(() => {
           :input-class="inlineEditInputClass"
           mode="text"
           @activate="activateRow(row.original.id)"
-          @update:model-value="(value) => updateTextField(row.original.id, 'titlesAfter', value)"
+          @update:model-value="updateTextField(row.original.id, 'titlesAfter', $event)"
         />
       </template>
 
@@ -964,7 +968,7 @@ onBeforeUnmount(() => {
               :search-input="false"
               size="md"
               :class="inlineEditSelectClass"
-              @update:model-value="(value) => updateStudyLanguage(row.original.id, value)"
+              @update:model-value="updateStudyLanguage(row.original.id, $event)"
             />
           </template>
           <template #display>
@@ -996,8 +1000,8 @@ onBeforeUnmount(() => {
                 :search-input="false"
                 size="md"
                 :class="inlineEditSelectClass"
-                @update:model-value="(value) => updateStudyProgramType(row.original.id, value)"
-                @update:open="(isOpen) => updateStudyProgramTypeSelectOpen(row.original.id, isOpen)"
+                @update:model-value="updateStudyProgramType(row.original.id, $event)"
+                @update:open="updateStudyProgramTypeSelectOpen(row.original.id, $event)"
               />
 
               <EditorRepeatTypeDurationWarningPopover :open="isStudyProgramTypeSelectOpen(row.original.id)" />
@@ -1029,7 +1033,7 @@ onBeforeUnmount(() => {
               :search-input="false"
               size="md"
               :class="inlineEditSelectClass"
-              @update:model-value="(value) => updateStudyProgramName(row.original.id, value)"
+              @update:model-value="updateStudyProgramName(row.original.id, $event)"
             />
           </template>
           <template #display>
@@ -1061,7 +1065,7 @@ onBeforeUnmount(() => {
               size="md"
               :class="inlineEditSelectClass"
               :ui="isStudentDepartmentResolvable(row.original) ? undefined : invalidSelectUi"
-              @update:model-value="(value) => updateSpecializationCode(row.original.id, value)"
+              @update:model-value="updateSpecializationCode(row.original.id, $event)"
             />
           </template>
           <template #display>
@@ -1083,7 +1087,7 @@ onBeforeUnmount(() => {
           mode="text"
           multiline
           @activate="activateRow(row.original.id)"
-          @update:model-value="(value) => updateTextField(row.original.id, 'thesisTitle', value)"
+          @update:model-value="updateTextField(row.original.id, 'thesisTitle', $event)"
         />
       </template>
 
@@ -1098,7 +1102,7 @@ onBeforeUnmount(() => {
           mode="text"
           multiline
           @activate="activateRow(row.original.id)"
-          @update:model-value="(value) => updateTextField(row.original.id, 'thesisTitleLocal', value)"
+          @update:model-value="updateTextField(row.original.id, 'thesisTitleLocal', $event)"
         />
       </template>
 
@@ -1113,7 +1117,7 @@ onBeforeUnmount(() => {
           mode="text"
           multiline
           @activate="activateRow(row.original.id)"
-          @update:model-value="(value) => updateTextField(row.original.id, 'thesisTitleEn', value)"
+          @update:model-value="updateTextField(row.original.id, 'thesisTitleEn', $event)"
         />
       </template>
 
@@ -1137,7 +1141,7 @@ onBeforeUnmount(() => {
               :search-input="false"
               size="md"
               :class="inlineEditSelectClass"
-              @update:model-value="(value) => updateThesisLanguage(row.original.id, value)"
+              @update:model-value="updateThesisLanguage(row.original.id, $event)"
             />
           </template>
           <template #display>
@@ -1157,7 +1161,7 @@ onBeforeUnmount(() => {
           :input-class="inlineEditInputClass"
           mode="text"
           @activate="activateRow(row.original.id)"
-          @update:model-value="(value) => updateTextField(row.original.id, 'supervisorName', value)"
+          @update:model-value="updateTextField(row.original.id, 'supervisorName', $event)"
         />
       </template>
 
@@ -1170,7 +1174,7 @@ onBeforeUnmount(() => {
           :input-class="inlineEditInputClass"
           mode="text"
           @activate="activateRow(row.original.id)"
-          @update:model-value="(value) => updateTextField(row.original.id, 'additionalSupervisorName', value)"
+          @update:model-value="updateTextField(row.original.id, 'additionalSupervisorName', $event)"
         />
       </template>
 
@@ -1183,7 +1187,7 @@ onBeforeUnmount(() => {
           :input-class="inlineEditInputClass"
           mode="text"
           @activate="activateRow(row.original.id)"
-          @update:model-value="(value) => updateTextField(row.original.id, 'reviewerName', value)"
+          @update:model-value="updateTextField(row.original.id, 'reviewerName', $event)"
         />
       </template>
 
@@ -1196,7 +1200,7 @@ onBeforeUnmount(() => {
           :input-class="inlineEditInputClass"
           mode="text"
           @activate="activateRow(row.original.id)"
-          @update:model-value="(value) => updateTextField(row.original.id, 'additionalReviewerName', value)"
+          @update:model-value="updateTextField(row.original.id, 'additionalReviewerName', $event)"
         />
       </template>
 
@@ -1221,8 +1225,8 @@ onBeforeUnmount(() => {
                 :search-input="false"
                 size="md"
                 :class="inlineEditSelectClass"
-                @update:model-value="(value) => updateRepeatType(row.original.id, value)"
-                @update:open="(isOpen) => updateRepeatTypeSelectOpen(row.original.id, isOpen)"
+                @update:model-value="updateRepeatType(row.original.id, $event)"
+                @update:open="updateRepeatTypeSelectOpen(row.original.id, $event)"
               />
 
               <EditorRepeatTypeDurationWarningPopover :open="isRepeatTypeSelectOpen(row.original.id)" />
@@ -1245,7 +1249,7 @@ onBeforeUnmount(() => {
           :input-class="inlineEditInputClass"
           mode="number"
           @activate="activateRow(row.original.id)"
-          @update:model-value="(value) => updateMinuteField(row.original.id, 'prepareMinutes', value)"
+          @update:model-value="updateMinuteField(row.original.id, 'prepareMinutes', $event)"
         />
       </template>
 
@@ -1258,7 +1262,7 @@ onBeforeUnmount(() => {
           :input-class="inlineEditInputClass"
           mode="number"
           @activate="activateRow(row.original.id)"
-          @update:model-value="(value) => updateMinuteField(row.original.id, 'examMinutes', value)"
+          @update:model-value="updateMinuteField(row.original.id, 'examMinutes', $event)"
         />
       </template>
 

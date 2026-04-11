@@ -174,7 +174,7 @@ describe('auth API endpoints', () => {
       getCookieMock.mockReturnValue(undefined)
 
       const handler = await importSessionHandler()
-      const response = await handler({} as never)
+      const response = handler({} as never)
 
       expect(response).toEqual({
         authenticated: false,
@@ -190,7 +190,7 @@ describe('auth API endpoints', () => {
 
       const event = {} as never
       const handler = await importSessionHandler()
-      const response = await handler(event)
+      const response = handler(event)
 
       expect(deleteCookieMock).toHaveBeenCalledWith(event, 'stork_session', { maxAge: 0 })
       expect(response).toEqual({
@@ -214,7 +214,7 @@ describe('auth API endpoints', () => {
 
       const event = {} as never
       const handler = await importSessionHandler()
-      const response = await handler(event)
+      const response = handler(event)
 
       expect(createSessionTokenMock).toHaveBeenCalledWith(
         {
@@ -387,7 +387,7 @@ describe('auth API endpoints', () => {
     it('clears session cookie and returns success payload', async () => {
       const event = {} as never
       const handler = await importLogoutHandler()
-      const response = await handler(event)
+      const response = handler(event)
 
       expect(deleteCookieMock).toHaveBeenCalledWith(event, 'stork_session', { maxAge: 0 })
       expect(response).toEqual({

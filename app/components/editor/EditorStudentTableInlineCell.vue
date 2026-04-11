@@ -18,9 +18,8 @@ const props = withDefaults(
   }>(),
   {
     displayFrameClass: 'w-full min-h-8 px-2.5 py-1.5',
-    // Keep edit controls vertically centered when readonly placeholder is taller (e.g. wrapped thesis title)
-    editOverlayClass: 'absolute inset-0 flex items-center',
-    warningMarker: undefined
+    // Keep edit controls vertically centered when readonly placeholder is taller (e.g., wrapped thesis title)
+    editOverlayClass: 'absolute inset-0 flex items-center'
   }
 )
 
@@ -35,7 +34,7 @@ function displayText(value: string): string {
 }
 
 const hasWarningMarker = computed(() => {
-  if (props.mode !== 'text' || typeof props.warningMarker !== 'string' || props.warningMarker.length < 1) {
+  if (props.mode !== 'text' || !props.warningMarker) {
     return false
   }
 

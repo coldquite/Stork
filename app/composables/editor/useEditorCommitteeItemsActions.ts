@@ -62,7 +62,7 @@ function removeCommitteeItemByLocalId(committee: ScheduleDraftCommittee, itemLoc
 }
 
 /**
- * Actions for committee table items (student + pause): delete confirm flow and move-student flow.
+ * Actions for committee table items (student or pause): delete confirm flow and move-student flow.
  */
 export function useEditorCommitteeItemsActions(
   selectedCommittee: ComputedRef<ScheduleDraftCommittee | null>,

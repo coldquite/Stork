@@ -13,12 +13,12 @@
   --editor-row-hover-accent-border: color-mix(in srgb, var(--color-stork-500) 72%, transparent);
   --editor-row-pause-bg: color-mix(in srgb, var(--color-stork-500) 17%, transparent);
   --editor-row-pause-hover-border: color-mix(in srgb, var(--color-stork-500) 66%, transparent);
-  --editor-row-highlight-bg: color-mix(in srgb, var(--color-capaccent-500) 16%, transparent);
-  --editor-row-highlight-border: color-mix(in srgb, var(--color-capaccent-500) 84%, transparent);
-  --editor-row-highlight-outline: color-mix(in srgb, var(--color-capaccent-500) 30%, transparent);
-  --editor-row-highlight-fade-bg: color-mix(in srgb, var(--color-capaccent-500) 0%, transparent);
-  --editor-row-highlight-fade-border: color-mix(in srgb, var(--color-capaccent-500) 0%, transparent);
-  --editor-row-highlight-fade-outline: color-mix(in srgb, var(--color-capaccent-500) 0%, transparent);
+  --editor-row-highlight-bg: color-mix(in srgb, var(--color-secondary-500) 16%, transparent);
+  --editor-row-highlight-border: color-mix(in srgb, var(--color-secondary-500) 84%, transparent);
+  --editor-row-highlight-outline: color-mix(in srgb, var(--color-secondary-500) 30%, transparent);
+  --editor-row-highlight-fade-bg: color-mix(in srgb, var(--color-secondary-500) 0%, transparent);
+  --editor-row-highlight-fade-border: color-mix(in srgb, var(--color-secondary-500) 0%, transparent);
+  --editor-row-highlight-fade-outline: color-mix(in srgb, var(--color-secondary-500) 0%, transparent);
 }
 
 .dark {
@@ -29,12 +29,12 @@
   --editor-row-hover-accent-border: color-mix(in srgb, var(--color-stork-400) 70%, transparent);
   --editor-row-pause-bg: color-mix(in srgb, var(--color-stork-500) 34%, transparent);
   --editor-row-pause-hover-border: color-mix(in srgb, var(--color-stork-400) 64%, transparent);
-  --editor-row-highlight-bg: color-mix(in srgb, var(--color-capaccent-400) 26%, transparent);
-  --editor-row-highlight-border: color-mix(in srgb, var(--color-capaccent-300) 90%, transparent);
-  --editor-row-highlight-outline: color-mix(in srgb, var(--color-capaccent-200) 38%, transparent);
-  --editor-row-highlight-fade-bg: color-mix(in srgb, var(--color-capaccent-400) 0%, transparent);
-  --editor-row-highlight-fade-border: color-mix(in srgb, var(--color-capaccent-300) 0%, transparent);
-  --editor-row-highlight-fade-outline: color-mix(in srgb, var(--color-capaccent-200) 0%, transparent);
+  --editor-row-highlight-bg: color-mix(in srgb, var(--color-secondary-400) 26%, transparent);
+  --editor-row-highlight-border: color-mix(in srgb, var(--color-secondary-300) 90%, transparent);
+  --editor-row-highlight-outline: color-mix(in srgb, var(--color-secondary-200) 38%, transparent);
+  --editor-row-highlight-fade-bg: color-mix(in srgb, var(--color-secondary-400) 0%, transparent);
+  --editor-row-highlight-fade-border: color-mix(in srgb, var(--color-secondary-300) 0%, transparent);
+  --editor-row-highlight-fade-outline: color-mix(in srgb, var(--color-secondary-200) 0%, transparent);
 }
 
 @theme static {
@@ -86,11 +86,11 @@
   }
 
   .light .auto-save-badge {
-    background-color: var(--color-capaccent-200);
-    border-color: var(--color-capaccent-300);
+    background-color: var(--color-secondary-200);
+    border-color: var(--color-secondary-300);
     border-style: solid;
     border-width: 1px;
-    color: var(--color-capaccent-900);
+    color: var(--color-secondary-900);
   }
 
   .dark .footer-stars-bg svg g {

@@ -29,7 +29,7 @@ function requireDataset(
  * Normalizes uploaded student datasets into one consistent shape for mapping.
  *
  * The app supports two import modes:
- * - MIXED: requires bachelor + master datasets for both Students Stork and Students Committees
+ * - MIXED: requires bachelor and master datasets for both Students Stork and Students Committees
  * - Single-level: requires only the level selected by the user
  */
 export function collectDatasets(payload: ImportPayload, szzType: ImportSzzType): StudentsDatasetsBundle {

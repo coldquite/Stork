@@ -10,20 +10,18 @@ function resolveDatabaseUrl(): string {
     throw new Error('Missing DATABASE_URL environment variable')
   }
 
+  let parsedUrl: URL
   try {
-    const parsedUrl = new URL(databaseUrl)
-    const isPostgresProtocol = parsedUrl.protocol === 'postgres:' || parsedUrl.protocol === 'postgresql:'
-    if (isPostgresProtocol && parsedUrl.password.length === 0) {
-      throw new Error(
-        'DATABASE_URL contains an empty password. Set POSTGRES_PASSWORD and ensure special characters are URL-encoded.'
-      )
-    }
-  } catch (error: unknown) {
-    if (error instanceof TypeError) {
-      throw new Error('DATABASE_URL is not a valid URL')
-    }
+    parsedUrl = new URL(databaseUrl)
+  } catch {
+    throw new Error('DATABASE_URL is not a valid URL')
+  }
 
-    throw error
+  const isPostgresProtocol = parsedUrl.protocol === 'postgres:' || parsedUrl.protocol === 'postgresql:'
+  if (isPostgresProtocol && parsedUrl.password.length === 0) {
+    throw new Error(
+      'DATABASE_URL contains an empty password. Set POSTGRES_PASSWORD and ensure special characters are URL-encoded.'
+    )
   }
 
   return databaseUrl

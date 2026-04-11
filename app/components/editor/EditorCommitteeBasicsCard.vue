@@ -222,7 +222,7 @@ function setLanguage(lang: StudyLanguageDto): void {
               <UCalendar
                 :model-value="calendarModelValue"
                 :week-starts-on="1"
-                @update:model-value="(value) => handleCalendarDateSelect(value, close)"
+                @update:model-value="handleCalendarDateSelect($event, close)"
               />
             </template>
           </UPopover>

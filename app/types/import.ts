@@ -36,8 +36,8 @@ export interface ImportPayload {
 declare const preparedImportPayloadBrand: unique symbol
 
 /**
- * Branded payload that can be passed to the mapper only after teacher-name
- * normalization + dictionary resolution pipeline succeeds.
+ * Branded payload that can be passed to the mapper only after a teacher-name
+ * normalization and dictionary resolution pipeline succeeds.
  */
 export type PreparedImportPayload = ImportPayload & {
   readonly [preparedImportPayloadBrand]: true

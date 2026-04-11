@@ -9,8 +9,8 @@ import { useEditorStudentSearch } from '~/composables/editor/useEditorStudentSea
 import { useEditorStudentTable } from '~/composables/editor/useEditorStudentTable'
 import { useEditorTablePreferencesStore } from '~/stores/editor-table-preferences'
 import { useScheduleDraftStore } from '~/stores/schedule-draft'
+import type { EditorStudentsTableViewMode } from '~/types/editor'
 import type { ScheduleDraftThesisTitleDisplayMode } from '~/types/schedule-draft'
-import type { EditorStudentsTableViewMode } from '~/types/editor-table-preferences'
 
 /**
  * Facade composable for the schedule editor page: composes committee list, student table,

@@ -120,27 +120,27 @@ onBeforeUnmount(() => {
         <label
           for="teachers-dictionary-import-file"
           class="bg-elevated border-default group flex items-center gap-3 rounded-md border px-3 py-2 transition-colors"
-          :class="isSubmitting ? 'pointer-events-none opacity-50' : 'cursor-pointer hover:bg-[var(--ui-bg-accented)]'"
+          :class="isSubmitting ? 'pointer-events-none opacity-50' : 'hover:bg-accented cursor-pointer'"
         >
           <span
             class="border-default rounded-md border px-2 py-1 text-xs font-medium transition-colors"
             :class="
               importState.file
-                ? 'border-[var(--color-stork-500)] bg-[var(--color-stork-500)] text-white group-hover:border-[var(--color-stork-600)] group-hover:bg-[var(--color-stork-600)]'
+                ? 'border-stork-500 bg-stork-500 group-hover:border-stork-600 group-hover:bg-stork-600 text-white'
                 : isSubmitting
                   ? ''
-                  : 'group-hover:border-[var(--ui-border-accented)] group-hover:bg-[var(--ui-bg)]'
+                  : 'group-hover:border-accented group-hover:bg-default'
             "
           >
             {{ $t('teachersDictionary.import.chooseFileAction') }}
           </span>
 
-          <p
+          <span
             class="min-w-0 truncate text-xs"
             :class="importState.file ? 'text-highlighted font-semibold' : 'text-muted'"
           >
             {{ importState.file?.name || $t('teachersDictionary.import.noFileSelected') }}
-          </p>
+          </span>
         </label>
 
         <p v-if="importState.isValidating" class="text-muted text-xs">

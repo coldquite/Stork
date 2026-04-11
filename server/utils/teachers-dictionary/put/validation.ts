@@ -20,7 +20,7 @@ const putTeachersDictionaryBulkPayloadSchema = z
       const normalizedLookupKey = buildTeachersDictionaryLookupKey(entry.canonicalName)
       if (normalizedLookupKey.length === 0) {
         context.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: 'custom',
           path: [index, 'canonicalName'],
           message: 'must contain at least 1 token after lookup key normalization'
         })

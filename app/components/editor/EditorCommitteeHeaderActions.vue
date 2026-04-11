@@ -16,7 +16,7 @@ const emit = defineEmits<{
 
 const renameActionButtonClass = 'shrink-0 px-2 text-sm cursor-pointer'
 const renameActionButtonUi = {
-  base: '!text-capaccent-800 ring-[2px] ring-capaccent-400/80 hover:!text-capaccent-800 hover:ring-capaccent-500 hover:bg-capaccent-50 dark:!text-capaccent-100 dark:ring-capaccent-500/80 dark:hover:!text-capaccent-100 dark:hover:bg-capaccent-500/25'
+  base: '!text-secondary-800 ring-[2px] ring-secondary-400/80 hover:!text-secondary-800 hover:ring-secondary-500 hover:bg-secondary-50 dark:!text-secondary-100 dark:ring-secondary-500/80 dark:hover:!text-secondary-100 dark:hover:bg-secondary-500/25'
 }
 const actionButtonClass = 'shrink-0 px-2 text-sm cursor-pointer'
 const deleteActionButtonUi = {
@@ -67,7 +67,7 @@ const deleteActionButtonUi = {
       color="primary"
       variant="soft"
       leading-icon="i-lucide-users"
-      class="shrink-0 self-start px-3 py-1 text-base font-semibold ring-[2px] ring-current/45 sm:self-center"
+      class="shrink-0 self-start px-3 py-1 text-base font-semibold ring-2 ring-current/45 sm:self-center"
     >
       {{ props.studentsCountLabel }}
     </UBadge>

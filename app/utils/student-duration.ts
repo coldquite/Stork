@@ -21,7 +21,7 @@ const MASTER_ORAL_ONLY_EXAM_MINUTES = 15
 
 /**
  * Shared source of truth for student slot duration mapping across import and editor flows.
- * UNKNOWN keeps first/both duration to avoid underestimating total exam timeline.
+ * UNKNOWN keeps first/both duration to avoid underestimating the total exam timeline.
  */
 export const STUDENT_DURATION_MINUTES_BY_STUDY_PROGRAM_AND_REPEAT: Readonly<
   Record<StudyProgramTypeDto, Readonly<Record<RepeatTypeDto, StudentDurationMinutes>>>

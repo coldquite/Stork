@@ -19,14 +19,14 @@ describe('teachers-dictionary import parser', () => {
   it('parses valid csv and builds canonical names in expected order', () => {
     const csv = createCsvContent(REQUIRED_HEADERS, [
       {
-        Příjmení: '  Novák  ',
-        Jméno: ' Jan ',
+        Příjmení: '  Testov  ',
+        Jméno: ' Alex ',
         'Titul osoby (před jménem)': '  Ing. ',
         'Titul osoby (za jménem)': ' Ph.D. '
       },
       {
-        Příjmení: 'Svobodová',
-        Jméno: 'Eva',
+        Příjmení: 'Modelova',
+        Jméno: 'Dana',
         'Titul osoby (před jménem)': '',
         'Titul osoby (za jménem)': ''
       }
@@ -41,11 +41,11 @@ describe('teachers-dictionary import parser', () => {
 
     expect(result.entries).toEqual([
       {
-        canonicalName: 'Ing. Jan Novák, Ph.D.',
+        canonicalName: 'Ing. Alex Testov, Ph.D.',
         isCustom: false
       },
       {
-        canonicalName: 'Eva Svobodová',
+        canonicalName: 'Dana Modelova',
         isCustom: false
       }
     ])
@@ -56,8 +56,8 @@ describe('teachers-dictionary import parser', () => {
       [`\uFEFF${REQUIRED_HEADERS[0]}`, REQUIRED_HEADERS[1], REQUIRED_HEADERS[2], REQUIRED_HEADERS[3]],
       [
         {
-          [`\uFEFF${REQUIRED_HEADERS[0]}`]: 'Novák',
-          [REQUIRED_HEADERS[1]]: 'Jan',
+          [`\uFEFF${REQUIRED_HEADERS[0]}`]: 'Testov',
+          [REQUIRED_HEADERS[1]]: 'Alex',
           [REQUIRED_HEADERS[2]]: 'Ing.',
           [REQUIRED_HEADERS[3]]: 'Ph.D.'
         }
@@ -72,15 +72,15 @@ describe('teachers-dictionary import parser', () => {
     }
 
     expect(result.entries).toHaveLength(1)
-    expect(result.entries[0]?.canonicalName).toBe('Ing. Jan Novák, Ph.D.')
+    expect(result.entries[0]?.canonicalName).toBe('Ing. Alex Testov, Ph.D.')
   })
 
   it('returns missing_required_headers when any required header is absent', () => {
     const headers = REQUIRED_HEADERS.slice(0, -1)
     const csv = createCsvContent(headers, [
       {
-        Příjmení: 'Novák',
-        Jméno: 'Jan',
+        Příjmení: 'Testov',
+        Jméno: 'Alex',
         'Titul osoby (před jménem)': 'Ing.'
       }
     ])
@@ -136,8 +136,8 @@ describe('teachers-dictionary import parser', () => {
         'Titul osoby (za jménem)': 'Ph.D.'
       },
       {
-        Příjmení: 'Svoboda',
-        Jméno: 'Petr',
+        Příjmení: 'Ukazka',
+        Jméno: 'Karel',
         'Titul osoby (před jménem)': '',
         'Titul osoby (za jménem)': 'Ph.D.'
       }
@@ -152,7 +152,7 @@ describe('teachers-dictionary import parser', () => {
 
     expect(result.entries).toEqual([
       {
-        canonicalName: 'Petr Svoboda, Ph.D.',
+        canonicalName: 'Karel Ukazka, Ph.D.',
         isCustom: false
       }
     ])
@@ -160,7 +160,7 @@ describe('teachers-dictionary import parser', () => {
 
   it('returns parse_error for malformed csv content', () => {
     const malformedCsv =
-      '"Příjmení";"Jméno";"Titul osoby (před jménem)";"Titul osoby (za jménem)"\n"Novák";"Jan";"Ing.";"Ph.D.'
+      '"Příjmení";"Jméno";"Titul osoby (před jménem)";"Titul osoby (za jménem)"\n"Testov";"Alex";"Ing.";"Ph.D.'
 
     const result = parseTeachersDictionaryCsvText(malformedCsv)
 
@@ -175,8 +175,8 @@ describe('teachers-dictionary import parser', () => {
 
   it('accepts recoverable row field-mismatch warnings from parser', () => {
     const headersLine = REQUIRED_HEADERS.map(toCsvCell).join(';')
-    const fullRow = ['Novák', 'Jan', 'Ing.', 'Ph.D.'].map(toCsvCell).join(';')
-    const shortRow = ['Svoboda', 'Petr'].map(toCsvCell).join(';')
+    const fullRow = ['Testov', 'Alex', 'Ing.', 'Ph.D.'].map(toCsvCell).join(';')
+    const shortRow = ['Ukazka', 'Karel'].map(toCsvCell).join(';')
     const csv = `${headersLine}\n${fullRow}\n${shortRow}`
 
     const result = parseTeachersDictionaryCsvText(csv)
@@ -186,7 +186,7 @@ describe('teachers-dictionary import parser', () => {
       throw new Error('Expected parse success')
     }
 
-    expect(result.entries[0]?.canonicalName).toBe('Ing. Jan Novák, Ph.D.')
-    expect(result.entries.some((entry) => entry.canonicalName === 'Petr Svoboda')).toBe(true)
+    expect(result.entries[0]?.canonicalName).toBe('Ing. Alex Testov, Ph.D.')
+    expect(result.entries.some((entry) => entry.canonicalName === 'Karel Ukazka')).toBe(true)
   })
 })

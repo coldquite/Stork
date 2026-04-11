@@ -43,14 +43,14 @@ function handleRestoreClick(): void {
     </UCard>
 
     <UCard
-      class="group border-capaccent-400/85 hover:border-capaccent-500 hover:bg-capaccent-50 dark:hover:bg-capaccent-500/25 cursor-pointer border-[3px] transition-colors duration-300 ease-out"
+      class="group border-secondary-400/85 hover:border-secondary-500 hover:bg-secondary-50 dark:hover:bg-secondary-500/25 cursor-pointer border-[3px] transition-colors duration-300 ease-out"
       @click="handleBrowseClick"
     >
       <div class="flex flex-col items-center py-6 text-center">
         <div
-          class="bg-capaccent-200 group-hover:bg-capaccent-300 dark:bg-capaccent-100 dark:group-hover:bg-capaccent-300 mb-4 flex size-16 items-center justify-center rounded-full transition-colors duration-300 ease-out"
+          class="bg-secondary-200 group-hover:bg-secondary-300 dark:bg-secondary-100 dark:group-hover:bg-secondary-300 mb-4 flex size-16 items-center justify-center rounded-full transition-colors duration-300 ease-out"
         >
-          <UIcon name="i-lucide-folder-open" class="text-capaccent-800 size-8" />
+          <UIcon name="i-lucide-folder-open" class="text-secondary-800 size-8" />
         </div>
         <h2 class="mb-2 text-xl font-semibold transition-colors duration-300 ease-out">
           {{ $t('homepage.actions.browse.title') }}

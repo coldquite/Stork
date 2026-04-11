@@ -185,7 +185,7 @@ function resolveDaySelectedCountLabel(day: EditorPdfInvigilatorsDayGroup): strin
         <div :class="dimmedContainerClass">
           <div v-if="hasCommittees" class="space-y-4">
             <div class="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
-              <div class="max-w-[42rem] min-w-0 space-y-1">
+              <div class="max-w-2xl min-w-0 space-y-1">
                 <p class="text-muted text-xl font-semibold">
                   {{ props.selectedCountLabel }}
                 </p>
@@ -247,14 +247,14 @@ function resolveDaySelectedCountLabel(day: EditorPdfInvigilatorsDayGroup): strin
                       class="flex min-w-0 flex-1 cursor-pointer items-center justify-between gap-2 text-left"
                       @click="toggleDay(day.id)"
                     >
-                      <div class="min-w-0">
-                        <p class="truncate text-sm font-semibold">
+                      <span class="min-w-0 pl-2">
+                        <span class="block truncate text-sm font-semibold">
                           {{ day.dayLabel }}
-                        </p>
-                        <p class="text-muted text-sm">
+                        </span>
+                        <span class="text-muted block text-sm">
                           {{ resolveDaySelectedCountLabel(day) }}
-                        </p>
-                      </div>
+                        </span>
+                      </span>
 
                       <UIcon
                         name="i-lucide-chevron-down"

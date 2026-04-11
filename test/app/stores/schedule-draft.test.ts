@@ -302,7 +302,7 @@ describe('useScheduleDraftStore', () => {
     const payload = requestOptions.body as { type: string; name: string }
 
     expect(payload.type).toBe('AUTO')
-    expect(payload.name).toMatch(/^Autosave změna \[\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}\]$/)
+    expect(payload.name).toMatch(/^Autosave změna \[\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}]$/)
     expect(payload.name.includes('AUTO-')).toBe(false)
     expect(store.isDirty).toBe(false)
     expect(store.lastSavedType).toBe('AUTO')
@@ -350,7 +350,7 @@ describe('useScheduleDraftStore', () => {
 
     const payload = requestOptions.body as { type: string; name: string }
     expect(payload.type).toBe('AUTO')
-    expect(payload.name).toMatch(/^Autosave změna \[\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}\]$/)
+    expect(payload.name).toMatch(/^Autosave změna \[\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}]$/)
     expect(payload.name).not.toContain('[10.06.2026 12:00]')
   })
 
@@ -395,7 +395,7 @@ describe('useScheduleDraftStore', () => {
 
     const payload = requestOptions.body as { type: string; name: string }
     expect(payload.type).toBe('AUTO')
-    expect(payload.name).toMatch(/^Autosave změna \[\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}\]$/)
+    expect(payload.name).toMatch(/^Autosave změna \[\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}]$/)
     expect(payload.name).not.toContain('[10.06.2026 12:00]')
     expect(payload.name).not.toContain('[11.06.2026 13:00]')
   })

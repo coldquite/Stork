@@ -23,14 +23,14 @@ import { addMilliseconds, differenceInMilliseconds, format, isValid, parseISO } 
 import * as Sentry from '@sentry/nuxt'
 import { resolveEditorSpecializationOptionForDepartment } from '#shared/constants/editor'
 import type {
+  PauseItemDto,
   PostCommitteeDto,
   PostCommitteeItemDto,
   PostPauseItemDto,
   PostStudentItemDto,
-  PauseItemDto,
-  StudentItemDto,
   PostTimeScheduleRequestDto,
   PostTimeScheduleResponseDto,
+  StudentItemDto,
   TimeScheduleDto,
   TimeScheduleTypeDto
 } from '#shared/types/time-schedules'
@@ -39,11 +39,11 @@ import type {
   DraftItemSource,
   DraftScheduleSource,
   ScheduleAutoSavePolicy,
-  ScheduleDraftOperationErrorCode,
   ScheduleDraft,
   ScheduleDraftCommittee,
   ScheduleDraftInvigilator,
-  ScheduleDraftItem
+  ScheduleDraftItem,
+  ScheduleDraftOperationErrorCode
 } from '~/types/schedule-draft'
 import { DEFAULT_NEW_SCHEDULE_NAME_PREFIX, DEFAULT_SCHEDULE_AUTOSAVE_POLICY } from '~/constants/schedule-draft'
 import { createLocalId } from '~/utils/id'
@@ -594,8 +594,7 @@ export const useScheduleDraftStore = defineStore(
           syncManualDraftName: !preserveDraftName
         })
       } catch (error: unknown) {
-        const resolvedErrorCode = resolveScheduleDraftErrorCode(error, 'REQUEST_FAILED')
-        manualSaveErrorCode.value = resolvedErrorCode
+        manualSaveErrorCode.value = resolveScheduleDraftErrorCode(error, 'REQUEST_FAILED')
 
         throw error
       } finally {

@@ -3,6 +3,7 @@ import type { TableColumn } from '@nuxt/ui'
 import type {
   EditorCommitteeStringFieldPayload,
   EditorStudentHighlightRequest,
+  EditorStudentsTableViewMode,
   EditorTableRow,
   EditorStudentsPanelCommitteeLabels,
   EditorStudentsPanelInvigilatorLabels,
@@ -14,7 +15,6 @@ import type {
   ScheduleDraftThesisTitleDisplayMode
 } from '~/types/schedule-draft'
 import type { StudyLanguageDto, StudyProgramTypeDto } from '#shared/types/time-schedules'
-import type { EditorStudentsTableViewMode } from '~/types/editor-table-preferences'
 
 const props = defineProps<{
   cardRootClass: string

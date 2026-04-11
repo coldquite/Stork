@@ -120,20 +120,25 @@ export async function renderPdfInvigilatorsHtml(payload: PostPdfInvigilatorsExpo
     })
     .join('\n')
 
+  const baseDocumentStyles = renderPdfBaseDocumentStyles(embeddedFontCss)
+  const brandHeaderStyles = renderPdfBrandHeaderStyles({
+    logoWidthMm: PDF_BRAND_LOGO_WIDTH_MM,
+    headerMarginBottomMm: PDF_BRAND_HEADER_MARGIN_BOTTOM_MM,
+    dividerMarginTopMm: PDF_BRAND_DIVIDER_MARGIN_TOP_MM,
+    dividerHeightMm: PDF_BRAND_DIVIDER_HEIGHT_MM
+  })
+  const sectionHeadingStyles = renderPdfSectionHeadingStyles()
+  const tableBaseStyles = renderPdfTableBaseStyles()
+
   return `<!doctype html>
 <html lang="cs">
   <head>
     <meta charset="utf-8" />
     <title>${escapeHtml(PDF_DOCUMENT_TITLE)}</title>
     <style>
-      ${renderPdfBaseDocumentStyles(embeddedFontCss)}
-      ${renderPdfBrandHeaderStyles({
-        logoWidthMm: PDF_BRAND_LOGO_WIDTH_MM,
-        headerMarginBottomMm: PDF_BRAND_HEADER_MARGIN_BOTTOM_MM,
-        dividerMarginTopMm: PDF_BRAND_DIVIDER_MARGIN_TOP_MM,
-        dividerHeightMm: PDF_BRAND_DIVIDER_HEIGHT_MM
-      })}
-      ${renderPdfSectionHeadingStyles()}
+      ${baseDocumentStyles}
+      ${brandHeaderStyles}
+      ${sectionHeadingStyles}
 
       .brand-header-top {
         display: flex;
@@ -225,7 +230,7 @@ export async function renderPdfInvigilatorsHtml(payload: PostPdfInvigilatorsExpo
         margin-top: 0.45mm;
       }
 
-      ${renderPdfTableBaseStyles()}
+      ${tableBaseStyles}
 
       thead th {
         font-weight: 700;

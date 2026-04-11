@@ -2,15 +2,15 @@
 // Business logic:
 // - manage per-field file states (file, parsed data, errors, validation status),
 // - validate selected files (extension, UTF-8, CSV schema),
-// - auto-route uploaded file into the correct logical field by detected dataset/study level,
+// - auto-route uploaded file into the correct logical field by detecting dataset/study level,
 // - expose submit readiness and build normalized import payload only when all required inputs are ready.
 
 import { getImportFormFieldsBySzzType } from '~/constants/import'
 import {
   parseImportCsvText,
   resolveImportTargetFieldKey,
-  resolveStudyLevelFromStudentsStork,
-  resolveStudyLevelFromStudentsCommittees
+  resolveStudyLevelFromStudentsCommittees,
+  resolveStudyLevelFromStudentsStork
 } from '~/utils/import'
 import { clearInputFileValue, ingestCsvInputFile } from '~/utils/csv-ingest'
 import type {
@@ -74,9 +74,9 @@ function createInitialValidationRequestIds(): ImportValidationRequestIds {
   return Object.fromEntries(IMPORT_FIELD_KEYS.map((key) => [key, 0])) as ImportValidationRequestIds
 }
 
-// Creates an immutable snapshot of validated field data for submit payload
+// Creates an immutable snapshot of validated field data for submitted payload
 // We intentionally copy arrays/objects to avoid leaking reactive form references:
-// after submit, user can still change file inputs, but previously built payload
+// after submitting, user can still change file inputs, but previously built payload
 // must stay stable and represent exactly what was validated at that moment
 function cloneDataset(fieldState: ImportFieldState): ImportDataset {
   return {
@@ -106,7 +106,7 @@ export function useImportForm(selectedSzzType: Ref<ImportSzzType>) {
 
   const importFileFields = computed(() => getImportFormFieldsBySzzType(selectedSzzType.value))
 
-  // Keep submit disabled until every required file field is fully loaded and validated
+  // Keep submitting disabled until every required file field is fully loaded and validated
   const isImportSubmitDisabled = computed(() => {
     return importFileFields.value.some(({ key }) => {
       const state = importFileStates.value[key]
@@ -164,12 +164,11 @@ export function useImportForm(selectedSzzType: Ref<ImportSzzType>) {
     const committeesState = getReadyFieldState('committees')
     if (!committeesState) return null
 
-    const payload: ImportPayload = {
+    return {
       committees: cloneDataset(committeesState),
       studentsStork: {},
       studentsCommittees: {}
     }
-    return payload
   }
 
   // Build final import payload by combining mandatory committees data with SZZ-type-specific student datasets
@@ -187,7 +186,7 @@ export function useImportForm(selectedSzzType: Ref<ImportSzzType>) {
 
   // Increment per-field validation token before starting async file validation
   // After await, compare returned token with current one to ignore stale results
-  // (e.g. user selected another file before previous validation finished)
+  // (e.g., user selected another file before previous validation finished)
   function incrementValidationRequestId(key: ImportFieldKey): number {
     importValidationRequestIds.value[key] += 1
     return importValidationRequestIds.value[key]

@@ -1,6 +1,7 @@
 import { mockNuxtImport } from '@nuxt/test-utils/runtime'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { TimeScheduleListItemDto } from '#shared/types/time-schedules'
+import { buildTeachersDictionaryLookupKey } from '#shared/utils/teachers-dictionary'
 import type { ImportPayload } from '~/types/import'
 
 const {
@@ -61,14 +62,14 @@ function createImportPayload(): ImportPayload {
       bachelor: {
         fileName: 'studenti-stork-bc.csv',
         headers: ['Email studenta', 'Studijní plán (název)'],
-        rows: [{ 'Email studenta': 'student@fit.cvut.cz', 'Studijní plán (název)': 'Bc. Informatika' }]
+        rows: [{ 'Email studenta': 'student.test@fit.cvut.cz', 'Studijní plán (název)': 'Bc. Informatika' }]
       }
     },
     studentsCommittees: {
       bachelor: {
         fileName: 'studenti-komise-bc.csv',
         headers: ['Email adresa', 'St. program - typ'],
-        rows: [{ 'Email adresa': 'student@fit.cvut.cz', 'St. program - typ': 'B' }]
+        rows: [{ 'Email adresa': 'student.test@fit.cvut.cz', 'St. program - typ': 'B' }]
       }
     }
   }
@@ -85,7 +86,7 @@ function createImportPayloadWithUnresolvedTeacher(): ImportPayload {
       bachelor: {
         fileName: 'studenti-stork-bc.csv',
         headers: ['VŠKP-typ A: Vedoucí práce 1'],
-        rows: [{ 'VŠKP-typ A: Vedoucí práce 1': 'Ing. Jan Novák' }]
+        rows: [{ 'VŠKP-typ A: Vedoucí práce 1': 'Ing. Alex Testov' }]
       }
     },
     studentsCommittees: {
@@ -94,8 +95,8 @@ function createImportPayloadWithUnresolvedTeacher(): ImportPayload {
         headers: ['VŠKP-typ A: Vedoucí práce 1', 'Komise - člen 1'],
         rows: [
           {
-            'VŠKP-typ A: Vedoucí práce 1': 'Novák Jan, Ing.',
-            'Komise - člen 1': 'Neznámý Petr, Ing.'
+            'VŠKP-typ A: Vedoucí práce 1': 'Testov Alex, Ing.',
+            'Komise - člen 1': 'Neznamy Pavel, Ing.'
           }
         ]
       }
@@ -325,8 +326,8 @@ describe('useHomepage submitCreateScheduleImport', () => {
         return [
           {
             id: 'known-1',
-            canonicalName: 'Ing. Jan Novák',
-            normalizedLookupKey: 'ing jan novák',
+            canonicalName: 'Ing. Alex Testov',
+            normalizedLookupKey: buildTeachersDictionaryLookupKey('Ing. Alex Testov'),
             isCustom: false
           }
         ]
@@ -354,7 +355,7 @@ describe('useHomepage submitCreateScheduleImport', () => {
 
     homepage.updateTeachersDictionaryResolutionEntry({
       lookupKey: firstEntry.lookupKey,
-      value: 'Novák, Petr, Ing., Ph.D.'
+      value: 'Testov, Pavel, Ing., Ph.D.'
     })
 
     await homepage.submitTeachersDictionaryResolution()
@@ -375,8 +376,8 @@ describe('useHomepage submitCreateScheduleImport', () => {
         return [
           {
             id: 'known-1',
-            canonicalName: 'Ing. Jan Novák',
-            normalizedLookupKey: 'ing jan novák',
+            canonicalName: 'Ing. Alex Testov',
+            normalizedLookupKey: buildTeachersDictionaryLookupKey('Ing. Alex Testov'),
             isCustom: false
           }
         ]
@@ -413,7 +414,7 @@ describe('useHomepage submitCreateScheduleImport', () => {
 
     homepage.updateTeachersDictionaryResolutionEntry({
       lookupKey: firstEntry.lookupKey,
-      value: 'Ing. Petr Neznamy'
+      value: 'Ing. Pavel Neznamy'
     })
 
     await homepage.submitTeachersDictionaryResolution()
@@ -423,14 +424,16 @@ describe('useHomepage submitCreateScheduleImport', () => {
     expect(requestFetchMock.mock.calls[1]?.[0]).toContain('/api/teachers-dictionary/bulk')
     expect(requestFetchMock.mock.calls[1]?.[1]?.body).toEqual([
       {
-        canonicalName: 'Ing. Petr Neznamy',
+        canonicalName: 'Ing. Pavel Neznamy',
         isCustom: true
       }
     ])
 
     expect(mapImportPayloadToDraftSourceMock).toHaveBeenCalledTimes(1)
     const mappingCall = mapImportPayloadToDraftSourceMock.mock.calls[0]?.[0]
-    expect(mappingCall?.payload?.studentsCommittees?.bachelor?.rows?.[0]?.['Komise - člen 1']).toBe('Ing. Petr Neznamy')
+    expect(mappingCall?.payload?.studentsCommittees?.bachelor?.rows?.[0]?.['Komise - člen 1']).toBe(
+      'Ing. Pavel Neznamy'
+    )
     expect(homepage.isTeachersDictionaryResolutionDialogOpen.value).toBe(false)
     expect(homepage.createImportWorkflowStage.value).toBe('IDLE')
     expect(navigateToMock).toHaveBeenCalledWith('/editor')
@@ -446,8 +449,8 @@ describe('useHomepage submitCreateScheduleImport', () => {
         return [
           {
             id: 'known-1',
-            canonicalName: 'Ing. Jan Novák',
-            normalizedLookupKey: 'ing jan novák',
+            canonicalName: 'Ing. Alex Testov',
+            normalizedLookupKey: buildTeachersDictionaryLookupKey('Ing. Alex Testov'),
             isCustom: false
           }
         ]
@@ -487,7 +490,7 @@ describe('useHomepage submitCreateScheduleImport', () => {
 
     homepage.updateTeachersDictionaryResolutionEntry({
       lookupKey: firstEntry.lookupKey,
-      value: 'Ing. Petr Neznamy'
+      value: 'Ing. Pavel Neznamy'
     })
 
     await homepage.submitTeachersDictionaryResolution()

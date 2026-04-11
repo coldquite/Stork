@@ -10,7 +10,7 @@ interface AppActionConfirmDialogProps {
   loading?: boolean
   /**
    * When `false`, disables Nuxt UI modal enter/leave transitions. Use when this dialog opens on top of
-   * another `UModal` to avoid a brief a11y race (focused node vs `aria-hidden`) during close.
+   * another `UModal` to avoid a brief a11y race (focused node vs. `aria-hidden`) during close.
    */
   transition?: boolean
 }

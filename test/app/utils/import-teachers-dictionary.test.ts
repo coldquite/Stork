@@ -21,13 +21,13 @@ function createImportPayload(): ImportPayload {
         headers: [],
         rows: [
           {
-            'VŠKP-typ A: Vedoucí práce 1': '  Ing. Jan Novák  ',
+            'VŠKP-typ A: Vedoucí práce 1': '  Ing. Alex Test  ',
             'VŠKP-typ A: Vedoucí práce 2': '',
-            'VŠKP-typ A: Oponent práce 1': 'Mgr. Eva Svobodová Ph.D.',
+            'VŠKP-typ A: Oponent práce 1': 'Mgr. Dana Testova Ph.D.',
             'VŠKP-typ A: Oponent práce 2': ''
           },
           {
-            'VŠKP-typ A: Vedoucí práce 1': 'Novák Jan, Ing.',
+            'VŠKP-typ A: Vedoucí práce 1': 'Test Alex, Ing.',
             'VŠKP-typ A: Vedoucí práce 2': '',
             'VŠKP-typ A: Oponent práce 1': '   ',
             'VŠKP-typ A: Oponent práce 2': ''
@@ -39,10 +39,10 @@ function createImportPayload(): ImportPayload {
         headers: [],
         rows: [
           {
-            'VŠKP-typ A: Vedoucí práce 1': 'doc. Petra Karásková',
+            'VŠKP-typ A: Vedoucí práce 1': 'doc. Petra Testova',
             'VŠKP-typ A: Vedoucí práce 2': '',
             'VŠKP-typ A: Oponent práce 1': '',
-            'VŠKP-typ A: Oponent práce 2': 'Ing. Roman Černý'
+            'VŠKP-typ A: Oponent práce 2': 'Ing. Roman Test'
           }
         ]
       }
@@ -53,13 +53,13 @@ function createImportPayload(): ImportPayload {
         headers: [],
         rows: [
           {
-            'VŠKP-typ A: Vedoucí práce 1': 'Novák Jan, Ing.',
-            'VŠKP-typ A: Vedoucí práce 2': 'Neznámý Petr, Ing.',
-            'VŠKP-typ A: Oponent práce 1': 'Svobodová Eva, Mgr., Ph.D.',
+            'VŠKP-typ A: Vedoucí práce 1': 'Test Alex, Ing.',
+            'VŠKP-typ A: Vedoucí práce 2': 'Neznamy Test, Ing.',
+            'VŠKP-typ A: Oponent práce 1': 'Testova Dana, Mgr., Ph.D.',
             'VŠKP-typ A: Oponent práce 2': '',
-            'Komise - předseda': 'Předseda Petr, doc.',
+            'Komise - předseda': 'Predseda Test, doc.',
             'Komise - místopředseda': '',
-            'Komise - člen 1': 'Neznámý Petr, Ing.',
+            'Komise - člen 1': 'Neznamy Test, Ing.',
             'Komise - člen 2': '',
             'Komise - člen 3': ''
           }
@@ -70,10 +70,10 @@ function createImportPayload(): ImportPayload {
         headers: [],
         rows: [
           {
-            'VŠKP-typ A: Vedoucí práce 1': 'Karásková Petra, doc.',
+            'VŠKP-typ A: Vedoucí práce 1': 'Testova Petra, doc.',
             'VŠKP-typ A: Vedoucí práce 2': '',
             'VŠKP-typ A: Oponent práce 1': '',
-            'VŠKP-typ A: Oponent práce 2': 'Černý Roman, Ing.',
+            'VŠKP-typ A: Oponent práce 2': 'Test Roman, Ing.',
             'Komise - předseda': '',
             'Komise - místopředseda': '',
             'Komise - člen 1': '',
@@ -105,8 +105,8 @@ describe('import-teachers-dictionary utils', () => {
     clonedPayload.studentsCommittees.bachelor!.rows[0]!['Komise - předseda'] = 'changed'
 
     expect(payload.committees.rows[0]!['Název komise']).toBe('242-BI, 5-BI-PI.21')
-    expect(payload.studentsStork.bachelor!.rows[0]!['VŠKP-typ A: Vedoucí práce 1']).toBe('  Ing. Jan Novák  ')
-    expect(payload.studentsCommittees.bachelor!.rows[0]!['Komise - předseda']).toBe('Předseda Petr, doc.')
+    expect(payload.studentsStork.bachelor!.rows[0]!['VŠKP-typ A: Vedoucí práce 1']).toBe('  Ing. Alex Test  ')
+    expect(payload.studentsCommittees.bachelor!.rows[0]!['Komise - předseda']).toBe('Predseda Test, doc.')
   })
 
   it('normalizes Students Stork teacher fields during prepare step even without dictionary matches', () => {
@@ -122,21 +122,21 @@ describe('import-teachers-dictionary utils', () => {
     expect(result.unresolvedEntries).toHaveLength(6)
     expect(result.unresolvedEntries.map((entry) => entry.lookupKey)).toEqual(
       expect.arrayContaining([
-        buildTeachersDictionaryLookupKey('Ing. Jan Novák'),
-        buildTeachersDictionaryLookupKey('Mgr. Eva Svobodová Ph.D.'),
-        buildTeachersDictionaryLookupKey('doc. Petra Karásková'),
-        buildTeachersDictionaryLookupKey('Ing. Roman Černý'),
-        buildTeachersDictionaryLookupKey('Neznámý Petr, Ing.'),
-        buildTeachersDictionaryLookupKey('Předseda Petr, doc.')
+        buildTeachersDictionaryLookupKey('Ing. Alex Test'),
+        buildTeachersDictionaryLookupKey('Mgr. Dana Testova Ph.D.'),
+        buildTeachersDictionaryLookupKey('doc. Petra Testova'),
+        buildTeachersDictionaryLookupKey('Ing. Roman Test'),
+        buildTeachersDictionaryLookupKey('Neznamy Test, Ing.'),
+        buildTeachersDictionaryLookupKey('Predseda Test, doc.')
       ])
     )
-    expect(payload.studentsStork.bachelor!.rows[0]!['VŠKP-typ A: Vedoucí práce 1']).toBe('Ing. Jan Novák')
+    expect(payload.studentsStork.bachelor!.rows[0]!['VŠKP-typ A: Vedoucí práce 1']).toBe('Ing. Alex Test')
     expect(payload.studentsStork.bachelor!.rows[1]!['VŠKP-typ A: Oponent práce 1']).toBe('')
-    expect(payload.studentsStork.master!.rows[0]!['VŠKP-typ A: Oponent práce 2']).toBe('Ing. Roman Černý')
+    expect(payload.studentsStork.master!.rows[0]!['VŠKP-typ A: Oponent práce 2']).toBe('Ing. Roman Test')
   })
 
   it('createTeachersDictionaryLookupMap ignores invalid rows and keeps last canonical value for duplicate lookup keys', () => {
-    const duplicateLookupKey = buildTeachersDictionaryLookupKey('Ing. Jan Novák')
+    const duplicateLookupKey = buildTeachersDictionaryLookupKey('Ing. Alex Test')
     const dictionaryEntries: GetTeachersDictionaryResponseDto = [
       {
         id: '1',
@@ -146,19 +146,19 @@ describe('import-teachers-dictionary utils', () => {
       },
       {
         id: '2',
-        canonicalName: 'Ing. Jan Novák',
+        canonicalName: 'Ing. Alex Test',
         normalizedLookupKey: duplicateLookupKey,
         isCustom: false
       },
       {
         id: '3',
-        canonicalName: 'Ing. Jan Novák Ph.D.',
+        canonicalName: 'Ing. Alex Test Ph.D.',
         normalizedLookupKey: duplicateLookupKey,
         isCustom: true
       },
       {
         id: '4',
-        canonicalName: 'doc. Petra Karásková',
+        canonicalName: 'doc. Petra Testova',
         normalizedLookupKey: '   ',
         isCustom: false
       }
@@ -166,19 +166,14 @@ describe('import-teachers-dictionary utils', () => {
 
     const dictionaryLookupMap = createTeachersDictionaryLookupMap(dictionaryEntries)
 
-    expect(dictionaryLookupMap.get(duplicateLookupKey)).toBe('Ing. Jan Novák Ph.D.')
+    expect(dictionaryLookupMap.get(duplicateLookupKey)).toBe('Ing. Alex Test Ph.D.')
     expect(dictionaryLookupMap.size).toBe(1)
   })
 
   it('prepareImportPayloadForMapping resolves known names, normalizes unknown names and returns unique missing entries', () => {
     const payload = createImportPayload()
     const dictionaryLookupMap = createTeachersDictionaryLookupMap(
-      createDictionaryEntries([
-        'Ing. Jan Novák',
-        'Mgr. Eva Svobodová Ph.D.',
-        'doc. Petra Karásková',
-        'Ing. Roman Černý'
-      ])
+      createDictionaryEntries(['Ing. Alex Test', 'Mgr. Dana Testova Ph.D.', 'doc. Petra Testova', 'Ing. Roman Test'])
     )
 
     const result = prepareImportPayloadForMapping(payload, dictionaryLookupMap)
@@ -191,22 +186,20 @@ describe('import-teachers-dictionary utils', () => {
     const missingLookupKeys = result.unresolvedEntries.map((entry) => entry.lookupKey)
 
     expect(result.unresolvedEntries).toHaveLength(2)
-    expect(missingLookupKeys).toContain(buildTeachersDictionaryLookupKey('Neznámý Petr, Ing.'))
-    expect(missingLookupKeys).toContain(buildTeachersDictionaryLookupKey('Předseda Petr, doc.'))
+    expect(missingLookupKeys).toContain(buildTeachersDictionaryLookupKey('Neznamy Test, Ing.'))
+    expect(missingLookupKeys).toContain(buildTeachersDictionaryLookupKey('Predseda Test, doc.'))
 
-    expect(payload.studentsCommittees.bachelor!.rows[0]!['VŠKP-typ A: Vedoucí práce 1']).toBe('Ing. Jan Novák')
-    expect(payload.studentsCommittees.bachelor!.rows[0]!['VŠKP-typ A: Oponent práce 1']).toBe(
-      'Mgr. Eva Svobodová Ph.D.'
-    )
-    expect(payload.studentsCommittees.master!.rows[0]!['VŠKP-typ A: Vedoucí práce 1']).toBe('doc. Petra Karásková')
-    expect(payload.studentsCommittees.master!.rows[0]!['VŠKP-typ A: Oponent práce 2']).toBe('Ing. Roman Černý')
+    expect(payload.studentsCommittees.bachelor!.rows[0]!['VŠKP-typ A: Vedoucí práce 1']).toBe('Ing. Alex Test')
+    expect(payload.studentsCommittees.bachelor!.rows[0]!['VŠKP-typ A: Oponent práce 1']).toBe('Mgr. Dana Testova Ph.D.')
+    expect(payload.studentsCommittees.master!.rows[0]!['VŠKP-typ A: Vedoucí práce 1']).toBe('doc. Petra Testova')
+    expect(payload.studentsCommittees.master!.rows[0]!['VŠKP-typ A: Oponent práce 2']).toBe('Ing. Roman Test')
 
     // Same unresolved person appears in two columns, should be reported only once.
     const unresolvedNeznamy = result.unresolvedEntries.filter((entry) => {
-      return entry.lookupKey === buildTeachersDictionaryLookupKey('Neznámý Petr, Ing.')
+      return entry.lookupKey === buildTeachersDictionaryLookupKey('Neznamy Test, Ing.')
     })
     expect(unresolvedNeznamy).toHaveLength(1)
-    expect(unresolvedNeznamy[0]?.sourceValue).toBe('Neznámý Petr, Ing.')
+    expect(unresolvedNeznamy[0]?.sourceValue).toBe('Neznamy Test, Ing.')
   })
 
   it('prepareImportPayloadForMapping resolves all target columns when dictionary contains all needed canonical names', () => {
@@ -214,12 +207,12 @@ describe('import-teachers-dictionary utils', () => {
 
     const dictionaryEntries = [
       ...createDictionaryEntries([
-        'Ing. Jan Novák',
-        'Mgr. Eva Svobodová Ph.D.',
-        'doc. Petra Karásková',
-        'Ing. Roman Černý'
+        'Ing. Alex Test',
+        'Mgr. Dana Testova Ph.D.',
+        'doc. Petra Testova',
+        'Ing. Roman Test'
       ]),
-      ...createDictionaryEntries(['Neznámý Petr Ing.', 'doc. Petr Předseda'])
+      ...createDictionaryEntries(['Neznamy Test Ing.', 'doc. Test Predseda'])
     ]
 
     const dictionaryLookupMap = createTeachersDictionaryLookupMap(dictionaryEntries)
@@ -228,9 +221,9 @@ describe('import-teachers-dictionary utils', () => {
     if (!result.ok) {
       throw new Error('Expected prepared payload')
     }
-    expect(result.preparedPayload.studentsCommittees.bachelor!.rows[0]!['Komise - předseda']).toBe('doc. Petr Předseda')
-    expect(payload.studentsCommittees.bachelor!.rows[0]!['VŠKP-typ A: Vedoucí práce 2']).toBe('Neznámý Petr Ing.')
-    expect(payload.studentsCommittees.bachelor!.rows[0]!['Komise - člen 1']).toBe('Neznámý Petr Ing.')
-    expect(payload.studentsCommittees.bachelor!.rows[0]!['Komise - předseda']).toBe('doc. Petr Předseda')
+    expect(result.preparedPayload.studentsCommittees.bachelor!.rows[0]!['Komise - předseda']).toBe('doc. Test Predseda')
+    expect(payload.studentsCommittees.bachelor!.rows[0]!['VŠKP-typ A: Vedoucí práce 2']).toBe('Neznamy Test Ing.')
+    expect(payload.studentsCommittees.bachelor!.rows[0]!['Komise - člen 1']).toBe('Neznamy Test Ing.')
+    expect(payload.studentsCommittees.bachelor!.rows[0]!['Komise - předseda']).toBe('doc. Test Predseda')
   })
 })

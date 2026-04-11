@@ -42,8 +42,8 @@ function createValidTeachersDictionaryCsvFile(
   rowOverrides: Partial<Record<string, string>> = {}
 ): File {
   const row = {
-    Příjmení: 'Novák',
-    Jméno: 'Jan',
+    Příjmení: 'Testov',
+    Jméno: 'Alex',
     'Titul osoby (před jménem)': 'Ing.',
     'Titul osoby (za jménem)': 'Ph.D.',
     ...rowOverrides
@@ -57,8 +57,8 @@ function createValidTeachersDictionaryCsvFile(
 function createMissingHeadersCsvFile(fileName = 'missing-headers.csv'): File {
   const headers = [REQUIRED_HEADERS[0], REQUIRED_HEADERS[1]]
   const row = {
-    [REQUIRED_HEADERS[0]]: 'Novák',
-    [REQUIRED_HEADERS[1]]: 'Jan'
+    [REQUIRED_HEADERS[0]]: 'Testov',
+    [REQUIRED_HEADERS[1]]: 'Alex'
   }
 
   return new File([createCsvContent(headers, [row])], fileName, {
@@ -158,7 +158,7 @@ describe('useTeachersDictionaryCsvImport', () => {
     expect(importState.value.error).toBeNull()
     expect(importState.value.entries).toEqual([
       {
-        canonicalName: 'Ing. Jan Novák, Ph.D.',
+        canonicalName: 'Ing. Alex Testov, Ph.D.',
         isCustom: false
       }
     ])
@@ -186,8 +186,8 @@ describe('useTeachersDictionaryCsvImport', () => {
           [REQUIRED_HEADERS[0], REQUIRED_HEADERS[1]],
           [
             {
-              [REQUIRED_HEADERS[0]]: 'Novák',
-              [REQUIRED_HEADERS[1]]: 'Jan'
+              [REQUIRED_HEADERS[0]]: 'Testov',
+              [REQUIRED_HEADERS[1]]: 'Alex'
             }
           ]
         )
@@ -197,7 +197,7 @@ describe('useTeachersDictionaryCsvImport', () => {
 
     expect(importState.value.file?.name).toBe('fast.csv')
     expect(importState.value.error).toBeNull()
-    expect(importState.value.entries?.[0]?.canonicalName).toBe('Ing. Jan Novák, Ph.D.')
+    expect(importState.value.entries?.[0]?.canonicalName).toBe('Ing. Alex Testov, Ph.D.')
   })
 
   it('returns ok=false from submitImport when submit is disabled', async () => {
@@ -230,7 +230,7 @@ describe('useTeachersDictionaryCsvImport', () => {
       method: 'PUT',
       body: [
         {
-          canonicalName: 'Ing. Jan Novák, Ph.D.',
+          canonicalName: 'Ing. Alex Testov, Ph.D.',
           isCustom: false
         }
       ]

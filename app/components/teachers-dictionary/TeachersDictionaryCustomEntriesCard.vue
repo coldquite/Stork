@@ -56,6 +56,10 @@ const columns = computed<TableColumn<TeachersDictionaryEntryDto>[]>(() => [
   }
 ])
 
+function getEntryRowId(row: TeachersDictionaryEntryDto): string {
+  return row.id
+}
+
 async function retryLoad(): Promise<void> {
   await Promise.all([refresh(), refreshCustomMetadata()])
 }
@@ -154,7 +158,7 @@ async function confirmDeleteEntry(): Promise<void> {
       <UTable
         :data="entries"
         :columns="columns"
-        :get-row-id="(row) => row.id"
+        :get-row-id="getEntryRowId"
         :ui="{
           separator: 'bg-default',
           tbody: 'divide-y divide-default [&_tr:nth-child(odd)]:bg-elevated [&_tr:nth-child(even)]:bg-default'

@@ -109,7 +109,7 @@ export function useEditorStudentSearch(selectedCommitteeId: Ref<string>) {
     selectedCommitteeId.value = committeeId
     const nextRequestId = highlightRequestCounter.value + 1
 
-    nextTick(() => {
+    void nextTick(() => {
       highlightRequestCounter.value = nextRequestId
       highlightRequest.value = {
         requestId: nextRequestId,

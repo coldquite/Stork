@@ -69,7 +69,7 @@ function parseHourSelectValue(value: unknown): number | undefined {
     return value
   }
 
-  if (typeof value === 'object' && value !== null && 'value' in value) {
+  if (typeof value === 'object' && 'value' in value) {
     const inner = (value as { value: unknown }).value
     if (typeof inner === 'number' && Number.isInteger(inner) && inner >= 0 && inner <= 23) {
       return inner
@@ -88,7 +88,7 @@ function parseMinuteSelectValue(value: unknown): number | undefined {
     return value
   }
 
-  if (typeof value === 'object' && value !== null && 'value' in value) {
+  if (typeof value === 'object' && 'value' in value) {
     const inner = (value as { value: unknown }).value
     if (typeof inner === 'number' && Number.isInteger(inner) && inner >= 0 && inner <= 59) {
       return inner

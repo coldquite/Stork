@@ -1,6 +1,6 @@
 import type { TableColumn } from '@nuxt/ui'
 import { STUDENT_TABLE_THESIS_COLUMN_WIDTH_CLASS } from '~/constants/editor-students-table'
-import type { EditorStudentTableRow, EditorTableRow } from '~/types/editor'
+import type { EditorStudentTableRow, EditorStudentsTableViewMode, EditorTableRow } from '~/types/editor'
 import type {
   ScheduleDraftCommittee,
   ScheduleDraftItem,
@@ -17,7 +17,6 @@ import {
   resolveSpecializationNameForStudyProfile
 } from '~/utils/editor/student-study-profile'
 import { resolveThesisLanguage } from '~/utils/editor/thesis-language'
-import type { EditorStudentsTableViewMode } from '~/types/editor-table-preferences'
 import { resolveStudentDurationByStudyProgramAndRepeat } from '~/utils/student-duration'
 
 function resolveMinutes(value: number, fallback: number): number {
@@ -126,7 +125,7 @@ function updateStudentItemFromRow(
 }
 
 /**
- * Table rows and columns for the selected committee, including drag-reorder via v-model.
+ * Table rows and columns for the selected committee, including drag-reorder via a v-model.
  */
 export function useEditorStudentTable(
   selectedCommittee: ComputedRef<ScheduleDraftCommittee | null>,

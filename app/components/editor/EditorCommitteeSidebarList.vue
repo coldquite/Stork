@@ -68,7 +68,7 @@ function handleCommitteeSelect(committeeId: string): void {
     <li v-for="item in props.items" :key="resolveSidebarItemKey(item)">
       <div
         v-if="item.kind === 'day-bookmark'"
-        class="border-capaccent-400/80 dark:border-capaccent-500/80 bg-secondary/10 text-capaccent-900 dark:text-capaccent-100 border-y-2 px-3 py-2 text-sm font-semibold"
+        class="border-secondary-400/80 dark:border-secondary-500/80 bg-secondary/10 text-secondary-900 dark:text-secondary-100 border-y-2 px-3 py-2 text-sm font-semibold"
       >
         {{ item.dayLabel }}
       </div>
@@ -106,7 +106,7 @@ function handleCommitteeSelect(committeeId: string): void {
             color="neutral"
             variant="outline"
             size="lg"
-            class="bg-default px-2.5 py-1 text-base font-semibold ring-[2px] ring-current/45"
+            class="bg-default px-2.5 py-1 text-base font-semibold ring-2 ring-current/45"
           >
             {{ props.currentCommitteeBadgeLabel }}
           </UBadge>
@@ -116,7 +116,7 @@ function handleCommitteeSelect(committeeId: string): void {
             variant="outline"
             size="lg"
             leading-icon="i-lucide-users"
-            class="bg-default px-2.5 py-1 text-base font-semibold ring-[2px] ring-current/45"
+            class="bg-default px-2.5 py-1 text-base font-semibold ring-2 ring-current/45"
           >
             {{ item.studentsCount }}
           </UBadge>

@@ -15,7 +15,7 @@ export interface EditorTimeSelectOption {
 }
 
 /**
- * Snaps a minute-of-hour to the nearest valid slot for the given step (e.g. 0, 5, …, 55 for step 5).
+ * Snaps a minute-of-hour to the nearest valid slot for the given step (e.g., 0, 5, …, 55 for step 5).
  */
 export function normalizeMinuteToStep(minute: number, step: number): number {
   if (!Number.isFinite(minute)) {

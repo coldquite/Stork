@@ -18,8 +18,8 @@ function buildEmbeddedFontFace(options: {
 }`.trim()
 }
 
-export const PDF_EMBEDDED_FONT_FAMILY = 'CapPdfTechnika'
-export const PDF_EMBEDDED_STENCIL_FONT_FAMILY = 'CapPdfTechnikaStencil'
+export const PDF_EMBEDDED_FONT_FAMILY = 'StorkPdfTechnika'
+export const PDF_EMBEDDED_STENCIL_FONT_FAMILY = 'StorkPdfTechnikaStencil'
 
 interface EmbeddedFontVariant {
   key: string

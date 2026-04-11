@@ -47,7 +47,7 @@ function requestCreateCommittee(): void {
           variant="outline"
           size="lg"
           leading-icon="i-lucide-scale"
-          class="bg-default !text-capaccent-800 ring-capaccent-400/80 dark:!text-capaccent-100 dark:ring-capaccent-500/80 self-stretch px-2.5 text-base font-semibold ring-[2px]"
+          class="bg-default text-secondary-800! ring-secondary-400/80 dark:text-secondary-100! dark:ring-secondary-500/80 self-stretch px-2.5 text-base font-semibold ring-2"
         >
           {{ props.committeesCount }}
         </UBadge>

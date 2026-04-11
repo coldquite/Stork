@@ -101,7 +101,7 @@ function cloneImportDatasetRows(rows: ImportCsvRow[]): ImportCsvRow[] {
 }
 
 // Creates a mutable working copy so dictionary normalization can rewrite values without mutating original import data
-// So, in case something went wrong, the app can always rollback to the original state of payload without forcing the user to reupload files
+// So, in case something went wrong, the app can always roll back to the original state of payload without forcing the user to reupload files
 export function cloneImportPayload(payload: ImportPayload): ImportPayload {
   return {
     committees: {
@@ -151,7 +151,7 @@ export function createTeachersDictionaryLookupMap(entries: GetTeachersDictionary
     const canonicalName = normalizeTeachersDictionaryName(entry.canonicalName)
     const lookupKey = entry.normalizedLookupKey.trim()
 
-    // such a data shouldn't be in the db, but I would rather double check it
+    // such a data shouldn't be in the db, but I would rather double-check it
     if (lookupKey.length === 0 || canonicalName.length === 0) {
       continue
     }

@@ -10,7 +10,7 @@ export const EXPORT_SELECT_ALL_BUTTON_UI = {
 } as const
 
 export const EXPORT_CLEAR_ALL_BUTTON_UI = {
-  base: 'border-2 border-capaccent-400 text-capaccent-800 hover:border-capaccent-500 hover:bg-capaccent-50 dark:border-capaccent-500 dark:text-capaccent-100 dark:hover:bg-capaccent-900/50'
+  base: 'border-2 border-secondary-400 text-secondary-800 hover:border-secondary-500 hover:bg-secondary-50 dark:border-secondary-500 dark:text-secondary-100 dark:hover:bg-secondary-900/50'
 } as const
 
 export const EXPORT_LOADING_OVERLAY_CLASS =

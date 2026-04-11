@@ -26,7 +26,7 @@ function createCommitteesRow(overrides: Partial<Record<string, string>> = {}): R
     'Název studijního programu': 'Informatika',
     'Název oboru/specializace': 'Softwarové inženýrství 2021',
     Správce: 'Bc. Sekretářka',
-    Kat: 'KSI',
+    Kat: '13139',
     Datum: '23.06.2025',
     Místo: 'TH:A-1435',
     ...overrides
@@ -35,28 +35,28 @@ function createCommitteesRow(overrides: Partial<Record<string, string>> = {}): R
 
 function createStudentsCommitteesRow(overrides: Partial<Record<string, string>> = {}): Record<string, string> {
   return {
-    'Jméno studenta': 'Jan',
-    'Příjmení studenta': 'Novák',
-    'Email adresa': 'jan.novak@fit.cvut.cz',
+    'Jméno studenta': 'Alex',
+    'Příjmení studenta': 'Testovací',
+    'Email adresa': 'alex.testovaci@fit.cvut.cz',
     'Jazyk výuky': 'CZ',
     'Komise - název': '242-BI, 5-BI-PI.21',
     'VŠKP-typ A: Anglický název práce': 'Smart Scheduler',
     'VŠKP-typ A: Český název práce': 'Chytrý plánovač',
     'VŠKP-typ A: Jazyk práce': 'CZ',
-    'VŠKP-typ A: Vedoucí práce 1': 'Ing. Vedoucí',
+    'VŠKP-typ A: Vedoucí práce 1': 'Ing. Test Vedoucí',
     'VŠKP-typ A: Vedoucí práce 2': '',
-    'VŠKP-typ A: Oponent práce 1': 'Ing. Oponent',
+    'VŠKP-typ A: Oponent práce 1': 'Ing. Test Oponent',
     'VŠKP-typ A: Oponent práce 2': '',
-    'Komise - předseda': 'doc. Předseda',
-    'Komise - místopředseda': 'doc. Místopředseda',
-    'Komise - člen 1': 'Člen 1',
-    'Komise - člen 2': 'Člen 2',
-    'Komise - člen 3': 'Člen 3',
-    'VŠKP-typ A: Katedra obhajoby - kod': 'KSI',
-    'VŠKP-typ A: Katedra obhajoby - název': 'Katedra softwarového inženýrství',
+    'Komise - předseda': 'doc. Test Předseda',
+    'Komise - místopředseda': 'Ing. Test Místopředseda Ph.D.',
+    'Komise - člen 1': 'Mgr. Test Člen A',
+    'Komise - člen 2': 'Ing. Test Člen B',
+    'Komise - člen 3': 'Test Člen C Ph.D.',
+    'VŠKP-typ A: Katedra obhajoby - kod': '13139',
+    'VŠKP-typ A: Katedra obhajoby - název': 'Katedra informatiky',
     'Obor/spec - kód': 'BI-SI.21',
     'Obor/spec - název': 'Softwarové inženýrství 2021',
-    'St. program - kód': 'BI',
+    'St. program - kód': 'B0613A140017',
     'St. program - název': 'Informatika',
     'St. program - typ': 'B',
     'VŠKP-typ A: Datum obhajoby': '',
@@ -69,16 +69,16 @@ function createStudentsCommitteesRow(overrides: Partial<Record<string, string>> 
 
 function createStudentsStorkRow(overrides: Partial<Record<string, string>> = {}): Record<string, string> {
   return {
-    Příjmení: 'Novák',
-    Jméno: 'Jan',
+    Příjmení: 'Testovací',
+    Jméno: 'Alex',
     Titul: 'Bc.',
     'titul za': '',
     'Kód studijního plánu': 'BI-SI.21',
     'VŠKP-typ A: Název práce': 'Chytrý plánovač',
-    'VŠKP-typ A: Vedoucí práce 1': 'Ing. Vedoucí',
-    'VŠKP-typ A: Oponent práce 1': 'Ing. Oponent',
+    'VŠKP-typ A: Vedoucí práce 1': 'Ing. Test Vedoucí',
+    'VŠKP-typ A: Oponent práce 1': 'Ing. Test Oponent',
     'VŠKP-typ A: Datum obhajoby': '',
-    'Email studenta': 'jan.novak@fit.cvut.cz',
+    'Email studenta': 'alex.testovaci@fit.cvut.cz',
     'Studijní program (název)': 'Informatika',
     'Obor/spec - název': 'Softwarové inženýrství 2021',
     'Studijní plán (název)': 'Bc. Informatika',
@@ -136,9 +136,9 @@ function createValidMasterPayload(
         headers: [],
         rows: [
           createStudentsStorkRow({
-            Jméno: 'Eva',
-            Příjmení: 'Svobodová',
-            'Email studenta': 'eva.svobodova@fit.cvut.cz',
+            Jméno: 'Dana',
+            Příjmení: 'Modelová',
+            'Email studenta': 'dana.modelova@fit.cvut.cz',
             'Studijní plán (název)': 'Mgr. Informatika',
             ...overrides.studentsStork
           })
@@ -151,9 +151,9 @@ function createValidMasterPayload(
         headers: [],
         rows: [
           createStudentsCommitteesRow({
-            'Jméno studenta': 'Eva',
-            'Příjmení studenta': 'Svobodová',
-            'Email adresa': 'eva.svobodova@fit.cvut.cz',
+            'Jméno studenta': 'Dana',
+            'Příjmení studenta': 'Modelová',
+            'Email adresa': 'dana.modelova@fit.cvut.cz',
             'Komise - název': '242-MI, 6-MI-PI.22',
             'St. program - typ': 'M',
             'St. program - kód': 'MI',
@@ -180,18 +180,24 @@ function mapImportPayloadWithTeachersDictionary(options: {
   payload: ImportPayload
   dictionaryCanonicalNames?: string[]
 }) {
-  const defaultCommitteeTeacherNames = ['doc. Předseda', 'doc. Místopředseda', 'Člen 1', 'Člen 2', 'Člen 3']
+  const defaultCommitteeTeacherNames = [
+    'doc. Test Předseda',
+    'Ing. Test Místopředseda Ph.D.',
+    'Mgr. Test Člen A',
+    'Ing. Test Člen B',
+    'Test Člen C Ph.D.'
+  ]
   const defaultStudentTeacherNames = [
-    'Ing. Vedoucí',
-    'Ing. Oponent',
-    'Ing. Matej Hulák',
-    'Ing. Miroslav Skrbek Ph.D.',
-    'Ing. Pavel Oponent',
-    'Mgr. Druhý Oponent Ph.D.',
-    'Ing. Michal Valenta Ph.D.',
-    'Ing. Marek Suchánek Ph.D. et, Ph.D.',
-    'Milan Kolar M.A.',
-    'Dr. rer. nat. Rodrigo Augusto Da Silva Alves'
+    'Ing. Test Vedoucí',
+    'Ing. Test Oponent',
+    'Ing. Alex Vzor',
+    'Ing. Boris Vzor Ph.D.',
+    'Ing. Cyril Oponent',
+    'Mgr. Dana Druha Ph.D.',
+    'Ing. Emil Ukazka Ph.D.',
+    'Ing. Filip Model Ph.D. et, Ph.D.',
+    'Gabriel Priklad M.A.',
+    'Dr. rer. nat. Helena Nova Silva'
   ]
   const preparedPayload = cloneImportPayload(options.payload)
 
@@ -241,7 +247,7 @@ describe('mapImportPayloadToDraftSource', () => {
       throw new Error('Expected mapped student item')
     }
 
-    expect(mappedFirstItem.student.email).toBe('jan.novak@fit.cvut.cz')
+    expect(mappedFirstItem.student.email).toBe('alex.testovaci@fit.cvut.cz')
     expect(mappedFirstItem.student.studyLanguage).toBe('CZECH')
     expect(mappedFirstItem.student.repeatType).toBe('NONE')
     expect(mappedFirstItem.student.prepareMinutes).toBe(45)
@@ -665,10 +671,10 @@ describe('mapImportPayloadToDraftSource', () => {
   it('fails when students-committees teacher names are not pre-resolved by teachers dictionary', () => {
     const payload = createValidPayload()
     payload.studentsStork.bachelor!.rows[0] = createStudentsStorkRow({
-      'VŠKP-typ A: Vedoucí práce 1': 'Ing. Matej Hulák'
+      'VŠKP-typ A: Vedoucí práce 1': 'Ing. Alex Vzor'
     })
     payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
-      'VŠKP-typ A: Vedoucí práce 1': 'Hulák Matej, Ing.'
+      'VŠKP-typ A: Vedoucí práce 1': 'Vzor Alex, Ing.'
     })
 
     const result = mapImportPayloadToDraftSource({
@@ -693,21 +699,21 @@ describe('mapImportPayloadToDraftSource', () => {
   it('maps teacher fields when students-committees names are pre-resolved by teachers dictionary', () => {
     const payload = createValidPayload()
     payload.studentsStork.bachelor!.rows[0] = createStudentsStorkRow({
-      'VŠKP-typ A: Vedoucí práce 1': 'Ing. Matej Hulák',
-      'VŠKP-typ A: Vedoucí práce 2': 'Ing. Miroslav Skrbek Ph.D.',
-      'VŠKP-typ A: Oponent práce 1': 'Ing. Pavel Oponent',
-      'VŠKP-typ A: Oponent práce 2': 'Mgr. Druhý Oponent Ph.D.'
+      'VŠKP-typ A: Vedoucí práce 1': 'Ing. Alex Vzor',
+      'VŠKP-typ A: Vedoucí práce 2': 'Ing. Boris Vzor Ph.D.',
+      'VŠKP-typ A: Oponent práce 1': 'Ing. Cyril Oponent',
+      'VŠKP-typ A: Oponent práce 2': 'Mgr. Dana Druha Ph.D.'
     })
     payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
-      'VŠKP-typ A: Vedoucí práce 1': 'Hulák Matej, Ing.',
-      'VŠKP-typ A: Vedoucí práce 2': 'Skrbek Miroslav, Ing., Ph.D.',
-      'VŠKP-typ A: Oponent práce 1': 'Oponent Pavel, Ing.',
-      'VŠKP-typ A: Oponent práce 2': 'Oponent Druhý, Mgr., Ph.D.',
-      'Komise - předseda': 'Předseda Petr, doc.',
-      'Komise - místopředseda': 'Místopředseda Martin, Ing., Ph.D.',
-      'Komise - člen 1': 'Člen Alice, Mgr.',
-      'Komise - člen 2': 'Člen Bob, Ing.',
-      'Komise - člen 3': 'Člen Carol, Ph.D.'
+      'VŠKP-typ A: Vedoucí práce 1': 'Vzor Alex, Ing.',
+      'VŠKP-typ A: Vedoucí práce 2': 'Vzor Boris, Ing., Ph.D.',
+      'VŠKP-typ A: Oponent práce 1': 'Oponent Cyril, Ing.',
+      'VŠKP-typ A: Oponent práce 2': 'Druha Dana, Mgr., Ph.D.',
+      'Komise - předseda': 'Předseda Test, doc.',
+      'Komise - místopředseda': 'Místopředseda Test, Ing., Ph.D.',
+      'Komise - člen 1': 'Člen Test A, Mgr.',
+      'Komise - člen 2': 'Člen Test B, Ing.',
+      'Komise - člen 3': 'Člen Test C, Ph.D.'
     })
 
     const result = mapImportPayloadWithTeachersDictionary({
@@ -715,11 +721,11 @@ describe('mapImportPayloadToDraftSource', () => {
       szzType: 'BACHELOR',
       payload,
       dictionaryCanonicalNames: [
-        'doc. Petr Předseda',
-        'Ing. Martin Místopředseda Ph.D.',
-        'Mgr. Alice Člen',
-        'Ing. Bob Člen',
-        'Carol Člen Ph.D.'
+        'doc. Test Předseda',
+        'Ing. Test Místopředseda Ph.D.',
+        'Mgr. Test Člen A',
+        'Ing. Test Člen B',
+        'Test Člen C Ph.D.'
       ]
     })
 
@@ -733,32 +739,32 @@ describe('mapImportPayloadToDraftSource', () => {
       throw new Error('Expected mapped committee')
     }
 
-    expect(mappedCommittee.chairName).toBe('doc. Petr Předseda')
-    expect(mappedCommittee.viceChairName).toBe('Ing. Martin Místopředseda Ph.D.')
-    expect(mappedCommittee.member1Name).toBe('Mgr. Alice Člen')
-    expect(mappedCommittee.member2Name).toBe('Ing. Bob Člen')
-    expect(mappedCommittee.member3Name).toBe('Carol Člen Ph.D.')
+    expect(mappedCommittee.chairName).toBe('doc. Test Předseda')
+    expect(mappedCommittee.viceChairName).toBe('Ing. Test Místopředseda Ph.D.')
+    expect(mappedCommittee.member1Name).toBe('Mgr. Test Člen A')
+    expect(mappedCommittee.member2Name).toBe('Ing. Test Člen B')
+    expect(mappedCommittee.member3Name).toBe('Test Člen C Ph.D.')
 
     const mappedFirstItem = mappedCommittee.items[0]
     if (!mappedFirstItem || mappedFirstItem.type !== 'STUDENT') {
       throw new Error('Expected mapped student item')
     }
 
-    expect(mappedFirstItem.student.supervisorName).toBe('Ing. Matej Hulák')
-    expect(mappedFirstItem.student.reviewerName).toBe('Ing. Pavel Oponent')
-    expect(mappedFirstItem.student.additionalSupervisorName).toBe('Ing. Miroslav Skrbek Ph.D.')
-    expect(mappedFirstItem.student.additionalReviewerName).toBe('Mgr. Druhý Oponent Ph.D.')
+    expect(mappedFirstItem.student.supervisorName).toBe('Ing. Alex Vzor')
+    expect(mappedFirstItem.student.reviewerName).toBe('Ing. Cyril Oponent')
+    expect(mappedFirstItem.student.additionalSupervisorName).toBe('Ing. Boris Vzor Ph.D.')
+    expect(mappedFirstItem.student.additionalReviewerName).toBe('Mgr. Dana Druha Ph.D.')
   })
 
   it('matches supervisor names after dictionary resolution by lookup key', () => {
     const payload = createValidPayload()
     payload.studentsStork.bachelor!.rows[0] = createStudentsStorkRow({
-      'VŠKP-typ A: Vedoucí práce 1': 'Ing. Michal Valenta Ph.D.',
-      'VŠKP-typ A: Oponent práce 1': 'Ing. Pavel Oponent'
+      'VŠKP-typ A: Vedoucí práce 1': 'Ing. Emil Ukazka Ph.D.',
+      'VŠKP-typ A: Oponent práce 1': 'Ing. Cyril Oponent'
     })
     payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
-      'VŠKP-typ A: Vedoucí práce 1': 'Valenta Michal, Ing., Ph.D',
-      'VŠKP-typ A: Oponent práce 1': 'Oponent Pavel, Ing.'
+      'VŠKP-typ A: Vedoucí práce 1': 'Ukazka Emil, Ing., Ph.D',
+      'VŠKP-typ A: Oponent práce 1': 'Oponent Cyril, Ing.'
     })
 
     const result = mapImportPayloadWithTeachersDictionary({
@@ -777,16 +783,16 @@ describe('mapImportPayloadToDraftSource', () => {
       throw new Error('Expected mapped student item')
     }
 
-    expect(mappedFirstItem.student.supervisorName).toBe('Ing. Michal Valenta Ph.D.')
+    expect(mappedFirstItem.student.supervisorName).toBe('Ing. Emil Ukazka Ph.D.')
   })
 
   it('matches reviewer names with punctuation differences after dictionary resolution', () => {
     const payload = createValidPayload()
     payload.studentsStork.bachelor!.rows[0] = createStudentsStorkRow({
-      'VŠKP-typ A: Oponent práce 1': 'Ing. Marek Suchánek Ph.D. et, Ph.D.'
+      'VŠKP-typ A: Oponent práce 1': 'Ing. Filip Model Ph.D. et, Ph.D.'
     })
     payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
-      'VŠKP-typ A: Oponent práce 1': 'Suchánek Marek, Ing., Ph.D. et Ph.D.'
+      'VŠKP-typ A: Oponent práce 1': 'Model Filip, Ing., Ph.D. et Ph.D.'
     })
 
     const result = mapImportPayloadWithTeachersDictionary({
@@ -805,16 +811,16 @@ describe('mapImportPayloadToDraftSource', () => {
       throw new Error('Expected mapped student item')
     }
 
-    expect(mappedFirstItem.student.reviewerName).toBe('Ing. Marek Suchánek Ph.D. et, Ph.D.')
+    expect(mappedFirstItem.student.reviewerName).toBe('Ing. Filip Model Ph.D. et, Ph.D.')
   })
 
   it('matches reviewer names when source order differs but lookup key is the same', () => {
     const payload = createValidPayload()
     payload.studentsStork.bachelor!.rows[0] = createStudentsStorkRow({
-      'VŠKP-typ A: Oponent práce 1': 'Milan Kolar M.A.'
+      'VŠKP-typ A: Oponent práce 1': 'Gabriel Priklad M.A.'
     })
     payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
-      'VŠKP-typ A: Oponent práce 1': 'Kolar Milan, M.A.'
+      'VŠKP-typ A: Oponent práce 1': 'Priklad Gabriel, M.A.'
     })
 
     const result = mapImportPayloadWithTeachersDictionary({
@@ -833,16 +839,16 @@ describe('mapImportPayloadToDraftSource', () => {
       throw new Error('Expected mapped student item')
     }
 
-    expect(mappedFirstItem.student.reviewerName).toBe('Milan Kolar M.A.')
+    expect(mappedFirstItem.student.reviewerName).toBe('Gabriel Priklad M.A.')
   })
 
   it('matches reviewer names with reordered multi-part surname tokens after dictionary resolution', () => {
     const payload = createValidPayload()
     payload.studentsStork.bachelor!.rows[0] = createStudentsStorkRow({
-      'VŠKP-typ A: Oponent práce 1': 'Dr. rer. nat. Rodrigo Augusto Da Silva Alves'
+      'VŠKP-typ A: Oponent práce 1': 'Dr. rer. nat. Helena Nova Silva'
     })
     payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
-      'VŠKP-typ A: Oponent práce 1': 'Silva Alves Rodrigo Augusto Da, Dr. rer. nat.'
+      'VŠKP-typ A: Oponent práce 1': 'Silva Nova Helena, Dr. rer. nat.'
     })
 
     const result = mapImportPayloadWithTeachersDictionary({
@@ -861,7 +867,7 @@ describe('mapImportPayloadToDraftSource', () => {
       throw new Error('Expected mapped student item')
     }
 
-    expect(mappedFirstItem.student.reviewerName).toBe('Dr. rer. nat. Rodrigo Augusto Da Silva Alves')
+    expect(mappedFirstItem.student.reviewerName).toBe('Dr. rer. nat. Helena Nova Silva')
   })
 
   it('does not fail when legacy defense department columns are empty in studenti-komise', () => {
@@ -1460,9 +1466,9 @@ describe('mapImportPayloadToDraftSource', () => {
       headers: [],
       rows: [
         createStudentsStorkRow({
-          Jméno: 'Eva',
-          Příjmení: 'Svobodová',
-          'Email studenta': 'eva.svobodova@fit.cvut.cz',
+          Jméno: 'Dana',
+          Příjmení: 'Modelová',
+          'Email studenta': 'dana.modelova@fit.cvut.cz',
           'Studijní plán (název)': 'Mgr. Informatika'
         })
       ]
@@ -1472,9 +1478,9 @@ describe('mapImportPayloadToDraftSource', () => {
       headers: [],
       rows: [
         createStudentsCommitteesRow({
-          'Jméno studenta': 'Eva',
-          'Příjmení studenta': 'Svobodová',
-          'Email adresa': 'eva.svobodova@fit.cvut.cz',
+          'Jméno studenta': 'Dana',
+          'Příjmení studenta': 'Modelová',
+          'Email adresa': 'dana.modelova@fit.cvut.cz',
           'Komise - název': '242-MI, 6-MI-PI.22',
           'St. program - typ': 'M',
           'St. program - kód': 'MI'
@@ -1518,11 +1524,11 @@ describe('mapImportPayloadToDraftSource', () => {
       throw new Error('Expected mapped student items for both committees')
     }
 
-    expect(bachelorItem.student.firstName).toBe('Jan')
-    expect(bachelorItem.student.lastName).toBe('Novák')
+    expect(bachelorItem.student.firstName).toBe('Alex')
+    expect(bachelorItem.student.lastName).toBe('Testovací')
     expect(bachelorItem.student.studyProgramType).toBe('BACHELOR')
-    expect(masterItem.student.firstName).toBe('Eva')
-    expect(masterItem.student.lastName).toBe('Svobodová')
+    expect(masterItem.student.firstName).toBe('Dana')
+    expect(masterItem.student.lastName).toBe('Modelová')
     expect(masterItem.student.studyProgramType).toBe('MASTER')
   })
 })

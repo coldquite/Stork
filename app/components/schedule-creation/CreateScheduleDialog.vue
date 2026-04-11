@@ -202,29 +202,27 @@ function handleClearImportFiles(): void {
                 <label
                   :for="`import-file-${field.key}`"
                   class="bg-elevated border-default group flex items-center gap-3 rounded-md border px-3 py-2 transition-colors"
-                  :class="
-                    props.loading ? 'pointer-events-none opacity-50' : 'cursor-pointer hover:bg-[var(--ui-bg-accented)]'
-                  "
+                  :class="props.loading ? 'pointer-events-none opacity-50' : 'hover:bg-accented cursor-pointer'"
                 >
                   <span
                     class="border-default rounded-md border px-2 py-1 text-xs font-medium transition-colors"
                     :class="
                       importFileStates[field.key].file
-                        ? 'border-[var(--color-stork-500)] bg-[var(--color-stork-500)] text-white group-hover:border-[var(--color-stork-600)] group-hover:bg-[var(--color-stork-600)]'
+                        ? 'border-stork-500 bg-stork-500 group-hover:border-stork-600 group-hover:bg-stork-600 text-white'
                         : props.loading
                           ? ''
-                          : 'group-hover:border-[var(--ui-border-accented)] group-hover:bg-[var(--ui-bg)]'
+                          : 'group-hover:border-accented group-hover:bg-default'
                     "
                   >
                     {{ $t('homepage.actions.create.import.chooseFileAction') }}
                   </span>
 
-                  <p
+                  <span
                     class="min-w-0 truncate text-xs"
                     :class="importFileStates[field.key].file ? 'text-highlighted font-semibold' : 'text-muted'"
                   >
                     {{ importFileStates[field.key].file?.name || $t('homepage.actions.create.import.noFileSelected') }}
-                  </p>
+                  </span>
                 </label>
 
                 <p v-if="importFileStates[field.key].isValidating" class="text-muted text-xs">

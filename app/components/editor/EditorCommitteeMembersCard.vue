@@ -92,7 +92,7 @@ function emitField(field: EditorCommitteeStringFieldPayload['field'], value: str
               :ui="isChairInvalid ? invalidInputUi : undefined"
               placeholder="—"
               :disabled="!props.selectedCommittee"
-              @update:model-value="(v) => emitField('chair', v)"
+              @update:model-value="emitField('chair', $event)"
             />
           </div>
 
@@ -110,7 +110,7 @@ function emitField(field: EditorCommitteeStringFieldPayload['field'], value: str
               :ui="isViceChairInvalid ? invalidInputUi : undefined"
               placeholder="—"
               :disabled="!props.selectedCommittee"
-              @update:model-value="(v) => emitField('viceChair', v)"
+              @update:model-value="emitField('viceChair', $event)"
             />
           </div>
         </div>
@@ -125,7 +125,7 @@ function emitField(field: EditorCommitteeStringFieldPayload['field'], value: str
               :ui="isMember1Invalid ? invalidInputUi : undefined"
               placeholder="—"
               :disabled="!props.selectedCommittee"
-              @update:model-value="(v) => emitField('member1', v)"
+              @update:model-value="emitField('member1', $event)"
             />
           </div>
 
@@ -138,7 +138,7 @@ function emitField(field: EditorCommitteeStringFieldPayload['field'], value: str
               :ui="isMember2Invalid ? invalidInputUi : undefined"
               placeholder="—"
               :disabled="!props.selectedCommittee"
-              @update:model-value="(v) => emitField('member2', v)"
+              @update:model-value="emitField('member2', $event)"
             />
           </div>
 
@@ -151,7 +151,7 @@ function emitField(field: EditorCommitteeStringFieldPayload['field'], value: str
               :ui="isMember3Invalid ? invalidInputUi : undefined"
               placeholder="—"
               :disabled="!props.selectedCommittee"
-              @update:model-value="(v) => emitField('member3', v)"
+              @update:model-value="emitField('member3', $event)"
             />
           </div>
         </div>

@@ -315,7 +315,7 @@ async function confirmLogout(): Promise<void> {
             size="xl"
             icon="i-lucide-log-out"
             :aria-label="logoutButtonLabel"
-            :class="[logoutHeaderButtonClass, 'hover:!ring-primary/40 w-full justify-start !ring-transparent']"
+            :class="[logoutHeaderButtonClass, 'hover:ring-primary/40! w-full justify-start ring-transparent!']"
             :loading="authStore.isLogoutLoading"
             @click="openLogoutDialog"
           >

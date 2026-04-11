@@ -84,7 +84,7 @@ const starLayers = computed(() => [
           gradientUnits="userSpaceOnUse"
           gradientTransform="translate(508.999 19.5) rotate(90.177) scale(161.501 509.002)"
         >
-          <stop stop-color="var(--ui-primary)" />
+          <stop offset="0" stop-color="var(--ui-primary)" />
           <stop offset="1" stop-color="var(--ui-primary)" stop-opacity="0" />
         </radialGradient>
         <linearGradient
@@ -95,7 +95,7 @@ const starLayers = computed(() => [
           y2="90.502"
           gradientUnits="userSpaceOnUse"
         >
-          <stop stop-color="var(--ui-primary)" stop-opacity="0" />
+          <stop offset="0" stop-color="var(--ui-primary)" stop-opacity="0" />
           <stop offset="0.395" stop-color="var(--ui-primary)" />
           <stop offset="1" stop-color="var(--ui-primary)" stop-opacity="0" />
         </linearGradient>
@@ -171,6 +171,7 @@ const starLayers = computed(() => [
 }
 
 .star-layer {
+  --star-duration: 200s;
   animation: risingStarsAnimation linear infinite;
   animation-duration: var(--star-duration);
   will-change: transform;
