@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import EditorCsvExportCommitteesModal from '~/components/export/EditorCsvExportCommitteesModal.vue'
+import EditorPdfInvigilatorsExportModal from '~/components/export/EditorPdfInvigilatorsExportModal.vue'
 import type { useEditorPage } from '~/composables/editor/useEditorPage'
 import type { EditorScheduleDialogsCopy, EditorStudentsPanelCommitteeLabels } from '~/types/editor'
 
@@ -199,7 +201,9 @@ const renameDraftValidationText = computed(() => sd.renameDraftValidationError.v
 const cloudSaveLoadingFlag = computed(() => sd.isCloudSaveLoading.value)
 const cloudSaveValidationText = computed(() => sd.cloudSaveValidationError.value)
 const isCsvExportSubmitDisabled = computed(() => sd.isCsvExportSubmitDisabled.value)
+const pdfPublicExportLoadingFlag = computed(() => sd.isPdfPublicExportLoading.value)
 const isPdfPublicExportSubmitDisabled = computed(() => sd.isPdfPublicExportSubmitDisabled.value)
+const pdfInvigilatorsExportLoadingFlag = computed(() => sd.isPdfInvigilatorsExportLoading.value)
 const isPdfInvigilatorsExportSubmitDisabled = computed(() => sd.isPdfInvigilatorsExportSubmitDisabled.value)
 const invigilatorValidationText = computed(() => inv.invigilatorValidationError.value)
 const createCommitteeValidationText = computed(() => cl.createCommitteeValidationError.value)
@@ -303,6 +307,8 @@ const isMoveStudentSubmitDisabled = computed(() => cia.isMoveStudentSubmitDisabl
     :clear-all-label="copy.pdfPublicExportCommittees.clearAll"
     :cancel-label="copy.commonCancel"
     :submit-label="copy.pdfPublicExportCommittees.submit"
+    :loading="pdfPublicExportLoadingFlag"
+    :loading-label="copy.pdfPublicExportCommittees.loading ?? ''"
     :empty-title="copy.pdfPublicExportCommittees.emptyTitle"
     :empty-description="copy.pdfPublicExportCommittees.emptyDescription"
     :submit-disabled="isPdfPublicExportSubmitDisabled"
@@ -326,6 +332,8 @@ const isMoveStudentSubmitDisabled = computed(() => cia.isMoveStudentSubmitDisabl
     :clear-all-label="copy.pdfInvigilatorsExportCommittees.clearAll"
     :cancel-label="copy.commonCancel"
     :submit-label="copy.pdfInvigilatorsExportCommittees.submit"
+    :loading="pdfInvigilatorsExportLoadingFlag"
+    :loading-label="copy.pdfInvigilatorsExportCommittees.loading ?? ''"
     :empty-title="copy.pdfInvigilatorsExportCommittees.emptyTitle"
     :empty-description="copy.pdfInvigilatorsExportCommittees.emptyDescription"
     :submit-disabled="isPdfInvigilatorsExportSubmitDisabled"

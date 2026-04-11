@@ -1,4 +1,11 @@
 <script setup lang="ts">
+import {
+  EXPORT_CHECKBOX_GROUP_UI,
+  EXPORT_CLEAR_ALL_BUTTON_UI,
+  EXPORT_LOADING_OVERLAY_CLASS,
+  EXPORT_SELECT_ALL_BUTTON_UI
+} from '~/constants/export-modal-ui'
+
 interface EditorCsvExportCommitteeItem {
   id: string
   label: string
@@ -45,12 +52,34 @@ const emit = defineEmits<{
 }>()
 
 const open = defineModel<boolean>('open', { default: false })
-const { t } = useI18n()
+const loading = computed(() => props.loading)
+const submitDisabled = computed(() => props.submitDisabled)
+const loadingLabel = computed(() => props.loadingLabel)
+
+const {
+  isLoading,
+  isSubmitDisabled,
+  dimmedContainerClass,
+  resolvedLoadingLabel,
+  handleCancel,
+  handleSubmit,
+  handleSelectAll,
+  handleClearAll
+} = useExportModalControls({
+  loading,
+  submitDisabled,
+  loadingLabel,
+  open,
+  emitCancel: () => emit('cancel'),
+  emitSubmit: () => emit('submit'),
+  emitSelectAll: () => emit('selectAll'),
+  emitClearAll: () => emit('clearAll')
+})
 
 const selectedCommitteeIdsModel = computed({
   get: () => props.selectedCommitteeIds,
   set: (value: string[]) => {
-    if (props.loading) {
+    if (isLoading.value) {
       return
     }
 
@@ -59,46 +88,6 @@ const selectedCommitteeIdsModel = computed({
 })
 
 const hasCommittees = computed(() => props.committees.length > 0)
-const resolvedLoadingLabel = computed(() => props.loadingLabel || t('editor.loading'))
-const committeeCheckboxGroupUi = {
-  item: 'cursor-pointer rounded-md px-2 py-2 odd:bg-primary/5 even:bg-white hover:bg-primary/10 dark:odd:bg-primary/20 dark:even:bg-default dark:hover:bg-primary/18',
-  base: 'cursor-pointer',
-  label: 'cursor-pointer',
-  description: 'cursor-pointer'
-}
-
-function handleCancel(): void {
-  if (props.loading) {
-    return
-  }
-
-  open.value = false
-  emit('cancel')
-}
-
-function handleSubmit(): void {
-  if (props.submitDisabled || props.loading) {
-    return
-  }
-
-  emit('submit')
-}
-
-function handleSelectAll(): void {
-  if (props.loading) {
-    return
-  }
-
-  emit('selectAll')
-}
-
-function handleClearAll(): void {
-  if (props.loading) {
-    return
-  }
-
-  emit('clearAll')
-}
 </script>
 
 <template>
@@ -106,15 +95,15 @@ function handleClearAll(): void {
     v-model:open="open"
     :title="props.title"
     :description="props.description"
-    :dismissible="!props.loading"
-    :close="{ disabled: props.loading }"
+    :dismissible="!isLoading"
+    :close="{ disabled: isLoading }"
     :ui="{
       content: 'sm:max-w-3xl'
     }"
   >
     <template #body>
       <div class="relative">
-        <div :class="props.loading ? 'pointer-events-none opacity-60' : ''">
+        <div :class="dimmedContainerClass">
           <div v-if="hasCommittees" class="space-y-4">
             <div
               v-if="props.errorItems.length > 0"
@@ -151,10 +140,8 @@ function handleClearAll(): void {
                   variant="ghost"
                   icon="i-lucide-list-checks"
                   class="w-full cursor-pointer justify-center"
-                  :disabled="props.loading"
-                  :ui="{
-                    base: 'border-2 border-primary-600 text-primary-800 hover:border-stork-600 hover:bg-stork-100 dark:border-stork-400 dark:text-stork-100 dark:hover:border-stork-300 dark:hover:bg-stork-800/35'
-                  }"
+                  :disabled="isLoading"
+                  :ui="EXPORT_SELECT_ALL_BUTTON_UI"
                   @click="handleSelectAll"
                 >
                   {{ props.selectAllLabel }}
@@ -164,10 +151,8 @@ function handleClearAll(): void {
                   variant="ghost"
                   icon="i-lucide-brush-cleaning"
                   class="w-full cursor-pointer justify-center"
-                  :disabled="props.loading"
-                  :ui="{
-                    base: 'border-2 border-capaccent-400 text-capaccent-800 hover:border-capaccent-500 hover:bg-capaccent-50 dark:border-capaccent-500 dark:text-capaccent-100 dark:hover:bg-capaccent-900/50'
-                  }"
+                  :disabled="isLoading"
+                  :ui="EXPORT_CLEAR_ALL_BUTTON_UI"
                   @click="handleClearAll"
                 >
                   {{ props.clearAllLabel }}
@@ -183,7 +168,7 @@ function handleClearAll(): void {
                 label-key="label"
                 description-key="description"
                 :legend="props.checklistAriaLabel"
-                :ui="committeeCheckboxGroupUi"
+                :ui="EXPORT_CHECKBOX_GROUP_UI"
               />
             </div>
           </div>
@@ -193,12 +178,7 @@ function handleClearAll(): void {
           </div>
         </div>
 
-        <div
-          v-show="props.loading"
-          class="bg-default/80 absolute inset-0 z-10 flex items-center justify-center rounded-lg"
-          aria-busy="true"
-          aria-live="polite"
-        >
+        <div v-show="isLoading" :class="EXPORT_LOADING_OVERLAY_CLASS" aria-busy="true" aria-live="polite">
           <CommonAppLoadingState :label="resolvedLoadingLabel" min-height-class="min-h-0" />
         </div>
       </div>
@@ -206,7 +186,7 @@ function handleClearAll(): void {
 
     <template #footer>
       <div class="flex w-full justify-end gap-2">
-        <UButton color="neutral" variant="ghost" class="cursor-pointer" :disabled="props.loading" @click="handleCancel">
+        <UButton color="neutral" variant="ghost" class="cursor-pointer" :disabled="isLoading" @click="handleCancel">
           {{ props.cancelLabel }}
         </UButton>
 
@@ -214,8 +194,8 @@ function handleClearAll(): void {
           color="primary"
           variant="solid"
           class="cursor-pointer"
-          :loading="props.loading"
-          :disabled="props.submitDisabled || props.loading"
+          :loading="isLoading"
+          :disabled="isSubmitDisabled"
           @click="handleSubmit"
         >
           {{ props.submitLabel }}

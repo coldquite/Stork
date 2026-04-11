@@ -138,6 +138,7 @@ const dialogCopy = computed(() => ({
     selectAll: t('editor.schedule.export.pdfPublicDialog.selectAll'),
     clearAll: t('editor.schedule.export.pdfPublicDialog.clearAll'),
     submit: t('editor.schedule.export.pdfPublicDialog.submit'),
+    loading: t('editor.schedule.export.pdfPublicDialog.loading'),
     emptyTitle: t('editor.schedule.export.pdfPublicDialog.emptyTitle'),
     emptyDescription: t('editor.schedule.export.pdfPublicDialog.emptyDescription')
   },
@@ -152,6 +153,7 @@ const dialogCopy = computed(() => ({
     selectAll: t('editor.schedule.export.pdfInvigilatorsDialog.selectAll'),
     clearAll: t('editor.schedule.export.pdfInvigilatorsDialog.clearAll'),
     submit: t('editor.schedule.export.pdfInvigilatorsDialog.submit'),
+    loading: t('editor.schedule.export.pdfInvigilatorsDialog.loading'),
     emptyTitle: t('editor.schedule.export.pdfInvigilatorsDialog.emptyTitle'),
     emptyDescription: t('editor.schedule.export.pdfInvigilatorsDialog.emptyDescription')
   },

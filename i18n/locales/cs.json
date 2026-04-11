@@ -327,6 +327,7 @@
           "selectAll": "Vybrat všechny komise",
           "clearAll": "Zrušit výběr všech komisí",
           "submit": "Exportovat PDF pro veřejnost",
+          "loading": "Generuji PDF pro veřejnost…",
           "emptyTitle": "V plánu zatím nejsou žádné komise",
           "emptyDescription": "Jakmile přidáte první komisi, bude možné pokračovat v exportu."
         },
@@ -339,6 +340,7 @@
           "selectAll": "Vybrat všechny komise",
           "clearAll": "Zrušit výběr všech komisí",
           "submit": "Exportovat PDF pro dozor",
+          "loading": "Generuji PDF pro dozor…",
           "emptyTitle": "V plánu zatím nejsou žádné komise",
           "emptyDescription": "Jakmile přidáte první komisi, bude možné pokračovat v exportu.",
           "daySelectedCount": "Vybráno {selected}/{total}"

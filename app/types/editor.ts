@@ -220,6 +220,7 @@ export interface EditorExportCommitteesDialogCopy {
   selectAll: string
   clearAll: string
   submit: string
+  loading?: string
   emptyTitle: string
   emptyDescription: string
   errorTitle?: string
