@@ -138,6 +138,10 @@ function resolveCommitteeRoomLabel(committee: ScheduleDraftCommittee): string {
   return normalizeTextOrFallback(committee.room)
 }
 
+function resolvePreparationRoomLabel(committee: ScheduleDraftCommittee): string {
+  return normalizeTextOrFallback(committee.preparationRoom)
+}
+
 function collectUniqueInvigilatorNames(committees: ScheduleDraftCommittee[]): string[] {
   const names: string[] = []
   const seenNamesLowerCase = new Set<string>()
@@ -240,15 +244,15 @@ export function buildPdfInvigilatorsSections(input: BuildPdfInvigilatorsSections
   const groups = new Map<string, PdfInvigilatorsSectionAccumulator>()
 
   for (const [committeeSortIndex, committee] of sortedCommittees.entries()) {
-    const roomLabel = resolveCommitteeRoomLabel(committee)
+    const preparationRoomLabel = resolvePreparationRoomLabel(committee)
     const dayMeta = resolveDayMeta(committee.date)
-    const groupKey = `${dayMeta.dayKey}__${roomLabel}`
+    const groupKey = `${dayMeta.dayKey}__${preparationRoomLabel}`
     const existingGroup = groups.get(groupKey)
 
     const group: PdfInvigilatorsSectionAccumulator = existingGroup ?? {
       dayKey: dayMeta.dayKey,
       dayLabel: dayMeta.dayLabel,
-      roomLabel,
+      roomLabel: preparationRoomLabel,
       invigilators: [],
       students: []
     }

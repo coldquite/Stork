@@ -219,7 +219,7 @@ function setTableViewMode(mode: EditorStudentsTableViewMode): void {
               </UButton>
 
               <template #content>
-                <div class="w-[22rem] max-w-[90vw] space-y-4 p-3">
+                <div class="w-88 max-w-[90vw] space-y-4 p-3">
                   <div class="space-y-2">
                     <span class="text-sm font-medium whitespace-nowrap">{{ labels.thesisTitleDisplayMode }}:</span>
                     <div class="border-default flex min-w-0 items-center gap-1 rounded-md border p-1">

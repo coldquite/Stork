@@ -93,7 +93,7 @@ export async function renderPdfInvigilatorsHtml(payload: PostPdfInvigilatorsExpo
             <div class="brand-divider"></div>
           </header>`
           : ''
-      const sectionTitle = `Dozor u písemné přípravy, ${section.dayLabel} (${section.roomLabel})`
+      const sectionTitle = `Dozor u písemné přípravy, ${section.dayLabel} (místnost přípravy ${section.roomLabel})`
       const invigilatorsLine = `Dozor: ${section.invigilatorsLabel}`
 
       return `<section class="${sectionClass}">
@@ -248,7 +248,7 @@ export async function renderPdfInvigilatorsHtml(payload: PostPdfInvigilatorsExpo
 
       th:nth-child(3),
       td:nth-child(3) {
-        width: 28.5%;
+        width: 27.5%;
       }
 
       th:nth-child(4),
@@ -258,7 +258,7 @@ export async function renderPdfInvigilatorsHtml(payload: PostPdfInvigilatorsExpo
 
       th:nth-child(5),
       td:nth-child(5) {
-        width: 11%;
+        width: 12%;
       }
     </style>
   </head>

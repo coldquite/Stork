@@ -66,6 +66,7 @@ function createCommittee(
     startMinute: number
     date: string
     room: string | null
+    preparationRoom: string | null
     invigilators: ScheduleDraftInvigilator[]
     items: ScheduleDraftItem[]
   }>
@@ -76,6 +77,7 @@ function createCommittee(
     startMinute: options.startMinute ?? 540,
     date: options.date ?? '2025-08-28T00:00:00.000Z',
     room: options.room ?? 'TH:A-1500',
+    preparationRoom: options.preparationRoom ?? null,
     secretaryName: null,
     invigilators: options.invigilators ?? [],
     language: 'CZECH',
@@ -101,7 +103,7 @@ const repeatLabels = {
 } as const
 
 describe('pdf-invigilators-export', () => {
-  it('builds day+room sections, deduplicates invigilators and sorts students by prepare start time', () => {
+  it('builds day+preparation room sections, keeps committee room in rows and sorts students by prepare start time', () => {
     const committees: ScheduleDraftCommittee[] = [
       createCommittee({
         localId: 'committee-1',
@@ -109,6 +111,7 @@ describe('pdf-invigilators-export', () => {
         startMinute: 540,
         date: '2025-08-28T00:00:00.000Z',
         room: 'TH:A-1500',
+        preparationRoom: 'TH:PR-200',
         invigilators: [createInvigilator('Jan Novák', 'inv-1'), createInvigilator('Petr Svoboda', 'inv-2')],
         items: [
           createStudentItem({
@@ -142,7 +145,8 @@ describe('pdf-invigilators-export', () => {
         name: '   ',
         startMinute: 525,
         date: '2025-08-28T00:00:00.000Z',
-        room: 'TH:A-1500',
+        room: 'TH:A-1600',
+        preparationRoom: 'TH:PR-200',
         invigilators: [createInvigilator('jan novák', 'inv-3'), createInvigilator('Eva Dvořáková', 'inv-4')],
         items: [
           createStudentItem({
@@ -165,6 +169,7 @@ describe('pdf-invigilators-export', () => {
         startMinute: 600,
         date: '2025-08-28T00:00:00.000Z',
         room: 'TH:A-2000',
+        preparationRoom: null,
         invigilators: [],
         items: [createStudentItem({ localId: 'student-d', position: 1, firstName: 'Zuzana', lastName: 'Hájková' })]
       }),
@@ -174,6 +179,7 @@ describe('pdf-invigilators-export', () => {
         startMinute: 540,
         date: '2025-08-29T00:00:00.000Z',
         room: 'TH:A-1500',
+        preparationRoom: null,
         invigilators: [],
         items: []
       })
@@ -187,19 +193,21 @@ describe('pdf-invigilators-export', () => {
 
     expect(sections).toHaveLength(3)
     expect(sections[0]?.dayLabel).toBe('ČTVRTEK 28. 8. 2025')
-    expect(sections[0]?.roomLabel).toBe('TH:A-1500')
+    expect(sections[0]?.roomLabel).toBe('TH:PR-200')
     expect(sections[0]?.invigilatorsLabel).toBe('jan novák, Eva Dvořáková, Petr Svoboda')
     expect(sections[0]?.students.map((student) => student.prepareStartTime)).toEqual(['08:00', '08:15', '09:20'])
     expect(sections[0]?.students[0]?.committeeExamRangeTime).toBe('08:45 - 09:15')
     expect(sections[0]?.students[0]?.committeeLabel).toBe('Bez názvu')
-    expect(sections[0]?.students[0]?.roomLabel).toBe('TH:A-1500')
+    expect(sections[0]?.students[0]?.roomLabel).toBe('TH:A-1600')
+    expect(sections[0]?.students[1]?.roomLabel).toBe('TH:A-1500')
     expect(sections[0]?.students[1]?.studentName).toBe('Ing. Adam Procházka, Ph.D.')
     expect(sections[0]?.students[2]?.thesisTitle).toBe('English B')
     expect(sections[0]?.students[2]?.repeatLabel).toBe('Opakuje obhajobu')
 
-    expect(sections[1]?.roomLabel).toBe('TH:A-2000')
+    expect(sections[1]?.roomLabel).toBe('—')
     expect(sections[1]?.invigilatorsLabel).toBe('—')
     expect(sections[2]?.dayLabel).toBe('PÁTEK 29. 8. 2025')
+    expect(sections[2]?.roomLabel).toBe('—')
   })
 
   it('builds request payload using computed sections', () => {
