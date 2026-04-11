@@ -302,6 +302,125 @@ describe('useScheduleDraftStore', () => {
     expect(store.lastSavedAt).toBe('2026-06-11T11:00:00.000Z')
   })
 
+  it('replaces existing autosave timestamp suffix instead of appending another one', async () => {
+    const store = useScheduleDraftStore()
+    store.setAutoSavePolicy({
+      enabled: true,
+      debounceMs: 60_000,
+      minIntervalMs: 0,
+      retryAfterErrorMs: 200
+    })
+    store.initializeFromSource(createApiSchedule('AutoSuffixSingle'))
+
+    requestFetchMock.mockResolvedValueOnce({
+      id: 'saved-auto-suffix-single',
+      createdAt: '2026-06-11T11:05:00.000Z'
+    })
+
+    if (!store.draft) {
+      throw new Error('Expected draft to be initialized')
+    }
+
+    store.draft.name = 'Autosave změna [10.06.2026 12:00]'
+    await nextTick()
+
+    await expect(store.forceAutoSave()).resolves.toEqual({
+      id: 'saved-auto-suffix-single',
+      createdAt: '2026-06-11T11:05:00.000Z'
+    })
+
+    const autoSaveCall = requestFetchMock.mock.calls.at(0)
+    expect(autoSaveCall).toBeDefined()
+    if (!autoSaveCall) {
+      throw new Error('Expected autosave call to be captured')
+    }
+
+    const [, requestOptions] = autoSaveCall
+    expect(requestOptions).toBeDefined()
+    if (!requestOptions) {
+      throw new Error('Expected request options in autosave call')
+    }
+
+    const payload = requestOptions.body as { type: string; name: string }
+    expect(payload.type).toBe('AUTO')
+    expect(payload.name).toMatch(/^Autosave změna \[\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}\]$/)
+    expect(payload.name).not.toContain('[10.06.2026 12:00]')
+  })
+
+  it('removes repeated autosave timestamp suffixes before appending the new one', async () => {
+    const store = useScheduleDraftStore()
+    store.setAutoSavePolicy({
+      enabled: true,
+      debounceMs: 60_000,
+      minIntervalMs: 0,
+      retryAfterErrorMs: 200
+    })
+    store.initializeFromSource(createApiSchedule('AutoSuffixRepeated'))
+
+    requestFetchMock.mockResolvedValueOnce({
+      id: 'saved-auto-suffix-repeated',
+      createdAt: '2026-06-11T11:10:00.000Z'
+    })
+
+    if (!store.draft) {
+      throw new Error('Expected draft to be initialized')
+    }
+
+    store.draft.name = 'Autosave změna [10.06.2026 12:00] [11.06.2026 13:00]'
+    await nextTick()
+
+    await expect(store.forceAutoSave()).resolves.toEqual({
+      id: 'saved-auto-suffix-repeated',
+      createdAt: '2026-06-11T11:10:00.000Z'
+    })
+
+    const autoSaveCall = requestFetchMock.mock.calls.at(0)
+    expect(autoSaveCall).toBeDefined()
+    if (!autoSaveCall) {
+      throw new Error('Expected autosave call to be captured')
+    }
+
+    const [, requestOptions] = autoSaveCall
+    expect(requestOptions).toBeDefined()
+    if (!requestOptions) {
+      throw new Error('Expected request options in autosave call')
+    }
+
+    const payload = requestOptions.body as { type: string; name: string }
+    expect(payload.type).toBe('AUTO')
+    expect(payload.name).toMatch(/^Autosave změna \[\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}\]$/)
+    expect(payload.name).not.toContain('[10.06.2026 12:00]')
+    expect(payload.name).not.toContain('[11.06.2026 13:00]')
+  })
+
+  it('strips autosave date suffixes when loading AUTO schedule into editor draft', () => {
+    const store = useScheduleDraftStore()
+
+    const autoSource = {
+      ...createApiSchedule('LoadedAuto'),
+      type: 'AUTO' as const,
+      name: 'Obnovený plán [10.06.2026 12:00] [11.06.2026 13:00]'
+    }
+
+    store.initializeFromSource(autoSource)
+
+    expect(store.draft?.name).toBe('Obnovený plán')
+  })
+
+  it('keeps date-like suffix in MANUAL schedule name when loading source', () => {
+    const store = useScheduleDraftStore()
+
+    const manualSource = {
+      ...createApiSchedule('LoadedManual'),
+      type: 'MANUAL' as const,
+      name: 'Ruční plán [10.06.2026 12:00]'
+    }
+
+    store.initializeFromSource(manualSource)
+
+    expect(store.draft?.name).toBe('Ruční plán [10.06.2026 12:00]')
+  })
+
   it('returns DRAFT_NOT_INITIALIZED code when saving without initialized draft', async () => {
     const store = useScheduleDraftStore()
 

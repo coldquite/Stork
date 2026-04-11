@@ -59,8 +59,20 @@ function normalizedName(name: string | null | undefined, fallback = ''): string 
   return normalized.length > 0 ? normalized : fallback
 }
 
+const AUTO_SCHEDULE_TIMESTAMP_SUFFIXES_AT_END_REGEX = /(?:\s*\[\d{2}\.\d{2}\.\d{4}\s\d{2}:\d{2}\])+$/u
+
+function stripAutoScheduleTimestampSuffix(name: string): string {
+  const normalized = normalizedName(name, '')
+  if (normalized.length < 1) {
+    return ''
+  }
+
+  return normalized.replace(AUTO_SCHEDULE_TIMESTAMP_SUFFIXES_AT_END_REGEX, '').trim()
+}
+
 function createAutoScheduleName(draftName: string, now: Date = new Date()): string {
-  const baseName = normalizedName(draftName, createDefaultNewScheduleName(now))
+  const nameWithoutAutoSaveSuffix = stripAutoScheduleTimestampSuffix(draftName)
+  const baseName = normalizedName(nameWithoutAutoSaveSuffix, createDefaultNewScheduleName(now))
   const readableTimestamp = format(now, 'dd.MM.yyyy HH:mm')
   return `${baseName} [${readableTimestamp}]`
 }
@@ -126,9 +138,11 @@ function toDraftCommittee(committee: DraftCommitteeSource): ScheduleDraftCommitt
 
 function toDraftFromSource(source: DraftScheduleSource): ScheduleDraft {
   const fallbackName = createDefaultNewScheduleName()
+  const sourceNameWithoutAutoSaveSuffix =
+    source.type === 'AUTO' ? stripAutoScheduleTimestampSuffix(source.name) : source.name
 
   return {
-    name: normalizedName(source.name, fallbackName),
+    name: normalizedName(sourceNameWithoutAutoSaveSuffix, fallbackName),
     type: source.type,
     thesisTitleDisplayMode: 'AUTO',
     committees: source.committees.map((committee) => toDraftCommittee(committee))
