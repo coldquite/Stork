@@ -20,6 +20,8 @@ const editorOpenSavedSchedulesLabel = computed(() => t('editor.navigation.openSa
 const editorCreateScheduleFromImportLabel = computed(() => t('editor.navigation.createScheduleFromImportTitle'))
 const teachersDictionaryPageLabel = computed(() => t('teachersDictionary.navigation.openPage'))
 const userManualPageLabel = computed(() => t('userManual.navigation.openPage'))
+const mobileNavigationDrawerTitle = computed(() => t('layout.header.mobileNavigationTitle'))
+const mobileNavigationDrawerDescription = computed(() => t('layout.header.mobileNavigationDescription'))
 const headerActionButtonClass = 'cursor-pointer hover:bg-primary/20 hover:ring-primary/40'
 const editorHeaderActionButtonClass = `${headerActionButtonClass} whitespace-nowrap shrink-0`
 const secondaryHeaderButtonClass = `${editorHeaderActionButtonClass} bg-secondary/20 ring-secondary/30 hover:bg-secondary/30 hover:ring-secondary/70`
@@ -125,6 +127,11 @@ function openLogoutDialog(): void {
 }
 
 function openNavigationDrawer(): void {
+  const activeElement = globalThis.document?.activeElement
+  if (activeElement instanceof HTMLElement) {
+    activeElement.blur()
+  }
+
   isNavigationDrawerOpen.value = true
 }
 
@@ -282,6 +289,8 @@ async function confirmLogout(): Promise<void> {
       v-model:open="isNavigationDrawerOpen"
       direction="right"
       :handle="false"
+      :title="mobileNavigationDrawerTitle"
+      :description="mobileNavigationDrawerDescription"
       :ui="{ content: 'max-w-md', body: 'p-4 sm:p-6' }"
     >
       <template #body>

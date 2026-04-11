@@ -17,7 +17,9 @@
     "header": {
       "openNavigation": "Otevřít navigaci",
       "editorNavigation": "Navigace editoru",
-      "mainNavigation": "Hlavní navigace"
+      "mainNavigation": "Hlavní navigace",
+      "mobileNavigationTitle": "Mobilní navigace",
+      "mobileNavigationDescription": "Vyberte akci nebo stránku, na kterou chcete přejít."
     },
     "footer": {
       "copy": "ČÁP © {year}",
