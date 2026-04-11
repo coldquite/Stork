@@ -111,6 +111,7 @@ function mapCommitteeToDto(committee: LoadedCommittee): TimeScheduleDto['committ
     startMinute: committee.startMinute,
     date: committee.date.toISOString(),
     room: committee.room,
+    preparationRoom: committee.preparationRoom,
     secretaryName: committee.secretaryName,
     invigilators: committee.invigilators,
     language: committee.language,

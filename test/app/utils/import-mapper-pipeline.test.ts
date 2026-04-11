@@ -127,6 +127,7 @@ describe('import mapper pipeline modules', () => {
     expect(draft.name).toBe('SZZ červen 2026')
     expect(draft.committees).toHaveLength(1)
     expect(draft.committees[0]?.name).toBe('5-BI-PI.21')
+    expect(draft.committees[0]?.preparationRoom).toBeNull()
     expect(draft.committees[0]?.items).toHaveLength(1)
 
     const student = draft.committees[0]?.items[0]?.student

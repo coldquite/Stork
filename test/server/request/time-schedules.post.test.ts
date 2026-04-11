@@ -370,6 +370,18 @@ describe('POST /api/time-schedules (integration)', () => {
       }
     },
     {
+      name: 'committee preparation room has invalid type',
+      expectedIssueFragment: 'payload.committees[0].preparationRoom',
+      mutate: (payload: PostTimeScheduleRequestDto) => {
+        const firstCommittee = payload.committees[0] as PostCommitteeDraft
+
+        return {
+          ...payload,
+          committees: [{ ...firstCommittee, preparationRoom: 10 }]
+        }
+      }
+    },
+    {
       name: 'committee invigilators is not an array',
       expectedIssueFragment: 'payload.committees[0].invigilators',
       mutate: (payload: PostTimeScheduleRequestDto) => {

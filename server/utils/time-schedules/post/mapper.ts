@@ -52,6 +52,7 @@ function mapCommitteeCreateData(committee: PostCommitteeDto): Prisma.CommitteeCr
     startMinute: committee.startMinute,
     date: new Date(committee.date),
     room: committee.room,
+    preparationRoom: committee.preparationRoom ?? null,
     secretaryName: committee.secretaryName,
     invigilators: committee.invigilators,
     language: committee.language,

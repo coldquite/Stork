@@ -88,6 +88,7 @@ const committeeSchema = z
     }),
     date: dateStringSchema,
     room: z.string().nullable(),
+    preparationRoom: z.string().nullable().optional().default(null),
     secretaryName: z.string().nullable(),
     invigilators: z.array(z.string()),
     language: studyLanguageSchema,

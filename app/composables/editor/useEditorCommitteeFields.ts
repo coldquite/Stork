@@ -3,7 +3,7 @@ import type { ScheduleDraftCommittee } from '~/types/schedule-draft'
 import { normalizeOptionalText, normalizeRequiredText } from '~/utils/editor/draft-committee'
 
 /**
- * Mutations for committee metadata fields (room, members, study program chain) on the selected committee.
+ * Mutations for committee metadata fields (rooms, members, study program chain) on the selected committee.
  */
 export function useEditorCommitteeFields(selectedCommittee: ComputedRef<ScheduleDraftCommittee | null>) {
   const MIN_START_MINUTE = 0
@@ -26,6 +26,12 @@ export function useEditorCommitteeFields(selectedCommittee: ComputedRef<Schedule
   function updateSelectedCommitteeRoom(nextRoom: string): void {
     withSelectedCommittee((committee) => {
       committee.room = normalizeOptionalText(nextRoom)
+    })
+  }
+
+  function updateSelectedCommitteePreparationRoom(nextRoom: string): void {
+    withSelectedCommittee((committee) => {
+      committee.preparationRoom = normalizeOptionalText(nextRoom)
     })
   }
 
@@ -168,6 +174,7 @@ export function useEditorCommitteeFields(selectedCommittee: ComputedRef<Schedule
 
   return {
     updateSelectedCommitteeRoom,
+    updateSelectedCommitteePreparationRoom,
     updateSelectedCommitteeDate,
     updateSelectedCommitteeStartMinute,
     updateSelectedCommitteeSecretary,

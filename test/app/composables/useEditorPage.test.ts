@@ -624,6 +624,7 @@ describe('useEditorPage', () => {
     expect(createdCommittee?.specializationCode).toBe('NIE-SI')
     expect(createdCommittee?.specializationName).toBe('Software Engineering 2021')
     expect(createdCommittee?.room).toBeNull()
+    expect(createdCommittee?.preparationRoom).toBeNull()
     expect(createdCommittee?.secretaryName).toBeNull()
     expect(createdCommittee?.chairName).toBe('')
     expect(createdCommittee?.viceChairName).toBe('')
@@ -1115,6 +1116,7 @@ describe('useEditorPage', () => {
     page.committeeFields.updateSelectedCommitteeChairName('  doc. Předseda  ')
     page.committeeFields.updateSelectedCommitteeSecretary('   ')
     page.committeeFields.updateSelectedCommitteeRoom('  TH:A-1500  ')
+    page.committeeFields.updateSelectedCommitteePreparationRoom('  TH:A-1510  ')
 
     const selectedCommittee = scheduleDraftStoreMock.draft?.committees.find(
       (entry) => entry.localId === 'committee-early'
@@ -1122,6 +1124,7 @@ describe('useEditorPage', () => {
     expect(selectedCommittee?.chairName).toBe('doc. Předseda')
     expect(selectedCommittee?.secretaryName).toBeNull()
     expect(selectedCommittee?.room).toBe('TH:A-1500')
+    expect(selectedCommittee?.preparationRoom).toBe('TH:A-1510')
   })
 
   it('updates selected committee study program type in draft store', async () => {

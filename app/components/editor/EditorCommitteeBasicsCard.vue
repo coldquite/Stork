@@ -10,11 +10,13 @@ const props = withDefaults(
     selectedCommitteeDate?: string
     dateLabel: string
     roomLabel: string
+    preparationRoomLabel: string
     languageLabel: string
     languageCzechLabel: string
     languageEnglishLabel: string
     secretaryLabel: string
     showRoomField?: boolean
+    showPreparationRoomField?: boolean
     showSecretaryField?: boolean
     fullWidth?: boolean
     showStartTimeField?: boolean
@@ -24,6 +26,7 @@ const props = withDefaults(
   }>(),
   {
     showRoomField: true,
+    showPreparationRoomField: true,
     showSecretaryField: true,
     fullWidth: false,
     showStartTimeField: false,
@@ -41,6 +44,7 @@ const emit = defineEmits<{
 }>()
 
 const roomInputValue = computed(() => props.selectedCommittee?.room ?? '')
+const preparationRoomInputValue = computed(() => props.selectedCommittee?.preparationRoom ?? '')
 const secretaryInputValue = computed(() => props.selectedCommittee?.secretaryName ?? '')
 const committeeLanguageValue = computed<StudyLanguageDto | null>(() => props.selectedCommittee?.language ?? null)
 
@@ -72,6 +76,9 @@ watch(
 const hasSelectedCommittee = computed(() => Boolean(props.selectedCommittee))
 const isEmptyValue = (value: string) => value.trim().length < 1
 const isRoomInvalid = computed(() => hasSelectedCommittee.value && isEmptyValue(roomInputValue.value))
+const isPreparationRoomInvalid = computed(
+  () => hasSelectedCommittee.value && isEmptyValue(preparationRoomInputValue.value)
+)
 const isSecretaryInvalid = computed(() => hasSelectedCommittee.value && isEmptyValue(secretaryInputValue.value))
 
 const invalidInputUi = {
@@ -138,6 +145,14 @@ function emitRoom(value: string | number): void {
   }
 
   emit('committeeStringField', { field: 'room', value: String(value) })
+}
+
+function emitPreparationRoom(value: string | number): void {
+  if (!props.selectedCommittee) {
+    return
+  }
+
+  emit('committeeStringField', { field: 'preparationRoom', value: String(value) })
 }
 
 function emitSecretary(value: string | number): void {
@@ -234,6 +249,18 @@ function setLanguage(lang: StudyLanguageDto): void {
           placeholder="—"
           :disabled="!props.selectedCommittee"
           @update:model-value="emitRoom"
+        />
+      </div>
+
+      <div v-if="props.showPreparationRoomField" class="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2">
+        <span class="text-sm whitespace-nowrap">{{ props.preparationRoomLabel }}:</span>
+        <UInput
+          :model-value="preparationRoomInputValue"
+          class="w-full min-w-0"
+          :ui="isPreparationRoomInvalid ? invalidInputUi : undefined"
+          placeholder="—"
+          :disabled="!props.selectedCommittee"
+          @update:model-value="emitPreparationRoom"
         />
       </div>
 

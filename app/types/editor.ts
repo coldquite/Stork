@@ -100,6 +100,7 @@ export interface EditorStudentsPanelCommitteeLabels {
   tableViewModeOptimized: string
   tableViewModeMaximized: string
   room: string
+  preparationRoom: string
   date: string
   secretary: string
   members: string
@@ -136,6 +137,7 @@ export interface EditorStudentsPanelInvigilatorLabels {
 /** String committee fields emitted as a single event (date/language/type use dedicated emits). */
 export type EditorCommitteeStringField =
   | 'room'
+  | 'preparationRoom'
   | 'secretary'
   | 'chair'
   | 'viceChair'

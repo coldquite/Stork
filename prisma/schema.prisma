@@ -66,13 +66,14 @@ model Committee {
   timeScheduleId String
   timeSchedule   TimeSchedule @relation(fields: [timeScheduleId], references: [id], onDelete: Cascade)
 
-  name          String // studenti-komise: Komise - název (preprocess) + komise: Název komise (preprocess) ["242-BI, 5-BI-PI.21" => "5-BI-PI.21"]
-  startMinute   Int           @default(525) // 8:45
-  date          DateTime // komise: Datum
-  room          String? // komise: Místo
-  secretaryName String? // komise: Správce
-  invigilators  String[]      @default([])
-  language      StudyLanguage // computed from "studenti-komise: St. program - kód" (endsWith "E" => ENGLISH, else CZECH)
+  name            String // studenti-komise: Komise - název (preprocess) + komise: Název komise (preprocess) ["242-BI, 5-BI-PI.21" => "5-BI-PI.21"]
+  startMinute     Int           @default(525) // 8:45
+  date            DateTime // komise: Datum
+  room            String? // komise: Místo
+  preparationRoom String? // Místnost písemné přípravy
+  secretaryName   String? // komise: Správce
+  invigilators    String[]      @default([])
+  language        StudyLanguage // computed from "studenti-komise: St. program - kód" (endsWith "E" => ENGLISH, else CZECH)
 
   studyProgramName   String // studenti-komise: St. program - název + komise: Název studijního programu [e.g. Informatika]
   studyProgramType   StudyProgramType // studenti-komise: St. program - typ (computed => "B" => BACHELOR, "M" => MASTER)

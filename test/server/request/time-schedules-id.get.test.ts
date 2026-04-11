@@ -47,6 +47,7 @@ async function createScheduleFixtureInDb(): Promise<string> {
             startMinute: 525,
             date: new Date('2026-06-11T00:00:00.000Z'),
             room: 'TH:A-1435',
+            preparationRoom: 'TH:A-1500',
             secretaryName: 'Sekretář 1',
             invigilators: ['Dozor A', 'Dozor B'],
             language: 'CZECH',
@@ -108,6 +109,7 @@ async function createScheduleFixtureInDb(): Promise<string> {
             startMinute: 510,
             date: new Date('2026-06-10T00:00:00.000Z'),
             room: 'TH:A-1436',
+            preparationRoom: null,
             secretaryName: 'Sekretář 2',
             invigilators: ['Dozor C'],
             language: 'ENGLISH',
@@ -201,6 +203,7 @@ describe('GET /api/time-schedules/:id (integration)', () => {
     expect(firstCommittee.name).toBe('1-NI-SI')
     expect(firstCommittee.startMinute).toBe(510)
     expect(firstCommittee.date).toBe('2026-06-10T00:00:00.000Z')
+    expect(firstCommittee.preparationRoom).toBeNull()
     expect(firstCommittee.language).toBe('ENGLISH')
     expect(firstCommittee.studyProgramType).toBe('MASTER')
     expect(firstCommittee.items).toHaveLength(0)
@@ -210,6 +213,7 @@ describe('GET /api/time-schedules/:id (integration)', () => {
     expect(secondCommittee.startMinute).toBe(525)
     expect(secondCommittee.date).toBe('2026-06-11T00:00:00.000Z')
     expect(secondCommittee.room).toBe('TH:A-1435')
+    expect(secondCommittee.preparationRoom).toBe('TH:A-1500')
     expect(secondCommittee.invigilators).toEqual(['Dozor A', 'Dozor B'])
     expect(secondCommittee.language).toBe('CZECH')
     expect(secondCommittee.studyProgramType).toBe('BACHELOR')

@@ -47,6 +47,7 @@ const committeeLabels = computed(() => ({
   tableViewModeOptimized: t('editor.committee.tableViewModeOptions.optimized'),
   tableViewModeMaximized: t('editor.committee.tableViewModeOptions.maximized'),
   room: t('editor.committee.room'),
+  preparationRoom: t('editor.committee.preparationRoom'),
   date: t('editor.committee.date'),
   secretary: t('editor.committee.secretary'),
   members: t('editor.committee.members'),
@@ -172,6 +173,9 @@ function onCommitteeStringField(payload: EditorCommitteeStringFieldPayload): voi
   switch (payload.field) {
     case 'room':
       committeeFields.updateSelectedCommitteeRoom(payload.value)
+      break
+    case 'preparationRoom':
+      committeeFields.updateSelectedCommitteePreparationRoom(payload.value)
       break
     case 'secretary':
       committeeFields.updateSelectedCommitteeSecretary(payload.value)

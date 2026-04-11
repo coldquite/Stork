@@ -373,6 +373,7 @@ const isMoveStudentSubmitDisabled = computed(() => cia.isMoveStudentSubmitDisabl
     :selected-committee-date="createCommitteeDateLabel"
     :date-label="committeeLabels.date"
     :room-label="committeeLabels.room"
+    :preparation-room-label="committeeLabels.preparationRoom"
     :language-label="committeeLabels.language"
     :language-czech-label="committeeLabels.languageCzech"
     :language-english-label="committeeLabels.languageEnglish"

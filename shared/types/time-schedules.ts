@@ -76,6 +76,7 @@ export interface CommitteeDto {
   startMinute: number
   date: string
   room: string | null
+  preparationRoom: string | null
   secretaryName: string | null
   invigilators: string[]
   language: StudyLanguageDto
@@ -113,7 +114,8 @@ type PostPauseCommitteeItemDto = Omit<PauseCommitteeItemDto, 'id' | 'committeeId
 
 export type PostCommitteeItemDto = PostStudentCommitteeItemDto | PostPauseCommitteeItemDto
 
-export type PostCommitteeDto = Omit<CommitteeDto, 'id' | 'timeScheduleId' | 'items'> & {
+export type PostCommitteeDto = Omit<CommitteeDto, 'id' | 'timeScheduleId' | 'items' | 'preparationRoom'> & {
+  preparationRoom?: string | null
   items: PostCommitteeItemDto[]
 }
 

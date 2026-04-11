@@ -189,6 +189,7 @@ export function mapCommittees(
       startMinute: COMMITTEE_START_MINUTE,
       date: committeeDate,
       room: readOptionalValue(committeeRow, 'Místo'),
+      preparationRoom: null,
       secretaryName: readOptionalValue(committeeRow, 'Správce'),
       invigilators: [],
       language,

@@ -20,6 +20,7 @@ const props = withDefaults(
     selectedCommitteeDate?: string
     dateLabel: string
     roomLabel: string
+    preparationRoomLabel: string
     languageLabel: string
     languageCzechLabel: string
     languageEnglishLabel: string
@@ -109,6 +110,7 @@ function cancel(): void {
             :selected-committee-date="props.selectedCommitteeDate"
             :date-label="props.dateLabel"
             :room-label="props.roomLabel"
+            :preparation-room-label="props.preparationRoomLabel"
             :language-label="props.languageLabel"
             :language-czech-label="props.languageCzechLabel"
             :language-english-label="props.languageEnglishLabel"
@@ -117,6 +119,7 @@ function cancel(): void {
             :start-time-minute-label="props.startTimeMinuteLabel"
             :secretary-label="props.secretaryLabel"
             :show-room-field="false"
+            :show-preparation-room-field="false"
             :show-secretary-field="false"
             :show-start-time-field="true"
             :full-width="true"

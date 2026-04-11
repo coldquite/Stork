@@ -40,6 +40,7 @@ function createApiSchedule(seed = 'A'): TimeScheduleDto {
         startMinute: 525,
         date: '2026-06-10T00:00:00.000Z',
         room: 'TH:A-1435',
+        preparationRoom: 'TH:A-1500',
         secretaryName: 'Sekretář 1',
         invigilators: ['Dozor A'],
         language: 'CZECH',
@@ -133,6 +134,7 @@ describe('useScheduleDraftStore', () => {
     expect(store.hasDraft).toBe(true)
     expect(store.isDirty).toBe(false)
     expect(store.draft?.committees).toHaveLength(1)
+    expect(store.draft?.committees[0]?.preparationRoom).toBe('TH:A-1500')
     expect(store.draft?.committees[0]?.items).toHaveLength(2)
     expect(store.draft?.committees[0]?.items[0]?.student).not.toHaveProperty('itemId')
     expect(store.draft?.committees[0]?.items[1]?.pause).not.toHaveProperty('itemId')
@@ -196,6 +198,7 @@ describe('useScheduleDraftStore', () => {
     expect(requestOptions.method).toBe('POST')
     expect(payload.type).toBe('MANUAL')
     expect(payload.name).toBe('Ruční uložení')
+    expect(payload.committees[0]?.preparationRoom).toBe('TH:A-1500')
     expect(payload.committees[0]?.items[0]?.student).not.toHaveProperty('itemId')
     expect(payload.committees[0]?.items[1]?.pause).not.toHaveProperty('itemId')
 

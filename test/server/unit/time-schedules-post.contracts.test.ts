@@ -15,6 +15,7 @@ function createPayload(): PostTimeScheduleRequestDto {
         startMinute: 525,
         date: '2026-06-10T00:00:00.000Z',
         room: 'TH:A-1435',
+        preparationRoom: 'TH:A-1520',
         secretaryName: 'Sekretář 1',
         invigilators: ['Dozor A', 'Dozor B'],
         language: 'CZECH',
@@ -95,6 +96,21 @@ describe('time-schedules post contracts', () => {
     expect(parsed.name).toBe('Nový plán')
     expect(parsed.type).toBe('MANUAL')
     expect(parsed.committees).toHaveLength(1)
+  })
+
+  it('defaults missing preparation room to null', () => {
+    const payload = createPayload()
+    const [firstCommittee, ...otherCommittees] = payload.committees
+    if (!firstCommittee) {
+      throw new Error('Expected committee in payload')
+    }
+
+    const parsed = parsePostTimeSchedulePayload({
+      ...payload,
+      committees: [{ ...firstCommittee, preparationRoom: undefined }, ...otherCommittees]
+    })
+
+    expect(parsed.committees[0]?.preparationRoom).toBeNull()
   })
 
   it('trims student first and last names during parsing', () => {
@@ -357,5 +373,6 @@ describe('time-schedules post contracts', () => {
     }
 
     expect(committeeDate.toISOString()).toBe('2026-06-10T00:00:00.000Z')
+    expect(firstCommittee?.preparationRoom).toBe('TH:A-1520')
   })
 })
