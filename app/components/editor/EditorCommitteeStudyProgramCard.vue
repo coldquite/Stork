@@ -46,7 +46,6 @@ const isDepartmentInvalid = computed(() => {
   return departmentName.length < 1 && departmentCode.length < 1
 })
 
-const readOnlyInputClass = 'min-w-0 flex-1 overflow-hidden rounded-md bg-accented'
 const invalidInputUi = {
   base: 'ring-2 ring-inset ring-error/70 dark:ring-error/85'
 } as const
@@ -198,13 +197,20 @@ function emitSpecializationCode(value: string): void {
 
       <div class="flex items-center gap-2">
         <span class="text-sm whitespace-nowrap">{{ props.departmentLabel }}:</span>
-        <UInput
-          :model-value="committeeDepartmentDisplayLabel"
-          disabled
-          size="sm"
-          :class="readOnlyInputClass"
-          :ui="isDepartmentInvalid ? invalidInputUi : undefined"
-        />
+        <div
+          role="textbox"
+          aria-readonly="true"
+          aria-disabled="true"
+          tabindex="-1"
+          class="relative inline-flex min-w-0 flex-1 cursor-not-allowed items-start overflow-hidden rounded-md bg-accented select-none"
+          :class="isDepartmentInvalid ? invalidInputUi.base : undefined"
+        >
+          <span
+            class="pointer-events-none w-full appearance-none rounded-md border-0 bg-default px-2.5 py-1.5 text-sm/4 text-highlighted break-words whitespace-normal opacity-75 ring ring-inset ring-accented md:text-xs"
+          >
+            {{ committeeDepartmentDisplayLabel }}
+          </span>
+        </div>
       </div>
     </div>
   </div>
