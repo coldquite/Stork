@@ -14,6 +14,7 @@ export const EDITOR_SPECIALIZATION_RAW = {
   BACHELOR: {
     Informatika: [
       { specializationCode: 'BI-IB.21', specializationName: 'Informační bezpečnost 2021', departmentCode: '18106' },
+      { specializationCode: 'BIK-IB.21', specializationName: 'Informační bezpečnost 2021', departmentCode: '18106' },
       { specializationCode: 'BI-WI.21', specializationName: 'Webové inženýrství 2021', departmentCode: '18102' },
       { specializationCode: 'BI-MI.21', specializationName: 'Manažerská informatika 2021', departmentCode: '18102' },
       { specializationCode: 'BI-PG.21', specializationName: 'Počítačová grafika 2021', departmentCode: '18102' },
@@ -28,7 +29,13 @@ export const EDITOR_SPECIALIZATION_RAW = {
         specializationName: 'Počítačové systémy a virtualizace 2021',
         departmentCode: '18104'
       },
+      {
+        specializationCode: 'BIK-PV.21',
+        specializationName: 'Počítačové systémy a virtualizace 2021',
+        departmentCode: '18104'
+      },
       { specializationCode: 'BI-SI.21', specializationName: 'Softwarové inženýrství 2021', departmentCode: '18102' },
+      { specializationCode: 'BIK-SI.21', specializationName: 'Softwarové inženýrství 2021', departmentCode: '18102' },
       { specializationCode: 'BI-TI.21', specializationName: 'Teoretická informatika 2021', departmentCode: '18101' },
       { specializationCode: 'BI-UI.21', specializationName: 'Umělá inteligence 2021', departmentCode: '18105' }
     ],
