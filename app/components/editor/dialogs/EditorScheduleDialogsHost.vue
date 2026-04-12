@@ -96,6 +96,7 @@ const pdfPublicExportOpen = computed({
 })
 const pdfPublicExportSelectedCommitteeIds = computed(() => sd.selectedPdfPublicExportCommitteeIds.value)
 const pdfPublicExportCommittees = computed(() => sd.pdfPublicExportCommitteeItems.value)
+const pdfPublicExportErrorItems = computed(() => sd.pdfPublicExportErrorItems.value)
 
 const pdfInvigilatorsExportOpen = computed({
   get: () => sd.isPdfInvigilatorsExportDialogOpen.value,
@@ -110,6 +111,7 @@ const pdfInvigilatorsExportOpen = computed({
 })
 const pdfInvigilatorsExportSelectedCommitteeIds = computed(() => sd.selectedPdfInvigilatorsExportCommitteeIds.value)
 const pdfInvigilatorsExportDayGroups = computed(() => sd.pdfInvigilatorsExportDayGroups.value)
+const pdfInvigilatorsExportErrorItems = computed(() => sd.pdfInvigilatorsExportErrorItems.value)
 
 const addInvigilatorOpen = computed({
   get: () => inv.isAddInvigilatorDialogOpen.value,
@@ -316,6 +318,9 @@ const isMoveStudentSubmitDisabled = computed(() => cia.isMoveStudentSubmitDisabl
     :loading-label="copy.pdfPublicExportCommittees.loading ?? ''"
     :empty-title="copy.pdfPublicExportCommittees.emptyTitle"
     :empty-description="copy.pdfPublicExportCommittees.emptyDescription"
+    :error-title="copy.pdfPublicExportCommittees.errorTitle ?? ''"
+    :error-description="copy.pdfPublicExportCommittees.errorDescription ?? ''"
+    :error-items="pdfPublicExportErrorItems"
     :submit-disabled="isPdfPublicExportSubmitDisabled"
     @update-selected-committee-ids="sd.updateSelectedPdfPublicExportCommitteeIds($event)"
     @select-all="sd.selectAllPdfPublicExportCommittees()"
@@ -341,6 +346,9 @@ const isMoveStudentSubmitDisabled = computed(() => cia.isMoveStudentSubmitDisabl
     :loading-label="copy.pdfInvigilatorsExportCommittees.loading ?? ''"
     :empty-title="copy.pdfInvigilatorsExportCommittees.emptyTitle"
     :empty-description="copy.pdfInvigilatorsExportCommittees.emptyDescription"
+    :error-title="copy.pdfInvigilatorsExportCommittees.errorTitle ?? ''"
+    :error-description="copy.pdfInvigilatorsExportCommittees.errorDescription ?? ''"
+    :error-items="pdfInvigilatorsExportErrorItems"
     :submit-disabled="isPdfInvigilatorsExportSubmitDisabled"
     @update-selected-committee-ids="sd.updateSelectedPdfInvigilatorsExportCommitteeIds($event)"
     @select-all="sd.selectAllPdfInvigilatorsExportCommittees()"

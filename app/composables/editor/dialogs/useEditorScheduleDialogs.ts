@@ -2,6 +2,7 @@ import { EDITOR_DRAFT_NAME_MAX_LENGTH } from '#shared/constants/editor'
 import { useValidationField } from '~/composables/useValidationField'
 import { useScheduleDraftStore } from '~/stores/schedule-draft'
 import { buildEditorCommitteeListEntries } from '~/utils/editor/draft-committee'
+import { extractHttpErrorMessage } from '~/utils/http-error'
 import { createQuestionsEnvelopeCsvEnumLabelResolver } from '~/utils/export/questions-envelope-csv-enums'
 import {
   buildPdfInvigilatorsExportPayload,
@@ -45,9 +46,11 @@ export function useEditorScheduleDialogs() {
   const csvExportErrorItems = ref<string[]>([])
   const isPdfPublicExportDialogOpen = ref(false)
   const selectedPdfPublicExportCommitteeIds = ref<string[]>([])
+  const pdfPublicExportErrorItems = ref<string[]>([])
   const isPdfPublicExportLoading = ref(false)
   const isPdfInvigilatorsExportDialogOpen = ref(false)
   const selectedPdfInvigilatorsExportCommitteeIds = ref<string[]>([])
+  const pdfInvigilatorsExportErrorItems = ref<string[]>([])
   const isPdfInvigilatorsExportLoading = ref(false)
 
   const isCloudSaveLoading = computed(() => scheduleDraftStore.isManualSaveLoading)
@@ -250,6 +253,7 @@ export function useEditorScheduleDialogs() {
   }
 
   function openPdfPublicExportDialog(): void {
+    pdfPublicExportErrorItems.value = []
     openExportDialog(isPdfPublicExportDialogOpen, selectedPdfPublicExportCommitteeIds)
   }
 
@@ -259,21 +263,26 @@ export function useEditorScheduleDialogs() {
     }
 
     closeExportDialog(isPdfPublicExportDialogOpen, selectedPdfPublicExportCommitteeIds)
+    pdfPublicExportErrorItems.value = []
   }
 
   function updateSelectedPdfPublicExportCommitteeIds(nextIds: string[]): void {
     updateSelectedExportCommitteeIds(selectedPdfPublicExportCommitteeIds, nextIds)
+    pdfPublicExportErrorItems.value = []
   }
 
   function selectAllPdfPublicExportCommittees(): void {
     selectAllExportCommittees(selectedPdfPublicExportCommitteeIds)
+    pdfPublicExportErrorItems.value = []
   }
 
   function clearPdfPublicExportCommittees(): void {
     clearExportCommittees(selectedPdfPublicExportCommitteeIds)
+    pdfPublicExportErrorItems.value = []
   }
 
   function openPdfInvigilatorsExportDialog(): void {
+    pdfInvigilatorsExportErrorItems.value = []
     openExportDialog(isPdfInvigilatorsExportDialogOpen, selectedPdfInvigilatorsExportCommitteeIds)
   }
 
@@ -283,18 +292,22 @@ export function useEditorScheduleDialogs() {
     }
 
     closeExportDialog(isPdfInvigilatorsExportDialogOpen, selectedPdfInvigilatorsExportCommitteeIds)
+    pdfInvigilatorsExportErrorItems.value = []
   }
 
   function updateSelectedPdfInvigilatorsExportCommitteeIds(nextIds: string[]): void {
     updateSelectedExportCommitteeIds(selectedPdfInvigilatorsExportCommitteeIds, nextIds)
+    pdfInvigilatorsExportErrorItems.value = []
   }
 
   function selectAllPdfInvigilatorsExportCommittees(): void {
     selectAllExportCommittees(selectedPdfInvigilatorsExportCommitteeIds)
+    pdfInvigilatorsExportErrorItems.value = []
   }
 
   function clearPdfInvigilatorsExportCommittees(): void {
     clearExportCommittees(selectedPdfInvigilatorsExportCommitteeIds)
+    pdfInvigilatorsExportErrorItems.value = []
   }
 
   function submitRenameDraft(): void {
@@ -411,6 +424,7 @@ export function useEditorScheduleDialogs() {
       return
     }
 
+    pdfPublicExportErrorItems.value = []
     isPdfPublicExportLoading.value = true
 
     try {
@@ -422,7 +436,10 @@ export function useEditorScheduleDialogs() {
       })
       const fileName = buildPdfPublicFileName(draft.name)
       downloadPdfFile(pdfContent, fileName)
-    } catch {
+    } catch (error: unknown) {
+      pdfPublicExportErrorItems.value = [
+        extractHttpErrorMessage(error) || t('editor.schedule.export.pdfPublicDialog.errors.unknown')
+      ]
       return
     } finally {
       isPdfPublicExportLoading.value = false
@@ -456,6 +473,7 @@ export function useEditorScheduleDialogs() {
       return
     }
 
+    pdfInvigilatorsExportErrorItems.value = []
     isPdfInvigilatorsExportLoading.value = true
 
     try {
@@ -467,7 +485,10 @@ export function useEditorScheduleDialogs() {
       })
       const fileName = buildPdfInvigilatorsFileName(draft.name)
       downloadPdfFile(pdfContent, fileName)
-    } catch {
+    } catch (error: unknown) {
+      pdfInvigilatorsExportErrorItems.value = [
+        extractHttpErrorMessage(error) || t('editor.schedule.export.pdfInvigilatorsDialog.errors.unknown')
+      ]
       return
     } finally {
       isPdfInvigilatorsExportLoading.value = false
@@ -491,11 +512,13 @@ export function useEditorScheduleDialogs() {
     isCsvExportSubmitDisabled,
     isPdfPublicExportDialogOpen,
     selectedPdfPublicExportCommitteeIds,
+    pdfPublicExportErrorItems,
     isPdfPublicExportLoading,
     pdfPublicExportCommitteeItems,
     isPdfPublicExportSubmitDisabled,
     isPdfInvigilatorsExportDialogOpen,
     selectedPdfInvigilatorsExportCommitteeIds,
+    pdfInvigilatorsExportErrorItems,
     isPdfInvigilatorsExportLoading,
     pdfInvigilatorsExportDayGroups,
     isPdfInvigilatorsExportSubmitDisabled,

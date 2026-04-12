@@ -147,7 +147,9 @@ const dialogCopy = computed(() => ({
     submit: t('editor.schedule.export.pdfPublicDialog.submit'),
     loading: t('editor.schedule.export.pdfPublicDialog.loading'),
     emptyTitle: t('editor.schedule.export.pdfPublicDialog.emptyTitle'),
-    emptyDescription: t('editor.schedule.export.pdfPublicDialog.emptyDescription')
+    emptyDescription: t('editor.schedule.export.pdfPublicDialog.emptyDescription'),
+    errorTitle: t('editor.schedule.export.pdfPublicDialog.errors.title'),
+    errorDescription: t('editor.schedule.export.pdfPublicDialog.errors.description')
   },
   pdfInvigilatorsExportCommittees: {
     title: t('editor.schedule.export.pdfInvigilatorsDialog.title'),
@@ -162,7 +164,9 @@ const dialogCopy = computed(() => ({
     submit: t('editor.schedule.export.pdfInvigilatorsDialog.submit'),
     loading: t('editor.schedule.export.pdfInvigilatorsDialog.loading'),
     emptyTitle: t('editor.schedule.export.pdfInvigilatorsDialog.emptyTitle'),
-    emptyDescription: t('editor.schedule.export.pdfInvigilatorsDialog.emptyDescription')
+    emptyDescription: t('editor.schedule.export.pdfInvigilatorsDialog.emptyDescription'),
+    errorTitle: t('editor.schedule.export.pdfInvigilatorsDialog.errors.title'),
+    errorDescription: t('editor.schedule.export.pdfInvigilatorsDialog.errors.description')
   },
   addInvigilator: {
     title: t('editor.committee.invigilators.add.title'),

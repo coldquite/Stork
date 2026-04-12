@@ -331,7 +331,12 @@
           "submit": "Exportovat PDF pro veřejnost",
           "loading": "Generuji PDF pro veřejnost…",
           "emptyTitle": "V plánu zatím nejsou žádné komise",
-          "emptyDescription": "Jakmile přidáte první komisi, bude možné pokračovat v exportu."
+          "emptyDescription": "Jakmile přidáte první komisi, bude možné pokračovat v exportu.",
+          "errors": {
+            "title": "Export PDF pro veřejnost se nepodařilo dokončit",
+            "description": "Zkuste export prosím znovu. Pokud problém přetrvá, zkontrolujte data komise nebo server.",
+            "unknown": "Export PDF pro veřejnost se nepodařilo dokončit kvůli neočekávané chybě."
+          }
         },
         "pdfInvigilatorsDialog": {
           "title": "Export PDF pro dozor",
@@ -345,7 +350,12 @@
           "loading": "Generuji PDF pro dozor…",
           "emptyTitle": "V plánu zatím nejsou žádné komise",
           "emptyDescription": "Jakmile přidáte první komisi, bude možné pokračovat v exportu.",
-          "daySelectedCount": "Vybráno {selected}/{total}"
+          "daySelectedCount": "Vybráno {selected}/{total}",
+          "errors": {
+            "title": "Export PDF pro dozor se nepodařilo dokončit",
+            "description": "Zkuste export prosím znovu. Pokud problém přetrvá, zkontrolujte data komise nebo server.",
+            "unknown": "Export PDF pro dozor se nepodařilo dokončit kvůli neočekávané chybě."
+          }
         }
       },
       "rename": {

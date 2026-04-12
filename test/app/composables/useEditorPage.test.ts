@@ -1088,6 +1088,25 @@ describe('useEditorPage', () => {
     expect(page.scheduleDialogs.isPdfPublicExportLoading.value).toBe(false)
   })
 
+  it('keeps public pdf dialog open and shows request error', async () => {
+    requestFetchMock.mockRejectedValueOnce({
+      data: {
+        statusMessage: 'Public PDF export failed'
+      }
+    })
+
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
+    const page = useEditorPage()
+
+    page.scheduleDialogs.openPdfPublicExportDialog()
+    await page.scheduleDialogs.submitPdfPublicExportSelection()
+
+    expect(downloadPdfFileMock).not.toHaveBeenCalled()
+    expect(page.scheduleDialogs.isPdfPublicExportDialogOpen.value).toBe(true)
+    expect(page.scheduleDialogs.isPdfPublicExportLoading.value).toBe(false)
+    expect(page.scheduleDialogs.pdfPublicExportErrorItems.value).toEqual(['Public PDF export failed'])
+  })
+
   it('opens invigilators pdf export dialog with day groups and supports per-selection updates', async () => {
     const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
@@ -1119,6 +1138,23 @@ describe('useEditorPage', () => {
     page.scheduleDialogs.closePdfInvigilatorsExportDialog()
     expect(page.scheduleDialogs.isPdfInvigilatorsExportDialogOpen.value).toBe(false)
     expect(page.scheduleDialogs.selectedPdfInvigilatorsExportCommitteeIds.value).toEqual([])
+  })
+
+  it('keeps invigilators pdf dialog open and shows fallback error when request message is missing', async () => {
+    requestFetchMock.mockRejectedValueOnce(new Error())
+
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
+    const page = useEditorPage()
+
+    page.scheduleDialogs.openPdfInvigilatorsExportDialog()
+    await page.scheduleDialogs.submitPdfInvigilatorsExportSelection()
+
+    expect(downloadPdfFileMock).not.toHaveBeenCalled()
+    expect(page.scheduleDialogs.isPdfInvigilatorsExportDialogOpen.value).toBe(true)
+    expect(page.scheduleDialogs.isPdfInvigilatorsExportLoading.value).toBe(false)
+    expect(page.scheduleDialogs.pdfInvigilatorsExportErrorItems.value).toEqual([
+      'editor.schedule.export.pdfInvigilatorsDialog.errors.unknown'
+    ])
   })
 
   it('adds invigilator with trimmed value to selected committee', async () => {
