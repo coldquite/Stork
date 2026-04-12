@@ -14,10 +14,11 @@ mockNuxtImport('useI18n', () => {
   })
 })
 
-function createFileChangeEvent(file: File): Event {
+function createFileChangeEvent(fileOrFiles: File | File[]): Event {
+  const files = Array.isArray(fileOrFiles) ? fileOrFiles : [fileOrFiles]
   const inputLike = {
-    files: [file],
-    value: file.name
+    files,
+    value: files.map((file) => file.name).join(', ')
   } as unknown as HTMLInputElement
 
   return { target: inputLike } as unknown as Event
@@ -152,6 +153,31 @@ describe('useImportForm', () => {
     expect(payload?.studentsCommittees.master).toBeUndefined()
   })
 
+  it('maps three files selected in one batch in single mode', async () => {
+    const selectedSzzType = ref<ImportSzzType>('BACHELOR')
+    const { importFileStates, handleImportFileChange, buildImportPayload, isImportSubmitDisabled } =
+      useImportForm(selectedSzzType)
+
+    const filesBatch = [
+      createCsvFile('studentsStork', 'studenti-stork.csv', { 'Studijní plán (název)': 'Bc. SI' }),
+      createCsvFile('studentsCommittees', 'studenti-komise.csv', { 'St. program - typ': 'B' }),
+      createCsvFile('committees', 'komise.csv')
+    ]
+
+    await handleImportFileChange(createFileChangeEvent(filesBatch), 'studentsStorkSingle')
+
+    expect(importFileStates.value.studentsStorkSingle.file?.name).toBe('studenti-stork.csv')
+    expect(importFileStates.value.studentsCommitteesSingle.file?.name).toBe('studenti-komise.csv')
+    expect(importFileStates.value.committees.file?.name).toBe('komise.csv')
+    expect(isImportSubmitDisabled.value).toBe(false)
+
+    const payload = buildImportPayload()
+    expect(payload).not.toBeNull()
+    expect(payload?.studentsStork.bachelor?.fileName).toBe('studenti-stork.csv')
+    expect(payload?.studentsCommittees.bachelor?.fileName).toBe('studenti-komise.csv')
+    expect(payload?.committees.fileName).toBe('komise.csv')
+  })
+
   it('builds master payload using single-file fields', async () => {
     const selectedSzzType = ref<ImportSzzType>('MASTER')
     const { handleImportFileChange, buildImportPayload, isImportSubmitDisabled } = useImportForm(selectedSzzType)
@@ -224,6 +250,73 @@ describe('useImportForm', () => {
     expect(importFileStates.value.committees.file?.name).toBe('komise.csv')
   })
 
+  it('continues processing other files in a batch after one file fails validation', async () => {
+    const selectedSzzType = ref<ImportSzzType>('BACHELOR')
+    const { importFileStates, handleImportFileChange } = useImportForm(selectedSzzType)
+
+    const invalidFile = new File(['payload'], 'invalid.txt', { type: 'text/plain' })
+    const validCommitteesStudentsFile = createCsvFile('studentsCommittees', 'studenti-komise.csv', {
+      'St. program - typ': 'B'
+    })
+
+    await handleImportFileChange(
+      createFileChangeEvent([invalidFile, validCommitteesStudentsFile]),
+      'studentsStorkSingle'
+    )
+
+    expect(importFileStates.value.studentsStorkSingle.error).toBe(
+      'homepage.actions.create.import.validation.invalidExtension'
+    )
+    expect(importFileStates.value.studentsCommitteesSingle.file?.name).toBe('studenti-komise.csv')
+  })
+
+  it('enforces max selected files limit in single mode', async () => {
+    const selectedSzzType = ref<ImportSzzType>('BACHELOR')
+    const { importFileStates, handleImportFileChange } = useImportForm(selectedSzzType)
+
+    const tooManyFilesBatch = [
+      createCsvFile('studentsStork', 'studenti-stork.csv', { 'Studijní plán (název)': 'Bc. SI' }),
+      createCsvFile('studentsCommittees', 'studenti-komise.csv', { 'St. program - typ': 'B' }),
+      createCsvFile('committees', 'komise.csv'),
+      createCsvFile('committees', 'komise-extra.csv')
+    ]
+
+    await handleImportFileChange(createFileChangeEvent(tooManyFilesBatch), 'studentsStorkSingle')
+
+    expect(importFileStates.value.studentsStorkSingle.file).toBeNull()
+    expect(importFileStates.value.studentsStorkSingle.error).toBe(
+      'homepage.actions.create.import.validation.tooManyFiles'
+    )
+    expect(importFileStates.value.studentsCommitteesSingle.file).toBeNull()
+    expect(importFileStates.value.committees.file).toBeNull()
+  })
+
+  it('clears old validation errors from all fields on a new upload attempt', async () => {
+    const selectedSzzType = ref<ImportSzzType>('BACHELOR')
+    const { importFileStates, handleImportFileChange } = useImportForm(selectedSzzType)
+
+    const tooManyFilesBatch = [
+      createCsvFile('studentsStork', 'studenti-stork.csv', { 'Studijní plán (název)': 'Bc. SI' }),
+      createCsvFile('studentsCommittees', 'studenti-komise.csv', { 'St. program - typ': 'B' }),
+      createCsvFile('committees', 'komise.csv'),
+      createCsvFile('committees', 'komise-extra.csv')
+    ]
+
+    await handleImportFileChange(createFileChangeEvent(tooManyFilesBatch), 'studentsStorkSingle')
+    expect(importFileStates.value.studentsStorkSingle.error).toBe(
+      'homepage.actions.create.import.validation.tooManyFiles'
+    )
+
+    const validStudentsCommitteesFile = createCsvFile('studentsCommittees', 'studenti-komise-valid.csv', {
+      'St. program - typ': 'B'
+    })
+    await handleImportFileChange(createFileChangeEvent(validStudentsCommitteesFile), 'studentsCommitteesSingle')
+
+    expect(importFileStates.value.studentsStorkSingle.error).toBeNull()
+    expect(importFileStates.value.studentsCommitteesSingle.error).toBeNull()
+    expect(importFileStates.value.studentsCommitteesSingle.file?.name).toBe('studenti-komise-valid.csv')
+  })
+
   it('requires five files and builds mixed payload with both levels', async () => {
     const selectedSzzType = ref<ImportSzzType>('MIXED')
     const { handleImportFileChange, buildImportPayload, isImportSubmitDisabled, importFileStates } =
@@ -270,6 +363,56 @@ describe('useImportForm', () => {
     expect(payload?.studentsCommittees.bachelor?.fileName).toBe('studenti-komise-bc.csv')
     expect(payload?.studentsCommittees.master?.fileName).toBe('studenti-komise-mgr.csv')
     expect(payload?.committees.fileName).toBe('komise.csv')
+  })
+
+  it('enforces max selected files limit in mixed mode', async () => {
+    const selectedSzzType = ref<ImportSzzType>('MIXED')
+    const { importFileStates, handleImportFileChange } = useImportForm(selectedSzzType)
+
+    const tooManyFilesBatch = [
+      createCsvFile('studentsStork', 'studenti-stork-bc.csv', { 'Studijní plán (název)': 'Bc. Informatika' }),
+      createCsvFile('studentsStork', 'studenti-stork-mgr.csv', { 'Studijní plán (název)': 'Mgr. Informatika' }),
+      createCsvFile('studentsCommittees', 'studenti-komise-bc.csv', { 'St. program - typ': 'B' }),
+      createCsvFile('studentsCommittees', 'studenti-komise-mgr.csv', { 'St. program - typ': 'N' }),
+      createCsvFile('committees', 'komise.csv'),
+      createCsvFile('committees', 'komise-extra.csv')
+    ]
+
+    await handleImportFileChange(createFileChangeEvent(tooManyFilesBatch), 'studentsStorkBachelor')
+
+    expect(importFileStates.value.studentsStorkBachelor.file).toBeNull()
+    expect(importFileStates.value.studentsStorkBachelor.error).toBe(
+      'homepage.actions.create.import.validation.tooManyFiles'
+    )
+    expect(importFileStates.value.studentsStorkMaster.file).toBeNull()
+    expect(importFileStates.value.studentsCommitteesBachelor.file).toBeNull()
+    expect(importFileStates.value.studentsCommitteesMaster.file).toBeNull()
+    expect(importFileStates.value.committees.file).toBeNull()
+  })
+
+  it('clears import field errors without dropping already parsed file data', async () => {
+    const selectedSzzType = ref<ImportSzzType>('BACHELOR')
+    const { importFileStates, handleImportFileChange, clearImportFieldErrors } = useImportForm(selectedSzzType)
+
+    await handleImportFileChange(
+      createFileChangeEvent(createCsvFile('studentsCommittees', 'studenti-komise.csv', { 'St. program - typ': 'B' })),
+      'studentsStorkSingle'
+    )
+
+    const invalidFile = new File(['payload'], 'invalid.txt', { type: 'text/plain' })
+    await handleImportFileChange(createFileChangeEvent(invalidFile), 'studentsStorkSingle')
+
+    expect(importFileStates.value.studentsStorkSingle.error).toBe(
+      'homepage.actions.create.import.validation.invalidExtension'
+    )
+    expect(importFileStates.value.studentsCommitteesSingle.file?.name).toBe('studenti-komise.csv')
+
+    clearImportFieldErrors()
+
+    expect(importFileStates.value.studentsStorkSingle.error).toBeNull()
+    expect(importFileStates.value.studentsStorkSingle.file).toBeNull()
+    expect(importFileStates.value.studentsCommitteesSingle.error).toBeNull()
+    expect(importFileStates.value.studentsCommitteesSingle.file?.name).toBe('studenti-komise.csv')
   })
 
   it('ignores stale async validation result when user selects a newer file in the same field', async () => {

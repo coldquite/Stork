@@ -19,7 +19,9 @@ const importSzzType = ref<ImportSzzType>('BACHELOR')
 const {
   importFileFields,
   importFileStates,
+  maxImportFilesPerSelection,
   isImportSubmitDisabled,
+  clearImportFieldErrors,
   handleImportFileChange,
   buildImportPayload,
   resetImportState
@@ -100,10 +102,13 @@ function handleSubmit(): void {
     return
   }
 
+  clearImportFieldErrors()
   emit('submit')
 }
 
 function handleImportSubmit(): void {
+  clearImportFieldErrors()
+
   if (isImportSubmitDisabled.value) {
     return
   }
@@ -179,6 +184,12 @@ function handleClearImportFiles(): void {
                 <p class="text-muted text-sm">
                   {{ $t('homepage.actions.create.import.filesAutoMappingHint') }}
                 </p>
+
+                <p class="text-muted text-sm">
+                  {{
+                    $t('homepage.actions.create.import.filesSelectionLimitHint', { max: maxImportFilesPerSelection })
+                  }}
+                </p>
               </div>
 
               <div
@@ -193,6 +204,7 @@ function handleClearImportFiles(): void {
                 <input
                   :id="`import-file-${field.key}`"
                   type="file"
+                  multiple
                   accept=".csv,text/csv"
                   class="sr-only"
                   :disabled="props.loading"

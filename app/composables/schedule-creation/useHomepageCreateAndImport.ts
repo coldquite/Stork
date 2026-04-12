@@ -305,6 +305,7 @@ export function useHomepageCreateAndImport(options: UseHomepageCreateAndImportOp
       return
     }
 
+    newScheduleNameError.value = null
     const validationError = validateNewScheduleName(newScheduleNameInput.value)
     if (validationError) {
       newScheduleNameError.value = validationError
@@ -501,6 +502,7 @@ export function useHomepageCreateAndImport(options: UseHomepageCreateAndImportOp
       return
     }
 
+    newScheduleNameError.value = null
     const validationError = validateNewScheduleName(newScheduleNameInput.value)
     if (validationError) {
       newScheduleNameError.value = validationError

@@ -12,7 +12,7 @@ import {
   resolveStudyLevelFromStudentsCommittees,
   resolveStudyLevelFromStudentsStork
 } from '~/utils/import'
-import { clearInputFileValue, ingestCsvInputFile } from '~/utils/csv-ingest'
+import { clearInputFileValue, ingestCsvFile } from '~/utils/csv-ingest'
 import type {
   ImportCsvRow,
   ImportDataset,
@@ -46,6 +46,8 @@ const IMPORT_FIELD_KEYS: ImportFieldKey[] = [
 ]
 const SINGLE_MODE_FIELD_KEYS: ImportFieldKey[] = ['studentsStorkSingle', 'studentsCommitteesSingle', 'committees']
 const SINGLE_MODE_STUDENT_FIELD_KEYS: ImportFieldKey[] = ['studentsStorkSingle', 'studentsCommitteesSingle']
+const SINGLE_MODE_MAX_FILES_PER_SELECTION = 3
+const MIXED_MODE_MAX_FILES_PER_SELECTION = 5
 
 type ImportPayloadLevelKey = keyof ImportPayload['studentsStork']
 
@@ -98,6 +100,10 @@ function resolveStudyLevelFromDataset(datasetKey: ImportDatasetKey, rows: Import
   return null
 }
 
+function resolveMaxImportFilesPerSelection(szzType: ImportSzzType): number {
+  return szzType === 'MIXED' ? MIXED_MODE_MAX_FILES_PER_SELECTION : SINGLE_MODE_MAX_FILES_PER_SELECTION
+}
+
 export function useImportForm(selectedSzzType: Ref<ImportSzzType>) {
   const { t } = useI18n()
 
@@ -105,6 +111,7 @@ export function useImportForm(selectedSzzType: Ref<ImportSzzType>) {
   const importValidationRequestIds = ref<ImportValidationRequestIds>(createInitialValidationRequestIds())
 
   const importFileFields = computed(() => getImportFormFieldsBySzzType(selectedSzzType.value))
+  const maxImportFilesPerSelection = computed(() => resolveMaxImportFilesPerSelection(selectedSzzType.value))
 
   // Keep submitting disabled until every required file field is fully loaded and validated
   const isImportSubmitDisabled = computed(() => {
@@ -199,6 +206,25 @@ export function useImportForm(selectedSzzType: Ref<ImportSzzType>) {
     }
   }
 
+  function clearImportFieldErrors(): void {
+    for (const key of IMPORT_FIELD_KEYS) {
+      const state = importFileStates.value[key]
+      if (!state.error) {
+        continue
+      }
+
+      if (!state.file && !state.headers && !state.rows && !state.isValidating) {
+        importFileStates.value[key] = createInitialImportFieldState()
+        continue
+      }
+
+      importFileStates.value[key] = {
+        ...state,
+        error: null
+      }
+    }
+  }
+
   function countReadySingleModeFieldsExcluding(sourceKey: ImportFieldKey): number {
     return SINGLE_MODE_FIELD_KEYS.filter((key) => key !== sourceKey).filter((key) =>
       isFieldStateReady(importFileStates.value[key])
@@ -242,17 +268,10 @@ export function useImportForm(selectedSzzType: Ref<ImportSzzType>) {
     return 'homepage.actions.create.import.validation.levelSwitchBlockedMaster'
   }
 
-  // Handles file input change end-to-end for one import field:
-  // 1) resets/validates basic file constraints (.csv),
-  // 2) runs async UTF-8 decode and ignores stale async results via requestId,
-  // 3) parses and validates CSV schema,
-  // 4) for single-mode imports, auto-switches SZZ type when uploaded student file indicates opposite level,
-  //    unless other loaded files already lock the form to current level,
-  // 5) resolves target field by dataset/study level and stores parsed data or translated validation error.
-  async function handleImportFileChange(event: Event, sourceKey: ImportFieldKey): Promise<void> {
+  async function handleSingleSelectedFileImport(file: File, sourceKey: ImportFieldKey): Promise<void> {
     const previousSourceState = { ...importFileStates.value[sourceKey] }
-    const ingestResult = await ingestCsvInputFile({
-      event,
+    const ingestResult = await ingestCsvFile({
+      file,
       beginValidationRequest: () => incrementValidationRequestId(sourceKey),
       isValidationRequestStale: (requestId) => importValidationRequestIds.value[sourceKey] !== requestId,
       setValidatingState: () => {
@@ -261,9 +280,6 @@ export function useImportForm(selectedSzzType: Ref<ImportSzzType>) {
           isValidating: true
         }
       },
-      resetStateOnNoFile: () => {
-        importFileStates.value[sourceKey] = createInitialImportFieldState()
-      },
       parseCsvText: parseImportCsvText,
       isParsedResultSuccess: (
         parsedImport
@@ -271,7 +287,6 @@ export function useImportForm(selectedSzzType: Ref<ImportSzzType>) {
     })
 
     switch (ingestResult.status) {
-      case 'no_file':
       case 'stale':
         return
       case 'invalid_extension':
@@ -294,14 +309,12 @@ export function useImportForm(selectedSzzType: Ref<ImportSzzType>) {
       const uploadedStudyLevel = resolveStudyLevelFromDataset(parsedImport.datasetKey, parsedImport.rows)
       if (!uploadedStudyLevel) {
         setFieldError(sourceKey, t('homepage.actions.create.import.validation.invalidProgramType'))
-        clearInputFileValue(ingestResult.input)
         return
       }
 
       if (uploadedStudyLevel !== selectedSzzType.value) {
         if (isSingleModeLevelSwitchBlocked(sourceKey, uploadedStudyLevel)) {
           setFieldError(sourceKey, t(resolveLevelSwitchBlockedMessageKey(uploadedStudyLevel)))
-          clearInputFileValue(ingestResult.input)
           return
         }
 
@@ -316,7 +329,6 @@ export function useImportForm(selectedSzzType: Ref<ImportSzzType>) {
     )
     if (!targetFieldKey) {
       setFieldError(sourceKey, t('homepage.actions.create.import.validation.invalidProgramType'))
-      clearInputFileValue(ingestResult.input)
       return
     }
 
@@ -327,8 +339,6 @@ export function useImportForm(selectedSzzType: Ref<ImportSzzType>) {
             isValidating: false
           }
         : createInitialImportFieldState()
-
-      clearInputFileValue(ingestResult.input)
     }
 
     importFileStates.value[targetFieldKey] = {
@@ -340,10 +350,43 @@ export function useImportForm(selectedSzzType: Ref<ImportSzzType>) {
     }
   }
 
+  // Handles file input change for one visual field and supports selecting
+  // multiple files in one picker action. Each file is validated independently
+  // and then auto-routed to the proper logical field.
+  async function handleImportFileChange(event: Event, sourceKey: ImportFieldKey): Promise<void> {
+    const input = event.target as HTMLInputElement | null
+    const selectedFiles = Array.from(input?.files ?? [])
+    clearInputFileValue(input)
+
+    if (selectedFiles.length === 0) {
+      importFileStates.value[sourceKey] = createInitialImportFieldState()
+      return
+    }
+
+    // New upload attempt should not keep stale validation messages from prior attempts.
+    clearImportFieldErrors()
+
+    if (selectedFiles.length > maxImportFilesPerSelection.value) {
+      setFieldError(
+        sourceKey,
+        t('homepage.actions.create.import.validation.tooManyFiles', {
+          max: maxImportFilesPerSelection.value
+        })
+      )
+      return
+    }
+
+    for (const file of selectedFiles) {
+      await handleSingleSelectedFileImport(file, sourceKey)
+    }
+  }
+
   return {
     importFileFields,
     importFileStates,
+    maxImportFilesPerSelection,
     isImportSubmitDisabled,
+    clearImportFieldErrors,
     handleImportFileChange,
     buildImportPayload,
     resetImportState

@@ -55,6 +55,22 @@ interface IngestCsvInputFileOptions<ParsedResult, ParsedSuccessResult extends Pa
   isParsedResultSuccess: (parsedResult: ParsedResult) => parsedResult is ParsedSuccessResult
 }
 
+interface IngestCsvFileOptions<ParsedResult, ParsedSuccessResult extends ParsedResult> {
+  file: File
+  beginValidationRequest: () => number
+  isValidationRequestStale: (requestId: number) => boolean
+  setValidatingState: () => void
+  parseCsvText: (content: string) => ParsedResult
+  isParsedResultSuccess: (parsedResult: ParsedResult) => parsedResult is ParsedSuccessResult
+}
+
+export type IngestCsvFileResult<ParsedResult, ParsedSuccessResult extends ParsedResult> =
+  | CsvIngestStaleResult
+  | CsvIngestInvalidExtensionResult
+  | CsvIngestInvalidEncodingResult
+  | CsvIngestParseErrorResult<ParsedResult>
+  | CsvIngestSuccessResult<ParsedSuccessResult>
+
 export function clearInputFileValue(input: HTMLInputElement | null): void {
   if (!input) {
     return
@@ -63,28 +79,13 @@ export function clearInputFileValue(input: HTMLInputElement | null): void {
   input.value = ''
 }
 
-// Shared CSV ingest pipeline for file-input based imports:
-// - picks selected file from event target,
-// - validates extension and UTF-8 encoding,
-// - protects against stale async results via request id guard,
-// - parses CSV using caller-provided parser.
-export async function ingestCsvInputFile<ParsedResult, ParsedSuccessResult extends ParsedResult>(
-  options: IngestCsvInputFileOptions<ParsedResult, ParsedSuccessResult>
-): Promise<IngestCsvInputFileResult<ParsedResult, ParsedSuccessResult>> {
-  const input = options.event.target as HTMLInputElement | null
-  const selectedFile = input?.files?.[0] ?? null
+async function ingestCsvFileInternal<ParsedResult, ParsedSuccessResult extends ParsedResult>(
+  options: IngestCsvFileOptions<ParsedResult, ParsedSuccessResult>,
+  input: HTMLInputElement | null
+): Promise<IngestCsvFileResult<ParsedResult, ParsedSuccessResult>> {
   const requestId = options.beginValidationRequest()
 
-  if (!selectedFile) {
-    options.resetStateOnNoFile()
-    return { status: 'no_file' }
-  }
-
-  // Always clear the native file input after taking the File reference,
-  // so selecting the same filename again still triggers the next change event.
-  clearInputFileValue(input)
-
-  if (!isCsvFile(selectedFile)) {
+  if (!isCsvFile(options.file)) {
     return {
       status: 'invalid_extension',
       input
@@ -93,7 +94,7 @@ export async function ingestCsvInputFile<ParsedResult, ParsedSuccessResult exten
 
   options.setValidatingState()
 
-  const decodedContent = await decodeUtf8File(selectedFile)
+  const decodedContent = await decodeUtf8File(options.file)
   if (options.isValidationRequestStale(requestId)) {
     return { status: 'stale' }
   }
@@ -117,7 +118,49 @@ export async function ingestCsvInputFile<ParsedResult, ParsedSuccessResult exten
   return {
     status: 'success',
     input,
-    file: selectedFile,
+    file: options.file,
     parsedResult
   }
+}
+
+// Shared ingest helper for a single File instance.
+// Useful when one file input allows selecting multiple CSV files and each file
+// must be validated and parsed independently.
+export async function ingestCsvFile<ParsedResult, ParsedSuccessResult extends ParsedResult>(
+  options: IngestCsvFileOptions<ParsedResult, ParsedSuccessResult>
+): Promise<IngestCsvFileResult<ParsedResult, ParsedSuccessResult>> {
+  return ingestCsvFileInternal(options, null)
+}
+
+// Shared CSV ingest pipeline for file-input based imports:
+// - picks selected file from event target,
+// - validates extension and UTF-8 encoding,
+// - protects against stale async results via request id guard,
+// - parses CSV using caller-provided parser.
+export async function ingestCsvInputFile<ParsedResult, ParsedSuccessResult extends ParsedResult>(
+  options: IngestCsvInputFileOptions<ParsedResult, ParsedSuccessResult>
+): Promise<IngestCsvInputFileResult<ParsedResult, ParsedSuccessResult>> {
+  const input = options.event.target as HTMLInputElement | null
+  const selectedFile = input?.files?.[0] ?? null
+
+  if (!selectedFile) {
+    options.resetStateOnNoFile()
+    return { status: 'no_file' }
+  }
+
+  // Always clear the native file input after taking the File reference,
+  // so selecting the same filename again still triggers the next change event.
+  clearInputFileValue(input)
+
+  return ingestCsvFileInternal(
+    {
+      file: selectedFile,
+      beginValidationRequest: options.beginValidationRequest,
+      isValidationRequestStale: options.isValidationRequestStale,
+      setValidatingState: options.setValidatingState,
+      parseCsvText: options.parseCsvText,
+      isParsedResultSuccess: options.isParsedResultSuccess
+    },
+    input
+  )
 }

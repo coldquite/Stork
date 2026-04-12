@@ -70,10 +70,11 @@
             "committees": "Nahrajte soubor \"komise\"",
             "committeesMixed": "Nahrajte soubor \"komise\" (míchané)"
           },
-          "chooseFileAction": "Vybrat soubor",
+          "chooseFileAction": "Vybrat soubory",
           "noFileSelected": "Soubor zatím není vybrán",
           "filesHint": "Jsou povoleny pouze soubory .csv v kódování UTF-8 a oddělené středníkem ( ; ), což je výchozí nastavení IS KOS.",
           "filesAutoMappingHint": "IS ČÁP automaticky rozpozná typ nahraného souboru a přiřadí jej do správného pole.",
+          "filesSelectionLimitHint": "V jednom kroku můžete vybrat nejvýše {max} souborů.",
           "clearFilesAction": "Vyčistit soubory",
           "submitAction": "Nahrát soubory",
           "validation": {
@@ -82,6 +83,7 @@
             "invalidEncoding": "Soubor musí být v kódování UTF-8.",
             "invalidStructure": "Soubor neodpovídá podporované struktuře exportu z IS KOS.",
             "invalidProgramType": "Soubor nelze zařadit na bakalářské nebo magisterské podle očekávaného sloupce.",
+            "tooManyFiles": "Najednou můžete vybrat maximálně {max} souborů.",
             "levelSwitchBlockedBachelor": "Nahraný soubor odpovídá bakalářskému typu SZZ. Aktuálně jsou ale v importu nahrané soubory pro magisterský typ. Nahrajte odpovídající soubor nebo změňte typ SZZ a nahrajte soubory znovu.",
             "levelSwitchBlockedMaster": "Nahraný soubor odpovídá magisterskému typu SZZ. Aktuálně jsou ale v importu nahrané soubory pro bakalářský typ. Nahrajte odpovídající soubor nebo změňte typ SZZ a nahrajte soubory znovu."
           },
