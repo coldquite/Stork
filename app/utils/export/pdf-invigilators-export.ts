@@ -4,6 +4,7 @@ import type {
   PdfInvigilatorsStudentRowDto,
   PostPdfInvigilatorsExportRequestDto
 } from '#shared/types/export/pdf-invigilators'
+import { PDF_INVIGILATORS_EXPORT_DICTIONARY } from '#shared/i18n/pdf-invigilators-export'
 import type { ScheduleDraftCommittee } from '~/types/schedule-draft'
 import {
   buildCommitteeTimelineEntries,
@@ -12,7 +13,16 @@ import {
 } from '~/utils/editor/committee-timeline'
 import { compareCommitteesByTimeline, resolveCommitteeLabel } from '~/utils/editor/draft-committee'
 import { downloadBlobFile } from '~/utils/export/file-download'
-import { buildCzechTimestampForFileName, CZECH_TIME_ZONE, sanitizeFileNamePart } from '~/utils/export/file-name'
+import { CZECH_TIME_ZONE } from '~/utils/export/file-name'
+import {
+  buildPdfExportFileName,
+  collectUniquePdfExportValues,
+  normalizePdfExportTextOrFallback,
+  PDF_EXPORT_EMPTY_VALUE,
+  resolvePdfStudentFullName,
+  resolvePdfThesisTitleByLanguage,
+  tryParsePdfExportDate
+} from '~/utils/export/pdf-export-shared'
 
 interface BuildPdfInvigilatorsSectionsInput {
   committees: ScheduleDraftCommittee[]
@@ -39,8 +49,6 @@ interface PdfInvigilatorsSectionAccumulator {
   students: PdfInvigilatorsStudentRowAccumulator[]
 }
 
-const FALLBACK_EMPTY_VALUE = '—'
-
 const czechWeekdayFormatter = new Intl.DateTimeFormat('cs-CZ', {
   timeZone: CZECH_TIME_ZONE,
   weekday: 'long'
@@ -60,24 +68,10 @@ const czechDayKeyFormatter = new Intl.DateTimeFormat('en-CA', {
   year: 'numeric'
 })
 
-function normalizeText(value: string | null | undefined): string {
-  return value?.trim() ?? ''
-}
-
-function normalizeTextOrFallback(value: string | null | undefined, fallback = FALLBACK_EMPTY_VALUE): string {
-  const normalized = normalizeText(value)
-  return normalized.length > 0 ? normalized : fallback
-}
-
-function tryParseDate(value: string): Date | null {
-  const date = new Date(value)
-  return Number.isNaN(date.getTime()) ? null : date
-}
-
 function resolveDayMeta(dateIsoValue: string): { dayKey: string; dayLabel: string } {
-  const parsedDate = tryParseDate(dateIsoValue)
+  const parsedDate = tryParsePdfExportDate(dateIsoValue)
   if (!parsedDate) {
-    const fallbackDayLabel = normalizeTextOrFallback(dateIsoValue)
+    const fallbackDayLabel = normalizePdfExportTextOrFallback(dateIsoValue)
     return {
       dayKey: `invalid-${fallbackDayLabel}`,
       dayLabel: fallbackDayLabel
@@ -94,75 +88,18 @@ function resolveDayMeta(dateIsoValue: string): { dayKey: string; dayLabel: strin
   }
 }
 
-function resolveStudentFullName(input: {
-  firstName: string
-  lastName: string
-  titlesBefore: string | null
-  titlesAfter: string | null
-}): string {
-  const titlesBefore = normalizeText(input.titlesBefore)
-  const firstName = normalizeText(input.firstName)
-  const lastName = normalizeText(input.lastName)
-  const titlesAfter = normalizeText(input.titlesAfter)
-  const baseName = [firstName, lastName].filter((part) => part.length > 0).join(' ')
-  const fullNamePrefix = [titlesBefore, baseName].filter((part) => part.length > 0).join(' ')
-
-  if (titlesAfter.length > 0 && fullNamePrefix.length > 0) {
-    return `${fullNamePrefix}, ${titlesAfter}`
-  }
-
-  if (fullNamePrefix.length > 0) {
-    return fullNamePrefix
-  }
-
-  return titlesAfter.length > 0 ? titlesAfter : FALLBACK_EMPTY_VALUE
-}
-
-function resolveThesisTitleByWrittenLanguage(input: {
-  thesisLanguage: 'CZECH' | 'ENGLISH' | 'SLOVAK'
-  thesisTitleLocal: string
-  thesisTitleEn: string
-}): string {
-  const localTitle = normalizeText(input.thesisTitleLocal)
-  const englishTitle = normalizeText(input.thesisTitleEn)
-
-  if (input.thesisLanguage === 'ENGLISH') {
-    return englishTitle || localTitle || FALLBACK_EMPTY_VALUE
-  }
-
-  return localTitle || englishTitle || FALLBACK_EMPTY_VALUE
-}
-
 function resolveCommitteeRoomLabel(committee: ScheduleDraftCommittee): string {
-  return normalizeTextOrFallback(committee.room)
+  return normalizePdfExportTextOrFallback(committee.room)
 }
 
 function resolvePreparationRoomLabel(committee: ScheduleDraftCommittee): string {
-  return normalizeTextOrFallback(committee.preparationRoom)
+  return normalizePdfExportTextOrFallback(committee.preparationRoom)
 }
 
 function collectUniqueInvigilatorNames(committees: ScheduleDraftCommittee[]): string[] {
-  const names: string[] = []
-  const seenNamesLowerCase = new Set<string>()
-
-  for (const committee of committees) {
-    for (const invigilator of committee.invigilators) {
-      const normalizedName = normalizeText(invigilator.name)
-      if (normalizedName.length < 1) {
-        continue
-      }
-
-      const deduplicationKey = normalizedName.toLocaleLowerCase('cs-CZ')
-      if (seenNamesLowerCase.has(deduplicationKey)) {
-        continue
-      }
-
-      seenNamesLowerCase.add(deduplicationKey)
-      names.push(normalizedName)
-    }
-  }
-
-  return names
+  return collectUniquePdfExportValues(
+    committees.flatMap((committee) => committee.invigilators.map((invigilator) => invigilator.name))
+  )
 }
 
 function buildStudentAccumulator(
@@ -181,17 +118,17 @@ function buildStudentAccumulator(
 
   return {
     prepareStartTime: formatEditorMinuteLabel(prepareStartMinute),
-    committeeExamRangeTime: `${formatEditorMinuteLabel(timelineEntry.startMinute)} - ${formatEditorMinuteLabel(
+    committeeExamRangeTime: `${formatEditorMinuteLabel(timelineEntry.startMinute)}–${formatEditorMinuteLabel(
       timelineEntry.endMinute
     )}`,
-    studentName: resolveStudentFullName({
+    studentName: resolvePdfStudentFullName({
       firstName: student.firstName,
       lastName: student.lastName,
       titlesBefore: student.titlesBefore,
       titlesAfter: student.titlesAfter
     }),
-    repeatLabel: normalizeTextOrFallback(repeatTypeLabelResolver(student.repeatType)),
-    thesisTitle: resolveThesisTitleByWrittenLanguage({
+    repeatLabel: normalizePdfExportTextOrFallback(repeatTypeLabelResolver(student.repeatType)),
+    thesisTitle: resolvePdfThesisTitleByLanguage({
       thesisLanguage: student.thesisLanguage,
       thesisTitleLocal: student.thesisTitleLocal,
       thesisTitleEn: student.thesisTitleEn
@@ -304,16 +241,14 @@ export function buildPdfInvigilatorsSections(input: BuildPdfInvigilatorsSections
       dayKey: group.dayKey,
       dayLabel: group.dayLabel,
       roomLabel: group.roomLabel,
-      invigilatorsLabel: group.invigilators.join(', ') || FALLBACK_EMPTY_VALUE,
+      invigilatorsLabel: group.invigilators.join(', ') || PDF_EXPORT_EMPTY_VALUE,
       students
     }
   })
 }
 
 export function buildPdfInvigilatorsFileName(draftName: string, now: Date = new Date()): string {
-  const normalizedDraftName = sanitizeFileNamePart(draftName, 'Export')
-  const timestamp = buildCzechTimestampForFileName(now)
-  return `Dozor_${normalizedDraftName}_${timestamp}.pdf`
+  return buildPdfExportFileName(PDF_INVIGILATORS_EXPORT_DICTIONARY.fileNamePrefix, draftName, now)
 }
 
 export function buildPdfInvigilatorsExportPayload(

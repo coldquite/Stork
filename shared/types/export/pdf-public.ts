@@ -29,7 +29,8 @@ export interface PdfPublicSectionDto {
   committeeLine: string
   departmentLine: string
   secretaryLine: string
-  invigilatorsLine: string
+  invigilatorsLineLabel: string
+  invigilatorsMembers: string[]
   membersHeading: string
   membersLines: string[]
   tablePreparationStartHeader: string

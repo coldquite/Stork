@@ -196,7 +196,7 @@ describe('pdf-invigilators-export', () => {
     expect(sections[0]?.roomLabel).toBe('TH:PR-200')
     expect(sections[0]?.invigilatorsLabel).toBe('jan novák, Eva Dvořáková, Petr Svoboda')
     expect(sections[0]?.students.map((student) => student.prepareStartTime)).toEqual(['08:00', '08:15', '09:20'])
-    expect(sections[0]?.students[0]?.committeeExamRangeTime).toBe('08:45 - 09:15')
+    expect(sections[0]?.students[0]?.committeeExamRangeTime).toBe('08:45–09:15')
     expect(sections[0]?.students[0]?.committeeLabel).toBe('Bez názvu')
     expect(sections[0]?.students[0]?.roomLabel).toBe('TH:A-1600')
     expect(sections[0]?.students[1]?.roomLabel).toBe('TH:A-1500')

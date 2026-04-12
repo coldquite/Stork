@@ -1,5 +1,7 @@
 import { createError, readBody, setHeader } from 'h3'
 import { z } from 'zod'
+import { PDF_INVIGILATORS_EXPORT_DICTIONARY } from '#shared/i18n/pdf-invigilators-export'
+import { buildPdfAttachmentContentDisposition } from '#server/api/editor/export/pdf/content-disposition'
 import { requireAuthenticatedUser } from '#server/utils/require-auth'
 import { renderPdfInvigilatorsHtml } from '#server/utils/export/pdf/templates/invigilators-html'
 import { renderPdfFromHtml } from '#server/utils/export/pdf/playwright-renderer'
@@ -70,7 +72,13 @@ export default defineEventHandler(async (event): Promise<Buffer> => {
   const pdfBuffer = await renderPdfFromHtml(html)
 
   setHeader(event, 'Content-Type', 'application/pdf')
-  setHeader(event, 'Content-Disposition', 'attachment; filename="Dozor_export.pdf"')
+  setHeader(
+    event,
+    'Content-Disposition',
+    buildPdfAttachmentContentDisposition({
+      asciiFileName: PDF_INVIGILATORS_EXPORT_DICTIONARY.downloadFileName
+    })
+  )
 
   return pdfBuffer
 })

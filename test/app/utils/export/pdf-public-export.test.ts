@@ -25,6 +25,8 @@ function createStudentItem(
     specializationCode: string
     supervisorName: string
     reviewerName: string
+    titlesBefore: string | null
+    titlesAfter: string | null
   }>
 ): ScheduleDraftItem {
   return {
@@ -35,8 +37,8 @@ function createStudentItem(
       firstName: options.firstName ?? 'David',
       lastName: options.lastName ?? 'Ampapa',
       email: 'test@example.com',
-      titlesBefore: null,
-      titlesAfter: null,
+      titlesBefore: options.titlesBefore ?? null,
+      titlesAfter: options.titlesAfter ?? null,
       thesisTitleLocal: options.thesisTitleLocal ?? 'Lokální název práce',
       thesisTitleEn: options.thesisTitleEn ?? 'English thesis title',
       thesisLanguage: options.thesisLanguage ?? 'CZECH',
@@ -134,6 +136,8 @@ describe('pdf-public-export', () => {
             position: 1,
             firstName: 'David',
             lastName: 'Ampapa',
+            titlesBefore: 'Bc.',
+            titlesAfter: 'DiS.',
             thesisTitleLocal: 'ETCS - Integrace OpenRails'
           }),
           createPauseItem({
@@ -202,8 +206,8 @@ describe('pdf-public-export', () => {
     }
 
     expect(firstStudentRow.preparationStartTime).toBe('08:00')
-    expect(firstStudentRow.committeeExamRangeTime).toBe('08:45 - 09:15')
-    expect(firstStudentRow.studentName).toBe('Ampapa David')
+    expect(firstStudentRow.committeeExamRangeTime).toBe('08:45–09:15')
+    expect(firstStudentRow.studentName).toBe('Bc. David Ampapa, DiS.')
 
     expect(sections[1]?.language).toBe('ENGLISH')
     expect(sections[1]?.degreeTitle).toBe('BACHELOR STATE FINAL EXAMINATIONS')

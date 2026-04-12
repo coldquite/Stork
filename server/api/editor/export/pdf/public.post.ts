@@ -1,6 +1,7 @@
 import { createError, readBody, setHeader } from 'h3'
 import { z } from 'zod'
 import type { PostPdfPublicExportRequestDto } from '#shared/types/export/pdf-public'
+import { buildPdfAttachmentContentDisposition } from '#server/api/editor/export/pdf/content-disposition'
 import { renderPdfFromHtml } from '#server/utils/export/pdf/playwright-renderer'
 import { renderPdfPublicHtml } from '#server/utils/export/pdf/templates/public-html'
 import { requireAuthenticatedUser } from '#server/utils/require-auth'
@@ -42,7 +43,8 @@ const sectionSchema = z
     committeeLine: nonEmptyTrimmedStringSchema,
     departmentLine: nonEmptyTrimmedStringSchema,
     secretaryLine: nonEmptyTrimmedStringSchema,
-    invigilatorsLine: nonEmptyTrimmedStringSchema,
+    invigilatorsLineLabel: nonEmptyTrimmedStringSchema,
+    invigilatorsMembers: z.array(nonEmptyTrimmedStringSchema).min(1),
     membersHeading: nonEmptyTrimmedStringSchema,
     membersLines: z.array(nonEmptyTrimmedStringSchema),
     tablePreparationStartHeader: nonEmptyTrimmedStringSchema,
@@ -67,7 +69,10 @@ const requestSchema = z
 
 const PUBLIC_PDF_FILE_NAME_ASCII = 'Casovy plan SZZ export.pdf'
 const PUBLIC_PDF_FILE_NAME_UTF8 = 'Časový plán SZZ export.pdf'
-const PUBLIC_PDF_CONTENT_DISPOSITION = `attachment; filename="${PUBLIC_PDF_FILE_NAME_ASCII}"; filename*=UTF-8''${encodeURIComponent(PUBLIC_PDF_FILE_NAME_UTF8)}`
+const PUBLIC_PDF_CONTENT_DISPOSITION = buildPdfAttachmentContentDisposition({
+  asciiFileName: PUBLIC_PDF_FILE_NAME_ASCII,
+  utf8FileName: PUBLIC_PDF_FILE_NAME_UTF8
+})
 
 function invalidPayload(reason: string): never {
   throw createError({

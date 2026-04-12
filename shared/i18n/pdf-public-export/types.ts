@@ -13,7 +13,7 @@ export interface PdfPublicExportDictionary {
   committeeLine: (committeeLabel: string) => string
   departmentLine: (departmentName: string) => string
   secretaryLine: (secretaryName: string) => string
-  invigilatorsLine: (preparationRoom: string, invigilatorsLabel: string) => string
+  invigilatorsLineLabel: (preparationRoom: string) => string
   membersHeading: string
   memberRoleChair: string
   memberRoleViceChair: string

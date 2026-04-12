@@ -9,7 +9,17 @@ import {
   type CommitteeTimelineEntry
 } from '~/utils/editor/committee-timeline'
 import { compareCommitteesByTimeline, resolveCommitteeLabel } from '~/utils/editor/draft-committee'
-import { buildCzechTimestampForFileName, CZECH_TIME_ZONE, sanitizeFileNamePart } from '~/utils/export/file-name'
+import { CZECH_TIME_ZONE } from '~/utils/export/file-name'
+import {
+  buildPdfExportFileName,
+  collectUniquePdfExportValues,
+  normalizePdfExportText,
+  normalizePdfExportTextOrFallback,
+  PDF_EXPORT_EMPTY_VALUE,
+  resolvePdfStudentFullName,
+  resolvePdfThesisTitleByLanguage,
+  tryParsePdfExportDate
+} from '~/utils/export/pdf-export-shared'
 
 interface BuildPdfPublicSectionsInput {
   committees: ScheduleDraftCommittee[]
@@ -22,7 +32,6 @@ interface BuildPdfPublicExportPayloadInput extends BuildPdfPublicSectionsInput {
 
 type SemesterCode = 'summerJune' | 'summerAugust' | 'winterFebruary' | 'fallback'
 
-const FALLBACK_EMPTY_VALUE = '—'
 const PDF_PUBLIC_FILE_PREFIX = 'Časový plán SZZ'
 
 const czechWeekdayFormatter = new Intl.DateTimeFormat('cs-CZ', {
@@ -56,15 +65,6 @@ const datePartsFormatter = new Intl.DateTimeFormat('en-CA', {
   year: 'numeric'
 })
 
-function normalizeText(value: string | null | undefined): string {
-  return value?.trim() ?? ''
-}
-
-function normalizeTextOrFallback(value: string | null | undefined, fallback = FALLBACK_EMPTY_VALUE): string {
-  const normalized = normalizeText(value)
-  return normalized.length > 0 ? normalized : fallback
-}
-
 function capitalizeFirstLetter(value: string, locale: 'cs-CZ' | 'en-US'): string {
   if (value.length < 1) {
     return value
@@ -75,11 +75,6 @@ function capitalizeFirstLetter(value: string, locale: 'cs-CZ' | 'en-US'): string
 
 function resolveExportLanguage(committee: ScheduleDraftCommittee): StudyLanguageDto {
   return committee.language
-}
-
-function tryParseDate(value: string): Date | null {
-  const date = new Date(value)
-  return Number.isNaN(date.getTime()) ? null : date
 }
 
 function resolveDateParts(date: Date): { year: number; month: number; day: number } | null {
@@ -145,9 +140,9 @@ function resolveSemesterLabel(input: { language: StudyLanguageDto; firstCommitte
 }
 
 function resolveTopMetaDayLabel(input: { language: StudyLanguageDto; committeeDate: string }): string {
-  const parsedDate = tryParseDate(input.committeeDate)
+  const parsedDate = tryParsePdfExportDate(input.committeeDate)
   if (!parsedDate) {
-    return FALLBACK_EMPTY_VALUE
+    return PDF_EXPORT_EMPTY_VALUE
   }
 
   if (input.language === 'ENGLISH') {
@@ -171,14 +166,14 @@ function resolveDepartmentNameByLanguage(input: {
     input.committee.specializationCode
   )
   if (!specialization) {
-    return FALLBACK_EMPTY_VALUE
+    return PDF_EXPORT_EMPTY_VALUE
   }
 
   if (input.language === 'ENGLISH') {
-    return normalizeTextOrFallback(specialization.departmentNameEn)
+    return normalizePdfExportTextOrFallback(specialization.departmentNameEn)
   }
 
-  return normalizeTextOrFallback(specialization.departmentNameCs)
+  return normalizePdfExportTextOrFallback(specialization.departmentNameCs)
 }
 
 function resolveCommitteeMembersLines(input: {
@@ -186,54 +181,29 @@ function resolveCommitteeMembersLines(input: {
   committee: ScheduleDraftCommittee
 }): string[] {
   const dictionary = PDF_PUBLIC_EXPORT_DICTIONARY[input.language]
-  const chairName = normalizeText(input.committee.chairName)
-  const viceChairName = normalizeText(input.committee.viceChairName)
+  const chairName = normalizePdfExportText(input.committee.chairName)
+  const viceChairName = normalizePdfExportText(input.committee.viceChairName)
 
   return [
-    chairName.length > 0 ? `${chairName} - ${dictionary.memberRoleChair}` : FALLBACK_EMPTY_VALUE,
-    viceChairName.length > 0 ? `${viceChairName} - ${dictionary.memberRoleViceChair}` : FALLBACK_EMPTY_VALUE,
-    normalizeTextOrFallback(input.committee.member1Name),
-    normalizeTextOrFallback(input.committee.member2Name),
-    normalizeTextOrFallback(input.committee.member3Name)
+    chairName.length > 0 ? `${chairName} – ${dictionary.memberRoleChair}` : PDF_EXPORT_EMPTY_VALUE,
+    viceChairName.length > 0 ? `${viceChairName} – ${dictionary.memberRoleViceChair}` : PDF_EXPORT_EMPTY_VALUE,
+    normalizePdfExportTextOrFallback(input.committee.member1Name),
+    normalizePdfExportTextOrFallback(input.committee.member2Name),
+    normalizePdfExportTextOrFallback(input.committee.member3Name)
   ]
 }
 
-function resolveInvigilatorsLabel(committee: ScheduleDraftCommittee): string {
-  const names = committee.invigilators
-    .map((invigilator) => normalizeText(invigilator.name))
-    .filter((name) => name.length > 0)
-
-  return names.length > 0 ? names.join(', ') : FALLBACK_EMPTY_VALUE
-}
-
-function resolveStudentName(input: { firstName: string; lastName: string }): string {
-  const firstName = normalizeText(input.firstName)
-  const lastName = normalizeText(input.lastName)
-  const fullName = [lastName, firstName].filter((value) => value.length > 0).join(' ')
-  return fullName.length > 0 ? fullName : FALLBACK_EMPTY_VALUE
-}
-
-function resolveThesisTitleByLanguage(input: {
-  thesisLanguage: 'CZECH' | 'ENGLISH' | 'SLOVAK'
-  thesisTitleLocal: string
-  thesisTitleEn: string
-}): string {
-  const localTitle = normalizeText(input.thesisTitleLocal)
-  const englishTitle = normalizeText(input.thesisTitleEn)
-
-  if (input.thesisLanguage === 'ENGLISH') {
-    return englishTitle || localTitle || FALLBACK_EMPTY_VALUE
-  }
-
-  return localTitle || englishTitle || FALLBACK_EMPTY_VALUE
+function resolveInvigilatorsMembers(committee: ScheduleDraftCommittee): string[] {
+  const members = collectUniquePdfExportValues(committee.invigilators.map((invigilator) => invigilator.name))
+  return members.length > 0 ? members : [PDF_EXPORT_EMPTY_VALUE]
 }
 
 function resolveTeacherCellLine(primaryName: string, additionalName: string | null): string {
-  const primary = normalizeText(primaryName)
-  const additional = normalizeText(additionalName)
+  const primary = normalizePdfExportText(primaryName)
+  const additional = normalizePdfExportText(additionalName)
 
   if (primary.length < 1 && additional.length < 1) {
-    return FALLBACK_EMPTY_VALUE
+    return PDF_EXPORT_EMPTY_VALUE
   }
 
   if (primary.length > 0 && additional.length > 0) {
@@ -252,7 +222,7 @@ function resolvePauseLine(input: {
     input.timelineEntry.item.pause.pauseType === 'LUNCH'
       ? dictionary.pause.defaultLunchLabel
       : dictionary.pause.defaultBreakLabel
-  const baseLabel = normalizeText(input.timelineEntry.item.pause.label) || fallbackPauseLabel
+  const baseLabel = normalizePdfExportText(input.timelineEntry.item.pause.label) || fallbackPauseLabel
   return dictionary.pause.formatLine(
     baseLabel,
     input.timelineEntry.item.pause.durationMinutes,
@@ -281,15 +251,17 @@ function buildSectionRows(input: {
     return {
       kind: 'STUDENT',
       preparationStartTime: formatEditorMinuteLabel(preparationStartMinute),
-      committeeExamRangeTime: `${formatEditorMinuteLabel(timelineEntry.startMinute)} - ${formatEditorMinuteLabel(
+      committeeExamRangeTime: `${formatEditorMinuteLabel(timelineEntry.startMinute)}–${formatEditorMinuteLabel(
         timelineEntry.endMinute
       )}`,
-      studentName: resolveStudentName({
+      studentName: resolvePdfStudentFullName({
         firstName: student.firstName,
-        lastName: student.lastName
+        lastName: student.lastName,
+        titlesBefore: student.titlesBefore,
+        titlesAfter: student.titlesAfter
       }),
-      specializationLabel: normalizeTextOrFallback(student.specializationCode),
-      thesisTitle: resolveThesisTitleByLanguage({
+      specializationLabel: normalizePdfExportTextOrFallback(student.specializationCode),
+      thesisTitle: resolvePdfThesisTitleByLanguage({
         thesisLanguage: student.thesisLanguage,
         thesisTitleLocal: student.thesisTitleLocal,
         thesisTitleEn: student.thesisTitleEn
@@ -302,7 +274,7 @@ function buildSectionRows(input: {
 
 export function buildPdfPublicSections(input: BuildPdfPublicSectionsInput): PdfPublicSectionDto[] {
   const sortedCommittees = input.committees.slice().sort(compareCommitteesByTimeline)
-  const firstCommitteeDate = tryParseDate(sortedCommittees[0]?.date ?? '')
+  const firstCommitteeDate = tryParsePdfExportDate(sortedCommittees[0]?.date ?? '')
 
   return sortedCommittees.map((committee) => {
     const language = resolveExportLanguage(committee)
@@ -320,22 +292,22 @@ export function buildPdfPublicSections(input: BuildPdfPublicSectionsInput): PdfP
         language,
         committeeDate: committee.date
       }),
-      topMetaRoomLine: dictionary.topMeta.roomLine(normalizeTextOrFallback(committee.room)),
+      topMetaRoomLine: dictionary.topMeta.roomLine(normalizePdfExportTextOrFallback(committee.room)),
       degreeTitle: dictionary.degreeTitleByStudyProgramType[committee.studyProgramType],
       semesterLabel: resolveSemesterLabel({
         language,
         firstCommitteeDate
       }),
       studyProgramLine: dictionary.studyProgramLineByType[committee.studyProgramType](
-        normalizeTextOrFallback(committee.studyProgramName)
+        normalizePdfExportTextOrFallback(committee.studyProgramName)
       ),
       committeeLine: dictionary.committeeLine(committeeLabel),
       departmentLine: dictionary.departmentLine(departmentName),
-      secretaryLine: dictionary.secretaryLine(normalizeTextOrFallback(committee.secretaryName)),
-      invigilatorsLine: dictionary.invigilatorsLine(
-        normalizeTextOrFallback(committee.preparationRoom),
-        resolveInvigilatorsLabel(committee)
+      secretaryLine: dictionary.secretaryLine(normalizePdfExportTextOrFallback(committee.secretaryName)),
+      invigilatorsLineLabel: dictionary.invigilatorsLineLabel(
+        normalizePdfExportTextOrFallback(committee.preparationRoom)
       ),
+      invigilatorsMembers: resolveInvigilatorsMembers(committee),
       membersHeading: dictionary.membersHeading,
       membersLines: resolveCommitteeMembersLines({
         language,
@@ -367,7 +339,5 @@ export function buildPdfPublicExportPayload(input: BuildPdfPublicExportPayloadIn
 }
 
 export function buildPdfPublicFileName(draftName: string, now: Date = new Date()): string {
-  const normalizedDraftName = sanitizeFileNamePart(draftName, 'Export')
-  const timestamp = buildCzechTimestampForFileName(now)
-  return `${PDF_PUBLIC_FILE_PREFIX}_${normalizedDraftName}_${timestamp}.pdf`
+  return buildPdfExportFileName(PDF_PUBLIC_FILE_PREFIX, draftName, now)
 }

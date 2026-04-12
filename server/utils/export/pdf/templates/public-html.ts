@@ -1,19 +1,17 @@
 import type { PostPdfPublicExportRequestDto } from '#shared/types/export/pdf-public'
-import { getPdfEmbeddedFontCss } from '#server/utils/export/pdf/embedded-font-css'
-import { escapeHtml, getPdfBrandLogoDataUrl } from '#server/utils/export/pdf/templates/common'
+import { escapeHtml } from '#server/utils/export/pdf/templates/common'
 import {
-  PDF_VISUAL_COLORS,
-  renderPdfBaseDocumentStyles,
-  renderPdfBrandHeaderStyles,
-  renderPdfBrandTitleStyles,
-  renderPdfTableBaseStyles
-} from '#server/utils/export/pdf/templates/visual-style'
+  loadPdfTemplateRenderAssets,
+  renderPdfBrandHeaderHtml,
+  renderPdfLayoutStyles
+} from '#server/utils/export/pdf/templates/layout'
+import {
+  renderPdfTableHeaderLabelHtml,
+  renderPdfTableHeaderLabelStyles
+} from '#server/utils/export/pdf/templates/table-header'
+import { PDF_VISUAL_COLORS, renderPdfTableBaseStyles } from '#server/utils/export/pdf/templates/visual-style'
 
 const PDF_DOCUMENT_TITLE = 'Plán konání státních závěrečných zkoušek'
-const PDF_BRAND_LOGO_WIDTH_MM = 50
-const PDF_BRAND_HEADER_MARGIN_BOTTOM_MM = 2.8
-const PDF_BRAND_DIVIDER_MARGIN_TOP_MM = 1.2
-const PDF_BRAND_DIVIDER_HEIGHT_MM = 0.6
 
 function renderDocumentHeaderTitleHtml(title: string): string {
   const words = title
@@ -27,26 +25,6 @@ function renderDocumentHeaderTitleHtml(title: string): string {
   const firstLine = words.slice(0, 2).join(' ')
   const secondLine = words.slice(2).join(' ')
   return `${escapeHtml(firstLine)}<br />${escapeHtml(secondLine)}`
-}
-
-function renderTableHeaderLabelHtml(label: string): string {
-  const lines = label
-    .split('\n')
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0)
-
-  if (lines.length <= 1) {
-    return escapeHtml(label)
-  }
-
-  const linesHtml = lines
-    .map((line, index) => {
-      const dividerHtml = index > 0 ? '<span class="table-header-divider" aria-hidden="true"></span>' : ''
-      return `${dividerHtml}<span class="table-header-line">${escapeHtml(line)}</span>`
-    })
-    .join('')
-
-  return `<span class="table-header-multiline">${linesHtml}</span>`
 }
 
 function renderSectionRows(section: PostPdfPublicExportRequestDto['sections'][number]): string {
@@ -77,6 +55,21 @@ function renderSectionRows(section: PostPdfPublicExportRequestDto['sections'][nu
     .join('')
 }
 
+function renderInvigilatorsMetaHtml(section: PostPdfPublicExportRequestDto['sections'][number]): string {
+  const membersHtml = section.invigilatorsMembers
+    .map((member, index, members) => {
+      const escapedMember = escapeHtml(member).replaceAll(' ', '&nbsp;')
+      const suffix = index < members.length - 1 ? ',' : ''
+      return `<span class="invigilators-member-item">${escapedMember}${suffix}</span>`
+    })
+    .join(' ')
+
+  return `<p class="meta-line meta-line--small invigilators-meta">
+    <span class="invigilators-label">${escapeHtml(section.invigilatorsLineLabel)}</span>
+    ${membersHtml}
+  </p>`
+}
+
 function renderCommitteeSection(
   section: PostPdfPublicExportRequestDto['sections'][number],
   brandHeaderHtml: string
@@ -98,7 +91,7 @@ function renderCommitteeSection(
             ${escapeHtml(section.topMetaDayLabel)}&nbsp;–&nbsp;${escapeHtml(section.topMetaRoomLine)}
           </p>
           <p class="meta-line meta-line--small">${escapeHtml(section.secretaryLine)}</p>
-          <p class="meta-line meta-line--small">${escapeHtml(section.invigilatorsLine)}</p>
+          ${renderInvigilatorsMetaHtml(section)}
         </div>
 
         <div class="section-details-right">
@@ -113,11 +106,11 @@ function renderCommitteeSection(
     <table>
       <thead>
         <tr>
-          <th>${renderTableHeaderLabelHtml(section.tablePreparationStartHeader)}</th>
-          <th>${renderTableHeaderLabelHtml(section.tableCommitteeExamHeader)}</th>
-          <th>${renderTableHeaderLabelHtml(section.tableStudentSpecializationHeader)}</th>
-          <th>${renderTableHeaderLabelHtml(section.tableThesisTitleHeader)}</th>
-          <th>${renderTableHeaderLabelHtml(section.tableSupervisorReviewerHeader)}</th>
+          <th>${renderPdfTableHeaderLabelHtml(section.tablePreparationStartHeader)}</th>
+          <th>${renderPdfTableHeaderLabelHtml(section.tableCommitteeExamHeader)}</th>
+          <th>${renderPdfTableHeaderLabelHtml(section.tableStudentSpecializationHeader, { withDivider: true })}</th>
+          <th>${renderPdfTableHeaderLabelHtml(section.tableThesisTitleHeader)}</th>
+          <th>${renderPdfTableHeaderLabelHtml(section.tableSupervisorReviewerHeader, { withDivider: true })}</th>
         </tr>
       </thead>
       <tbody>
@@ -128,29 +121,20 @@ function renderCommitteeSection(
 }
 
 export async function renderPdfPublicHtml(payload: PostPdfPublicExportRequestDto): Promise<string> {
-  const [embeddedFontCss, brandLogoDataUrl] = await Promise.all([getPdfEmbeddedFontCss(), getPdfBrandLogoDataUrl()])
-  const baseDocumentStyles = renderPdfBaseDocumentStyles(embeddedFontCss)
-  const brandHeaderStyles = renderPdfBrandHeaderStyles({
-    logoWidthMm: PDF_BRAND_LOGO_WIDTH_MM,
-    headerMarginBottomMm: PDF_BRAND_HEADER_MARGIN_BOTTOM_MM,
-    dividerMarginTopMm: PDF_BRAND_DIVIDER_MARGIN_TOP_MM,
-    dividerHeightMm: PDF_BRAND_DIVIDER_HEIGHT_MM
+  const { embeddedFontCss, brandLogoDataUrl } = await loadPdfTemplateRenderAssets()
+  const layoutStyles = renderPdfLayoutStyles({
+    embeddedFontCss,
+    brandTitleWidthPercent: 54
   })
   const tableBaseStyles = renderPdfTableBaseStyles()
-  const brandTitleStyles = renderPdfBrandTitleStyles({
-    titleWidthPercent: 54
-  })
   const sectionsHtml = payload.sections
     .map((section, index) => {
       const brandHeaderHtml =
         index === 0
-          ? `<header class="brand-header">
-            <div class="brand-header-top">
-              <img src="${brandLogoDataUrl}" class="brand-logo" alt="Fakulta informačních technologií ČVUT v Praze" />
-              <h1 class="brand-title">${renderDocumentHeaderTitleHtml(payload.documentHeaderTitle)}</h1>
-            </div>
-            <div class="brand-divider"></div>
-          </header>`
+          ? renderPdfBrandHeaderHtml({
+              brandLogoDataUrl,
+              brandTitleHtml: renderDocumentHeaderTitleHtml(payload.documentHeaderTitle)
+            })
           : ''
 
       return renderCommitteeSection(section, brandHeaderHtml)
@@ -163,9 +147,7 @@ export async function renderPdfPublicHtml(payload: PostPdfPublicExportRequestDto
     <meta charset="utf-8" />
     <title>${escapeHtml(PDF_DOCUMENT_TITLE)}</title>
     <style>
-      ${baseDocumentStyles}
-      ${brandHeaderStyles}
-      ${brandTitleStyles}
+      ${layoutStyles}
 
       .committee-section {
         margin: 0 0 8mm;
@@ -261,6 +243,16 @@ export async function renderPdfPublicHtml(payload: PostPdfPublicExportRequestDto
         line-height: 1.25;
       }
 
+      .invigilators-meta {
+        margin: 0.45mm 0 0;
+        font-weight: 450;
+      }
+
+      .invigilators-member-item {
+        display: inline-block;
+        white-space: nowrap;
+      }
+
       .members-block {
         margin: 0;
       }
@@ -312,29 +304,7 @@ export async function renderPdfPublicHtml(payload: PostPdfPublicExportRequestDto
         font-weight: 500;
       }
 
-      .table-header-multiline {
-        display: inline-flex;
-        width: max-content;
-        max-width: 100%;
-        flex-direction: column;
-        align-items: stretch;
-        gap: 0.25mm;
-      }
-
-      .table-header-line {
-        display: block;
-        white-space: normal;
-        word-break: break-word;
-        overflow-wrap: anywhere;
-        hyphens: auto;
-      }
-
-      .table-header-divider {
-        display: block;
-        height: 0.2mm;
-        width: 100%;
-        background-color: ${PDF_VISUAL_COLORS.primaryBlue};
-      }
+      ${renderPdfTableHeaderLabelStyles()}
 
       th:nth-child(1),
       td:nth-child(1) {

@@ -19,8 +19,7 @@ export const PDF_PUBLIC_EXPORT_EN_DICTIONARY: PdfPublicExportDictionary = {
   committeeLine: (committeeLabel) => `Committee ${committeeLabel}`,
   departmentLine: (departmentName) => `department of defense: ${departmentName}`,
   secretaryLine: (secretaryName) => `Secretary: ${secretaryName}`,
-  invigilatorsLine: (preparationRoom, invigilatorsLabel) =>
-    `Invigilation of written preparation (${preparationRoom}): ${invigilatorsLabel}`,
+  invigilatorsLineLabel: (preparationRoom) => `Invigilation of written preparation (${preparationRoom}):`,
   membersHeading: 'members of committee:',
   memberRoleChair: 'Chair',
   memberRoleViceChair: 'Vice-Chair',
@@ -28,7 +27,7 @@ export const PDF_PUBLIC_EXPORT_EN_DICTIONARY: PdfPublicExportDictionary = {
     roomLine: (room) => `classroom ${room}`
   },
   table: {
-    preparationStart: 'Start of preparation',
+    preparationStart: 'Start of\nprep\u00ADa\u00ADration',
     committeeExam: 'Examination before committee',
     studentSpecialization: 'Student\nSpecialization',
     thesisTitle: 'Thesis topic',

@@ -1,24 +1,29 @@
 import type { PostPdfInvigilatorsExportRequestDto } from '#shared/types/export/pdf-invigilators'
-import { getPdfEmbeddedFontCss } from '#server/utils/export/pdf/embedded-font-css'
-import { escapeHtml, getPdfBrandLogoDataUrl } from '#server/utils/export/pdf/templates/common'
+import { PDF_INVIGILATORS_EXPORT_DICTIONARY } from '#shared/i18n/pdf-invigilators-export'
+import { escapeHtml } from '#server/utils/export/pdf/templates/common'
 import {
-  renderPdfBaseDocumentStyles,
-  renderPdfBrandHeaderStyles,
-  renderPdfBrandTitleStyles,
+  loadPdfTemplateRenderAssets,
+  renderPdfBrandHeaderHtml,
+  renderPdfLayoutStyles
+} from '#server/utils/export/pdf/templates/layout'
+import {
+  renderPdfTableHeaderLabelHtml,
+  renderPdfTableHeaderLabelStyles
+} from '#server/utils/export/pdf/templates/table-header'
+import {
   renderPdfSectionHeadingStyles,
   renderPdfTableBaseStyles
 } from '#server/utils/export/pdf/templates/visual-style'
 
-const PDF_TABLE_COLUMNS = ['Začátek přípravy', 'Zkouška před komisí', 'Student/ka', 'téma závěrečné práce'] as const
-const PDF_TABLE_COMMITTEE_HEADER_TITLE = 'Komise'
-const PDF_TABLE_COMMITTEE_HEADER_ROOM = 'místnost'
-const PDF_DOCUMENT_TITLE = 'Seznam studentů pro účely dozoru u písemné přípravy'
-
-const EMPTY_VALUE = '—'
-const PDF_BRAND_LOGO_WIDTH_MM = 50
-const PDF_BRAND_HEADER_MARGIN_BOTTOM_MM = 2.8
-const PDF_BRAND_DIVIDER_MARGIN_TOP_MM = 1.2
-const PDF_BRAND_DIVIDER_HEIGHT_MM = 0.6
+const PDF_TABLE_COLUMNS = [
+  PDF_INVIGILATORS_EXPORT_DICTIONARY.table.preparationStart,
+  PDF_INVIGILATORS_EXPORT_DICTIONARY.table.committeeExam,
+  PDF_INVIGILATORS_EXPORT_DICTIONARY.table.student,
+  PDF_INVIGILATORS_EXPORT_DICTIONARY.table.thesisTitle
+] as const
+const PDF_TABLE_COMMITTEE_HEADER_LABEL = PDF_INVIGILATORS_EXPORT_DICTIONARY.table.committeeAndRoom
+const PDF_DOCUMENT_TITLE = PDF_INVIGILATORS_EXPORT_DICTIONARY.documentHeaderTitle
+const EMPTY_VALUE = PDF_INVIGILATORS_EXPORT_DICTIONARY.table.emptyRowsFallback
 
 function renderStudentsTableRows(section: PostPdfInvigilatorsExportRequestDto['sections'][number]): string {
   if (section.students.length < 1) {
@@ -45,7 +50,11 @@ function renderStudentsTableRows(section: PostPdfInvigilatorsExportRequestDto['s
 }
 
 export async function renderPdfInvigilatorsHtml(payload: PostPdfInvigilatorsExportRequestDto): Promise<string> {
-  const [embeddedFontCss, brandLogoDataUrl] = await Promise.all([getPdfEmbeddedFontCss(), getPdfBrandLogoDataUrl()])
+  const { embeddedFontCss, brandLogoDataUrl } = await loadPdfTemplateRenderAssets()
+  const layoutStyles = renderPdfLayoutStyles({
+    embeddedFontCss,
+    brandTitleWidthPercent: 46
+  })
   let previousDayKey: string | null = null
 
   const sectionsHtml = payload.sections
@@ -55,16 +64,14 @@ export async function renderPdfInvigilatorsHtml(payload: PostPdfInvigilatorsExpo
       const sectionClass = isNewDay && index > 0 ? 'pdf-section pdf-section--new-day' : 'pdf-section'
       const brandHeader =
         index === 0
-          ? `<header class="brand-header">
-            <div class="brand-header-top">
-              <img src="${brandLogoDataUrl}" class="brand-logo" alt="Fakulta informačních technologií ČVUT v Praze" />
-              <h1 class="brand-title">${escapeHtml(PDF_DOCUMENT_TITLE)}</h1>
-            </div>
-            <div class="brand-divider"></div>
-          </header>`
+          ? renderPdfBrandHeaderHtml({
+              brandLogoDataUrl,
+              brandLogoAlt: PDF_INVIGILATORS_EXPORT_DICTIONARY.brandLogoAlt,
+              brandTitleHtml: escapeHtml(PDF_DOCUMENT_TITLE)
+            })
           : ''
-      const sectionTitle = `Dozor u písemné přípravy, ${section.dayLabel} (místnost přípravy ${section.roomLabel})`
-      const invigilatorsLine = `Dozor: ${section.invigilatorsLabel}`
+      const sectionTitle = PDF_INVIGILATORS_EXPORT_DICTIONARY.sectionTitle(section.dayLabel, section.roomLabel)
+      const invigilatorsLine = PDF_INVIGILATORS_EXPORT_DICTIONARY.invigilatorsLine(section.invigilatorsLabel)
 
       return `<section class="${sectionClass}">
         <div class="section-heading-block">
@@ -76,10 +83,7 @@ export async function renderPdfInvigilatorsHtml(payload: PostPdfInvigilatorsExpo
           <thead>
             <tr>
               ${PDF_TABLE_COLUMNS.map((column) => `<th>${escapeHtml(column)}</th>`).join('')}
-              <th>
-                <span class="committee-header-name">${escapeHtml(PDF_TABLE_COMMITTEE_HEADER_TITLE)}</span>
-                <span class="committee-header-room">${escapeHtml(PDF_TABLE_COMMITTEE_HEADER_ROOM)}</span>
-              </th>
+              <th>${renderPdfTableHeaderLabelHtml(PDF_TABLE_COMMITTEE_HEADER_LABEL, { withDivider: true })}</th>
             </tr>
           </thead>
           <tbody>
@@ -90,18 +94,8 @@ export async function renderPdfInvigilatorsHtml(payload: PostPdfInvigilatorsExpo
     })
     .join('\n')
 
-  const baseDocumentStyles = renderPdfBaseDocumentStyles(embeddedFontCss)
-  const brandHeaderStyles = renderPdfBrandHeaderStyles({
-    logoWidthMm: PDF_BRAND_LOGO_WIDTH_MM,
-    headerMarginBottomMm: PDF_BRAND_HEADER_MARGIN_BOTTOM_MM,
-    dividerMarginTopMm: PDF_BRAND_DIVIDER_MARGIN_TOP_MM,
-    dividerHeightMm: PDF_BRAND_DIVIDER_HEIGHT_MM
-  })
   const sectionHeadingStyles = renderPdfSectionHeadingStyles()
   const tableBaseStyles = renderPdfTableBaseStyles()
-  const brandTitleStyles = renderPdfBrandTitleStyles({
-    titleWidthPercent: 46
-  })
 
   return `<!doctype html>
 <html lang="cs">
@@ -109,9 +103,7 @@ export async function renderPdfInvigilatorsHtml(payload: PostPdfInvigilatorsExpo
     <meta charset="utf-8" />
     <title>${escapeHtml(PDF_DOCUMENT_TITLE)}</title>
     <style>
-      ${baseDocumentStyles}
-      ${brandHeaderStyles}
-      ${brandTitleStyles}
+      ${layoutStyles}
       ${sectionHeadingStyles}
 
       .pdf-section {
@@ -166,24 +158,23 @@ export async function renderPdfInvigilatorsHtml(payload: PostPdfInvigilatorsExpo
         margin-top: 0.6mm;
         font-size: 8pt;
         font-style: italic;
-        font-weight: 400;
+        font-weight: 450;
       }
 
       .thesis-title-value {
         display: block;
       }
 
-      .committee-header-name,
-      .committee-header-room,
       .committee-cell-name,
       .committee-cell-room {
         display: block;
       }
 
-      .committee-header-room,
       .committee-cell-room {
         margin-top: 0.45mm;
       }
+
+      ${renderPdfTableHeaderLabelStyles()}
 
       ${tableBaseStyles}
 
@@ -204,7 +195,7 @@ export async function renderPdfInvigilatorsHtml(payload: PostPdfInvigilatorsExpo
 
       th:nth-child(3),
       td:nth-child(3) {
-        width: 27.5%;
+        width: 26.5%;
       }
 
       th:nth-child(4),
@@ -214,7 +205,7 @@ export async function renderPdfInvigilatorsHtml(payload: PostPdfInvigilatorsExpo
 
       th:nth-child(5),
       td:nth-child(5) {
-        width: 12%;
+        width: 14%;
       }
     </style>
   </head>

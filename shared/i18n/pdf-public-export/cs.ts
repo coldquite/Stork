@@ -19,8 +19,7 @@ export const PDF_PUBLIC_EXPORT_CS_DICTIONARY: PdfPublicExportDictionary = {
   committeeLine: (committeeLabel) => `Komise ${committeeLabel}`,
   departmentLine: (departmentName) => `katedra obhajoby: ${departmentName}`,
   secretaryLine: (secretaryName) => `Tajemník: ${secretaryName}`,
-  invigilatorsLine: (preparationRoom, invigilatorsLabel) =>
-    `Dozor u písemné přípravy (${preparationRoom}): ${invigilatorsLabel}`,
+  invigilatorsLineLabel: (preparationRoom) => `Dozor u písemné přípravy (${preparationRoom}):`,
   membersHeading: 'složení komise:',
   memberRoleChair: 'předseda',
   memberRoleViceChair: 'místopředseda',
