@@ -20,6 +20,22 @@ const { exportQuestionsEnvelopeCsvMock } = vi.hoisted(() => ({
   exportQuestionsEnvelopeCsvMock: vi.fn()
 }))
 
+const {
+  requestFetchMock,
+  buildPdfPublicExportPayloadMock,
+  buildPdfPublicFileNameMock,
+  buildPdfInvigilatorsExportPayloadMock,
+  buildPdfInvigilatorsFileNameMock,
+  downloadPdfFileMock
+} = vi.hoisted(() => ({
+  requestFetchMock: vi.fn(),
+  buildPdfPublicExportPayloadMock: vi.fn(),
+  buildPdfPublicFileNameMock: vi.fn(),
+  buildPdfInvigilatorsExportPayloadMock: vi.fn(),
+  buildPdfInvigilatorsFileNameMock: vi.fn(),
+  downloadPdfFileMock: vi.fn()
+}))
+
 const { QuestionsEnvelopeCsvDepartmentMappingErrorMock } = vi.hoisted(() => ({
   QuestionsEnvelopeCsvDepartmentMappingErrorMock: class QuestionsEnvelopeCsvDepartmentMappingError extends Error {
     readonly issues: Array<{
@@ -71,6 +87,10 @@ mockNuxtImport('useI18n', () => {
   })
 })
 
+mockNuxtImport('useRequestFetch', () => {
+  return () => requestFetchMock
+})
+
 vi.mock('~/stores/schedule-draft', () => {
   return {
     useScheduleDraftStore: () => scheduleDraftStoreMock
@@ -87,6 +107,21 @@ vi.mock('~/utils/export/questions-envelope-csv-export', () => {
   return {
     exportQuestionsEnvelopeCsv: exportQuestionsEnvelopeCsvMock,
     QuestionsEnvelopeCsvDepartmentMappingError: QuestionsEnvelopeCsvDepartmentMappingErrorMock
+  }
+})
+
+vi.mock('~/utils/export/pdf-public-export', () => {
+  return {
+    buildPdfPublicExportPayload: buildPdfPublicExportPayloadMock,
+    buildPdfPublicFileName: buildPdfPublicFileNameMock
+  }
+})
+
+vi.mock('~/utils/export/pdf-invigilators-export', () => {
+  return {
+    buildPdfInvigilatorsExportPayload: buildPdfInvigilatorsExportPayloadMock,
+    buildPdfInvigilatorsFileName: buildPdfInvigilatorsFileNameMock,
+    downloadPdfFile: downloadPdfFileMock
   }
 })
 
@@ -204,10 +239,27 @@ describe('useEditorPage', () => {
     i18nTranslateMock.mockClear()
     saveManualDraftMock.mockReset()
     exportQuestionsEnvelopeCsvMock.mockReset()
+    requestFetchMock.mockReset()
+    buildPdfPublicExportPayloadMock.mockReset()
+    buildPdfPublicFileNameMock.mockReset()
+    buildPdfInvigilatorsExportPayloadMock.mockReset()
+    buildPdfInvigilatorsFileNameMock.mockReset()
+    downloadPdfFileMock.mockReset()
     saveManualDraftMock.mockResolvedValue({
       id: 'saved-auto',
       createdAt: '2026-06-12T09:00:00.000Z'
     })
+    buildPdfPublicExportPayloadMock.mockReturnValue({
+      draftName: 'Plán',
+      documentHeaderTitle: 'PLÁN KONÁNÍ STÁTNÍCH ZÁVĚREČNÝCH ZKOUŠEK',
+      sections: [{ committeeId: 'committee-late' }]
+    })
+    buildPdfPublicFileNameMock.mockReturnValue('Časový plán SZZ export.pdf')
+    buildPdfInvigilatorsExportPayloadMock.mockReturnValue({
+      draftName: 'Plán',
+      sections: [{ dayKey: '2026-06-10' }]
+    })
+    buildPdfInvigilatorsFileNameMock.mockReturnValue('Dozor_export.pdf')
     scheduleDraftStoreMock.isDraftLoading = false
     scheduleDraftStoreMock.isManualSaveLoading = false
     scheduleDraftStoreMock.isAutoSaveRunning = false
@@ -977,6 +1029,63 @@ describe('useEditorPage', () => {
     page.scheduleDialogs.closePdfPublicExportDialog()
     expect(page.scheduleDialogs.isPdfPublicExportDialogOpen.value).toBe(false)
     expect(page.scheduleDialogs.selectedPdfPublicExportCommitteeIds.value).toEqual([])
+  })
+
+  it('submits public pdf export, keeps loading state during request and closes dialog on success', async () => {
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
+    const page = useEditorPage()
+    const expectedPdfBuffer = new ArrayBuffer(32)
+
+    const pendingRequest = new Promise<ArrayBuffer>((resolve) => {
+      setTimeout(() => resolve(expectedPdfBuffer), 0)
+    })
+    requestFetchMock.mockReturnValueOnce(pendingRequest)
+
+    page.scheduleDialogs.openPdfPublicExportDialog()
+    page.scheduleDialogs.updateSelectedPdfPublicExportCommitteeIds(['committee-late'])
+    const submitPromise = page.scheduleDialogs.submitPdfPublicExportSelection()
+
+    expect(page.scheduleDialogs.isPdfPublicExportLoading.value).toBe(true)
+    expect(buildPdfPublicExportPayloadMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        draftName: 'Plán',
+        fallbackCommitteeLabel: 'editor.untitled',
+        committees: [expect.objectContaining({ localId: 'committee-late' })]
+      })
+    )
+    expect(requestFetchMock).toHaveBeenCalledWith('/api/editor/export/pdf/public', {
+      method: 'POST',
+      body: expect.objectContaining({
+        sections: [{ committeeId: 'committee-late' }]
+      }),
+      responseType: 'arrayBuffer'
+    })
+
+    await submitPromise
+
+    expect(downloadPdfFileMock).toHaveBeenCalledWith(expectedPdfBuffer, 'Časový plán SZZ export.pdf')
+    expect(buildPdfPublicFileNameMock).toHaveBeenCalledWith('Plán')
+    expect(page.scheduleDialogs.isPdfPublicExportLoading.value).toBe(false)
+    expect(page.scheduleDialogs.isPdfPublicExportDialogOpen.value).toBe(false)
+  })
+
+  it('skips public pdf request when payload has no sections', async () => {
+    buildPdfPublicExportPayloadMock.mockReturnValueOnce({
+      draftName: 'Plán',
+      documentHeaderTitle: 'PLÁN KONÁNÍ STÁTNÍCH ZÁVĚREČNÝCH ZKOUŠEK',
+      sections: []
+    })
+
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
+    const page = useEditorPage()
+
+    page.scheduleDialogs.openPdfPublicExportDialog()
+    await page.scheduleDialogs.submitPdfPublicExportSelection()
+
+    expect(requestFetchMock).not.toHaveBeenCalled()
+    expect(downloadPdfFileMock).not.toHaveBeenCalled()
+    expect(page.scheduleDialogs.isPdfPublicExportDialogOpen.value).toBe(true)
+    expect(page.scheduleDialogs.isPdfPublicExportLoading.value).toBe(false)
   })
 
   it('opens invigilators pdf export dialog with day groups and supports per-selection updates', async () => {

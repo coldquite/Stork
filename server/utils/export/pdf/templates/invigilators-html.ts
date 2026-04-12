@@ -1,54 +1,24 @@
 import type { PostPdfInvigilatorsExportRequestDto } from '#shared/types/export/pdf-invigilators'
 import { getPdfEmbeddedFontCss } from '#server/utils/export/pdf/embedded-font-css'
-import { readServerAssetAsBase64 } from '#server/utils/export/pdf/server-assets'
+import { escapeHtml, getPdfBrandLogoDataUrl } from '#server/utils/export/pdf/templates/common'
 import {
   renderPdfBaseDocumentStyles,
   renderPdfBrandHeaderStyles,
+  renderPdfBrandTitleStyles,
   renderPdfSectionHeadingStyles,
   renderPdfTableBaseStyles
 } from '#server/utils/export/pdf/templates/visual-style'
 
-const PDF_TABLE_COLUMNS = ['Začátek přípravy', 'Zkouška před komisí', 'Student/ka', 'Název závěrečné práce'] as const
+const PDF_TABLE_COLUMNS = ['Začátek přípravy', 'Zkouška před komisí', 'Student/ka', 'téma závěrečné práce'] as const
 const PDF_TABLE_COMMITTEE_HEADER_TITLE = 'Komise'
 const PDF_TABLE_COMMITTEE_HEADER_ROOM = 'místnost'
 const PDF_DOCUMENT_TITLE = 'Seznam studentů pro účely dozoru u písemné přípravy'
 
 const EMPTY_VALUE = '—'
-const FIT_LOGO_CZ_ASSET_KEY = 'pdf-export/logo/logo-fit-cs-modra.svg'
 const PDF_BRAND_LOGO_WIDTH_MM = 50
 const PDF_BRAND_HEADER_MARGIN_BOTTOM_MM = 2.8
 const PDF_BRAND_DIVIDER_MARGIN_TOP_MM = 1.2
 const PDF_BRAND_DIVIDER_HEIGHT_MM = 0.6
-
-let cachedPdfBrandLogoDataUrlPromise: Promise<string> | null = null
-
-async function buildPdfBrandLogoDataUrl(): Promise<string> {
-  const base64 = await readServerAssetAsBase64(FIT_LOGO_CZ_ASSET_KEY, {
-    entityLabel: 'PDF asset',
-    stringEncoding: 'utf8'
-  })
-  return `data:image/svg+xml;base64,${base64}`
-}
-
-async function getPdfBrandLogoDataUrl(): Promise<string> {
-  if (!cachedPdfBrandLogoDataUrlPromise) {
-    cachedPdfBrandLogoDataUrlPromise = buildPdfBrandLogoDataUrl().catch((error: unknown) => {
-      cachedPdfBrandLogoDataUrlPromise = null
-      throw error
-    })
-  }
-
-  return cachedPdfBrandLogoDataUrlPromise
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;')
-}
 
 function renderStudentsTableRows(section: PostPdfInvigilatorsExportRequestDto['sections'][number]): string {
   if (section.students.length < 1) {
@@ -129,6 +99,9 @@ export async function renderPdfInvigilatorsHtml(payload: PostPdfInvigilatorsExpo
   })
   const sectionHeadingStyles = renderPdfSectionHeadingStyles()
   const tableBaseStyles = renderPdfTableBaseStyles()
+  const brandTitleStyles = renderPdfBrandTitleStyles({
+    titleWidthPercent: 46
+  })
 
   return `<!doctype html>
 <html lang="cs">
@@ -138,26 +111,8 @@ export async function renderPdfInvigilatorsHtml(payload: PostPdfInvigilatorsExpo
     <style>
       ${baseDocumentStyles}
       ${brandHeaderStyles}
+      ${brandTitleStyles}
       ${sectionHeadingStyles}
-
-      .brand-header-top {
-        display: flex;
-        align-items: flex-end;
-        justify-content: space-between;
-        gap: 8mm;
-      }
-
-      .brand-title {
-        margin: 0;
-        flex: 0 0 46%;
-        max-width: 46%;
-        font-size: 12pt;
-        font-weight: 700;
-        line-height: 1.5;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-        text-align: right;
-      }
 
       .pdf-section {
         margin: 0 0 10mm;
@@ -231,10 +186,6 @@ export async function renderPdfInvigilatorsHtml(payload: PostPdfInvigilatorsExpo
       }
 
       ${tableBaseStyles}
-
-      thead th {
-        font-weight: 700;
-      }
 
       tbody tr {
         break-inside: avoid-page;

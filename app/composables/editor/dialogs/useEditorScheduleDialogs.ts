@@ -8,6 +8,7 @@ import {
   buildPdfInvigilatorsFileName,
   downloadPdfFile
 } from '~/utils/export/pdf-invigilators-export'
+import { buildPdfPublicExportPayload, buildPdfPublicFileName } from '~/utils/export/pdf-public-export'
 import {
   QuestionsEnvelopeCsvDepartmentMappingError,
   exportQuestionsEnvelopeCsv
@@ -386,9 +387,45 @@ export function useEditorScheduleDialogs() {
     closeCsvExportDialog()
   }
 
-  function submitPdfPublicExportSelection(): void {
-    if (isPdfPublicExportSubmitDisabled.value) {
+  async function submitPdfPublicExportSelection(): Promise<void> {
+    if (isPdfPublicExportSubmitDisabled.value || isPdfPublicExportLoading.value) {
       return
+    }
+
+    const draft = scheduleDraftStore.draft
+    if (!draft) {
+      closePdfPublicExportDialog()
+      return
+    }
+
+    const selectedCommitteeIdsSet = new Set(selectedPdfPublicExportCommitteeIds.value)
+    const selectedCommittees = exportCommitteeEntries.value
+      .filter((entry) => selectedCommitteeIdsSet.has(entry.committee.localId))
+      .map((entry) => entry.committee)
+    const payload = buildPdfPublicExportPayload({
+      draftName: draft.name,
+      committees: selectedCommittees,
+      fallbackCommitteeLabel: fallbackCommitteeLabel.value
+    })
+    if (payload.sections.length < 1) {
+      return
+    }
+
+    isPdfPublicExportLoading.value = true
+
+    try {
+      const requestFetch = useRequestFetch()
+      const pdfContent = await requestFetch<ArrayBuffer>('/api/editor/export/pdf/public', {
+        method: 'POST',
+        body: payload,
+        responseType: 'arrayBuffer'
+      })
+      const fileName = buildPdfPublicFileName(draft.name)
+      downloadPdfFile(pdfContent, fileName)
+    } catch {
+      return
+    } finally {
+      isPdfPublicExportLoading.value = false
     }
 
     closePdfPublicExportDialog()

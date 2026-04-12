@@ -324,7 +324,7 @@
           "title": "Export PDF pro veřejnost",
           "description": "Vyberte komise, které chcete zahrnout do exportu PDF pro veřejnost.",
           "selectedCount": "Vybráno komisí: {count}",
-          "orderingHint": "Komise jsou seřazeny podle data a času začátku (stejně jako v bočním panelu editoru). Studenti v CSV jsou řazeni nejprve podle komise a poté podle pořadí v komisi.",
+          "orderingHint": "Komise jsou seřazeny podle data a času začátku (stejně jako v bočním panelu editoru).",
           "checklistAriaLabel": "Výběr komisí pro export PDF pro veřejnost",
           "selectAll": "Vybrat všechny komise",
           "clearAll": "Zrušit výběr všech komisí",

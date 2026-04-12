@@ -2,8 +2,10 @@ import { PDF_EMBEDDED_FONT_FAMILY } from '#server/utils/export/pdf/embedded-font
 
 export const PDF_VISUAL_COLORS = {
   primaryBlue: '#0065BD',
+  tableGridBlue: '#4A99D8',
   lightBlue: '#6AADE4',
   lightBlueTint50: '#B5D7F2',
+  lightBlueTint25: '#DAEAF8',
   black: '#000000',
   gray: '#9B9B9B'
 } as const
@@ -12,6 +14,13 @@ const DEFAULT_PDF_BRAND_LOGO_WIDTH_MM = 50
 const DEFAULT_PDF_BRAND_HEADER_MARGIN_BOTTOM_MM = 2.8
 const DEFAULT_PDF_BRAND_DIVIDER_MARGIN_TOP_MM = 1.2
 const DEFAULT_PDF_BRAND_DIVIDER_HEIGHT_MM = 0.6
+const DEFAULT_PDF_BRAND_TITLE_GAP_MM = 8
+const DEFAULT_PDF_BRAND_TITLE_FONT_SIZE_PT = 11.6
+const DEFAULT_PDF_BRAND_TITLE_FONT_WEIGHT = 700
+const DEFAULT_PDF_BRAND_TITLE_LINE_HEIGHT = 1.35
+const DEFAULT_PDF_BRAND_TITLE_LETTER_SPACING_EM = 0.03
+const DEFAULT_PDF_BRAND_TITLE_COLOR = PDF_VISUAL_COLORS.primaryBlue
+const DEFAULT_PDF_BRAND_TITLE_TEXT_TRANSFORM = 'uppercase'
 const PDF_TABLE_BORDER_WIDTH_MM = 0.28
 
 type RenderPdfBrandHeaderStylesOptions = {
@@ -21,10 +30,22 @@ type RenderPdfBrandHeaderStylesOptions = {
   dividerHeightMm?: number
 }
 
+type RenderPdfBrandTitleStylesOptions = {
+  titleWidthPercent: number
+  titleColor?: string
+  titleTextTransform?: 'uppercase' | 'none'
+}
+
 function formatMillimeters(value: number): string {
   const fixed = value.toFixed(2)
   const trimmed = fixed.replace(/\.00$/, '').replace(/(\.\d)0$/, '$1')
   return `${trimmed}mm`
+}
+
+function formatPercent(value: number): string {
+  const fixed = value.toFixed(2)
+  const trimmed = fixed.replace(/\.00$/, '').replace(/(\.\d)0$/, '$1')
+  return `${trimmed}%`
 }
 
 export function renderPdfBaseDocumentStyles(embeddedFontCss: string): string {
@@ -88,6 +109,34 @@ export function renderPdfBrandHeaderStyles(options: RenderPdfBrandHeaderStylesOp
 `.trim()
 }
 
+export function renderPdfBrandTitleStyles(options: RenderPdfBrandTitleStylesOptions): string {
+  const titleWidth = formatPercent(options.titleWidthPercent)
+  const titleColor = options.titleColor ?? DEFAULT_PDF_BRAND_TITLE_COLOR
+  const titleTextTransform = options.titleTextTransform ?? DEFAULT_PDF_BRAND_TITLE_TEXT_TRANSFORM
+
+  return `
+.brand-header-top {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: ${formatMillimeters(DEFAULT_PDF_BRAND_TITLE_GAP_MM)};
+}
+
+.brand-title {
+  margin: 0;
+  flex: 0 0 ${titleWidth};
+  max-width: ${titleWidth};
+  color: ${titleColor};
+  font-size: ${DEFAULT_PDF_BRAND_TITLE_FONT_SIZE_PT}pt;
+  font-weight: ${DEFAULT_PDF_BRAND_TITLE_FONT_WEIGHT};
+  line-height: ${DEFAULT_PDF_BRAND_TITLE_LINE_HEIGHT};
+  letter-spacing: ${DEFAULT_PDF_BRAND_TITLE_LETTER_SPACING_EM}em;
+  text-transform: ${titleTextTransform};
+  text-align: right;
+}
+`.trim()
+}
+
 export function renderPdfSectionHeadingStyles(): string {
   return `
 h2 {
@@ -103,6 +152,8 @@ h2 {
 
 export function renderPdfTableBaseStyles(): string {
   const tableBorderWidth = formatMillimeters(PDF_TABLE_BORDER_WIDTH_MM)
+  const bodyFontWeight = 450
+  const headerFontWeight = 400
 
   return `
 table {
@@ -111,6 +162,7 @@ table {
   border-collapse: separate;
   border-spacing: 0;
   table-layout: fixed;
+  font-synthesis: none;
 }
 
 thead {
@@ -124,9 +176,10 @@ tbody tr {
 th,
 td {
   border: 0;
-  border-right: ${tableBorderWidth} solid ${PDF_VISUAL_COLORS.primaryBlue};
-  border-bottom: ${tableBorderWidth} solid ${PDF_VISUAL_COLORS.primaryBlue};
+  border-right: ${tableBorderWidth} solid ${PDF_VISUAL_COLORS.tableGridBlue};
+  border-bottom: ${tableBorderWidth} solid ${PDF_VISUAL_COLORS.tableGridBlue};
   font-size: 9pt;
+  font-weight: ${bodyFontWeight};
   line-height: 1.3;
   padding: 1.8mm 1.7mm;
   text-align: left;
@@ -135,17 +188,17 @@ td {
 }
 
 tr > *:first-child {
-  border-left: ${tableBorderWidth} solid ${PDF_VISUAL_COLORS.primaryBlue};
+  border-left: ${tableBorderWidth} solid ${PDF_VISUAL_COLORS.tableGridBlue};
 }
 
 thead th {
-  border-top: ${tableBorderWidth} solid ${PDF_VISUAL_COLORS.primaryBlue};
+  border-top: ${tableBorderWidth} solid ${PDF_VISUAL_COLORS.tableGridBlue};
 }
 
 th {
   background-color: ${PDF_VISUAL_COLORS.lightBlueTint50};
   color: ${PDF_VISUAL_COLORS.black};
-  font-weight: 600;
+  font-weight: ${headerFontWeight};
   word-break: keep-all;
   overflow-wrap: normal;
   hyphens: none;
