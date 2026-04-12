@@ -14,6 +14,9 @@ import type {
   EditorCommitteeValidationIssue,
   EditorCommitteeValidationSection,
   EditorCommitteeValidationSectionView,
+  EditorStudentValidationIssue,
+  EditorStudentValidationIssueView,
+  EditorStudentValidationStudentGroupView,
   EditorStudentsTableViewMode
 } from '~/types/editor'
 import type { ScheduleDraftThesisTitleDisplayMode } from '~/types/schedule-draft'
@@ -23,6 +26,12 @@ import {
   groupCommitteeValidationIssuesByCommitteeId,
   groupCommitteeValidationIssuesBySection
 } from '~/utils/editor/committee-validation'
+import { isStudentItem, normalizeRequiredText } from '~/utils/editor/draft-committee'
+import {
+  collectStudentValidationIssues,
+  countStudentValidationIssuesByCommitteeId,
+  groupStudentValidationIssuesByCommitteeId
+} from '~/utils/editor/student-validation'
 
 /**
  * Facade composable for the schedule editor page: composes committee list, student table,
@@ -60,6 +69,28 @@ export function useEditorPage() {
   const committeeValidationCountByCommitteeId = computed(() =>
     countCommitteeValidationIssuesByCommitteeId(committeeValidationIssuesByCommitteeId.value)
   )
+  const studentValidationIssues = computed(() => collectStudentValidationIssues(draftCommittees.value))
+  const studentValidationIssuesByCommitteeId = computed(() =>
+    groupStudentValidationIssuesByCommitteeId(studentValidationIssues.value)
+  )
+  const studentValidationCountByCommitteeId = computed(() =>
+    countStudentValidationIssuesByCommitteeId(studentValidationIssuesByCommitteeId.value)
+  )
+  const totalValidationCountByCommitteeId = computed<Record<string, number>>(() => {
+    const countByCommitteeId: Record<string, number> = {}
+    const allCommitteeIds = new Set<string>([
+      ...Object.keys(committeeValidationCountByCommitteeId.value),
+      ...Object.keys(studentValidationCountByCommitteeId.value)
+    ])
+
+    allCommitteeIds.forEach((committeeId) => {
+      countByCommitteeId[committeeId] =
+        (committeeValidationCountByCommitteeId.value[committeeId] ?? 0) +
+        (studentValidationCountByCommitteeId.value[committeeId] ?? 0)
+    })
+
+    return countByCommitteeId
+  })
   const committeeSidebarItemsWithErrors = computed<CommitteeSidebarItem[]>(() => {
     return committeeList.committeeSidebarItems.value.map((item) => {
       if (item.kind !== 'committee') {
@@ -68,7 +99,7 @@ export function useEditorPage() {
 
       return {
         ...item,
-        errorCount: committeeValidationCountByCommitteeId.value[item.value] ?? 0
+        errorCount: totalValidationCountByCommitteeId.value[item.value] ?? 0
       }
     })
   })
@@ -79,6 +110,45 @@ export function useEditorPage() {
     }
 
     return committeeValidationIssuesByCommitteeId.value[selectedCommitteeId] ?? []
+  })
+  const selectedCommitteeStudentValidationIssues = computed<EditorStudentValidationIssue[]>(() => {
+    const selectedCommitteeId = committeeList.selectedCommitteeId.value
+    if (!selectedCommitteeId) {
+      return []
+    }
+
+    return studentValidationIssuesByCommitteeId.value[selectedCommitteeId] ?? []
+  })
+  const selectedCommitteeStudentInfoById = computed(() => {
+    const selectedCommittee = committeeList.selectedCommittee.value
+    const infoByStudentId = new Map<string, { order: number; fullName: string }>()
+    if (!selectedCommittee) {
+      return infoByStudentId
+    }
+
+    const orderedItems = selectedCommittee.items.slice().sort((left, right) => left.position - right.position)
+    let studentOrder = 0
+
+    orderedItems.forEach((item) => {
+      if (!isStudentItem(item)) {
+        return
+      }
+
+      studentOrder += 1
+      const firstName = normalizeRequiredText(item.student.firstName)
+      const lastName = normalizeRequiredText(item.student.lastName)
+      const fullName = [firstName, lastName]
+        .filter((value) => value.length > 0)
+        .join(' ')
+        .trim()
+
+      infoByStudentId.set(item.localId, {
+        order: studentOrder,
+        fullName
+      })
+    })
+
+    return infoByStudentId
   })
 
   function resolveValidationSectionLabel(section: EditorCommitteeValidationSection): string {
@@ -135,6 +205,39 @@ export function useEditorPage() {
     }
   }
 
+  function resolveStudentValidationFieldLabel(fieldKey: EditorStudentValidationIssue['fieldKey']): string {
+    return t(`editor.student.validation.fields.${fieldKey}`)
+  }
+
+  function resolveStudentValidationMessage(issue: EditorStudentValidationIssue): string {
+    switch (issue.code) {
+      case 'REQUIRED':
+        return t('editor.student.validation.messages.required', {
+          field: resolveStudentValidationFieldLabel(issue.fieldKey)
+        })
+      case 'INVALID_VALUE':
+        return t('editor.student.validation.messages.invalidValue', {
+          field: resolveStudentValidationFieldLabel(issue.fieldKey)
+        })
+      case 'UNRESOLVED_DEPARTMENT':
+        return t('editor.student.validation.messages.unresolvedDepartment')
+      case 'REPEAT_TYPE_UNKNOWN':
+        return t('editor.student.validation.messages.repeatTypeUnknown')
+      case 'PREPARE_MINUTES_NEGATIVE':
+        return t('editor.student.validation.messages.prepareMinutesNegative')
+      case 'EXAM_MINUTES_NOT_POSITIVE':
+        return t('editor.student.validation.messages.examMinutesNotPositive')
+      case 'THESIS_TITLE_UNRESOLVED_MARKER':
+        return t('editor.student.validation.messages.thesisTitleUnresolvedMarker', {
+          field: resolveStudentValidationFieldLabel(issue.fieldKey)
+        })
+      default:
+        return t('editor.student.validation.messages.invalidValue', {
+          field: resolveStudentValidationFieldLabel(issue.fieldKey)
+        })
+    }
+  }
+
   const selectedCommitteeValidationSections = computed<EditorCommitteeValidationSectionView[]>(() =>
     groupCommitteeValidationIssuesBySection(selectedCommitteeValidationIssues.value).map((group) => ({
       section: group.section,
@@ -147,6 +250,46 @@ export function useEditorPage() {
     }))
   )
   const selectedCommitteeValidationCount = computed(() => selectedCommitteeValidationIssues.value.length)
+  const selectedCommitteeStudentValidationGroups = computed<EditorStudentValidationStudentGroupView[]>(() => {
+    const issuesByStudentId = new Map<string, EditorStudentValidationIssue[]>()
+
+    selectedCommitteeStudentValidationIssues.value.forEach((issue) => {
+      const studentIssues = issuesByStudentId.get(issue.studentId) ?? []
+      studentIssues.push(issue)
+      issuesByStudentId.set(issue.studentId, studentIssues)
+    })
+
+    const fallbackStudentName = t('editor.student.validation.fallbackStudentName')
+    return Array.from(issuesByStudentId.entries())
+      .map(([studentId, issues]) => {
+        const studentInfo = selectedCommitteeStudentInfoById.value.get(studentId)
+        const studentOrder = studentInfo?.order ?? issues[0]?.studentOrder ?? Number.MAX_SAFE_INTEGER
+        const studentName = studentInfo && studentInfo.fullName.length > 0 ? studentInfo.fullName : fallbackStudentName
+
+        const issueViews: EditorStudentValidationIssueView[] = issues.map((issue) => ({
+          issueId: issue.issueId,
+          fieldKey: issue.fieldKey,
+          message: resolveStudentValidationMessage(issue)
+        }))
+
+        return {
+          studentId,
+          studentOrder,
+          studentLabel: t('editor.student.validation.studentLabel', { order: studentOrder, name: studentName }),
+          issues: issueViews
+        }
+      })
+      .sort((left, right) => left.studentOrder - right.studentOrder || left.studentId.localeCompare(right.studentId))
+      .map(({ studentId, studentLabel, issues }) => ({
+        studentId,
+        studentLabel,
+        issues
+      }))
+  })
+  const selectedCommitteeStudentValidationCount = computed(() => selectedCommitteeStudentValidationIssues.value.length)
+  const hasAnyValidationErrors = computed(() =>
+    Object.values(totalValidationCountByCommitteeId.value).some((count) => count > 0)
+  )
 
   function updateThesisTitleDisplayMode(nextMode: ScheduleDraftThesisTitleDisplayMode): void {
     editorTablePreferencesStore.setThesisTitleDisplayMode(nextMode)
@@ -261,6 +404,20 @@ export function useEditorPage() {
       selectedCommitteeCount: selectedCommitteeValidationCount
     },
 
+    studentValidation: {
+      allIssues: studentValidationIssues,
+      issuesByCommitteeId: studentValidationIssuesByCommitteeId,
+      countByCommitteeId: studentValidationCountByCommitteeId,
+      selectedCommitteeIssues: selectedCommitteeStudentValidationIssues,
+      selectedCommitteeStudentGroups: selectedCommitteeStudentValidationGroups,
+      selectedCommitteeCount: selectedCommitteeStudentValidationCount
+    },
+
+    validationSummary: {
+      countByCommitteeId: totalValidationCountByCommitteeId,
+      hasAnyErrors: hasAnyValidationErrors
+    },
+
     invigilators: {
       selectedInvigilators: invigilators.selectedInvigilators,
       invigilatorsCountLabel: invigilators.invigilatorsCountLabel,
@@ -373,6 +530,7 @@ export function useEditorPage() {
       openStudentSearchDialog: studentSearch.openStudentSearchDialog,
       closeStudentSearchDialog: studentSearch.closeStudentSearchDialog,
       updateStudentSearchQuery: studentSearch.updateStudentSearchQuery,
+      focusStudentInCommittee: studentSearch.focusStudentInCommittee,
       selectStudentSearchResult: studentSearch.selectStudentSearchResult
     },
 

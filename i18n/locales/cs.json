@@ -485,7 +485,7 @@
         }
       },
       "validation": {
-        "title": "Nedokončené údaje",
+        "title": "Komise: chybné údaje",
         "sidebarBadgeAriaLabel": "Počet chyb v komisi: {count}",
         "sections": {
           "basics": "Základní údaje",
@@ -521,6 +521,40 @@
           "minInvigilators": "Počet členů dozoru musí být alespoň 1.",
           "invigilatorNameRequired": "Dozor {index}: jméno je povinné.",
           "unresolvedDepartment": "Katedru se nepodařilo určit podle zvoleného programu a specializace."
+        }
+      }
+    },
+    "student": {
+      "validation": {
+        "title": "Studenti: chybné údaje",
+        "sidebarBadgeAriaLabel": "Počet chyb studentů v komisi: {count}",
+        "focusStudentTooltip": "Kliknutím přejdete na studenta v tabulce.",
+        "fallbackStudentName": "Neznámý student",
+        "studentLabel": "Student {order}: {name}",
+        "fields": {
+          "firstName": "Jméno",
+          "lastName": "Příjmení",
+          "specializationCode": "Specializace",
+          "repeatType": "Opakuje",
+          "prepareMinutes": "Příprava v min",
+          "examMinutes": "Zkouška v min",
+          "thesisTitleLocal": "Název práce (CS/SK)",
+          "thesisTitleEn": "Název práce (EN)",
+          "thesisLanguage": "Jazyk práce",
+          "supervisorName": "Vedoucí",
+          "reviewerName": "Oponent",
+          "studyLanguage": "Jazyk studia",
+          "studyProgramType": "Typ studia",
+          "studyProgramName": "Studijní program"
+        },
+        "messages": {
+          "required": "{field}: povinné pole.",
+          "invalidValue": "{field}: neplatná hodnota.",
+          "unresolvedDepartment": "Katedru se nepodařilo určit podle zvoleného programu a specializace.",
+          "repeatTypeUnknown": "Opakuje: hodnota „Neznámý stav“ není povolena.",
+          "prepareMinutesNegative": "Příprava v min: hodnota musí být 0 nebo více.",
+          "examMinutesNotPositive": "Zkouška v min: hodnota musí být větší než 0.",
+          "thesisTitleUnresolvedMarker": "{field}: obsahuje marker „[?]“ (nevyřešený znak z KOS)."
         }
       }
     },

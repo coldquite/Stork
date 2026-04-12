@@ -136,6 +136,46 @@ describe('student-table rows', () => {
     expect(rows[0]?.thesisTitle).toBe('English thesis title')
   })
 
+  it('does not fallback thesis title from EN to CS when committee language is czech', () => {
+    const committee = createCommittee({
+      language: 'CZECH',
+      items: [
+        createStudentItem({
+          localId: 'student-1',
+          position: 1,
+          thesisTitleLocal: '',
+          thesisTitleEn: 'English thesis title'
+        })
+      ]
+    })
+
+    const rows = buildStudentRowsForCommittee(committee)
+
+    expect(rows[0]?.thesisTitle).toBe('')
+    expect(rows[0]?.thesisTitleLocal).toBe('')
+    expect(rows[0]?.thesisTitleEn).toBe('English thesis title')
+  })
+
+  it('does not fallback thesis title from CS to EN when committee language is english', () => {
+    const committee = createCommittee({
+      language: 'ENGLISH',
+      items: [
+        createStudentItem({
+          localId: 'student-1',
+          position: 1,
+          thesisTitleLocal: 'Lokální název',
+          thesisTitleEn: ''
+        })
+      ]
+    })
+
+    const rows = buildStudentRowsForCommittee(committee)
+
+    expect(rows[0]?.thesisTitle).toBe('')
+    expect(rows[0]?.thesisTitleLocal).toBe('Lokální název')
+    expect(rows[0]?.thesisTitleEn).toBe('')
+  })
+
   it('always exposes both thesis title variants in row model', () => {
     const committee = createCommittee({
       language: 'CZECH',

@@ -27,11 +27,6 @@ function resolveMinutes(value: number, fallback: number): number {
   return Math.max(Math.trunc(value), 0)
 }
 
-function resolveRequiredText(nextValue: string, fallback: string): string {
-  const normalized = normalizeRequiredText(nextValue)
-  return normalized.length > 0 ? normalized : fallback
-}
-
 function isEditorStudentRow(row: EditorTableRow): row is EditorStudentTableRow {
   return row.kind === 'STUDENT'
 }
@@ -42,8 +37,8 @@ function updateStudentItemFromRow(
   row: EditorStudentTableRow,
   thesisTitleDisplayMode: ScheduleDraftThesisTitleDisplayMode
 ): void {
-  studentItem.student.lastName = resolveRequiredText(row.lastName, studentItem.student.lastName)
-  studentItem.student.firstName = resolveRequiredText(row.firstName, studentItem.student.firstName)
+  studentItem.student.lastName = normalizeRequiredText(row.lastName)
+  studentItem.student.firstName = normalizeRequiredText(row.firstName)
   studentItem.student.email = normalizeOptionalText(row.email)
   studentItem.student.titlesBefore = normalizeOptionalText(row.titlesBefore)
   studentItem.student.titlesAfter = normalizeOptionalText(row.titlesAfter)

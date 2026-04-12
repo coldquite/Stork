@@ -771,6 +771,44 @@ describe('useEditorPage', () => {
     ])
   })
 
+  it('combines committee and student validation counts and exposes grouped student issues for selected committee', async () => {
+    const committeeEarly = scheduleDraftStoreMock.draft?.committees.find((entry) => entry.localId === 'committee-early')
+    const studentA = committeeEarly?.items.find((item) => item.localId === 'student-a')
+    if (!studentA || studentA.type !== 'STUDENT') {
+      throw new Error('Expected student-a to exist')
+    }
+
+    studentA.student.firstName = ' '
+    studentA.student.examMinutes = 0
+
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
+    const page = useEditorPage()
+
+    const sidebarCommitteeItems = page.committeeList.committeeSidebarItems.value.filter(
+      (item) => item.kind === 'committee'
+    )
+    expect(sidebarCommitteeItems.map((item) => ({ committeeId: item.value, errorCount: item.errorCount }))).toEqual([
+      { committeeId: 'committee-early', errorCount: 3 },
+      { committeeId: 'committee-late', errorCount: 2 }
+    ])
+
+    expect(page.studentValidation.countByCommitteeId.value).toEqual({
+      'committee-early': 2
+    })
+    expect(page.studentValidation.selectedCommitteeCount.value).toBe(2)
+    expect(page.studentValidation.selectedCommitteeStudentGroups.value).toHaveLength(1)
+    expect(page.studentValidation.selectedCommitteeStudentGroups.value[0]?.studentId).toBe('student-a')
+    expect(
+      page.studentValidation.selectedCommitteeStudentGroups.value[0]?.issues.map((issue) => issue.fieldKey)
+    ).toEqual(['firstName', 'examMinutes'])
+    expect(
+      page.studentValidation.selectedCommitteeStudentGroups.value[0]?.issues.map((issue) => issue.message)
+    ).toEqual([
+      'editor.student.validation.messages.required',
+      'editor.student.validation.messages.examMinutesNotPositive'
+    ])
+  })
+
   it('deletes pause item from selected committee after confirm', async () => {
     const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()

@@ -7,10 +7,13 @@ import EditorCommitteeMembersCard from '~/components/editor/committee/EditorComm
 import EditorCommitteeStartTimeRow from '~/components/editor/committee/EditorCommitteeStartTimeRow.vue'
 import EditorCommitteeStudyProgramCard from '~/components/editor/committee/EditorCommitteeStudyProgramCard.vue'
 import EditorCommitteeValidationCard from '~/components/editor/committee/EditorCommitteeValidationCard.vue'
+import EditorStudentValidationCard from '~/components/editor/students/EditorStudentValidationCard.vue'
 import EditorStudentsSortableTable from '~/components/editor/students/EditorStudentsSortableTable.client.vue'
 import type {
   EditorCommitteeValidationSectionView,
   EditorCommitteeStringFieldPayload,
+  EditorStudentValidationIssue,
+  EditorStudentValidationStudentGroupView,
   EditorStudentHighlightRequest,
   EditorStudentsTableViewMode,
   EditorTableRow,
@@ -44,6 +47,10 @@ const props = defineProps<{
   committeeValidationTitle: string
   committeeValidationCount: number
   committeeValidationSections: EditorCommitteeValidationSectionView[]
+  studentValidationTitle: string
+  studentValidationCount: number
+  studentValidationStudents: EditorStudentValidationStudentGroupView[]
+  studentValidationIssues: EditorStudentValidationIssue[]
   highlightRequest?: EditorStudentHighlightRequest | null
 }>()
 
@@ -58,7 +65,8 @@ const emit = defineEmits<{
       | 'deleteCommittee'
       | 'editPause'
       | 'requestDeleteItem'
-      | 'requestMoveStudent',
+      | 'requestMoveStudent'
+      | 'focusValidationStudent',
     value: string
   ): void
   (event: 'update:committeeStartMinute', value: number): void
@@ -74,6 +82,7 @@ const labels = computed(() => props.committeeLabels)
 const hasSelectedCommittee = computed(() => Boolean(props.selectedCommittee))
 const isInvigilatorsEmpty = computed(() => hasSelectedCommittee.value && props.invigilators.length < 1)
 const hasCommitteeValidationErrors = computed(() => hasSelectedCommittee.value && props.committeeValidationCount > 0)
+const hasStudentValidationErrors = computed(() => hasSelectedCommittee.value && props.studentValidationCount > 0)
 const thesisTitleDisplayMode = computed<ScheduleDraftThesisTitleDisplayMode>(() => props.thesisTitleDisplayMode)
 const tableViewMode = computed<EditorStudentsTableViewMode>(() => props.tableViewMode)
 
@@ -105,6 +114,10 @@ function setThesisTitleDisplayMode(mode: ScheduleDraftThesisTitleDisplayMode): v
 
 function setTableViewMode(mode: EditorStudentsTableViewMode): void {
   emit('update:tableViewMode', mode)
+}
+
+function requestFocusValidationStudent(studentId: string): void {
+  emit('focusValidationStudent', studentId)
 }
 </script>
 
@@ -188,6 +201,15 @@ function setTableViewMode(mode: EditorStudentsTableViewMode): void {
             :title="props.committeeValidationTitle"
             :error-count="props.committeeValidationCount"
             :sections="props.committeeValidationSections"
+          />
+
+          <EditorStudentValidationCard
+            v-if="hasStudentValidationErrors"
+            class="self-stretch"
+            :title="props.studentValidationTitle"
+            :error-count="props.studentValidationCount"
+            :students="props.studentValidationStudents"
+            @focus-student="requestFocusValidationStudent"
           />
         </div>
 
@@ -303,6 +325,8 @@ function setTableViewMode(mode: EditorStudentsTableViewMode): void {
       :model-value="props.students"
       :columns="props.columns"
       :empty-labels="props.studentsEmpty"
+      :committee-language="props.selectedCommittee?.language ?? null"
+      :student-validation-issues="props.studentValidationIssues"
       :highlight-request="props.highlightRequest"
       @update:model-value="emit('update:students', $event)"
       @edit-pause="emit('editPause', $event)"

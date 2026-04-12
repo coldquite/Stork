@@ -18,22 +18,18 @@ function resolveThesisTitleByCommitteeLanguage(
   const englishTitle = resolveEnglishThesisTitle(student)
 
   if (committeeLanguage === 'ENGLISH') {
-    return englishTitle || localTitle
+    return englishTitle
   }
 
-  return localTitle || englishTitle
+  return localTitle
 }
 
 function resolveLocalThesisTitle(student: ScheduleDraftItem & { type: 'STUDENT' }): string {
-  const localTitle = student.student.thesisTitleLocal.trim()
-  const englishTitle = student.student.thesisTitleEn.trim()
-  return localTitle || englishTitle
+  return student.student.thesisTitleLocal.trim()
 }
 
 function resolveEnglishThesisTitle(student: ScheduleDraftItem & { type: 'STUDENT' }): string {
-  const localTitle = student.student.thesisTitleLocal.trim()
-  const englishTitle = student.student.thesisTitleEn.trim()
-  return englishTitle || localTitle
+  return student.student.thesisTitleEn.trim()
 }
 
 function buildStudentRow(

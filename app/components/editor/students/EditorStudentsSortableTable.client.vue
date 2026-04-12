@@ -14,11 +14,18 @@ import type {
 import { STUDENT_TABLE_THESIS_COLUMN_WIDTH_CLASS } from '~/constants/editor-students-table'
 import type {
   EditorPauseTableRow,
+  EditorStudentValidationFieldKey,
+  EditorStudentValidationIssue,
   EditorStudentHighlightRequest,
   EditorStudentTableRow,
   EditorStudentsPanelStudentsEmptyLabels,
   EditorTableRow
 } from '~/types/editor'
+import {
+  EDITOR_INVALID_INPUT_UI,
+  EDITOR_INVALID_RING_CLASS,
+  EDITOR_INVALID_TEXT_CLASS
+} from '~/constants/editor-validation-ui'
 import { resolveRepeatTypeFromSelectValue } from '~/utils/editor/repeat-type'
 import {
   applySpecializationCodeChange,
@@ -74,12 +81,16 @@ interface SortableUpdateEventLike {
   newIndex: number | null
 }
 
+type EditorStudentValidationUiFieldKey = EditorStudentValidationFieldKey | 'thesisTitle'
+
 const props = defineProps<{
   /** Stable key when the parent committee changes (resets local row order). */
   committeeLocalId: string
   modelValue: EditorTableRow[]
   columns: TableColumn<EditorTableRow>[]
   emptyLabels: EditorStudentsPanelStudentsEmptyLabels
+  committeeLanguage: StudyLanguageDto | null
+  studentValidationIssues: EditorStudentValidationIssue[]
   highlightRequest?: EditorStudentHighlightRequest | null
 }>()
 
@@ -105,7 +116,7 @@ const inlineEditInputClass = 'w-full [&_input]:text-sm'
 const inlineEditSelectClass = 'w-full [&_[role=combobox]]:text-sm [&_[role=combobox]_span]:text-sm'
 const inlineReadonlyFrameClass = 'w-full min-h-8 px-2.5 py-1.5'
 const inlineReadonlySelectFrameClass = `${inlineReadonlyFrameClass} pe-9`
-const invalidInlineReadonlySelectFrameClass = `${inlineReadonlySelectFrameClass} ring-2 ring-inset ring-error/70 dark:ring-error/85`
+const invalidInlineReadonlySelectFrameClass = `${inlineReadonlySelectFrameClass} ${EDITOR_INVALID_RING_CLASS}`
 const inlineReadonlyTextClass = 'block text-sm whitespace-nowrap'
 const thesisCellWrapperClass = `${STUDENT_TABLE_THESIS_COLUMN_WIDTH_CLASS} cursor-pointer`
 const thesisTitleWarningMarker = '[?]'
@@ -120,9 +131,7 @@ const studentTableTbodyBaseClass =
   'editor-students-tbody divide-y divide-default [&_tr:nth-child(odd)]:bg-primary/5 [&_tr:nth-child(even)]:bg-white dark:[&_tr:nth-child(odd)]:bg-primary/10 dark:[&_tr:nth-child(even)]:bg-default'
 const studentTableTbodyHoverClass =
   'editor-students-hover-accent [&_tr:hover]:bg-primary/12 dark:[&_tr:hover]:bg-primary/18'
-const invalidSelectUi = {
-  base: 'ring-2 ring-inset ring-error/70 dark:ring-error/85'
-} as const
+const invalidSelectUi = EDITOR_INVALID_INPUT_UI
 
 function syncFromParent(): void {
   localStudents.value = props.modelValue.slice()
@@ -146,8 +155,57 @@ function isStudentDepartmentResolvable(row: EditorStudentTableRow): boolean {
   )
 }
 
+const studentValidationFieldsByStudentId = computed(() => {
+  const fieldsByStudentId = new Map<string, Set<EditorStudentValidationFieldKey>>()
+
+  props.studentValidationIssues.forEach((issue) => {
+    const studentFields = fieldsByStudentId.get(issue.studentId) ?? new Set<EditorStudentValidationFieldKey>()
+    studentFields.add(issue.fieldKey)
+    fieldsByStudentId.set(issue.studentId, studentFields)
+  })
+
+  return fieldsByStudentId
+})
+
+function resolveCommitteeThesisValidationFieldKey(): EditorStudentValidationFieldKey {
+  return props.committeeLanguage === 'ENGLISH' ? 'thesisTitleEn' : 'thesisTitleLocal'
+}
+
+function isStudentFieldInvalid(row: EditorStudentTableRow, fieldKey: EditorStudentValidationUiFieldKey): boolean {
+  const studentValidationFields = studentValidationFieldsByStudentId.value.get(row.id)
+  if (!studentValidationFields) {
+    return false
+  }
+
+  if (fieldKey === 'thesisTitle') {
+    return studentValidationFields.has(resolveCommitteeThesisValidationFieldKey())
+  }
+
+  return studentValidationFields.has(fieldKey)
+}
+
+function resolveInvalidTextClass(isInvalid: boolean): string | null {
+  return isInvalid ? EDITOR_INVALID_TEXT_CLASS : null
+}
+
+function resolveSelectClass(row: EditorStudentTableRow, fieldKey: EditorStudentValidationUiFieldKey): string {
+  if (!isStudentFieldInvalid(row, fieldKey)) {
+    return inlineEditSelectClass
+  }
+
+  return `${inlineEditSelectClass} [&_[role=combobox]]:text-error [&_[role=combobox]_span]:text-error`
+}
+
+function resolveSelectUi(row: EditorStudentTableRow, fieldKey: EditorStudentValidationUiFieldKey) {
+  return isStudentFieldInvalid(row, fieldKey) ? invalidSelectUi : undefined
+}
+
+function resolveSpecializationIsInvalid(row: EditorStudentTableRow): boolean {
+  return isStudentFieldInvalid(row, 'specializationCode') || !isStudentDepartmentResolvable(row)
+}
+
 function resolveSpecializationDisplayFrameClass(row: EditorStudentTableRow): string {
-  return isStudentDepartmentResolvable(row) ? inlineReadonlySelectFrameClass : invalidInlineReadonlySelectFrameClass
+  return resolveSpecializationIsInvalid(row) ? invalidInlineReadonlySelectFrameClass : inlineReadonlySelectFrameClass
 }
 
 function clearRowHighlightTimer(): void {
@@ -906,6 +964,7 @@ onBeforeUnmount(() => {
           :model-value="row.original.lastName"
           cell-wrapper-class="min-w-[5rem] cursor-pointer"
           :input-class="inlineEditInputClass"
+          :invalid="isStudentFieldInvalid(row.original, 'lastName')"
           mode="text"
           @activate="activateRow(row.original.id)"
           @update:model-value="updateTextField(row.original.id, 'lastName', $event)"
@@ -919,6 +978,7 @@ onBeforeUnmount(() => {
           :model-value="row.original.firstName"
           cell-wrapper-class="min-w-[5rem] cursor-pointer"
           :input-class="inlineEditInputClass"
+          :invalid="isStudentFieldInvalid(row.original, 'firstName')"
           mode="text"
           @activate="activateRow(row.original.id)"
           @update:model-value="updateTextField(row.original.id, 'firstName', $event)"
@@ -957,7 +1017,7 @@ onBeforeUnmount(() => {
           :is-editing="isEditingRow(row.original.id)"
           :model-value="resolveStudyLanguageLabel(row.original.studyLanguage)"
           cell-wrapper-class="min-w-[8.5rem] cursor-pointer"
-          :input-class="inlineEditSelectClass"
+          :input-class="resolveSelectClass(row.original, 'studyLanguage')"
           :display-frame-class="inlineReadonlySelectFrameClass"
           mode="text"
           @activate="activateRow(row.original.id)"
@@ -970,12 +1030,18 @@ onBeforeUnmount(() => {
               label-key="label"
               :search-input="false"
               size="md"
-              :class="inlineEditSelectClass"
+              :class="resolveSelectClass(row.original, 'studyLanguage')"
+              :ui="resolveSelectUi(row.original, 'studyLanguage')"
               @update:model-value="updateStudyLanguage(row.original.id, $event)"
             />
           </template>
           <template #display>
-            <span :class="inlineReadonlyTextClass">
+            <span
+              :class="[
+                inlineReadonlyTextClass,
+                resolveInvalidTextClass(isStudentFieldInvalid(row.original, 'studyLanguage'))
+              ]"
+            >
               {{ resolveStudyLanguageLabel(row.original.studyLanguage) }}
             </span>
           </template>
@@ -988,7 +1054,7 @@ onBeforeUnmount(() => {
           :is-editing="isEditingRow(row.original.id)"
           :model-value="resolveStudyProgramTypeLabel(row.original.studyProgramType)"
           cell-wrapper-class="min-w-[8.5rem] cursor-pointer"
-          :input-class="inlineEditSelectClass"
+          :input-class="resolveSelectClass(row.original, 'studyProgramType')"
           :display-frame-class="inlineReadonlySelectFrameClass"
           mode="text"
           @activate="activateRow(row.original.id)"
@@ -1002,7 +1068,8 @@ onBeforeUnmount(() => {
                 label-key="label"
                 :search-input="false"
                 size="md"
-                :class="inlineEditSelectClass"
+                :class="resolveSelectClass(row.original, 'studyProgramType')"
+                :ui="resolveSelectUi(row.original, 'studyProgramType')"
                 @update:model-value="updateStudyProgramType(row.original.id, $event)"
                 @update:open="updateStudyProgramTypeSelectOpen(row.original.id, $event)"
               />
@@ -1011,7 +1078,12 @@ onBeforeUnmount(() => {
             </div>
           </template>
           <template #display>
-            <span :class="inlineReadonlyTextClass">
+            <span
+              :class="[
+                inlineReadonlyTextClass,
+                resolveInvalidTextClass(isStudentFieldInvalid(row.original, 'studyProgramType'))
+              ]"
+            >
               {{ resolveStudyProgramTypeLabel(row.original.studyProgramType) }}
             </span>
           </template>
@@ -1024,7 +1096,7 @@ onBeforeUnmount(() => {
           :is-editing="isEditingRow(row.original.id)"
           :model-value="row.original.studyProgramName"
           cell-wrapper-class="min-w-[9.5rem] cursor-pointer"
-          :input-class="inlineEditSelectClass"
+          :input-class="resolveSelectClass(row.original, 'studyProgramName')"
           :display-frame-class="inlineReadonlySelectFrameClass"
           mode="text"
           @activate="activateRow(row.original.id)"
@@ -1035,12 +1107,18 @@ onBeforeUnmount(() => {
               :items="studyProgramNameOptionsForRow(row.original)"
               :search-input="false"
               size="md"
-              :class="inlineEditSelectClass"
+              :class="resolveSelectClass(row.original, 'studyProgramName')"
+              :ui="resolveSelectUi(row.original, 'studyProgramName')"
               @update:model-value="updateStudyProgramName(row.original.id, $event)"
             />
           </template>
           <template #display>
-            <span :class="inlineReadonlyTextClass">
+            <span
+              :class="[
+                inlineReadonlyTextClass,
+                resolveInvalidTextClass(isStudentFieldInvalid(row.original, 'studyProgramName'))
+              ]"
+            >
               {{ displayText(row.original.studyProgramName) }}
             </span>
           </template>
@@ -1053,7 +1131,7 @@ onBeforeUnmount(() => {
           :is-editing="isEditingRow(row.original.id)"
           :model-value="row.original.specializationCode"
           cell-wrapper-class="min-w-32 cursor-pointer"
-          :input-class="inlineEditSelectClass"
+          :input-class="resolveSelectClass(row.original, 'specializationCode')"
           :display-frame-class="resolveSpecializationDisplayFrameClass(row.original)"
           mode="text"
           @activate="activateRow(row.original.id)"
@@ -1066,13 +1144,15 @@ onBeforeUnmount(() => {
               label-key="specializationCode"
               :search-input="false"
               size="md"
-              :class="inlineEditSelectClass"
-              :ui="isStudentDepartmentResolvable(row.original) ? undefined : invalidSelectUi"
+              :class="resolveSelectClass(row.original, 'specializationCode')"
+              :ui="resolveSpecializationIsInvalid(row.original) ? invalidSelectUi : undefined"
               @update:model-value="updateSpecializationCode(row.original.id, $event)"
             />
           </template>
           <template #display>
-            <span :class="inlineReadonlyTextClass">
+            <span
+              :class="[inlineReadonlyTextClass, resolveInvalidTextClass(resolveSpecializationIsInvalid(row.original))]"
+            >
               {{ displayText(row.original.specializationCode) }}
             </span>
           </template>
@@ -1086,6 +1166,7 @@ onBeforeUnmount(() => {
           :model-value="row.original.thesisTitle"
           :cell-wrapper-class="thesisCellWrapperClass"
           :input-class="inlineEditInputClass"
+          :invalid="isStudentFieldInvalid(row.original, 'thesisTitle')"
           :warning-marker="thesisTitleWarningMarker"
           mode="text"
           multiline
@@ -1101,6 +1182,7 @@ onBeforeUnmount(() => {
           :model-value="row.original.thesisTitleLocal"
           :cell-wrapper-class="thesisCellWrapperClass"
           :input-class="inlineEditInputClass"
+          :invalid="isStudentFieldInvalid(row.original, 'thesisTitleLocal')"
           :warning-marker="thesisTitleWarningMarker"
           mode="text"
           multiline
@@ -1116,6 +1198,7 @@ onBeforeUnmount(() => {
           :model-value="row.original.thesisTitleEn"
           :cell-wrapper-class="thesisCellWrapperClass"
           :input-class="inlineEditInputClass"
+          :invalid="isStudentFieldInvalid(row.original, 'thesisTitleEn')"
           :warning-marker="thesisTitleWarningMarker"
           mode="text"
           multiline
@@ -1130,7 +1213,7 @@ onBeforeUnmount(() => {
           :is-editing="isEditingRow(row.original.id)"
           :model-value="resolveThesisLanguageLabel(row.original.thesisLanguage)"
           cell-wrapper-class="min-w-[9rem] cursor-pointer"
-          :input-class="inlineEditSelectClass"
+          :input-class="resolveSelectClass(row.original, 'thesisLanguage')"
           :display-frame-class="inlineReadonlySelectFrameClass"
           mode="text"
           @activate="activateRow(row.original.id)"
@@ -1143,12 +1226,18 @@ onBeforeUnmount(() => {
               label-key="label"
               :search-input="false"
               size="md"
-              :class="inlineEditSelectClass"
+              :class="resolveSelectClass(row.original, 'thesisLanguage')"
+              :ui="resolveSelectUi(row.original, 'thesisLanguage')"
               @update:model-value="updateThesisLanguage(row.original.id, $event)"
             />
           </template>
           <template #display>
-            <span :class="inlineReadonlyTextClass">
+            <span
+              :class="[
+                inlineReadonlyTextClass,
+                resolveInvalidTextClass(isStudentFieldInvalid(row.original, 'thesisLanguage'))
+              ]"
+            >
               {{ resolveThesisLanguageLabel(row.original.thesisLanguage) }}
             </span>
           </template>
@@ -1162,6 +1251,7 @@ onBeforeUnmount(() => {
           :model-value="row.original.supervisorName"
           cell-wrapper-class="min-w-[11rem] cursor-pointer"
           :input-class="inlineEditInputClass"
+          :invalid="isStudentFieldInvalid(row.original, 'supervisorName')"
           mode="text"
           @activate="activateRow(row.original.id)"
           @update:model-value="updateTextField(row.original.id, 'supervisorName', $event)"
@@ -1188,6 +1278,7 @@ onBeforeUnmount(() => {
           :model-value="row.original.reviewerName"
           cell-wrapper-class="min-w-[11rem] cursor-pointer"
           :input-class="inlineEditInputClass"
+          :invalid="isStudentFieldInvalid(row.original, 'reviewerName')"
           mode="text"
           @activate="activateRow(row.original.id)"
           @update:model-value="updateTextField(row.original.id, 'reviewerName', $event)"
@@ -1213,7 +1304,7 @@ onBeforeUnmount(() => {
           :is-editing="isEditingRow(row.original.id)"
           :model-value="resolveRepeatTypeLabel(row.original.repeatType)"
           cell-wrapper-class="min-w-[11rem] cursor-pointer"
-          :input-class="inlineEditSelectClass"
+          :input-class="resolveSelectClass(row.original, 'repeatType')"
           :display-frame-class="inlineReadonlySelectFrameClass"
           mode="text"
           @activate="activateRow(row.original.id)"
@@ -1227,7 +1318,8 @@ onBeforeUnmount(() => {
                 label-key="label"
                 :search-input="false"
                 size="md"
-                :class="inlineEditSelectClass"
+                :class="resolveSelectClass(row.original, 'repeatType')"
+                :ui="resolveSelectUi(row.original, 'repeatType')"
                 @update:model-value="updateRepeatType(row.original.id, $event)"
                 @update:open="updateRepeatTypeSelectOpen(row.original.id, $event)"
               />
@@ -1236,7 +1328,12 @@ onBeforeUnmount(() => {
             </div>
           </template>
           <template #display>
-            <span :class="inlineReadonlyTextClass">
+            <span
+              :class="[
+                inlineReadonlyTextClass,
+                resolveInvalidTextClass(isStudentFieldInvalid(row.original, 'repeatType'))
+              ]"
+            >
               {{ resolveRepeatTypeLabel(row.original.repeatType) }}
             </span>
           </template>
@@ -1250,6 +1347,7 @@ onBeforeUnmount(() => {
           :model-value="row.original.prepareMinutes"
           cell-wrapper-class="min-w-[6.5rem] cursor-pointer"
           :input-class="inlineEditInputClass"
+          :invalid="isStudentFieldInvalid(row.original, 'prepareMinutes')"
           mode="number"
           @activate="activateRow(row.original.id)"
           @update:model-value="updateMinuteField(row.original.id, 'prepareMinutes', $event)"
@@ -1263,6 +1361,7 @@ onBeforeUnmount(() => {
           :model-value="row.original.examMinutes"
           cell-wrapper-class="min-w-[6.5rem] cursor-pointer"
           :input-class="inlineEditInputClass"
+          :invalid="isStudentFieldInvalid(row.original, 'examMinutes')"
           mode="number"
           @activate="activateRow(row.original.id)"
           @update:model-value="updateMinuteField(row.original.id, 'examMinutes', $event)"

@@ -143,6 +143,55 @@ export interface EditorCommitteeValidationSectionView {
   issues: EditorCommitteeValidationIssueView[]
 }
 
+export type EditorStudentValidationSeverity = 'error'
+
+export type EditorStudentValidationFieldKey =
+  | 'firstName'
+  | 'lastName'
+  | 'specializationCode'
+  | 'repeatType'
+  | 'prepareMinutes'
+  | 'examMinutes'
+  | 'thesisTitleLocal'
+  | 'thesisTitleEn'
+  | 'thesisLanguage'
+  | 'supervisorName'
+  | 'reviewerName'
+  | 'studyLanguage'
+  | 'studyProgramType'
+  | 'studyProgramName'
+
+export type EditorStudentValidationIssueCode =
+  | 'REQUIRED'
+  | 'INVALID_VALUE'
+  | 'UNRESOLVED_DEPARTMENT'
+  | 'REPEAT_TYPE_UNKNOWN'
+  | 'PREPARE_MINUTES_NEGATIVE'
+  | 'EXAM_MINUTES_NOT_POSITIVE'
+  | 'THESIS_TITLE_UNRESOLVED_MARKER'
+
+export interface EditorStudentValidationIssue {
+  issueId: string
+  committeeId: string
+  studentId: string
+  studentOrder: number
+  fieldKey: EditorStudentValidationFieldKey
+  code: EditorStudentValidationIssueCode
+  severity: EditorStudentValidationSeverity
+}
+
+export interface EditorStudentValidationIssueView {
+  issueId: string
+  fieldKey: EditorStudentValidationFieldKey
+  message: string
+}
+
+export interface EditorStudentValidationStudentGroupView {
+  studentId: string
+  studentLabel: string
+  issues: EditorStudentValidationIssueView[]
+}
+
 /** i18n strings for committee form blocks inside EditorStudentsPanel */
 export interface EditorStudentsPanelCommitteeLabels {
   committeeTitle: string

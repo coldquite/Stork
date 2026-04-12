@@ -22,6 +22,7 @@ const {
   studentSearch,
   committeeFields,
   committeeValidation,
+  studentValidation,
   invigilators,
   studentCreation,
   pauseCreation,
@@ -228,6 +229,15 @@ function requestMoveStudentToAnotherCommittee(studentId: string): void {
   committeeItemsActions.openMoveStudentDialog(studentId)
 }
 
+function focusStudentFromValidation(studentId: string): void {
+  const selectedCommitteeId = committeeList.selectedCommitteeId.value
+  if (!selectedCommitteeId) {
+    return
+  }
+
+  studentSearch.focusStudentInCommittee(selectedCommitteeId, studentId)
+}
+
 const committeesCount = computed(() => committeeList.committees.value.length)
 const selectedCommitteeIdModel = computed({
   get: () => committeeList.selectedCommitteeId.value,
@@ -249,6 +259,10 @@ const panelInvigilatorsCountLabel = computed(() => invigilators.invigilatorsCoun
 const panelCommitteeValidationCount = computed(() => committeeValidation.selectedCommitteeCount.value)
 const panelCommitteeValidationTitle = computed(() => t('editor.committee.validation.title'))
 const panelCommitteeValidationSections = computed(() => committeeValidation.selectedCommitteeSections.value)
+const panelStudentValidationCount = computed(() => studentValidation.selectedCommitteeCount.value)
+const panelStudentValidationTitle = computed(() => t('editor.student.validation.title'))
+const panelStudentValidationStudents = computed(() => studentValidation.selectedCommitteeStudentGroups.value)
+const panelStudentValidationIssues = computed(() => studentValidation.selectedCommitteeIssues.value)
 const panelHighlightRequest = computed(() => studentSearch.highlightRequest.value)
 const cloudSaveLoading = computed(() => scheduleDialogs.isCloudSaveLoading.value)
 const draftNameText = computed(() => draftName.value)
@@ -315,6 +329,10 @@ const draftNameText = computed(() => draftName.value)
             :committee-validation-count="panelCommitteeValidationCount"
             :committee-validation-title="panelCommitteeValidationTitle"
             :committee-validation-sections="panelCommitteeValidationSections"
+            :student-validation-count="panelStudentValidationCount"
+            :student-validation-title="panelStudentValidationTitle"
+            :student-validation-students="panelStudentValidationStudents"
+            :student-validation-issues="panelStudentValidationIssues"
             :highlight-request="panelHighlightRequest"
             @update:students="setStudentRows"
             @committee-string-field="onCommitteeStringField"
@@ -333,6 +351,7 @@ const draftNameText = computed(() => draftName.value)
             @delete-invigilator="invigilators.openDeleteInvigilatorConfirm($event)"
             @rename-committee="committeeList.openRenameCommitteeDialog($event)"
             @delete-committee="committeeList.openDeleteCommitteeConfirm($event)"
+            @focus-validation-student="focusStudentFromValidation"
           />
         </div>
       </div>

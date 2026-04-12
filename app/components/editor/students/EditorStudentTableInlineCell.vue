@@ -1,4 +1,10 @@
 <script setup lang="ts">
+import {
+  EDITOR_INVALID_INPUT_PLACEHOLDER_CLASS,
+  EDITOR_INVALID_INPUT_TEXT_CLASS,
+  EDITOR_INVALID_INPUT_UI
+} from '~/constants/editor-validation-ui'
+
 const props = withDefaults(
   defineProps<{
     isEditing: boolean
@@ -15,11 +21,14 @@ const props = withDefaults(
     editOverlayClass?: string
     /** When provided, text containing this marker is highlighted as an inline warning. */
     warningMarker?: string
+    /** Validation state controlled by parent table-level validation map. */
+    invalid?: boolean
   }>(),
   {
     displayFrameClass: 'w-full min-h-8 px-2.5 py-1.5',
     // Keep edit controls vertically centered when readonly placeholder is taller (e.g., wrapped thesis title)
-    editOverlayClass: 'absolute inset-0 flex items-center'
+    editOverlayClass: 'absolute inset-0 flex items-center',
+    invalid: false
   }
 )
 
@@ -41,26 +50,41 @@ const hasWarningMarker = computed(() => {
   return String(props.modelValue).includes(props.warningMarker)
 })
 
+const hasInvalidState = computed(() => props.invalid || hasWarningMarker.value)
+const isTextValueBlank = computed(() => props.mode === 'text' && String(props.modelValue).trim().length < 1)
+
 const displayContentClass = computed(() => {
   if (props.mode === 'number') {
-    return 'block text-sm whitespace-nowrap'
+    return hasInvalidState.value ? 'block text-sm whitespace-nowrap text-error' : 'block text-sm whitespace-nowrap'
   }
 
   if (props.multiline) {
-    return hasWarningMarker.value
+    return hasInvalidState.value
       ? 'block text-sm break-words whitespace-normal text-error'
       : 'block text-sm break-words whitespace-normal'
   }
 
-  return hasWarningMarker.value ? 'block text-sm whitespace-nowrap text-error' : 'block text-sm whitespace-nowrap'
+  return hasInvalidState.value ? 'block text-sm whitespace-nowrap text-error' : 'block text-sm whitespace-nowrap'
 })
 
 const resolvedInputClass = computed(() => {
-  if (!hasWarningMarker.value) {
+  if (!hasInvalidState.value) {
     return props.inputClass
   }
 
-  return `${props.inputClass} [&_input]:text-error`
+  const placeholderClass =
+    props.mode === 'text' && isTextValueBlank.value ? ` ${EDITOR_INVALID_INPUT_PLACEHOLDER_CLASS}` : ''
+
+  // Keep edit mode focused on outline (ring). Red text is shown in readonly state.
+  if (props.isEditing) {
+    return `${props.inputClass}${placeholderClass}`
+  }
+
+  return `${props.inputClass} ${EDITOR_INVALID_INPUT_TEXT_CLASS}${placeholderClass}`
+})
+
+const resolvedInputUi = computed(() => {
+  return hasInvalidState.value ? EDITOR_INVALID_INPUT_UI : undefined
 })
 </script>
 
@@ -85,7 +109,9 @@ const resolvedInputClass = computed(() => {
             v-if="props.mode === 'text'"
             :model-value="String(props.modelValue)"
             size="sm"
+            placeholder="—"
             :class="resolvedInputClass"
+            :ui="resolvedInputUi"
             @update:model-value="emit('update:modelValue', $event)"
           />
           <UInput
@@ -94,7 +120,8 @@ const resolvedInputClass = computed(() => {
             type="number"
             min="0"
             size="sm"
-            :class="props.inputClass"
+            :class="resolvedInputClass"
+            :ui="resolvedInputUi"
             @update:model-value="emit('update:modelValue', $event)"
           />
         </slot>
