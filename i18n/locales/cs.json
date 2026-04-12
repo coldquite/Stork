@@ -395,7 +395,8 @@
       "title": "Komise",
       "sortHint": "Seřazeno podle času zahájení",
       "sidebar": {
-        "details": "{room}  {'|'}  {start} - {end}"
+        "details": "{room}  {'|'}  {start} - {end}",
+        "studentsBadgeTooltip": "Počet studentů v komisi: {count}"
       },
       "create": {
         "title": "Přidat komisi",
@@ -481,6 +482,45 @@
           "ariaLabel": "Smazat člena dozoru",
           "confirmAction": "Smazat člena dozoru",
           "description": "Opravdu chcete smazat člena dozoru „{name}“? Tato akce je nevratná."
+        }
+      },
+      "validation": {
+        "title": "Nedokončené údaje",
+        "sidebarBadgeAriaLabel": "Počet chyb v komisi: {count}",
+        "sections": {
+          "basics": "Základní údaje",
+          "study": "Studium",
+          "members": "Členové komise",
+          "invigilators": "Dozor"
+        },
+        "fields": {
+          "name": "Název komise",
+          "language": "Jazyk komise",
+          "date": "Datum konání",
+          "startMinute": "Začátek první zkoušky",
+          "room": "Místnost konání",
+          "secretary": "Tajemník",
+          "preparationRoom": "Místnost písemné přípravy",
+          "studyProgramType": "Typ studia",
+          "studyProgramName": "Studijní program",
+          "specializationCode": "Specializace",
+          "department": "Katedra",
+          "chair": "Předseda",
+          "viceChair": "Místopředseda",
+          "member1": "Člen 1",
+          "member2": "Člen 2",
+          "member3": "Člen 3",
+          "invigilators": "Členové dozoru",
+          "invigilatorName": "Jméno člena dozoru"
+        },
+        "messages": {
+          "required": "{field}: povinné pole.",
+          "invalidDate": "{field}: neplatné datum.",
+          "invalidStartMinute": "{field}: neplatný čas začátku.",
+          "invalidValue": "{field}: neplatná hodnota.",
+          "minInvigilators": "Počet členů dozoru musí být alespoň 1.",
+          "invigilatorNameRequired": "Dozor {index}: jméno je povinné.",
+          "unresolvedDepartment": "Katedru se nepodařilo určit podle zvoleného programu a specializace."
         }
       }
     },

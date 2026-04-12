@@ -2,6 +2,7 @@
 const props = defineProps<{
   committeeTitleLabel: string
   committeeLabel?: string
+  studentsCount: number
   studentsCountLabel: string
   renameCommitteeLabel: string
   deleteCommitteeLabel: string
@@ -9,6 +10,7 @@ const props = defineProps<{
   deleteCommitteeAriaLabel: string
   hasCommittee: boolean
 }>()
+const { t } = useI18n()
 
 const emit = defineEmits<{
   (e: 'renameCommittee' | 'deleteCommittee'): void
@@ -63,13 +65,17 @@ const deleteActionButtonUi = {
       </div>
     </div>
 
-    <UBadge
-      color="primary"
-      variant="soft"
-      leading-icon="i-lucide-users"
-      class="shrink-0 self-start px-3 py-1 text-base font-semibold ring-2 ring-current/45 sm:self-center"
-    >
-      {{ props.studentsCountLabel }}
-    </UBadge>
+    <UTooltip :text="t('editor.committees.sidebar.studentsBadgeTooltip', { count: props.studentsCount })">
+      <UBadge
+        color="primary"
+        variant="outline"
+        size="lg"
+        leading-icon="i-lucide-users"
+        :aria-label="t('editor.committees.sidebar.studentsBadgeTooltip', { count: props.studentsCount })"
+        class="bg-default shrink-0 self-start px-2.5 py-1 text-base font-semibold ring-2 ring-current/45 sm:self-center"
+      >
+        {{ props.studentsCountLabel }}
+      </UBadge>
+    </UTooltip>
   </div>
 </template>

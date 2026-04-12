@@ -75,12 +75,73 @@ export interface CommitteeSidebarCommitteeItem {
   label: string
   value: string
   studentsCount: number
+  errorCount?: number
   roomLabel: string
   timelineStartLabel: string
   timelineEndLabel: string
 }
 
 export type CommitteeSidebarItem = CommitteeSidebarDayBookmarkItem | CommitteeSidebarCommitteeItem
+
+export type EditorCommitteeValidationSeverity = 'error'
+
+export type EditorCommitteeValidationSection = 'BASICS' | 'STUDY' | 'MEMBERS' | 'INVIGILATORS'
+
+export type EditorCommitteeValidationFieldKey =
+  | 'name'
+  | 'language'
+  | 'date'
+  | 'startMinute'
+  | 'room'
+  | 'secretary'
+  | 'preparationRoom'
+  | 'studyProgramType'
+  | 'studyProgramName'
+  | 'specializationCode'
+  | 'department'
+  | 'chair'
+  | 'viceChair'
+  | 'member1'
+  | 'member2'
+  | 'member3'
+  | 'invigilators'
+  | 'invigilatorName'
+
+export type EditorCommitteeValidationIssueCode =
+  | 'REQUIRED'
+  | 'INVALID_DATE'
+  | 'INVALID_START_MINUTE'
+  | 'UNRESOLVED_DEPARTMENT'
+  | 'MIN_INVIGILATORS'
+  | 'INVALID_VALUE'
+
+export interface EditorCommitteeValidationIssue {
+  issueId: string
+  committeeId: string
+  section: EditorCommitteeValidationSection
+  fieldKey: EditorCommitteeValidationFieldKey
+  code: EditorCommitteeValidationIssueCode
+  severity: EditorCommitteeValidationSeverity
+  invigilatorIndex?: number
+  invigilatorLocalId?: string
+}
+
+export interface EditorCommitteeValidationSectionGroup {
+  section: EditorCommitteeValidationSection
+  issues: EditorCommitteeValidationIssue[]
+}
+
+export interface EditorCommitteeValidationIssueView {
+  issueId: string
+  fieldKey: EditorCommitteeValidationFieldKey
+  message: string
+}
+
+export interface EditorCommitteeValidationSectionView {
+  section: EditorCommitteeValidationSection
+  label: string
+  issues: EditorCommitteeValidationIssueView[]
+}
 
 /** i18n strings for committee form blocks inside EditorStudentsPanel */
 export interface EditorStudentsPanelCommitteeLabels {

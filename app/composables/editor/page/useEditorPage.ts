@@ -9,8 +9,20 @@ import { useEditorStudentSearch } from '~/composables/editor/students/useEditorS
 import { useEditorStudentTable } from '~/composables/editor/students/useEditorStudentTable'
 import { useEditorTablePreferencesStore } from '~/stores/editor-table-preferences'
 import { useScheduleDraftStore } from '~/stores/schedule-draft'
-import type { EditorStudentsTableViewMode } from '~/types/editor'
+import type {
+  CommitteeSidebarItem,
+  EditorCommitteeValidationIssue,
+  EditorCommitteeValidationSection,
+  EditorCommitteeValidationSectionView,
+  EditorStudentsTableViewMode
+} from '~/types/editor'
 import type { ScheduleDraftThesisTitleDisplayMode } from '~/types/schedule-draft'
+import {
+  collectCommitteeValidationIssues,
+  countCommitteeValidationIssuesByCommitteeId,
+  groupCommitteeValidationIssuesByCommitteeId,
+  groupCommitteeValidationIssuesBySection
+} from '~/utils/editor/committee-validation'
 
 /**
  * Facade composable for the schedule editor page: composes committee list, student table,
@@ -40,6 +52,101 @@ export function useEditorPage() {
   const studentCreation = useEditorStudentCreation(committeeList.selectedCommittee)
   const pauseCreation = useEditorPauseCreation(committeeList.selectedCommittee)
   const scheduleDialogs = useEditorScheduleDialogs()
+  const draftCommittees = computed(() => scheduleDraftStore.draft?.committees ?? [])
+  const committeeValidationIssues = computed(() => collectCommitteeValidationIssues(draftCommittees.value))
+  const committeeValidationIssuesByCommitteeId = computed(() =>
+    groupCommitteeValidationIssuesByCommitteeId(committeeValidationIssues.value)
+  )
+  const committeeValidationCountByCommitteeId = computed(() =>
+    countCommitteeValidationIssuesByCommitteeId(committeeValidationIssuesByCommitteeId.value)
+  )
+  const committeeSidebarItemsWithErrors = computed<CommitteeSidebarItem[]>(() => {
+    return committeeList.committeeSidebarItems.value.map((item) => {
+      if (item.kind !== 'committee') {
+        return item
+      }
+
+      return {
+        ...item,
+        errorCount: committeeValidationCountByCommitteeId.value[item.value] ?? 0
+      }
+    })
+  })
+  const selectedCommitteeValidationIssues = computed<EditorCommitteeValidationIssue[]>(() => {
+    const selectedCommitteeId = committeeList.selectedCommitteeId.value
+    if (!selectedCommitteeId) {
+      return []
+    }
+
+    return committeeValidationIssuesByCommitteeId.value[selectedCommitteeId] ?? []
+  })
+
+  function resolveValidationSectionLabel(section: EditorCommitteeValidationSection): string {
+    switch (section) {
+      case 'BASICS':
+        return t('editor.committee.validation.sections.basics')
+      case 'STUDY':
+        return t('editor.committee.validation.sections.study')
+      case 'MEMBERS':
+        return t('editor.committee.validation.sections.members')
+      case 'INVIGILATORS':
+        return t('editor.committee.validation.sections.invigilators')
+      default:
+        return section
+    }
+  }
+
+  function resolveValidationFieldLabel(fieldKey: EditorCommitteeValidationIssue['fieldKey']): string {
+    return t(`editor.committee.validation.fields.${fieldKey}`)
+  }
+
+  function resolveCommitteeValidationMessage(issue: EditorCommitteeValidationIssue): string {
+    switch (issue.code) {
+      case 'REQUIRED':
+        if (issue.fieldKey === 'invigilatorName') {
+          return t('editor.committee.validation.messages.invigilatorNameRequired', {
+            index: (issue.invigilatorIndex ?? 0) + 1
+          })
+        }
+
+        return t('editor.committee.validation.messages.required', {
+          field: resolveValidationFieldLabel(issue.fieldKey)
+        })
+      case 'INVALID_DATE':
+        return t('editor.committee.validation.messages.invalidDate', {
+          field: resolveValidationFieldLabel(issue.fieldKey)
+        })
+      case 'INVALID_START_MINUTE':
+        return t('editor.committee.validation.messages.invalidStartMinute', {
+          field: resolveValidationFieldLabel(issue.fieldKey)
+        })
+      case 'UNRESOLVED_DEPARTMENT':
+        return t('editor.committee.validation.messages.unresolvedDepartment')
+      case 'MIN_INVIGILATORS':
+        return t('editor.committee.validation.messages.minInvigilators')
+      case 'INVALID_VALUE':
+        return t('editor.committee.validation.messages.invalidValue', {
+          field: resolveValidationFieldLabel(issue.fieldKey)
+        })
+      default:
+        return t('editor.committee.validation.messages.invalidValue', {
+          field: resolveValidationFieldLabel(issue.fieldKey)
+        })
+    }
+  }
+
+  const selectedCommitteeValidationSections = computed<EditorCommitteeValidationSectionView[]>(() =>
+    groupCommitteeValidationIssuesBySection(selectedCommitteeValidationIssues.value).map((group) => ({
+      section: group.section,
+      label: resolveValidationSectionLabel(group.section),
+      issues: group.issues.map((issue) => ({
+        issueId: issue.issueId,
+        fieldKey: issue.fieldKey,
+        message: resolveCommitteeValidationMessage(issue)
+      }))
+    }))
+  )
+  const selectedCommitteeValidationCount = computed(() => selectedCommitteeValidationIssues.value.length)
 
   function updateThesisTitleDisplayMode(nextMode: ScheduleDraftThesisTitleDisplayMode): void {
     editorTablePreferencesStore.setThesisTitleDisplayMode(nextMode)
@@ -62,7 +169,7 @@ export function useEditorPage() {
       selectedCommitteeId: committeeList.selectedCommitteeId,
       selectedCommitteeLabel: committeeList.selectedCommitteeLabel,
       selectedCommitteeDate: committeeList.selectedCommitteeDate,
-      committeeSidebarItems: committeeList.committeeSidebarItems,
+      committeeSidebarItems: committeeSidebarItemsWithErrors,
       isCreateCommitteeDialogOpen: committeeList.isCreateCommitteeDialogOpen,
       createCommitteeName: committeeList.createCommitteeName,
       createCommitteeDraft: committeeList.createCommitteeDraft,
@@ -143,6 +250,15 @@ export function useEditorPage() {
       updateSelectedCommitteeStudyProgramType: committeeFields.updateSelectedCommitteeStudyProgramType,
       updateSelectedCommitteeStudyProgramName: committeeFields.updateSelectedCommitteeStudyProgramName,
       updateSelectedCommitteeSpecializationCode: committeeFields.updateSelectedCommitteeSpecializationCode
+    },
+
+    committeeValidation: {
+      allIssues: committeeValidationIssues,
+      issuesByCommitteeId: committeeValidationIssuesByCommitteeId,
+      countByCommitteeId: committeeValidationCountByCommitteeId,
+      selectedCommitteeIssues: selectedCommitteeValidationIssues,
+      selectedCommitteeSections: selectedCommitteeValidationSections,
+      selectedCommitteeCount: selectedCommitteeValidationCount
     },
 
     invigilators: {

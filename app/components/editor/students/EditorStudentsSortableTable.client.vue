@@ -832,30 +832,31 @@ onBeforeUnmount(() => {
           <div
             class="pointer-events-none absolute inset-0 flex items-center justify-center gap-1 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100"
           >
-            <UButton
-              v-if="isStudentRow(row.original)"
-              color="primary"
-              variant="ghost"
-              size="sm"
-              icon="i-lucide-git-pull-request-arrow"
-              :class="orderCellActionButtonClass"
-              :aria-label="t('editor.table.moveStudentAriaLabel')"
-              :title="t('editor.table.moveStudentAriaLabel')"
-              :ui="orderCellMoveActionButtonUi"
-              @click.stop="requestMoveStudent(row.original.id)"
-            />
+            <UTooltip v-if="isStudentRow(row.original)" :text="t('editor.table.moveStudentAriaLabel')">
+              <UButton
+                color="primary"
+                variant="ghost"
+                size="sm"
+                icon="i-lucide-git-pull-request-arrow"
+                :class="orderCellActionButtonClass"
+                :aria-label="t('editor.table.moveStudentAriaLabel')"
+                :ui="orderCellMoveActionButtonUi"
+                @click.stop="requestMoveStudent(row.original.id)"
+              />
+            </UTooltip>
 
-            <UButton
-              color="error"
-              variant="ghost"
-              size="sm"
-              icon="i-lucide-trash-2"
-              :class="orderCellActionButtonClass"
-              :aria-label="t('editor.table.deleteItemAriaLabel')"
-              :title="t('editor.table.deleteItemAriaLabel')"
-              :ui="orderCellDeleteActionButtonUi"
-              @click.stop="requestDeleteItem(row.original.id)"
-            />
+            <UTooltip :text="t('editor.table.deleteItemAriaLabel')">
+              <UButton
+                color="error"
+                variant="ghost"
+                size="sm"
+                icon="i-lucide-trash-2"
+                :class="orderCellActionButtonClass"
+                :aria-label="t('editor.table.deleteItemAriaLabel')"
+                :ui="orderCellDeleteActionButtonUi"
+                @click.stop="requestDeleteItem(row.original.id)"
+              />
+            </UTooltip>
           </div>
         </div>
       </template>

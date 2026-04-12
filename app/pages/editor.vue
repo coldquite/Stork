@@ -21,6 +21,7 @@ const {
   draftSettings,
   studentSearch,
   committeeFields,
+  committeeValidation,
   invigilators,
   studentCreation,
   pauseCreation,
@@ -238,12 +239,16 @@ const committeeSidebarItems = computed(() => committeeList.committeeSidebarItems
 const panelSelectedCommittee = computed(() => committeeList.selectedCommittee.value)
 const panelCommitteeLabel = computed(() => committeeList.selectedCommitteeLabel.value)
 const panelCommitteeDate = computed(() => committeeList.selectedCommitteeDate.value)
+const panelStudentsCount = computed(() => studentTable.selectedStudents.value.length)
 const panelStudents = computed(() => studentTable.selectedRows.value)
 const panelColumns = computed(() => studentTable.columns.value)
 const panelThesisTitleDisplayMode = computed(() => draftSettings.thesisTitleDisplayMode.value)
 const panelTableViewMode = computed(() => draftSettings.tableViewMode.value)
 const panelInvigilators = computed(() => invigilators.selectedInvigilators.value)
 const panelInvigilatorsCountLabel = computed(() => invigilators.invigilatorsCountLabel.value)
+const panelCommitteeValidationCount = computed(() => committeeValidation.selectedCommitteeCount.value)
+const panelCommitteeValidationTitle = computed(() => t('editor.committee.validation.title'))
+const panelCommitteeValidationSections = computed(() => committeeValidation.selectedCommitteeSections.value)
 const panelHighlightRequest = computed(() => studentSearch.highlightRequest.value)
 const cloudSaveLoading = computed(() => scheduleDialogs.isCloudSaveLoading.value)
 const draftNameText = computed(() => draftName.value)
@@ -296,6 +301,7 @@ const draftNameText = computed(() => draftName.value)
             :selected-committee="panelSelectedCommittee"
             :selected-committee-label="panelCommitteeLabel"
             :selected-committee-date="panelCommitteeDate"
+            :students-count="panelStudentsCount"
             :thesis-title-display-mode="panelThesisTitleDisplayMode"
             :table-view-mode="panelTableViewMode"
             :students-count-label="studentsCountLabel"
@@ -306,6 +312,9 @@ const draftNameText = computed(() => draftName.value)
             :invigilator-labels="invigilatorLabels"
             :invigilators="panelInvigilators"
             :invigilators-count-label="panelInvigilatorsCountLabel"
+            :committee-validation-count="panelCommitteeValidationCount"
+            :committee-validation-title="panelCommitteeValidationTitle"
+            :committee-validation-sections="panelCommitteeValidationSections"
             :highlight-request="panelHighlightRequest"
             @update:students="setStudentRows"
             @committee-string-field="onCommitteeStringField"

@@ -716,6 +716,61 @@ describe('useEditorPage', () => {
     expect(page.committeeList.isDeleteCommitteeConfirmOpen.value).toBe(false)
   })
 
+  it('exposes committee validation counts for sidebar badges and selected committee sections', async () => {
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
+    const page = useEditorPage()
+
+    const sidebarCommitteeItems = page.committeeList.committeeSidebarItems.value.filter(
+      (item) => item.kind === 'committee'
+    )
+    expect(sidebarCommitteeItems.map((item) => ({ committeeId: item.value, errorCount: item.errorCount }))).toEqual([
+      { committeeId: 'committee-early', errorCount: 1 },
+      { committeeId: 'committee-late', errorCount: 2 }
+    ])
+    expect(page.committeeValidation.countByCommitteeId.value).toEqual({
+      'committee-early': 1,
+      'committee-late': 2
+    })
+
+    expect(page.committeeValidation.selectedCommitteeCount.value).toBe(1)
+    expect(page.committeeValidation.selectedCommitteeSections.value).toEqual([
+      {
+        section: 'INVIGILATORS',
+        label: 'editor.committee.validation.sections.invigilators',
+        issues: [
+          {
+            issueId: 'committee-early:preparationRoom:REQUIRED',
+            fieldKey: 'preparationRoom',
+            message: 'editor.committee.validation.messages.required'
+          }
+        ]
+      }
+    ])
+
+    page.committeeList.selectedCommitteeId.value = 'committee-late'
+    await nextTick()
+
+    expect(page.committeeValidation.selectedCommitteeCount.value).toBe(2)
+    expect(page.committeeValidation.selectedCommitteeSections.value).toEqual([
+      {
+        section: 'INVIGILATORS',
+        label: 'editor.committee.validation.sections.invigilators',
+        issues: [
+          {
+            issueId: 'committee-late:preparationRoom:REQUIRED',
+            fieldKey: 'preparationRoom',
+            message: 'editor.committee.validation.messages.required'
+          },
+          {
+            issueId: 'committee-late:invigilators:MIN_INVIGILATORS',
+            fieldKey: 'invigilators',
+            message: 'editor.committee.validation.messages.minInvigilators'
+          }
+        ]
+      }
+    ])
+  })
+
   it('deletes pause item from selected committee after confirm', async () => {
     const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()

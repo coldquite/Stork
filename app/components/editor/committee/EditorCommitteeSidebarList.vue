@@ -34,6 +34,10 @@ function isCommitteeDisabled(item: CommitteeSidebarCommitteeItem): boolean {
   return item.value === props.disabledCommitteeId
 }
 
+function hasCommitteeErrors(item: CommitteeSidebarCommitteeItem): boolean {
+  return (item.errorCount ?? 0) > 0
+}
+
 function resolveCommitteeVariant(item: CommitteeSidebarCommitteeItem): 'soft' | 'ghost' {
   if (isCommitteeSelected(item) && !isCommitteeDisabled(item)) {
     return 'soft'
@@ -106,20 +110,39 @@ function handleCommitteeSelect(committeeId: string): void {
             color="neutral"
             variant="outline"
             size="lg"
-            class="bg-default px-2.5 py-1 text-base font-semibold ring-2 ring-current/45"
+            class="bg-default px-2 py-1 text-sm font-semibold ring-2 ring-current/45"
           >
             {{ props.currentCommitteeBadgeLabel }}
           </UBadge>
 
-          <UBadge
-            color="primary"
-            variant="outline"
-            size="lg"
-            leading-icon="i-lucide-users"
-            class="bg-default px-2.5 py-1 text-base font-semibold ring-2 ring-current/45"
+          <UTooltip
+            v-if="hasCommitteeErrors(item)"
+            :text="t('editor.committee.validation.sidebarBadgeAriaLabel', { count: item.errorCount ?? 0 })"
           >
-            {{ item.studentsCount }}
-          </UBadge>
+            <UBadge
+              color="error"
+              variant="outline"
+              size="lg"
+              leading-icon="i-lucide-triangle-alert"
+              :aria-label="t('editor.committee.validation.sidebarBadgeAriaLabel', { count: item.errorCount ?? 0 })"
+              class="bg-default px-2 py-1 text-sm font-semibold ring-2 ring-current/45"
+            >
+              {{ item.errorCount }}
+            </UBadge>
+          </UTooltip>
+
+          <UTooltip :text="t('editor.committees.sidebar.studentsBadgeTooltip', { count: item.studentsCount })">
+            <UBadge
+              color="primary"
+              variant="outline"
+              size="lg"
+              leading-icon="i-lucide-users"
+              :aria-label="t('editor.committees.sidebar.studentsBadgeTooltip', { count: item.studentsCount })"
+              class="bg-default px-2 py-1 text-sm font-semibold ring-2 ring-current/45"
+            >
+              {{ item.studentsCount }}
+            </UBadge>
+          </UTooltip>
         </div>
       </UButton>
     </li>

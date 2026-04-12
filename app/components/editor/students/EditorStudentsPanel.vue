@@ -6,8 +6,10 @@ import EditorCommitteeInvigilatorsCard from '~/components/editor/committee/Edito
 import EditorCommitteeMembersCard from '~/components/editor/committee/EditorCommitteeMembersCard.vue'
 import EditorCommitteeStartTimeRow from '~/components/editor/committee/EditorCommitteeStartTimeRow.vue'
 import EditorCommitteeStudyProgramCard from '~/components/editor/committee/EditorCommitteeStudyProgramCard.vue'
+import EditorCommitteeValidationCard from '~/components/editor/committee/EditorCommitteeValidationCard.vue'
 import EditorStudentsSortableTable from '~/components/editor/students/EditorStudentsSortableTable.client.vue'
 import type {
+  EditorCommitteeValidationSectionView,
   EditorCommitteeStringFieldPayload,
   EditorStudentHighlightRequest,
   EditorStudentsTableViewMode,
@@ -30,6 +32,7 @@ const props = defineProps<{
   tableViewMode: EditorStudentsTableViewMode
   selectedCommitteeLabel?: string
   selectedCommitteeDate?: string
+  studentsCount: number
   studentsCountLabel: string
   students: EditorTableRow[]
   columns: TableColumn<EditorTableRow>[]
@@ -38,6 +41,9 @@ const props = defineProps<{
   invigilatorLabels: EditorStudentsPanelInvigilatorLabels
   invigilators: ScheduleDraftInvigilator[]
   invigilatorsCountLabel: string
+  committeeValidationTitle: string
+  committeeValidationCount: number
+  committeeValidationSections: EditorCommitteeValidationSectionView[]
   highlightRequest?: EditorStudentHighlightRequest | null
 }>()
 
@@ -67,6 +73,7 @@ const labels = computed(() => props.committeeLabels)
 
 const hasSelectedCommittee = computed(() => Boolean(props.selectedCommittee))
 const isInvigilatorsEmpty = computed(() => hasSelectedCommittee.value && props.invigilators.length < 1)
+const hasCommitteeValidationErrors = computed(() => hasSelectedCommittee.value && props.committeeValidationCount > 0)
 const thesisTitleDisplayMode = computed<ScheduleDraftThesisTitleDisplayMode>(() => props.thesisTitleDisplayMode)
 const tableViewMode = computed<EditorStudentsTableViewMode>(() => props.tableViewMode)
 
@@ -108,6 +115,7 @@ function setTableViewMode(mode: EditorStudentsTableViewMode): void {
         <EditorCommitteeHeaderActions
           :committee-title-label="labels.committeeTitle"
           :committee-label="props.selectedCommitteeLabel"
+          :students-count="props.studentsCount"
           :students-count-label="props.studentsCountLabel"
           :rename-committee-label="labels.renameCommitteeAction"
           :delete-committee-label="labels.deleteCommitteeAction"
@@ -172,6 +180,14 @@ function setTableViewMode(mode: EditorStudentsTableViewMode): void {
             @committee-string-field="forwardStringField"
             @add-invigilator="emit('addInvigilator')"
             @delete-invigilator="emit('deleteInvigilator', $event)"
+          />
+
+          <EditorCommitteeValidationCard
+            v-if="hasCommitteeValidationErrors"
+            class="self-stretch"
+            :title="props.committeeValidationTitle"
+            :error-count="props.committeeValidationCount"
+            :sections="props.committeeValidationSections"
           />
         </div>
 

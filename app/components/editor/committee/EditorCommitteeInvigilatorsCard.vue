@@ -90,16 +90,17 @@ function emitPreparationRoom(value: string | number): void {
               disabled
               :class="`cursor-not-allowed select-none ${readOnlyInputClass}`"
             />
-            <UButton
-              color="error"
-              variant="ghost"
-              icon="i-lucide-trash-2"
-              :aria-label="props.deleteInvigilatorAriaLabel"
-              :title="props.deleteInvigilatorAriaLabel"
-              :class="actionButtonClass"
-              :ui="deleteActionButtonUi"
-              @click="requestDelete(invigilator.localId)"
-            />
+            <UTooltip :text="props.deleteInvigilatorAriaLabel">
+              <UButton
+                color="error"
+                variant="ghost"
+                icon="i-lucide-trash-2"
+                :aria-label="props.deleteInvigilatorAriaLabel"
+                :class="actionButtonClass"
+                :ui="deleteActionButtonUi"
+                @click="requestDelete(invigilator.localId)"
+              />
+            </UTooltip>
           </li>
         </ul>
 
