@@ -19,7 +19,7 @@ import type {
   EditorStudentValidationStudentGroupView,
   EditorStudentsTableViewMode
 } from '~/types/editor'
-import type { ScheduleDraftThesisTitleDisplayMode } from '~/types/schedule-draft'
+import type { ScheduleDraftCommittee, ScheduleDraftThesisTitleDisplayMode } from '~/types/schedule-draft'
 import {
   collectCommitteeValidationIssues,
   countCommitteeValidationIssuesByCommitteeId,
@@ -32,6 +32,8 @@ import {
   countStudentValidationIssuesByCommitteeId,
   groupStudentValidationIssuesByCommitteeId
 } from '~/utils/editor/student-validation'
+
+const VALIDATION_RECOMPUTE_DEBOUNCE_MS = import.meta.test ? 0 : 180
 
 /**
  * Facade composable for the schedule editor page: composes committee list, student table,
@@ -62,14 +64,47 @@ export function useEditorPage() {
   const pauseCreation = useEditorPauseCreation(committeeList.selectedCommittee)
   const scheduleDialogs = useEditorScheduleDialogs()
   const draftCommittees = computed(() => scheduleDraftStore.draft?.committees ?? [])
-  const committeeValidationIssues = computed(() => collectCommitteeValidationIssues(draftCommittees.value))
+  const debouncedDraftCommittees = shallowRef<ScheduleDraftCommittee[]>(draftCommittees.value)
+  let validationDebounceTimer: ReturnType<typeof setTimeout> | null = null
+
+  watch(
+    draftCommittees,
+    (nextCommittees) => {
+      if (validationDebounceTimer !== null) {
+        clearTimeout(validationDebounceTimer)
+        validationDebounceTimer = null
+      }
+
+      if (VALIDATION_RECOMPUTE_DEBOUNCE_MS < 1) {
+        debouncedDraftCommittees.value = nextCommittees
+        return
+      }
+
+      validationDebounceTimer = setTimeout(() => {
+        debouncedDraftCommittees.value = nextCommittees
+        validationDebounceTimer = null
+      }, VALIDATION_RECOMPUTE_DEBOUNCE_MS)
+    },
+    { deep: true, immediate: true }
+  )
+
+  if (getCurrentScope()) {
+    onScopeDispose(() => {
+      if (validationDebounceTimer !== null) {
+        clearTimeout(validationDebounceTimer)
+        validationDebounceTimer = null
+      }
+    })
+  }
+
+  const committeeValidationIssues = computed(() => collectCommitteeValidationIssues(debouncedDraftCommittees.value))
   const committeeValidationIssuesByCommitteeId = computed(() =>
     groupCommitteeValidationIssuesByCommitteeId(committeeValidationIssues.value)
   )
   const committeeValidationCountByCommitteeId = computed(() =>
     countCommitteeValidationIssuesByCommitteeId(committeeValidationIssuesByCommitteeId.value)
   )
-  const studentValidationIssues = computed(() => collectStudentValidationIssues(draftCommittees.value))
+  const studentValidationIssues = computed(() => collectStudentValidationIssues(debouncedDraftCommittees.value))
   const studentValidationIssuesByCommitteeId = computed(() =>
     groupStudentValidationIssuesByCommitteeId(studentValidationIssues.value)
   )
@@ -104,20 +139,20 @@ export function useEditorPage() {
     })
   })
   const selectedCommitteeValidationIssues = computed<EditorCommitteeValidationIssue[]>(() => {
-    const selectedCommitteeId = committeeList.selectedCommitteeId.value
-    if (!selectedCommitteeId) {
+    const selectedCommittee = committeeList.selectedCommittee.value
+    if (!selectedCommittee) {
       return []
     }
 
-    return committeeValidationIssuesByCommitteeId.value[selectedCommitteeId] ?? []
+    return collectCommitteeValidationIssues([selectedCommittee])
   })
   const selectedCommitteeStudentValidationIssues = computed<EditorStudentValidationIssue[]>(() => {
-    const selectedCommitteeId = committeeList.selectedCommitteeId.value
-    if (!selectedCommitteeId) {
+    const selectedCommittee = committeeList.selectedCommittee.value
+    if (!selectedCommittee) {
       return []
     }
 
-    return studentValidationIssuesByCommitteeId.value[selectedCommitteeId] ?? []
+    return collectStudentValidationIssues([selectedCommittee])
   })
   const selectedCommitteeStudentInfoById = computed(() => {
     const selectedCommittee = committeeList.selectedCommittee.value

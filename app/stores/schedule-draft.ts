@@ -10,7 +10,8 @@
  * - Converts incoming sources (import payloads or loaded schedules) into draft representation
  *
  * 2) Save state and dirty tracking
- * - Tracks whether the draft has unsaved changes by comparing current draft content with the last saved snapshot
+ * - Tracks whether the draft has unsaved changes with an explicit dirty flag
+ * - Marks clean state after initialization and successful save operations
  *
  * 3) Autosave lifecycle
  * - Schedules debounced autosave for dirty drafts
@@ -366,11 +367,67 @@ function isScheduleDraftDepartmentResolutionError(error: unknown): boolean {
   return false
 }
 
+const PERSIST_THROTTLE_MS = import.meta.test ? 0 : 1_500
+
+type PersistedLocalStorage = ReturnType<typeof piniaPluginPersistedstate.localStorage>
+
+function createThrottledLocalStorage(throttleMs: number): PersistedLocalStorage {
+  const pendingValuesByKey = new Map<string, string>()
+  const timersByKey = new Map<string, ReturnType<typeof setTimeout>>()
+
+  function flushPendingValue(key: string): void {
+    if (!import.meta.client) {
+      return
+    }
+
+    const pendingValue = pendingValuesByKey.get(key)
+    if (pendingValue === undefined) {
+      return
+    }
+
+    pendingValuesByKey.delete(key)
+    window.localStorage.setItem(key, pendingValue)
+  }
+
+  return {
+    getItem(key: string): string | null {
+      if (!import.meta.client) {
+        return null
+      }
+
+      return window.localStorage.getItem(key)
+    },
+    setItem(key: string, value: string): void {
+      if (!import.meta.client) {
+        return
+      }
+
+      if (throttleMs < 1) {
+        window.localStorage.setItem(key, value)
+        return
+      }
+
+      pendingValuesByKey.set(key, value)
+      if (timersByKey.has(key)) {
+        return
+      }
+
+      const timer = setTimeout(() => {
+        timersByKey.delete(key)
+        flushPendingValue(key)
+      }, throttleMs)
+
+      timersByKey.set(key, timer)
+    }
+  }
+}
+
+const scheduleDraftPersistStorage = createThrottledLocalStorage(PERSIST_THROTTLE_MS)
+
 export const useScheduleDraftStore = defineStore(
   'schedule-draft',
   () => {
     const draft = ref<ScheduleDraft | null>(null)
-    const baseSnapshot = ref<string | null>(null)
 
     const isDraftLoading = ref(false)
     const isManualSaveLoading = ref(false)
@@ -386,23 +443,25 @@ export const useScheduleDraftStore = defineStore(
     const nextAutoSaveAt = ref<string | null>(null)
 
     const autoSavePolicy = ref<ScheduleAutoSavePolicy>({ ...DEFAULT_SCHEDULE_AUTOSAVE_POLICY })
+    const isDirty = ref(false)
+
+    let dirtyTrackingPauseDepth = 0
     let autoSaveTimer: ReturnType<typeof setTimeout> | null = null
 
     const hasDraft = computed(() => draft.value !== null)
-    const isDirty = computed(() => {
-      if (!draft.value) {
-        return false
+
+    function runWithoutDirtyTracking<T>(operation: () => T): T {
+      dirtyTrackingPauseDepth += 1
+
+      try {
+        return operation()
+      } finally {
+        dirtyTrackingPauseDepth = Math.max(dirtyTrackingPauseDepth - 1, 0)
       }
+    }
 
-      if (baseSnapshot.value === null) {
-        return true
-      }
-
-      return serializeDraft(draft.value) !== baseSnapshot.value
-    })
-
-    function syncBaseSnapshot(): void {
-      baseSnapshot.value = serializeDraft(draft.value)
+    function markDraftAsClean(): void {
+      isDirty.value = false
     }
 
     function clearAutoSaveTimer(): void {
@@ -453,17 +512,26 @@ export const useScheduleDraftStore = defineStore(
         return response
       }
 
-      if (targetType === 'MANUAL') {
-        const shouldSyncManualDraftName = options.syncManualDraftName ?? true
-
-        if (shouldSyncManualDraftName) {
-          draft.value.name = payload.name
-        }
-
-        draft.value.type = 'MANUAL'
+      const mutableDraft = draft.value
+      if (!mutableDraft) {
+        return response
       }
 
-      syncBaseSnapshot()
+      runWithoutDirtyTracking(() => {
+        if (targetType === 'MANUAL') {
+          const shouldSyncManualDraftName = options.syncManualDraftName ?? true
+
+          if (shouldSyncManualDraftName) {
+            mutableDraft.name = payload.name
+          }
+
+          mutableDraft.type = 'MANUAL'
+        }
+
+        markDraftAsClean()
+      })
+
+      clearAutoSaveTimer()
 
       lastSavedScheduleId.value = response.id
       lastSavedAt.value = response.createdAt
@@ -473,17 +541,23 @@ export const useScheduleDraftStore = defineStore(
     }
 
     function replaceDraft(nextDraft: ScheduleDraft): void {
-      draft.value = deepClone(nextDraft)
+      runWithoutDirtyTracking(() => {
+        draft.value = deepClone(nextDraft)
+        markDraftAsClean()
+      })
+
       manualSaveErrorCode.value = null
       autoSaveErrorCode.value = null
       clearLastSavedMetadata()
-      syncBaseSnapshot()
       clearAutoSaveTimer()
     }
 
     function clearDraft(): void {
-      draft.value = null
-      baseSnapshot.value = null
+      runWithoutDirtyTracking(() => {
+        draft.value = null
+        markDraftAsClean()
+      })
+
       manualSaveErrorCode.value = null
       autoSaveErrorCode.value = null
       clearLastSavedMetadata()
@@ -608,21 +682,39 @@ export const useScheduleDraftStore = defineStore(
 
     watch(
       draft,
-      () => {
-        if (!isDirty.value) {
+      (nextDraft, previousDraft) => {
+        if (dirtyTrackingPauseDepth > 0) {
+          return
+        }
+
+        if (!nextDraft) {
+          markDraftAsClean()
           clearAutoSaveTimer()
+          return
+        }
+
+        // The first assignment from null is treated as initialization/hydration.
+        // Dirty flag is restored from persisted state in that case.
+        if (previousDraft !== null) {
+          isDirty.value = true
+        }
+
+        if (!autoSavePolicy.value.enabled) {
+          clearAutoSaveTimer()
+          return
+        }
+
+        if (!isDirty.value) {
           return
         }
 
         scheduleAutoSave(autoSavePolicy.value.debounceMs)
       },
-      { deep: true }
+      { deep: true, flush: 'sync' }
     )
 
     return {
       draft,
-      // Exposed only for persisted-state plugin to restore clean/dirty baseline.
-      baseSnapshot,
       hasDraft,
       isDirty,
       isDraftLoading,
@@ -646,8 +738,8 @@ export const useScheduleDraftStore = defineStore(
   },
   {
     persist: {
-      storage: piniaPluginPersistedstate.localStorage(),
-      pick: ['draft', 'baseSnapshot', 'lastSavedScheduleId', 'lastSavedAt', 'lastSavedType', 'autoSavePolicy']
+      storage: scheduleDraftPersistStorage,
+      pick: ['draft', 'isDirty', 'lastSavedScheduleId', 'lastSavedAt', 'lastSavedType', 'autoSavePolicy']
     }
   }
 )

@@ -37,6 +37,14 @@ function mountInlineCell(
 }
 
 describe('EditorStudentTableInlineCell', () => {
+  it('emits activate on cell click', async () => {
+    const wrapper = mountInlineCell(false)
+
+    await wrapper.trigger('click')
+
+    expect(wrapper.emitted('activate')).toHaveLength(1)
+  })
+
   it('renders readonly content without edit overlay when row is not active', () => {
     const wrapper = mountInlineCell(false)
 
@@ -64,7 +72,7 @@ describe('EditorStudentTableInlineCell', () => {
     expect(wrapper.find('[data-test="custom-edit"]').exists()).toBe(true)
   })
 
-  it('highlights text and input in red when warning marker is present', () => {
+  it('highlights readonly text in red and keeps edit text neutral for warning marker', () => {
     const readonlyWrapper = mountInlineCell(false, {
       modelValue: 'Název práce [?]',
       warningMarker: '[?]',
@@ -82,6 +90,18 @@ describe('EditorStudentTableInlineCell', () => {
 
     const editInput = editingWrapper.find('[data-test="u-input"]')
     expect(editInput.exists()).toBe(true)
-    expect(editInput.classes()).toContain('[&_input]:text-error')
+    expect(editInput.classes()).not.toContain('[&_input]:text-error')
+  })
+
+  it('emits commit on blur and Enter while editing', async () => {
+    const wrapper = mountInlineCell(true)
+    const editInput = wrapper.find('[data-test="u-input"]')
+
+    expect(editInput.exists()).toBe(true)
+
+    await editInput.trigger('blur')
+    await editInput.trigger('keydown.enter')
+
+    expect(wrapper.emitted('commit')).toHaveLength(2)
   })
 })

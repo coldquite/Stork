@@ -25,7 +25,7 @@ const props = withDefaults(
     invalid?: boolean
   }>(),
   {
-    displayFrameClass: 'w-full min-h-8 px-2.5 py-1.5',
+    displayFrameClass: 'w-full min-h-8 px-2.5 py-1.5 overflow-hidden',
     // Keep edit controls vertically centered when readonly placeholder is taller (e.g., wrapped thesis title)
     editOverlayClass: 'absolute inset-0 flex items-center',
     invalid: false
@@ -34,6 +34,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   activate: []
+  commit: []
   'update:modelValue': [value: unknown]
 }>()
 
@@ -55,16 +56,20 @@ const isTextValueBlank = computed(() => props.mode === 'text' && String(props.mo
 
 const displayContentClass = computed(() => {
   if (props.mode === 'number') {
-    return hasInvalidState.value ? 'block text-sm whitespace-nowrap text-error' : 'block text-sm whitespace-nowrap'
+    return hasInvalidState.value
+      ? 'block text-sm whitespace-nowrap overflow-hidden text-ellipsis text-error'
+      : 'block text-sm whitespace-nowrap overflow-hidden text-ellipsis'
   }
 
   if (props.multiline) {
     return hasInvalidState.value
-      ? 'block text-sm break-words whitespace-normal text-error'
-      : 'block text-sm break-words whitespace-normal'
+      ? 'block text-sm whitespace-normal [overflow-wrap:anywhere] text-error'
+      : 'block text-sm whitespace-normal [overflow-wrap:anywhere]'
   }
 
-  return hasInvalidState.value ? 'block text-sm whitespace-nowrap text-error' : 'block text-sm whitespace-nowrap'
+  return hasInvalidState.value
+    ? 'block text-sm whitespace-nowrap overflow-hidden text-ellipsis text-error'
+    : 'block text-sm whitespace-nowrap overflow-hidden text-ellipsis'
 })
 
 const resolvedInputClass = computed(() => {
@@ -113,6 +118,8 @@ const resolvedInputUi = computed(() => {
             :class="resolvedInputClass"
             :ui="resolvedInputUi"
             @update:model-value="emit('update:modelValue', $event)"
+            @blur="emit('commit')"
+            @keydown.enter="emit('commit')"
           />
           <UInput
             v-else
@@ -123,6 +130,8 @@ const resolvedInputUi = computed(() => {
             :class="resolvedInputClass"
             :ui="resolvedInputUi"
             @update:model-value="emit('update:modelValue', $event)"
+            @blur="emit('commit')"
+            @keydown.enter="emit('commit')"
           />
         </slot>
       </div>

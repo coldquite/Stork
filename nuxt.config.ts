@@ -42,6 +42,7 @@ export default defineNuxtConfig({
       i18n: {
         baseUrl: defaultPublicBaseUrl
       },
+      editorPerfPipelineV2: process.env.NUXT_PUBLIC_EDITOR_PERF_PIPELINE_V2 !== '0',
       fitAuthRedirectUri: process.env.NUXT_PUBLIC_FIT_AUTH_REDIRECT_URI ?? defaultFitAuthRedirectUri,
       fitAuthAuthorizeUrl: 'https://auth.fit.cvut.cz/oauth/authorize',
       fitAuthScope: 'cvut:umapi:read' // Minimal required scope; recommended by ICT CVUT for this application

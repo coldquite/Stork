@@ -100,6 +100,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const runtimeConfig = useRuntimeConfig()
 const tableWrapper = ref<HTMLElement | null>(null)
 const localStudents = ref<EditorTableRow[]>([])
 const editingRowId = ref<string | null>(null)
@@ -110,6 +111,8 @@ const fadingHighlightedStudentId = ref<string | null>(null)
 const isDragging = ref(false)
 const isHoverSuppressedAfterDrag = ref(false)
 const activeDragCommitteeId = ref<string | null>(null)
+const hasPendingInlineEdits = ref(false)
+const useBlurCommitPipeline = computed(() => runtimeConfig.public.editorPerfPipelineV2 !== false)
 let clearHighlightedRowTimer: ReturnType<typeof setTimeout> | null = null
 let clearHighlightFadeTimer: ReturnType<typeof setTimeout> | null = null
 const inlineEditInputClass = 'w-full [&_input]:text-sm'
@@ -498,7 +501,16 @@ function suppressHoverAfterDragUntilPointerMove(): void {
 }
 
 function emitRowsUpdate(): void {
+  hasPendingInlineEdits.value = false
   emit('update:modelValue', localStudents.value.slice())
+}
+
+function commitPendingInlineEdits(): void {
+  if (!hasPendingInlineEdits.value) {
+    return
+  }
+
+  emitRowsUpdate()
 }
 
 function reorderLocalStudents(oldIndex: number, newIndex: number): void {
@@ -518,6 +530,7 @@ function reorderLocalStudents(oldIndex: number, newIndex: number): void {
 
   rows.splice(newIndex, 0, movedRow)
   localStudents.value = rows
+  hasPendingInlineEdits.value = true
 }
 
 function activateRow(rowId: string): void {
@@ -533,6 +546,7 @@ function activateRow(rowId: string): void {
 }
 
 function clearActiveRow(): void {
+  commitPendingInlineEdits()
   editingRowId.value = null
   openStudyProgramTypeSelectRowId.value = null
   openRepeatTypeSelectRowId.value = null
@@ -647,22 +661,51 @@ function updateRepeatTypeSelectOpen(rowId: string, isOpen: boolean): void {
   }
 }
 
-function updateRow(rowId: string, updater: (row: EditorStudentTableRow) => EditorStudentTableRow): void {
-  localStudents.value = localStudents.value.map((row) => {
-    if (row.id !== rowId || !isStudentRow(row)) {
-      return row
-    }
+function updateRow(
+  rowId: string,
+  updater: (row: EditorStudentTableRow) => EditorStudentTableRow,
+  options: { commitImmediately?: boolean } = {}
+): void {
+  const commitImmediately = options.commitImmediately ?? true
+  const targetRow = localStudents.value.find((row) => row.id === rowId)
+  if (!targetRow || !isStudentRow(targetRow)) {
+    return
+  }
 
-    return updater(row)
-  })
-  emitRowsUpdate()
+  const nextRow = updater(targetRow)
+  if (nextRow === targetRow) {
+    return
+  }
+
+  Object.assign(targetRow, nextRow)
+
+  if (commitImmediately) {
+    emitRowsUpdate()
+    return
+  }
+
+  hasPendingInlineEdits.value = true
 }
 
 function updateTextField(rowId: string, field: EditableTextField, value: unknown): void {
-  updateRow(rowId, (row) => ({
-    ...row,
-    [field]: String(value ?? '')
-  }))
+  const normalizedTextValue = String(value ?? '')
+
+  updateRow(
+    rowId,
+    (row) => {
+      if (row[field] === normalizedTextValue) {
+        return row
+      }
+
+      return {
+        ...row,
+        [field]: normalizedTextValue
+      }
+    },
+    {
+      commitImmediately: !useBlurCommitPipeline.value
+    }
+  )
 }
 
 function resolveIntegerFromInput(value: unknown, fallback: number): number {
@@ -677,10 +720,25 @@ function resolveIntegerFromInput(value: unknown, fallback: number): number {
 }
 
 function updateMinuteField(rowId: string, field: EditableMinuteField, value: unknown): void {
-  updateRow(rowId, (row) => ({
-    ...row,
-    [field]: resolveIntegerFromInput(value, row[field])
-  }))
+  const nextMinuteValueResolver = (row: EditorStudentTableRow): number => resolveIntegerFromInput(value, row[field])
+
+  updateRow(
+    rowId,
+    (row) => {
+      const nextMinuteValue = nextMinuteValueResolver(row)
+      if (row[field] === nextMinuteValue) {
+        return row
+      }
+
+      return {
+        ...row,
+        [field]: nextMinuteValue
+      }
+    },
+    {
+      commitImmediately: !useBlurCommitPipeline.value
+    }
+  )
 }
 
 function toStudyProfileFields(row: EditorStudentTableRow): StudentStudyProfileFields {
@@ -852,6 +910,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  commitPendingInlineEdits()
   clearRowHighlight()
   stopSuppressingHoverAfterDrag()
   window.removeEventListener('click', handleDocumentClick)
@@ -867,6 +926,7 @@ onBeforeUnmount(() => {
       :meta="tableMeta"
       :get-row-id="getEditorRowId"
       :ui="{
+        base: 'min-w-full table-fixed',
         tbody: tbodyUiClass,
         separator: 'bg-default'
       }"
@@ -954,6 +1014,7 @@ onBeforeUnmount(() => {
           mode="text"
           @activate="activateRow(row.original.id)"
           @update:model-value="updateTextField(row.original.id, 'titlesBefore', $event)"
+          @commit="commitPendingInlineEdits"
         />
       </template>
 
@@ -968,6 +1029,7 @@ onBeforeUnmount(() => {
           mode="text"
           @activate="activateRow(row.original.id)"
           @update:model-value="updateTextField(row.original.id, 'lastName', $event)"
+          @commit="commitPendingInlineEdits"
         />
       </template>
 
@@ -982,6 +1044,7 @@ onBeforeUnmount(() => {
           mode="text"
           @activate="activateRow(row.original.id)"
           @update:model-value="updateTextField(row.original.id, 'firstName', $event)"
+          @commit="commitPendingInlineEdits"
         />
       </template>
 
@@ -995,6 +1058,7 @@ onBeforeUnmount(() => {
           mode="text"
           @activate="activateRow(row.original.id)"
           @update:model-value="updateTextField(row.original.id, 'email', $event)"
+          @commit="commitPendingInlineEdits"
         />
       </template>
 
@@ -1008,6 +1072,7 @@ onBeforeUnmount(() => {
           mode="text"
           @activate="activateRow(row.original.id)"
           @update:model-value="updateTextField(row.original.id, 'titlesAfter', $event)"
+          @commit="commitPendingInlineEdits"
         />
       </template>
 
@@ -1172,6 +1237,7 @@ onBeforeUnmount(() => {
           multiline
           @activate="activateRow(row.original.id)"
           @update:model-value="updateTextField(row.original.id, 'thesisTitle', $event)"
+          @commit="commitPendingInlineEdits"
         />
       </template>
 
@@ -1188,6 +1254,7 @@ onBeforeUnmount(() => {
           multiline
           @activate="activateRow(row.original.id)"
           @update:model-value="updateTextField(row.original.id, 'thesisTitleLocal', $event)"
+          @commit="commitPendingInlineEdits"
         />
       </template>
 
@@ -1204,6 +1271,7 @@ onBeforeUnmount(() => {
           multiline
           @activate="activateRow(row.original.id)"
           @update:model-value="updateTextField(row.original.id, 'thesisTitleEn', $event)"
+          @commit="commitPendingInlineEdits"
         />
       </template>
 
@@ -1255,6 +1323,7 @@ onBeforeUnmount(() => {
           mode="text"
           @activate="activateRow(row.original.id)"
           @update:model-value="updateTextField(row.original.id, 'supervisorName', $event)"
+          @commit="commitPendingInlineEdits"
         />
       </template>
 
@@ -1268,6 +1337,7 @@ onBeforeUnmount(() => {
           mode="text"
           @activate="activateRow(row.original.id)"
           @update:model-value="updateTextField(row.original.id, 'additionalSupervisorName', $event)"
+          @commit="commitPendingInlineEdits"
         />
       </template>
 
@@ -1282,6 +1352,7 @@ onBeforeUnmount(() => {
           mode="text"
           @activate="activateRow(row.original.id)"
           @update:model-value="updateTextField(row.original.id, 'reviewerName', $event)"
+          @commit="commitPendingInlineEdits"
         />
       </template>
 
@@ -1295,6 +1366,7 @@ onBeforeUnmount(() => {
           mode="text"
           @activate="activateRow(row.original.id)"
           @update:model-value="updateTextField(row.original.id, 'additionalReviewerName', $event)"
+          @commit="commitPendingInlineEdits"
         />
       </template>
 
@@ -1351,6 +1423,7 @@ onBeforeUnmount(() => {
           mode="number"
           @activate="activateRow(row.original.id)"
           @update:model-value="updateMinuteField(row.original.id, 'prepareMinutes', $event)"
+          @commit="commitPendingInlineEdits"
         />
       </template>
 
@@ -1365,6 +1438,7 @@ onBeforeUnmount(() => {
           mode="number"
           @activate="activateRow(row.original.id)"
           @update:model-value="updateMinuteField(row.original.id, 'examMinutes', $event)"
+          @commit="commitPendingInlineEdits"
         />
       </template>
 
