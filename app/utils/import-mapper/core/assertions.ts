@@ -1,4 +1,5 @@
 import { COMMITTEE_CONSISTENCY_CHECK_COLUMNS } from '~/utils/import-mapper/core/constants'
+import { IMPORT_COLUMN_NAMES } from '~/utils/import-mapper/core/columns'
 import type { ImportMappingErrorCode } from '~/types/import-mapper'
 import { throwMappingError } from '~/utils/import-mapper/core/errors'
 import {
@@ -22,14 +23,14 @@ export function assertCommitteeGroupConsistency(committeeRows: SourceRow[], comm
   for (const column of COMMITTEE_CONSISTENCY_CHECK_COLUMNS) {
     const expectedRaw = baseRow.row[column] ?? ''
     const expected =
-      column === 'Obor/spec - kód'
+      column === IMPORT_COLUMN_NAMES.studentsCommittees.specializationCode
         ? normalizeSpecializationCodeForComparison(normalizeSpecializationCode(expectedRaw))
         : normalizeWhitespace(expectedRaw)
 
     for (const currentRow of committeeRows) {
       const currentRaw = currentRow.row[column] ?? ''
       const current =
-        column === 'Obor/spec - kód'
+        column === IMPORT_COLUMN_NAMES.studentsCommittees.specializationCode
           ? normalizeSpecializationCodeForComparison(normalizeSpecializationCode(currentRaw))
           : normalizeWhitespace(currentRaw)
 

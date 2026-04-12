@@ -2,19 +2,20 @@ import { throwMappingError } from '~/utils/import-mapper/core/errors'
 import { normalizeCompareValue } from '~/utils/import-mapper/core/normalize'
 import { readRequiredValue } from '~/utils/import-mapper/core/readers'
 import type { MatchedStudentRows, SourceRow } from '~/utils/import-mapper/core/types'
+import { IMPORT_COLUMN_NAMES } from '~/utils/import-mapper/core/columns'
 
 function buildStudentMatchKeyByStudentsStork(row: SourceRow): string {
-  const email = normalizeCompareValue(readRequiredValue(row, 'Email studenta'))
-  const firstName = normalizeCompareValue(readRequiredValue(row, 'Jméno'))
-  const lastName = normalizeCompareValue(readRequiredValue(row, 'Příjmení'))
+  const email = normalizeCompareValue(readRequiredValue(row, IMPORT_COLUMN_NAMES.studentsStork.studentEmail))
+  const firstName = normalizeCompareValue(readRequiredValue(row, IMPORT_COLUMN_NAMES.studentsStork.firstName))
+  const lastName = normalizeCompareValue(readRequiredValue(row, IMPORT_COLUMN_NAMES.studentsStork.lastName))
 
   return `${email}|${firstName}|${lastName}`
 }
 
 function buildStudentMatchKeyByStudentsCommittees(row: SourceRow): string {
-  const email = normalizeCompareValue(readRequiredValue(row, 'Email adresa'))
-  const firstName = normalizeCompareValue(readRequiredValue(row, 'Jméno studenta'))
-  const lastName = normalizeCompareValue(readRequiredValue(row, 'Příjmení studenta'))
+  const email = normalizeCompareValue(readRequiredValue(row, IMPORT_COLUMN_NAMES.studentsCommittees.studentEmail))
+  const firstName = normalizeCompareValue(readRequiredValue(row, IMPORT_COLUMN_NAMES.studentsCommittees.firstName))
+  const lastName = normalizeCompareValue(readRequiredValue(row, IMPORT_COLUMN_NAMES.studentsCommittees.lastName))
 
   return `${email}|${firstName}|${lastName}`
 }

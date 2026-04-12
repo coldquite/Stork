@@ -2,6 +2,7 @@ import type { PostCommitteeDto, PostStudentItemDto } from '#shared/types/time-sc
 import { resolveStudyLevelFromStudentsStork } from '~/utils/import'
 import type { ImportSzzType } from '~/types/import'
 import { assertFieldEquality } from '~/utils/import-mapper/core/assertions'
+import { IMPORT_COLUMN_NAMES } from '~/utils/import-mapper/core/columns'
 import { throwMappingError } from '~/utils/import-mapper/core/errors'
 import {
   normalizeCompareValue,
@@ -29,62 +30,66 @@ function normalizeThesisTitleTypographicDashes(value: string): string {
 export function mapStudent(input: MapStudentInput): MappedStudentPlacement {
   const { szzType, committeesByName, matchedRows } = input
   const { studentsStorkRow, studentsCommitteesRow } = matchedRows
+  const storkColumns = IMPORT_COLUMN_NAMES.studentsStork
+  const committeesColumns = IMPORT_COLUMN_NAMES.studentsCommittees
 
-  const storkFirstName = readRequiredValue(studentsStorkRow, 'Jméno')
-  const committeesFirstName = readRequiredValue(studentsCommitteesRow, 'Jméno studenta')
+  const storkFirstName = readRequiredValue(studentsStorkRow, storkColumns.firstName)
+  const committeesFirstName = readRequiredValue(studentsCommitteesRow, committeesColumns.firstName)
   assertFieldEquality(
-    preprocessCommitteeName(readRequiredValue(studentsCommitteesRow, 'Komise - název')),
+    preprocessCommitteeName(readRequiredValue(studentsCommitteesRow, committeesColumns.committeeName)),
     {
       source: studentsStorkRow,
-      column: 'Jméno',
+      column: storkColumns.firstName,
       value: storkFirstName
     },
     {
       source: studentsCommitteesRow,
-      column: 'Jméno studenta',
+      column: committeesColumns.firstName,
       value: committeesFirstName
     }
   )
 
-  const storkLastName = readRequiredValue(studentsStorkRow, 'Příjmení')
-  const committeesLastName = readRequiredValue(studentsCommitteesRow, 'Příjmení studenta')
+  const storkLastName = readRequiredValue(studentsStorkRow, storkColumns.lastName)
+  const committeesLastName = readRequiredValue(studentsCommitteesRow, committeesColumns.lastName)
   assertFieldEquality(
-    preprocessCommitteeName(readRequiredValue(studentsCommitteesRow, 'Komise - název')),
+    preprocessCommitteeName(readRequiredValue(studentsCommitteesRow, committeesColumns.committeeName)),
     {
       source: studentsStorkRow,
-      column: 'Příjmení',
+      column: storkColumns.lastName,
       value: storkLastName
     },
     {
       source: studentsCommitteesRow,
-      column: 'Příjmení studenta',
+      column: committeesColumns.lastName,
       value: committeesLastName
     }
   )
 
-  const committeeName = preprocessCommitteeName(readRequiredValue(studentsCommitteesRow, 'Komise - název'))
+  const committeeName = preprocessCommitteeName(
+    readRequiredValue(studentsCommitteesRow, committeesColumns.committeeName)
+  )
   const targetCommittee = committeesByName.get(committeeName)
   if (!targetCommittee) {
     throwMappingError('STUDENT_COMMITTEE_NOT_FOUND', studentsCommitteesRow, {
-      column: 'Komise - název',
+      column: committeesColumns.committeeName,
       context: {
         committeeName
       }
     })
   }
 
-  const storkEmail = readRequiredValue(studentsStorkRow, 'Email studenta')
-  const committeesEmail = readRequiredValue(studentsCommitteesRow, 'Email adresa')
+  const storkEmail = readRequiredValue(studentsStorkRow, storkColumns.studentEmail)
+  const committeesEmail = readRequiredValue(studentsCommitteesRow, committeesColumns.studentEmail)
   assertFieldEquality(
     committeeName,
     {
       source: studentsStorkRow,
-      column: 'Email studenta',
+      column: storkColumns.studentEmail,
       value: storkEmail
     },
     {
       source: studentsCommitteesRow,
-      column: 'Email adresa',
+      column: committeesColumns.studentEmail,
       value: committeesEmail
     }
   )
@@ -92,16 +97,16 @@ export function mapStudent(input: MapStudentInput): MappedStudentPlacement {
   const studyProgramType = resolveStudyLevelFromStudentsStork([studentsStorkRow.row])
   if (!studyProgramType) {
     throwMappingError('INVALID_STUDY_PROGRAM_TYPE', studentsStorkRow, {
-      column: 'Studijní plán (název)',
+      column: storkColumns.studyPlanName,
       context: {
-        rawValue: studentsStorkRow.row['Studijní plán (název)'] ?? ''
+        rawValue: studentsStorkRow.row[storkColumns.studyPlanName] ?? ''
       }
     })
   }
 
   if (szzType !== 'MIXED' && studyProgramType !== szzType) {
     throwMappingError('COMMITTEE_SZZ_TYPE_MISMATCH', studentsStorkRow, {
-      column: 'Studijní plán (název)',
+      column: storkColumns.studyPlanName,
       context: {
         detectedType: studyProgramType,
         selectedType: szzType
@@ -110,51 +115,51 @@ export function mapStudent(input: MapStudentInput): MappedStudentPlacement {
   }
 
   const storkThesisTitleLocal = normalizeThesisTitleTypographicDashes(
-    readRequiredValue(studentsStorkRow, 'VŠKP-typ A: Název práce')
+    readRequiredValue(studentsStorkRow, storkColumns.thesisTitleLocal)
   )
   const committeesThesisTitleLocal = normalizeThesisTitleTypographicDashes(
-    readRequiredValue(studentsCommitteesRow, 'VŠKP-typ A: Český název práce')
+    readRequiredValue(studentsCommitteesRow, committeesColumns.thesisTitleLocal)
   )
   assertFieldEquality(
     committeeName,
     {
       source: studentsStorkRow,
-      column: 'VŠKP-typ A: Název práce',
+      column: storkColumns.thesisTitleLocal,
       value: storkThesisTitleLocal
     },
     {
       source: studentsCommitteesRow,
-      column: 'VŠKP-typ A: Český název práce',
+      column: committeesColumns.thesisTitleLocal,
       value: committeesThesisTitleLocal
     }
   )
 
   const storkThesisTitleEn = normalizeThesisTitleTypographicDashes(
-    readRequiredValue(studentsStorkRow, 'VŠKP-typ A: Překlad názvu práce')
+    readRequiredValue(studentsStorkRow, storkColumns.thesisTitleEn)
   )
   const committeesThesisTitleEn = normalizeThesisTitleTypographicDashes(
-    readRequiredValue(studentsCommitteesRow, 'VŠKP-typ A: Anglický název práce')
+    readRequiredValue(studentsCommitteesRow, committeesColumns.thesisTitleEn)
   )
   assertFieldEquality(
     committeeName,
     {
       source: studentsStorkRow,
-      column: 'VŠKP-typ A: Překlad názvu práce',
+      column: storkColumns.thesisTitleEn,
       value: storkThesisTitleEn
     },
     {
       source: studentsCommitteesRow,
-      column: 'VŠKP-typ A: Anglický název práce',
+      column: committeesColumns.thesisTitleEn,
       value: committeesThesisTitleEn
     }
   )
 
-  const storkThesisLanguageRaw = readRequiredValue(studentsStorkRow, 'VŠKP-typ A: jazyk práce')
-  const committeesThesisLanguageRaw = readRequiredValue(studentsCommitteesRow, 'VŠKP-typ A: Jazyk práce')
+  const storkThesisLanguageRaw = readRequiredValue(studentsStorkRow, storkColumns.thesisLanguage)
+  const committeesThesisLanguageRaw = readRequiredValue(studentsCommitteesRow, committeesColumns.thesisLanguage)
   const storkThesisLanguage = parseThesisLanguage(storkThesisLanguageRaw)
   if (!storkThesisLanguage) {
     throwMappingError('INVALID_LANGUAGE', studentsStorkRow, {
-      column: 'VŠKP-typ A: jazyk práce',
+      column: storkColumns.thesisLanguage,
       context: {
         languageTarget: 'thesis',
         rawValue: storkThesisLanguageRaw
@@ -165,7 +170,7 @@ export function mapStudent(input: MapStudentInput): MappedStudentPlacement {
   const committeesThesisLanguage = parseThesisLanguage(committeesThesisLanguageRaw)
   if (!committeesThesisLanguage) {
     throwMappingError('INVALID_LANGUAGE', studentsCommitteesRow, {
-      column: 'VŠKP-typ A: Jazyk práce',
+      column: committeesColumns.thesisLanguage,
       context: {
         languageTarget: 'thesis',
         rawValue: committeesThesisLanguageRaw
@@ -175,90 +180,96 @@ export function mapStudent(input: MapStudentInput): MappedStudentPlacement {
 
   if (storkThesisLanguage !== committeesThesisLanguage) {
     throwMappingError('STUDENT_VALUE_MISMATCH', studentsCommitteesRow, {
-      column: 'VŠKP-typ A: Jazyk práce',
+      column: committeesColumns.thesisLanguage,
       context: {
         committeeName,
         leftDataset: studentsStorkRow.datasetKey,
         rightDataset: studentsCommitteesRow.datasetKey,
         leftFileName: studentsStorkRow.fileName,
         rightFileName: studentsCommitteesRow.fileName,
-        leftColumn: 'VŠKP-typ A: jazyk práce',
-        rightColumn: 'VŠKP-typ A: Jazyk práce',
+        leftColumn: storkColumns.thesisLanguage,
+        rightColumn: committeesColumns.thesisLanguage,
         leftValue: storkThesisLanguage,
         rightValue: committeesThesisLanguage
       }
     })
   }
 
-  const storkSupervisorName = readRequiredValue(studentsStorkRow, 'VŠKP-typ A: Vedoucí práce 1')
-  const committeesSupervisorName = readRequiredValue(studentsCommitteesRow, 'VŠKP-typ A: Vedoucí práce 1')
+  const storkSupervisorName = readRequiredValue(studentsStorkRow, storkColumns.supervisorName)
+  const committeesSupervisorName = readRequiredValue(studentsCommitteesRow, committeesColumns.supervisorName)
   assertFieldEquality(
     committeeName,
     {
       source: studentsStorkRow,
-      column: 'VŠKP-typ A: Vedoucí práce 1',
+      column: storkColumns.supervisorName,
       value: storkSupervisorName
     },
     {
       source: studentsCommitteesRow,
-      column: 'VŠKP-typ A: Vedoucí práce 1',
+      column: committeesColumns.supervisorName,
       value: committeesSupervisorName
     }
   )
 
-  const storkAdditionalSupervisorName = readOptionalValue(studentsStorkRow, 'VŠKP-typ A: Vedoucí práce 2')
-  const committeesAdditionalSupervisorName = readOptionalValue(studentsCommitteesRow, 'VŠKP-typ A: Vedoucí práce 2')
+  const storkAdditionalSupervisorName = readOptionalValue(studentsStorkRow, storkColumns.additionalSupervisorName)
+  const committeesAdditionalSupervisorName = readOptionalValue(
+    studentsCommitteesRow,
+    committeesColumns.additionalSupervisorName
+  )
   assertFieldEquality(
     committeeName,
     {
       source: studentsStorkRow,
-      column: 'VŠKP-typ A: Vedoucí práce 2',
+      column: storkColumns.additionalSupervisorName,
       value: storkAdditionalSupervisorName
     },
     {
       source: studentsCommitteesRow,
-      column: 'VŠKP-typ A: Vedoucí práce 2',
+      column: committeesColumns.additionalSupervisorName,
       value: committeesAdditionalSupervisorName
     }
   )
 
-  const storkReviewerName = readRequiredValue(studentsStorkRow, 'VŠKP-typ A: Oponent práce 1')
-  const committeesReviewerName = readRequiredValue(studentsCommitteesRow, 'VŠKP-typ A: Oponent práce 1')
+  const storkReviewerName = readRequiredValue(studentsStorkRow, storkColumns.reviewerName)
+  const committeesReviewerName = readRequiredValue(studentsCommitteesRow, committeesColumns.reviewerName)
   assertFieldEquality(
     committeeName,
     {
       source: studentsStorkRow,
-      column: 'VŠKP-typ A: Oponent práce 1',
+      column: storkColumns.reviewerName,
       value: storkReviewerName
     },
     {
       source: studentsCommitteesRow,
-      column: 'VŠKP-typ A: Oponent práce 1',
+      column: committeesColumns.reviewerName,
       value: committeesReviewerName
     }
   )
 
-  const storkAdditionalReviewerName = readOptionalValue(studentsStorkRow, 'VŠKP-typ A: Oponent práce 2')
-  const committeesAdditionalReviewerName = readOptionalValue(studentsCommitteesRow, 'VŠKP-typ A: Oponent práce 2')
+  const storkAdditionalReviewerName = readOptionalValue(studentsStorkRow, storkColumns.additionalReviewerName)
+  const committeesAdditionalReviewerName = readOptionalValue(
+    studentsCommitteesRow,
+    committeesColumns.additionalReviewerName
+  )
   assertFieldEquality(
     committeeName,
     {
       source: studentsStorkRow,
-      column: 'VŠKP-typ A: Oponent práce 2',
+      column: storkColumns.additionalReviewerName,
       value: storkAdditionalReviewerName
     },
     {
       source: studentsCommitteesRow,
-      column: 'VŠKP-typ A: Oponent práce 2',
+      column: committeesColumns.additionalReviewerName,
       value: committeesAdditionalReviewerName
     }
   )
 
-  const studyLanguageRaw = readRequiredValue(studentsCommitteesRow, 'Jazyk výuky')
+  const studyLanguageRaw = readRequiredValue(studentsCommitteesRow, committeesColumns.studyLanguage)
   const studyLanguage = parseStudyLanguage(studyLanguageRaw)
   if (!studyLanguage) {
     throwMappingError('INVALID_LANGUAGE', studentsCommitteesRow, {
-      column: 'Jazyk výuky',
+      column: committeesColumns.studyLanguage,
       context: {
         languageTarget: 'study',
         rawValue: studyLanguageRaw
@@ -273,8 +284,8 @@ export function mapStudent(input: MapStudentInput): MappedStudentPlacement {
     firstName: storkFirstName,
     lastName: storkLastName,
     email: storkEmail,
-    titlesBefore: readOptionalValue(studentsStorkRow, 'Titul'),
-    titlesAfter: readOptionalValue(studentsStorkRow, 'titul za'),
+    titlesBefore: readOptionalValue(studentsStorkRow, storkColumns.titlesBefore),
+    titlesAfter: readOptionalValue(studentsStorkRow, storkColumns.titlesAfter),
     thesisTitleLocal: storkThesisTitleLocal,
     thesisTitleEn: storkThesisTitleEn,
     thesisLanguage: storkThesisLanguage,
@@ -282,10 +293,12 @@ export function mapStudent(input: MapStudentInput): MappedStudentPlacement {
     reviewerName: storkReviewerName,
     additionalSupervisorName: storkAdditionalSupervisorName,
     additionalReviewerName: storkAdditionalReviewerName,
-    studyProgramName: readRequiredValue(studentsStorkRow, 'Studijní program (název)'),
+    studyProgramName: readRequiredValue(studentsStorkRow, storkColumns.studyProgramName),
     studyProgramType,
-    specializationName: readRequiredValue(studentsStorkRow, 'Obor/spec - název'),
-    specializationCode: normalizeSpecializationCode(readRequiredValue(studentsStorkRow, 'Kód studijního plánu')),
+    specializationName: readRequiredValue(studentsStorkRow, storkColumns.specializationName),
+    specializationCode: normalizeSpecializationCode(
+      readRequiredValue(studentsStorkRow, storkColumns.specializationCode)
+    ),
     studyLanguage,
     repeatType,
     prepareMinutes,
@@ -294,7 +307,7 @@ export function mapStudent(input: MapStudentInput): MappedStudentPlacement {
 
   if (mappedStudent.studyProgramType !== targetCommittee.studyProgramType) {
     throwMappingError('STUDENT_COMMITTEE_MISMATCH', studentsStorkRow, {
-      column: 'Studijní plán (název)',
+      column: storkColumns.studyPlanName,
       context: {
         committeeName,
         field: 'studyProgramType',
@@ -308,7 +321,7 @@ export function mapStudent(input: MapStudentInput): MappedStudentPlacement {
     normalizeCompareValue(mappedStudent.studyProgramName) !== normalizeCompareValue(targetCommittee.studyProgramName)
   ) {
     throwMappingError('STUDENT_COMMITTEE_MISMATCH', studentsStorkRow, {
-      column: 'Studijní program (název)',
+      column: storkColumns.studyProgramName,
       context: {
         committeeName,
         field: 'studyProgramName',
@@ -325,7 +338,7 @@ export function mapStudent(input: MapStudentInput): MappedStudentPlacement {
 
   if (!normalizedStudentSpecializationCode.startsWith(normalizedCommitteeSpecializationCode)) {
     throwMappingError('STUDENT_COMMITTEE_MISMATCH', studentsStorkRow, {
-      column: 'Kód studijního plánu',
+      column: storkColumns.specializationCode,
       context: {
         committeeName,
         field: 'specializationCode',
@@ -337,7 +350,7 @@ export function mapStudent(input: MapStudentInput): MappedStudentPlacement {
 
   if (mappedStudent.studyLanguage !== targetCommittee.language) {
     throwMappingError('STUDENT_COMMITTEE_MISMATCH', studentsCommitteesRow, {
-      column: 'Jazyk výuky',
+      column: committeesColumns.studyLanguage,
       context: {
         committeeName,
         field: 'studyLanguage',

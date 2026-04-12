@@ -8,6 +8,7 @@ import {
   removeUtf8BomFromCsvHeader,
   resolveImportDatasetKeyByHeaders
 } from '~/constants/import'
+import { IMPORT_COLUMN_NAMES } from '~/utils/import-mapper/core/columns'
 import type { ImportCsvRow, ImportDatasetKey, ImportFieldKey, ImportSzzType, ImportStudyLevel } from '~/types/import'
 
 type ParseImportCsvSuccess = {
@@ -136,7 +137,8 @@ function startsWithAnyPrefix(value: string, prefixes: readonly string[]): boolea
 }
 
 export function resolveStudyLevelFromStudentsCommittees(rows: ImportCsvRow[]): ImportStudyLevel | null {
-  const studyProgramTypeValue = rows[0]?.['St. program - typ']?.trim().toUpperCase() ?? ''
+  const studyProgramTypeValue =
+    rows[0]?.[IMPORT_COLUMN_NAMES.studentsCommittees.studyProgramType]?.trim().toUpperCase() ?? ''
   const firstSymbol = studyProgramTypeValue[0] ?? ''
 
   if (firstSymbol === 'B') {
@@ -151,7 +153,7 @@ export function resolveStudyLevelFromStudentsCommittees(rows: ImportCsvRow[]): I
 }
 
 export function resolveStudyLevelFromStudentsStork(rows: ImportCsvRow[]): ImportStudyLevel | null {
-  const studyScheduleName = rows[0]?.['Studijní plán (název)']?.trim().toLowerCase() ?? ''
+  const studyScheduleName = rows[0]?.[IMPORT_COLUMN_NAMES.studentsStork.studyPlanName]?.trim().toLowerCase() ?? ''
 
   if (startsWithAnyPrefix(studyScheduleName, ['bc.', 'bachelor', 'bakalářsk'])) {
     return 'BACHELOR'

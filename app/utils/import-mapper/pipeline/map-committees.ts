@@ -1,6 +1,7 @@
 import type { PostCommitteeDto } from '#shared/types/time-schedules'
 import type { ImportDataset, ImportSzzType } from '~/types/import'
 import { COMMITTEE_START_MINUTE } from '~/utils/import-mapper/core/constants'
+import { IMPORT_COLUMN_NAMES } from '~/utils/import-mapper/core/columns'
 import { throwMappingError } from '~/utils/import-mapper/core/errors'
 import { preprocessCommitteeName, normalizeSpecializationCode } from '~/utils/import-mapper/core/normalize'
 import { parseDateToIso, parseStudyLanguage, parseStudyProgramType } from '~/utils/import-mapper/core/parsers'
@@ -19,16 +20,16 @@ export function mapCommittees(
   const committeeNamesInOrder: string[] = []
 
   for (const committeeRow of committeeRows) {
-    const committeeName = preprocessCommitteeName(committeeRow.row['Název komise'] ?? '')
+    const committeeName = preprocessCommitteeName(committeeRow.row[IMPORT_COLUMN_NAMES.committees.committeeName] ?? '')
     if (!committeeName) {
       throwMappingError('INVALID_COMMITTEE_NAME', committeeRow, {
-        column: 'Název komise'
+        column: IMPORT_COLUMN_NAMES.committees.committeeName
       })
     }
 
     if (committeeRowsByName.has(committeeName)) {
       throwMappingError('DUPLICATE_COMMITTEE_NAME', committeeRow, {
-        column: 'Název komise',
+        column: IMPORT_COLUMN_NAMES.committees.committeeName,
         context: {
           committeeName
         }
@@ -41,10 +42,12 @@ export function mapCommittees(
 
   const studentsRowsByCommitteeName = new Map<string, SourceRow[]>()
   for (const studentsRow of studentsCommitteesRows) {
-    const committeeName = preprocessCommitteeName(studentsRow.row['Komise - název'] ?? '')
+    const committeeName = preprocessCommitteeName(
+      studentsRow.row[IMPORT_COLUMN_NAMES.studentsCommittees.committeeName] ?? ''
+    )
     if (!committeeName) {
       throwMappingError('INVALID_COMMITTEE_NAME', studentsRow, {
-        column: 'Komise - název'
+        column: IMPORT_COLUMN_NAMES.studentsCommittees.committeeName
       })
     }
 
@@ -61,7 +64,7 @@ export function mapCommittees(
       }
 
       throwMappingError('COMMITTEE_NOT_FOUND_IN_STUDENTS', committeeRow, {
-        column: 'Název komise',
+        column: IMPORT_COLUMN_NAMES.committees.committeeName,
         context: {
           committeeName
         }
@@ -77,7 +80,7 @@ export function mapCommittees(
       }
 
       throwMappingError('COMMITTEE_NOT_FOUND_IN_COMMITTEES', firstRow, {
-        column: 'Komise - název',
+        column: IMPORT_COLUMN_NAMES.studentsCommittees.committeeName,
         context: {
           committeeName
         }
@@ -102,45 +105,57 @@ export function mapCommittees(
       continue
     }
 
-    const studentsProgramName = readRequiredValue(representativeStudentsRow, 'St. program - název')
-    const committeesProgramName = readRequiredValue(committeeRow, 'Název studijního programu')
+    const studentsProgramName = readRequiredValue(
+      representativeStudentsRow,
+      IMPORT_COLUMN_NAMES.studentsCommittees.studyProgramName
+    )
+    const committeesProgramName = readRequiredValue(committeeRow, IMPORT_COLUMN_NAMES.committees.studyProgramName)
     assertFieldEquality(
       committeeName,
       {
         source: representativeStudentsRow,
-        column: 'St. program - název',
+        column: IMPORT_COLUMN_NAMES.studentsCommittees.studyProgramName,
         value: studentsProgramName
       },
       {
         source: committeeRow,
-        column: 'Název studijního programu',
+        column: IMPORT_COLUMN_NAMES.committees.studyProgramName,
         value: committeesProgramName
       },
       'COMMITTEE_FIELD_MISMATCH'
     )
 
-    const studentsSpecializationName = readRequiredValue(representativeStudentsRow, 'Obor/spec - název')
-    const committeesSpecializationName = readRequiredValue(committeeRow, 'Název oboru/specializace')
+    const studentsSpecializationName = readRequiredValue(
+      representativeStudentsRow,
+      IMPORT_COLUMN_NAMES.studentsCommittees.specializationName
+    )
+    const committeesSpecializationName = readRequiredValue(
+      committeeRow,
+      IMPORT_COLUMN_NAMES.committees.specializationName
+    )
     assertFieldEquality(
       committeeName,
       {
         source: representativeStudentsRow,
-        column: 'Obor/spec - název',
+        column: IMPORT_COLUMN_NAMES.studentsCommittees.specializationName,
         value: studentsSpecializationName
       },
       {
         source: committeeRow,
-        column: 'Název oboru/specializace',
+        column: IMPORT_COLUMN_NAMES.committees.specializationName,
         value: committeesSpecializationName
       },
       'COMMITTEE_FIELD_MISMATCH'
     )
 
-    const studyProgramTypeValue = readRequiredValue(representativeStudentsRow, 'St. program - typ')
+    const studyProgramTypeValue = readRequiredValue(
+      representativeStudentsRow,
+      IMPORT_COLUMN_NAMES.studentsCommittees.studyProgramType
+    )
     const studyProgramType = parseStudyProgramType(studyProgramTypeValue)
     if (!studyProgramType) {
       throwMappingError('INVALID_STUDY_PROGRAM_TYPE', representativeStudentsRow, {
-        column: 'St. program - typ',
+        column: IMPORT_COLUMN_NAMES.studentsCommittees.studyProgramType,
         context: {
           committeeName,
           rawValue: studyProgramTypeValue
@@ -150,7 +165,7 @@ export function mapCommittees(
 
     if (szzType !== 'MIXED' && studyProgramType !== szzType) {
       throwMappingError('COMMITTEE_SZZ_TYPE_MISMATCH', representativeStudentsRow, {
-        column: 'St. program - typ',
+        column: IMPORT_COLUMN_NAMES.studentsCommittees.studyProgramType,
         context: {
           committeeName,
           detectedType: studyProgramType,
@@ -159,11 +174,14 @@ export function mapCommittees(
       })
     }
 
-    const languageValue = readRequiredValue(representativeStudentsRow, 'Jazyk výuky')
+    const languageValue = readRequiredValue(
+      representativeStudentsRow,
+      IMPORT_COLUMN_NAMES.studentsCommittees.studyLanguage
+    )
     const language = parseStudyLanguage(languageValue)
     if (!language) {
       throwMappingError('INVALID_LANGUAGE', representativeStudentsRow, {
-        column: 'Jazyk výuky',
+        column: IMPORT_COLUMN_NAMES.studentsCommittees.studyLanguage,
         context: {
           committeeName,
           rawValue: languageValue,
@@ -172,11 +190,11 @@ export function mapCommittees(
       })
     }
 
-    const committeeDateRaw = readRequiredValue(committeeRow, 'Datum')
+    const committeeDateRaw = readRequiredValue(committeeRow, IMPORT_COLUMN_NAMES.committees.date)
     const committeeDate = parseDateToIso(committeeDateRaw)
     if (!committeeDate) {
       throwMappingError('INVALID_COMMITTEE_DATE', committeeRow, {
-        column: 'Datum',
+        column: IMPORT_COLUMN_NAMES.committees.date,
         context: {
           committeeName,
           rawValue: committeeDateRaw
@@ -188,20 +206,22 @@ export function mapCommittees(
       name: committeeName,
       startMinute: COMMITTEE_START_MINUTE,
       date: committeeDate,
-      room: readOptionalValue(committeeRow, 'Místo'),
+      room: readOptionalValue(committeeRow, IMPORT_COLUMN_NAMES.committees.room),
       preparationRoom: null,
-      secretaryName: readOptionalValue(committeeRow, 'Správce'),
+      secretaryName: readOptionalValue(committeeRow, IMPORT_COLUMN_NAMES.committees.secretaryName),
       invigilators: [],
       language,
       studyProgramName: committeesProgramName,
       studyProgramType,
       specializationName: committeesSpecializationName,
-      specializationCode: normalizeSpecializationCode(readRequiredValue(representativeStudentsRow, 'Obor/spec - kód')),
-      chairName: readRequiredValue(representativeStudentsRow, 'Komise - předseda'),
-      viceChairName: readRequiredValue(representativeStudentsRow, 'Komise - místopředseda'),
-      member1Name: readRequiredValue(representativeStudentsRow, 'Komise - člen 1'),
-      member2Name: readRequiredValue(representativeStudentsRow, 'Komise - člen 2'),
-      member3Name: readRequiredValue(representativeStudentsRow, 'Komise - člen 3'),
+      specializationCode: normalizeSpecializationCode(
+        readRequiredValue(representativeStudentsRow, IMPORT_COLUMN_NAMES.studentsCommittees.specializationCode)
+      ),
+      chairName: readRequiredValue(representativeStudentsRow, IMPORT_COLUMN_NAMES.studentsCommittees.chairName),
+      viceChairName: readRequiredValue(representativeStudentsRow, IMPORT_COLUMN_NAMES.studentsCommittees.viceChairName),
+      member1Name: readRequiredValue(representativeStudentsRow, IMPORT_COLUMN_NAMES.studentsCommittees.member1Name),
+      member2Name: readRequiredValue(representativeStudentsRow, IMPORT_COLUMN_NAMES.studentsCommittees.member2Name),
+      member3Name: readRequiredValue(representativeStudentsRow, IMPORT_COLUMN_NAMES.studentsCommittees.member3Name),
       items: []
     }
 

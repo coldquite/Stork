@@ -20,6 +20,7 @@
 import type { GetTeachersDictionaryResponseDto } from '#shared/types/teachers-dictionary'
 import { buildTeachersDictionaryLookupKey, normalizeTeachersDictionaryName } from '#shared/utils/teachers-dictionary'
 import type { ImportCsvRow, ImportPayload, PreparedImportPayload } from '~/types/import'
+import { IMPORT_COLUMN_NAMES } from '~/utils/import-mapper/core/columns'
 
 type ImportPayloadLevel = keyof ImportPayload['studentsStork']
 
@@ -41,22 +42,22 @@ export type PrepareImportPayloadForMappingResult =
 const IMPORT_LEVEL_KEYS: readonly ImportPayloadLevel[] = ['bachelor', 'master']
 
 const STUDENTS_STORK_DICTIONARY_TARGET_COLUMNS = [
-  'VŠKP-typ A: Vedoucí práce 1',
-  'VŠKP-typ A: Vedoucí práce 2',
-  'VŠKP-typ A: Oponent práce 1',
-  'VŠKP-typ A: Oponent práce 2'
+  IMPORT_COLUMN_NAMES.studentsStork.supervisorName,
+  IMPORT_COLUMN_NAMES.studentsStork.additionalSupervisorName,
+  IMPORT_COLUMN_NAMES.studentsStork.reviewerName,
+  IMPORT_COLUMN_NAMES.studentsStork.additionalReviewerName
 ] as const
 
 export const STUDENTS_COMMITTEES_DICTIONARY_TARGET_COLUMNS = [
-  'VŠKP-typ A: Vedoucí práce 1',
-  'VŠKP-typ A: Vedoucí práce 2',
-  'VŠKP-typ A: Oponent práce 1',
-  'VŠKP-typ A: Oponent práce 2',
-  'Komise - předseda',
-  'Komise - místopředseda',
-  'Komise - člen 1',
-  'Komise - člen 2',
-  'Komise - člen 3'
+  IMPORT_COLUMN_NAMES.studentsCommittees.supervisorName,
+  IMPORT_COLUMN_NAMES.studentsCommittees.additionalSupervisorName,
+  IMPORT_COLUMN_NAMES.studentsCommittees.reviewerName,
+  IMPORT_COLUMN_NAMES.studentsCommittees.additionalReviewerName,
+  IMPORT_COLUMN_NAMES.studentsCommittees.chairName,
+  IMPORT_COLUMN_NAMES.studentsCommittees.viceChairName,
+  IMPORT_COLUMN_NAMES.studentsCommittees.member1Name,
+  IMPORT_COLUMN_NAMES.studentsCommittees.member2Name,
+  IMPORT_COLUMN_NAMES.studentsCommittees.member3Name
 ] as const
 
 // Flattens rows from all available payload levels (bachelor/master) into one list
