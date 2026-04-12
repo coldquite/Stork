@@ -181,6 +181,7 @@ function mapImportPayloadWithTeachersDictionary(options: {
   dictionaryCanonicalNames?: string[]
 }) {
   const defaultCommitteeTeacherNames = [
+    'Bc. Sekretářka',
     'doc. Test Předseda',
     'Ing. Test Místopředseda Ph.D.',
     'Mgr. Test Člen A',

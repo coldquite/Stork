@@ -13,7 +13,7 @@ function createImportPayload(): ImportPayload {
     committees: {
       fileName: 'komise.csv',
       headers: ['Název komise'],
-      rows: [{ 'Název komise': '242-BI, 5-BI-PI.21' }]
+      rows: [{ 'Název komise': '242-BI, 5-BI-PI.21', Správce: '  Sekretarka Petra, Bc.  ' }]
     },
     studentsStork: {
       bachelor: {
@@ -101,10 +101,12 @@ describe('import-teachers-dictionary utils', () => {
     const clonedPayload = cloneImportPayload(payload)
 
     clonedPayload.committees.rows[0]!['Název komise'] = 'changed'
+    clonedPayload.committees.rows[0]!.Správce = 'changed'
     clonedPayload.studentsStork.bachelor!.rows[0]!['VŠKP-typ A: Vedoucí práce 1'] = 'changed'
     clonedPayload.studentsCommittees.bachelor!.rows[0]!['Komise - předseda'] = 'changed'
 
     expect(payload.committees.rows[0]!['Název komise']).toBe('242-BI, 5-BI-PI.21')
+    expect(payload.committees.rows[0]!.Správce).toBe('  Sekretarka Petra, Bc.  ')
     expect(payload.studentsStork.bachelor!.rows[0]!['VŠKP-typ A: Vedoucí práce 1']).toBe('  Ing. Alex Test  ')
     expect(payload.studentsCommittees.bachelor!.rows[0]!['Komise - předseda']).toBe('Predseda Test, doc.')
   })
@@ -119,9 +121,10 @@ describe('import-teachers-dictionary utils', () => {
       throw new Error('Expected unresolved payload')
     }
 
-    expect(result.unresolvedEntries).toHaveLength(6)
+    expect(result.unresolvedEntries).toHaveLength(7)
     expect(result.unresolvedEntries.map((entry) => entry.lookupKey)).toEqual(
       expect.arrayContaining([
+        buildTeachersDictionaryLookupKey('Sekretarka Petra, Bc.'),
         buildTeachersDictionaryLookupKey('Ing. Alex Test'),
         buildTeachersDictionaryLookupKey('Mgr. Dana Testova Ph.D.'),
         buildTeachersDictionaryLookupKey('doc. Petra Testova'),
@@ -130,6 +133,7 @@ describe('import-teachers-dictionary utils', () => {
         buildTeachersDictionaryLookupKey('Predseda Test, doc.')
       ])
     )
+    expect(payload.committees.rows[0]!.Správce).toBe('Sekretarka Petra, Bc.')
     expect(payload.studentsStork.bachelor!.rows[0]!['VŠKP-typ A: Vedoucí práce 1']).toBe('Ing. Alex Test')
     expect(payload.studentsStork.bachelor!.rows[1]!['VŠKP-typ A: Oponent práce 1']).toBe('')
     expect(payload.studentsStork.master!.rows[0]!['VŠKP-typ A: Oponent práce 2']).toBe('Ing. Roman Test')
@@ -185,7 +189,8 @@ describe('import-teachers-dictionary utils', () => {
 
     const missingLookupKeys = result.unresolvedEntries.map((entry) => entry.lookupKey)
 
-    expect(result.unresolvedEntries).toHaveLength(2)
+    expect(result.unresolvedEntries).toHaveLength(3)
+    expect(missingLookupKeys).toContain(buildTeachersDictionaryLookupKey('Sekretarka Petra, Bc.'))
     expect(missingLookupKeys).toContain(buildTeachersDictionaryLookupKey('Neznamy Test, Ing.'))
     expect(missingLookupKeys).toContain(buildTeachersDictionaryLookupKey('Predseda Test, doc.'))
 
@@ -212,7 +217,7 @@ describe('import-teachers-dictionary utils', () => {
         'doc. Petra Testova',
         'Ing. Roman Test'
       ]),
-      ...createDictionaryEntries(['Neznamy Test Ing.', 'doc. Test Predseda'])
+      ...createDictionaryEntries(['Bc. Petra Sekretarka', 'Neznamy Test Ing.', 'doc. Test Predseda'])
     ]
 
     const dictionaryLookupMap = createTeachersDictionaryLookupMap(dictionaryEntries)
@@ -222,8 +227,10 @@ describe('import-teachers-dictionary utils', () => {
       throw new Error('Expected prepared payload')
     }
     expect(result.preparedPayload.studentsCommittees.bachelor!.rows[0]!['Komise - předseda']).toBe('doc. Test Predseda')
+    expect(result.preparedPayload.committees.rows[0]!.Správce).toBe('Bc. Petra Sekretarka')
     expect(payload.studentsCommittees.bachelor!.rows[0]!['VŠKP-typ A: Vedoucí práce 2']).toBe('Neznamy Test Ing.')
     expect(payload.studentsCommittees.bachelor!.rows[0]!['Komise - člen 1']).toBe('Neznamy Test Ing.')
     expect(payload.studentsCommittees.bachelor!.rows[0]!['Komise - předseda']).toBe('doc. Test Predseda')
+    expect(payload.committees.rows[0]!.Správce).toBe('Bc. Petra Sekretarka')
   })
 })

@@ -11,6 +11,7 @@
  * What it does:
  * - Clones import payload to avoid mutating the original upload data
  * - Builds an in-memory lookup map from dictionary API response
+ * - Applies dictionary resolution to Committees teacher fields (COMMITTEES_DICTIONARY_TARGET_COLUMNS), rewriting row values to properly formatted values
  * - Applies dictionary resolution to Students Stork teacher fields (STUDENTS_STORK_DICTIONARY_TARGET_COLUMNS), rewriting row values to properly formatted values
  * - Applies dictionary resolution to Students Committees fields (STUDENTS_COMMITTEES_DICTIONARY_TARGET_COLUMNS), rewriting row values to properly formatted values
  * - Collects unresolved names (unique by lookup key) so UI can ask the user once and store manual corrections
@@ -40,6 +41,8 @@ export type PrepareImportPayloadForMappingResult =
     }
 
 const IMPORT_LEVEL_KEYS: readonly ImportPayloadLevel[] = ['bachelor', 'master']
+
+const COMMITTEES_DICTIONARY_TARGET_COLUMNS = [IMPORT_COLUMN_NAMES.committees.secretaryName] as const
 
 const STUDENTS_STORK_DICTIONARY_TARGET_COLUMNS = [
   IMPORT_COLUMN_NAMES.studentsStork.supervisorName,
@@ -227,6 +230,16 @@ function applyTeachersDictionaryToStudentsCommitteesRows(
   }
 }
 
+function applyTeachersDictionaryToCommitteesRows(
+  payload: ImportPayload,
+  dictionaryByLookupKey: ReadonlyMap<string, string>,
+  missingByLookupKey: Map<string, MissingTeachersDictionaryEntry>
+): void {
+  for (const row of payload.committees.rows) {
+    applyTeachersDictionaryToRow(row, COMMITTEES_DICTIONARY_TARGET_COLUMNS, dictionaryByLookupKey, missingByLookupKey)
+  }
+}
+
 /**
  * Final step before mapper: apply dictionary normalization and return an opaque
  * "prepared" payload only when all teacher values are fully resolved.
@@ -236,6 +249,7 @@ export function prepareImportPayloadForMapping(
   dictionaryByLookupKey: ReadonlyMap<string, string>
 ): PrepareImportPayloadForMappingResult {
   const missingByLookupKey = new Map<string, MissingTeachersDictionaryEntry>()
+  applyTeachersDictionaryToCommitteesRows(payload, dictionaryByLookupKey, missingByLookupKey)
   applyTeachersDictionaryToStudentsStorkRows(payload, dictionaryByLookupKey, missingByLookupKey)
   applyTeachersDictionaryToStudentsCommitteesRows(payload, dictionaryByLookupKey, missingByLookupKey)
   const unresolvedEntries = Array.from(missingByLookupKey.values())
