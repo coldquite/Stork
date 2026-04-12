@@ -272,6 +272,37 @@ describe('mapImportPayloadToDraftSource', () => {
     }
   })
 
+  it('normalizes thesis title double hyphen to en dash during import', () => {
+    const payload = createValidPayload()
+    payload.studentsStork.bachelor!.rows[0] = createStudentsStorkRow({
+      'VŠKP-typ A: Název práce': 'Návrh -- implementace systému',
+      'VŠKP-typ A: Překlad názvu práce': 'Design -- implementation of a system'
+    })
+    payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
+      'VŠKP-typ A: Český název práce': 'Návrh – implementace systému',
+      'VŠKP-typ A: Anglický název práce': 'Design – implementation of a system'
+    })
+
+    const result = mapImportPayloadToDraftSource({
+      scheduleName: 'SZZ červen 2025',
+      szzType: 'BACHELOR',
+      payload
+    })
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) {
+      throw new Error('Expected mapping success')
+    }
+
+    const mappedFirstItem = result.draft.committees[0]?.items[0]
+    if (!mappedFirstItem || mappedFirstItem.type !== 'STUDENT') {
+      throw new Error('Expected mapped student item')
+    }
+
+    expect(mappedFirstItem.student.thesisTitleLocal).toBe('Návrh – implementace systému')
+    expect(mappedFirstItem.student.thesisTitleEn).toBe('Design – implementation of a system')
+  })
+
   it('sets repeatType to BOTH when first-term grade is F and thesis defense date is empty', () => {
     const payload = createValidPayload()
     payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({

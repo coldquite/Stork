@@ -21,6 +21,11 @@ interface MapStudentInput {
   matchedRows: MatchedStudentRows
 }
 
+function normalizeThesisTitleTypographicDashes(value: string): string {
+  // KOS exports can contain `--` which should be rendered as en dash in thesis titles
+  return value.replaceAll('--', '–')
+}
+
 export function mapStudent(input: MapStudentInput): MappedStudentPlacement {
   const { szzType, committeesByName, matchedRows } = input
   const { studentsStorkRow, studentsCommitteesRow } = matchedRows
@@ -104,8 +109,12 @@ export function mapStudent(input: MapStudentInput): MappedStudentPlacement {
     })
   }
 
-  const storkThesisTitleLocal = readRequiredValue(studentsStorkRow, 'VŠKP-typ A: Název práce')
-  const committeesThesisTitleLocal = readRequiredValue(studentsCommitteesRow, 'VŠKP-typ A: Český název práce')
+  const storkThesisTitleLocal = normalizeThesisTitleTypographicDashes(
+    readRequiredValue(studentsStorkRow, 'VŠKP-typ A: Název práce')
+  )
+  const committeesThesisTitleLocal = normalizeThesisTitleTypographicDashes(
+    readRequiredValue(studentsCommitteesRow, 'VŠKP-typ A: Český název práce')
+  )
   assertFieldEquality(
     committeeName,
     {
@@ -120,8 +129,12 @@ export function mapStudent(input: MapStudentInput): MappedStudentPlacement {
     }
   )
 
-  const storkThesisTitleEn = readRequiredValue(studentsStorkRow, 'VŠKP-typ A: Překlad názvu práce')
-  const committeesThesisTitleEn = readRequiredValue(studentsCommitteesRow, 'VŠKP-typ A: Anglický název práce')
+  const storkThesisTitleEn = normalizeThesisTitleTypographicDashes(
+    readRequiredValue(studentsStorkRow, 'VŠKP-typ A: Překlad názvu práce')
+  )
+  const committeesThesisTitleEn = normalizeThesisTitleTypographicDashes(
+    readRequiredValue(studentsCommitteesRow, 'VŠKP-typ A: Anglický název práce')
+  )
   assertFieldEquality(
     committeeName,
     {
