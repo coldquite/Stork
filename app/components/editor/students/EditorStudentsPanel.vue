@@ -152,7 +152,6 @@ function setTableViewMode(mode: EditorStudentsTableViewMode): void {
           <EditorCommitteeMembersCard
             class="self-stretch"
             :selected-committee="props.selectedCommittee"
-            :members-section-label="labels.members"
             :chair-label="labels.chair"
             :vice-chair-label="labels.viceChair"
             :member1-label="labels.member1"

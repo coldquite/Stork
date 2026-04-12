@@ -56,7 +56,6 @@ const committeeLabels = computed(() => ({
   preparationRoom: t('editor.committee.preparationRoom'),
   date: t('editor.committee.date'),
   secretary: t('editor.committee.secretary'),
-  members: t('editor.committee.members'),
   chair: t('editor.committee.chair'),
   viceChair: t('editor.committee.viceChair'),
   member1: t('editor.committee.member1'),

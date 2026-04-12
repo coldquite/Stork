@@ -103,7 +103,6 @@ export interface EditorStudentsPanelCommitteeLabels {
   preparationRoom: string
   date: string
   secretary: string
-  members: string
   chair: string
   viceChair: string
   member1: string
