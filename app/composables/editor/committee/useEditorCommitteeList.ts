@@ -3,7 +3,7 @@ import {
   resolveEditorSpecializationOptionForDepartment
 } from '#shared/constants/editor'
 import type { StudyLanguageDto, StudyProgramTypeDto } from '#shared/types/time-schedules'
-import { useEditorCommitteeFields } from '~/composables/editor/useEditorCommitteeFields'
+import { useEditorCommitteeFields } from '~/composables/editor/committee/useEditorCommitteeFields'
 import { useValidationField } from '~/composables/useValidationField'
 import { useScheduleDraftStore } from '~/stores/schedule-draft'
 import type { CommitteeSidebarItem, EditorCommitteeStringFieldPayload } from '~/types/editor'

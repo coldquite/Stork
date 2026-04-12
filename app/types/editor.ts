@@ -229,7 +229,7 @@ export interface EditorExportCommitteesDialogCopy {
   errorDescription?: string
 }
 
-/** Pre-translated strings for [EditorScheduleDialogsHost.vue](app/components/editor/EditorScheduleDialogsHost.vue). */
+/** Pre-translated strings for [EditorScheduleDialogsHost.vue](app/components/editor/dialogs/EditorScheduleDialogsHost.vue). */
 export interface EditorScheduleDialogsCopy {
   commonCancel: string
   renameCommittee: {

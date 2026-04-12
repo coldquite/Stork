@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import EditorCommitteeSidebarList from '~/components/editor/committee/EditorCommitteeSidebarList.vue'
 import type { CommitteeSidebarItem } from '~/types/editor'
 
 const props = defineProps<{

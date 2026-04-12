@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useScheduleAutoSaveToasts } from '~/composables/editor/useScheduleAutoSaveToasts'
+import { useScheduleAutoSaveToasts } from '~/composables/editor/notifications/useScheduleAutoSaveToasts'
 
 const { locale, t } = useI18n()
 const localeHead = useLocaleHead()

@@ -92,7 +92,7 @@ describe('useEditorPauseCreation', () => {
 
   it('opens create dialog with defaults and resets duration by pause type toggle', async () => {
     const selectedCommittee = ref<ScheduleDraftCommittee | null>(createCommittee())
-    const { useEditorPauseCreation } = await import('~/composables/editor/useEditorPauseCreation')
+    const { useEditorPauseCreation } = await import('~/composables/editor/dialogs/useEditorPauseCreation')
     const pauseCreation = useEditorPauseCreation(computed(() => selectedCommittee.value))
 
     pauseCreation.openCreatePauseDialog()
@@ -119,7 +119,7 @@ describe('useEditorPauseCreation', () => {
 
   it('creates pause at end, enforces validation rules and persists empty label when custom name is disabled', async () => {
     const selectedCommittee = ref<ScheduleDraftCommittee | null>(createCommittee())
-    const { useEditorPauseCreation } = await import('~/composables/editor/useEditorPauseCreation')
+    const { useEditorPauseCreation } = await import('~/composables/editor/dialogs/useEditorPauseCreation')
     const pauseCreation = useEditorPauseCreation(computed(() => selectedCommittee.value))
 
     pauseCreation.openCreatePauseDialog()
@@ -175,7 +175,7 @@ describe('useEditorPauseCreation', () => {
     }
     pause.pause.label = 'Oběd s vedením'
 
-    const { useEditorPauseCreation } = await import('~/composables/editor/useEditorPauseCreation')
+    const { useEditorPauseCreation } = await import('~/composables/editor/dialogs/useEditorPauseCreation')
     const pauseCreation = useEditorPauseCreation(computed(() => selectedCommittee.value))
 
     pauseCreation.openEditPauseDialog('pause-1')

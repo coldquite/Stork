@@ -1,7 +1,12 @@
 <script setup lang="ts">
+import EditorCommitteeNameModal from '~/components/editor/dialogs/EditorCommitteeNameModal.vue'
+import EditorCreateCommitteeModal from '~/components/editor/dialogs/EditorCreateCommitteeModal.vue'
+import EditorCreatePauseModal from '~/components/editor/dialogs/EditorCreatePauseModal.vue'
+import EditorCreateStudentModal from '~/components/editor/dialogs/EditorCreateStudentModal.vue'
+import EditorMoveStudentDialog from '~/components/editor/dialogs/EditorMoveStudentDialog.vue'
 import EditorCsvExportCommitteesModal from '~/components/export/EditorCsvExportCommitteesModal.vue'
 import EditorPdfInvigilatorsExportModal from '~/components/export/EditorPdfInvigilatorsExportModal.vue'
-import type { useEditorPage } from '~/composables/editor/useEditorPage'
+import type { useEditorPage } from '~/composables/editor/page/useEditorPage'
 import type { EditorScheduleDialogsCopy, EditorStudentsPanelCommitteeLabels } from '~/types/editor'
 
 type EditorPageGroups = ReturnType<typeof useEditorPage>

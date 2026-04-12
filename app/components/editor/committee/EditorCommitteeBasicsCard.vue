@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { CalendarDate } from '@internationalized/date'
+import EditorCommitteeStartTimeRow from '~/components/editor/committee/EditorCommitteeStartTimeRow.vue'
 import type { ScheduleDraftCommittee } from '~/types/schedule-draft'
 import type { StudyLanguageDto } from '#shared/types/time-schedules'
 import type { EditorCommitteeStringFieldPayload } from '~/types/editor'

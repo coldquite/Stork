@@ -102,7 +102,7 @@ describe('useEditorStudentCreation', () => {
 
   it('opens with committee defaults', async () => {
     const selectedCommittee = ref<ScheduleDraftCommittee | null>(createCommittee())
-    const { useEditorStudentCreation } = await import('~/composables/editor/useEditorStudentCreation')
+    const { useEditorStudentCreation } = await import('~/composables/editor/students/useEditorStudentCreation')
     const creation = useEditorStudentCreation(computed(() => selectedCommittee.value))
 
     creation.openCreateStudentDialog()
@@ -120,7 +120,7 @@ describe('useEditorStudentCreation', () => {
 
   it('opens with mapped duration defaults for master committee', async () => {
     const selectedCommittee = ref<ScheduleDraftCommittee | null>(createCommittee({ studyProgramType: 'MASTER' }))
-    const { useEditorStudentCreation } = await import('~/composables/editor/useEditorStudentCreation')
+    const { useEditorStudentCreation } = await import('~/composables/editor/students/useEditorStudentCreation')
     const creation = useEditorStudentCreation(computed(() => selectedCommittee.value))
 
     creation.openCreateStudentDialog()
@@ -133,7 +133,7 @@ describe('useEditorStudentCreation', () => {
 
   it('applies table-equivalent profile cleanup when language changes', async () => {
     const selectedCommittee = ref<ScheduleDraftCommittee | null>(createCommittee())
-    const { useEditorStudentCreation } = await import('~/composables/editor/useEditorStudentCreation')
+    const { useEditorStudentCreation } = await import('~/composables/editor/students/useEditorStudentCreation')
     const creation = useEditorStudentCreation(computed(() => selectedCommittee.value))
 
     creation.openCreateStudentDialog()
@@ -146,7 +146,7 @@ describe('useEditorStudentCreation', () => {
 
   it('validates required fields for leading and trailing whitespace', async () => {
     const selectedCommittee = ref<ScheduleDraftCommittee | null>(createCommittee())
-    const { useEditorStudentCreation } = await import('~/composables/editor/useEditorStudentCreation')
+    const { useEditorStudentCreation } = await import('~/composables/editor/students/useEditorStudentCreation')
     const creation = useEditorStudentCreation(computed(() => selectedCommittee.value))
 
     creation.openCreateStudentDialog()
@@ -162,7 +162,7 @@ describe('useEditorStudentCreation', () => {
 
   it('creates new student at the end of committee students sequence', async () => {
     const selectedCommittee = ref<ScheduleDraftCommittee | null>(createCommittee())
-    const { useEditorStudentCreation } = await import('~/composables/editor/useEditorStudentCreation')
+    const { useEditorStudentCreation } = await import('~/composables/editor/students/useEditorStudentCreation')
     const creation = useEditorStudentCreation(computed(() => selectedCommittee.value))
 
     creation.openCreateStudentDialog()
@@ -201,7 +201,7 @@ describe('useEditorStudentCreation', () => {
 
   it('overwrites minutes when repeatType changes but keeps values for the same repeatType', async () => {
     const selectedCommittee = ref<ScheduleDraftCommittee | null>(createCommittee())
-    const { useEditorStudentCreation } = await import('~/composables/editor/useEditorStudentCreation')
+    const { useEditorStudentCreation } = await import('~/composables/editor/students/useEditorStudentCreation')
     const creation = useEditorStudentCreation(computed(() => selectedCommittee.value))
 
     creation.openCreateStudentDialog()
@@ -226,7 +226,7 @@ describe('useEditorStudentCreation', () => {
 
   it('overwrites minutes when studyProgramType changes', async () => {
     const selectedCommittee = ref<ScheduleDraftCommittee | null>(createCommittee())
-    const { useEditorStudentCreation } = await import('~/composables/editor/useEditorStudentCreation')
+    const { useEditorStudentCreation } = await import('~/composables/editor/students/useEditorStudentCreation')
     const creation = useEditorStudentCreation(computed(() => selectedCommittee.value))
 
     creation.openCreateStudentDialog()

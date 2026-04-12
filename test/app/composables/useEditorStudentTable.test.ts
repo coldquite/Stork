@@ -1,7 +1,7 @@
 import { mockNuxtImport } from '@nuxt/test-utils/runtime'
 import { computed, ref } from 'vue'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { useEditorStudentTable } from '~/composables/editor/useEditorStudentTable'
+import { useEditorStudentTable } from '~/composables/editor/students/useEditorStudentTable'
 import type { EditorStudentsTableViewMode } from '~/types/editor'
 import type { ScheduleDraftThesisTitleDisplayMode } from '~/types/schedule-draft'
 

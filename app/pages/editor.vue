@@ -1,5 +1,11 @@
 <script setup lang="ts">
-import { useEditorPage } from '~/composables/editor/useEditorPage'
+import EditorCommitteesPanel from '~/components/editor/committee/EditorCommitteesPanel.vue'
+import EditorScheduleDialogsHost from '~/components/editor/dialogs/EditorScheduleDialogsHost.vue'
+import EditorStudentSearchDialog from '~/components/editor/dialogs/EditorStudentSearchDialog.vue'
+import EditorBottomGlow from '~/components/editor/layout/EditorBottomGlow.vue'
+import EditorPageHeader from '~/components/editor/layout/EditorPageHeader.vue'
+import EditorStudentsPanel from '~/components/editor/students/EditorStudentsPanel.vue'
+import { useEditorPage } from '~/composables/editor/page/useEditorPage'
 import type { EditorCommitteeStringFieldPayload, EditorTableRow } from '~/types/editor'
 
 definePageMeta({

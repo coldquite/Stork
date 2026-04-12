@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import EditorCommitteeSidebarList from '~/components/editor/committee/EditorCommitteeSidebarList.vue'
+import EditorWarningAlert from '~/components/editor/shared/EditorWarningAlert.vue'
 import type { CommitteeSidebarItem } from '~/types/editor'
 import type {
   StudentCommitteeRewriteFieldKey,

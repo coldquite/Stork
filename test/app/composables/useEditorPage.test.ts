@@ -219,7 +219,7 @@ describe('useEditorPage', () => {
   })
 
   it('reorders only student items and keeps pauses in place', async () => {
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     expect(page.committeeList.selectedCommittee.value?.localId).toBe('committee-early')
@@ -241,7 +241,7 @@ describe('useEditorPage', () => {
   })
 
   it('reorders mixed rows including pauses through selectedRows setter', async () => {
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     const rows = page.studentTable.selectedRows.value
@@ -276,7 +276,7 @@ describe('useEditorPage', () => {
   })
 
   it('updates editable student row fields in draft and overwrites minutes on repeatType change', async () => {
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     const [firstStudentRow, secondStudentRow] = page.studentTable.selectedStudents.value
@@ -332,7 +332,7 @@ describe('useEditorPage', () => {
   })
 
   it('keeps custom minutes when repeatType and studyProgramType do not change', async () => {
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     const [firstStudentRow, secondStudentRow] = page.studentTable.selectedStudents.value
@@ -367,7 +367,7 @@ describe('useEditorPage', () => {
   })
 
   it('overwrites minutes when student studyProgramType changes in table editing', async () => {
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     const [firstStudentRow, secondStudentRow] = page.studentTable.selectedStudents.value
@@ -401,7 +401,7 @@ describe('useEditorPage', () => {
   })
 
   it('updates student study profile independently from committee and resolves specialization by student context', async () => {
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     const [firstStudentRow, secondStudentRow] = page.studentTable.selectedStudents.value
@@ -439,7 +439,7 @@ describe('useEditorPage', () => {
   })
 
   it('clears student study program and specialization when language becomes incompatible', async () => {
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     const [firstStudentRow, secondStudentRow] = page.studentTable.selectedStudents.value
@@ -489,7 +489,7 @@ describe('useEditorPage', () => {
   })
 
   it('updates english thesis title when committee language is english', async () => {
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     page.committeeFields.updateSelectedCommitteeLanguage('ENGLISH')
@@ -520,7 +520,7 @@ describe('useEditorPage', () => {
   })
 
   it('updates both thesis title variants when display mode is BOTH', async () => {
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     page.draftSettings.updateThesisTitleDisplayMode('BOTH')
@@ -553,7 +553,7 @@ describe('useEditorPage', () => {
   })
 
   it('updates table view mode in preferences store', async () => {
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     page.draftSettings.updateTableViewMode('MAXIMIZED')
@@ -563,7 +563,7 @@ describe('useEditorPage', () => {
   })
 
   it('creates committee with trimmed name and selects it', async () => {
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     page.committeeList.openCreateCommitteeDialog()
@@ -581,7 +581,7 @@ describe('useEditorPage', () => {
   })
 
   it('blocks create submit until study program, specialization and department are resolved', async () => {
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     page.committeeList.openCreateCommitteeDialog()
@@ -603,7 +603,7 @@ describe('useEditorPage', () => {
   })
 
   it('creates committee with selected study fields', async () => {
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     page.committeeList.openCreateCommitteeDialog()
@@ -634,7 +634,7 @@ describe('useEditorPage', () => {
   })
 
   it('shows duplicate validation when renaming committee to existing name', async () => {
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     page.committeeList.openRenameCommitteeDialog('committee-early')
@@ -651,7 +651,7 @@ describe('useEditorPage', () => {
   })
 
   it('deletes selected committee and switches selection to next available tab', async () => {
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     expect(page.committeeList.selectedCommitteeId.value).toBe('committee-early')
@@ -665,7 +665,7 @@ describe('useEditorPage', () => {
   })
 
   it('deletes pause item from selected committee after confirm', async () => {
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     const committee = scheduleDraftStoreMock.draft?.committees.find((entry) => entry.localId === 'committee-early')
@@ -683,7 +683,7 @@ describe('useEditorPage', () => {
   })
 
   it('deletes student item from selected committee after confirm', async () => {
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     const committee = scheduleDraftStoreMock.draft?.committees.find((entry) => entry.localId === 'committee-early')
@@ -702,7 +702,7 @@ describe('useEditorPage', () => {
   })
 
   it('moves student to target committee, switches selection and emits highlight request', async () => {
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     const sourceCommittee = scheduleDraftStoreMock.draft?.committees.find(
@@ -765,7 +765,7 @@ describe('useEditorPage', () => {
   })
 
   it('ignores move submit when target committee is source committee', async () => {
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     const sourceCommittee = scheduleDraftStoreMock.draft?.committees.find(
@@ -783,7 +783,7 @@ describe('useEditorPage', () => {
   })
 
   it('keeps move dialog open and does nothing when submit is called without selected target', async () => {
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     const sourceCommittee = scheduleDraftStoreMock.draft?.committees.find(
@@ -807,7 +807,7 @@ describe('useEditorPage', () => {
   })
 
   it('renames draft with trimmed value', async () => {
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     page.scheduleDialogs.openRenameDraftDialog()
@@ -820,7 +820,7 @@ describe('useEditorPage', () => {
   })
 
   it('rejects draft rename with leading or trailing whitespace', async () => {
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     page.scheduleDialogs.openRenameDraftDialog()
@@ -835,7 +835,7 @@ describe('useEditorPage', () => {
   })
 
   it('opens cloud save dialog with current draft name prefilled', async () => {
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     page.scheduleDialogs.openCloudSaveDialog()
@@ -846,7 +846,7 @@ describe('useEditorPage', () => {
   })
 
   it('opens csv export dialog with all committees preselected and clears selection on close', async () => {
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     page.scheduleDialogs.openCsvExportDialog()
@@ -869,7 +869,7 @@ describe('useEditorPage', () => {
   })
 
   it('exports selected committees to questions-envelope csv and closes dialog', async () => {
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     page.scheduleDialogs.openCsvExportDialog()
@@ -889,7 +889,7 @@ describe('useEditorPage', () => {
   })
 
   it('keeps csv export dialog open and lists all problematic students when department mapping fails', async () => {
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     exportQuestionsEnvelopeCsvMock.mockImplementationOnce(() => {
@@ -936,7 +936,7 @@ describe('useEditorPage', () => {
       committees: []
     }
 
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     page.scheduleDialogs.openCsvExportDialog()
@@ -952,7 +952,7 @@ describe('useEditorPage', () => {
   })
 
   it('opens public pdf export dialog with all committees preselected and clears selection on close', async () => {
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     page.scheduleDialogs.openPdfPublicExportDialog()
@@ -980,7 +980,7 @@ describe('useEditorPage', () => {
   })
 
   it('opens invigilators pdf export dialog with day groups and supports per-selection updates', async () => {
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     page.scheduleDialogs.openPdfInvigilatorsExportDialog()
@@ -1013,7 +1013,7 @@ describe('useEditorPage', () => {
   })
 
   it('adds invigilator with trimmed value to selected committee', async () => {
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     page.invigilators.openAddInvigilatorDialog()
@@ -1029,7 +1029,7 @@ describe('useEditorPage', () => {
   })
 
   it('validates invigilator name when it is blank or has outer whitespace', async () => {
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     page.invigilators.openAddInvigilatorDialog()
@@ -1047,7 +1047,7 @@ describe('useEditorPage', () => {
   })
 
   it('deletes invigilator from selected committee after confirm', async () => {
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     expect(scheduleDraftStoreMock.draft?.committees[0]?.invigilators.map((entry) => entry.name)).toEqual(['Dozor'])
@@ -1062,7 +1062,7 @@ describe('useEditorPage', () => {
   })
 
   it('updates selected committee language in draft store', async () => {
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     expect(page.committeeList.selectedCommittee.value?.language).toBe('CZECH')
@@ -1076,7 +1076,7 @@ describe('useEditorPage', () => {
   })
 
   it('updates selected committee start minute in draft store', async () => {
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     expect(page.committeeList.selectedCommittee.value?.startMinute).toBe(510)
@@ -1090,7 +1090,7 @@ describe('useEditorPage', () => {
   })
 
   it('updates committee members in draft store', async () => {
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     page.committeeFields.updateSelectedCommitteeChairName('doc. Předseda Nový')
@@ -1110,7 +1110,7 @@ describe('useEditorPage', () => {
   })
 
   it('normalizes whitespace for committee text fields', async () => {
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     page.committeeFields.updateSelectedCommitteeChairName('  doc. Předseda  ')
@@ -1128,7 +1128,7 @@ describe('useEditorPage', () => {
   })
 
   it('updates selected committee study program type in draft store', async () => {
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     expect(page.committeeList.selectedCommittee.value?.studyProgramType).toBe('BACHELOR')
@@ -1142,7 +1142,7 @@ describe('useEditorPage', () => {
   })
 
   it('updates selected committee study program name in draft store', async () => {
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     expect(page.committeeList.selectedCommittee.value?.studyProgramName).toBe('Informatika')
@@ -1157,7 +1157,7 @@ describe('useEditorPage', () => {
   })
 
   it('ignores study program name that is not allowed for selected language', async () => {
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     expect(page.committeeList.selectedCommittee.value?.language).toBe('CZECH')
@@ -1170,7 +1170,7 @@ describe('useEditorPage', () => {
   })
 
   it('clears study program and specialization when language changes to incompatible one', async () => {
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     expect(page.committeeList.selectedCommittee.value?.studyProgramName).toBe('Informatika')
@@ -1184,7 +1184,7 @@ describe('useEditorPage', () => {
   })
 
   it('clears specialization when study program type changes', async () => {
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     expect(page.committeeList.selectedCommittee.value?.studyProgramType).toBe('BACHELOR')
@@ -1200,7 +1200,7 @@ describe('useEditorPage', () => {
   })
 
   it('updates selected committee specialization from selected study program', async () => {
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     page.committeeFields.updateSelectedCommitteeStudyProgramType('BACHELOR')
@@ -1218,7 +1218,7 @@ describe('useEditorPage', () => {
   })
 
   it('saves to cloud using modal name and keeps current draft name unchanged', async () => {
-    const { useEditorPage } = await import('~/composables/editor/useEditorPage')
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
     page.scheduleDialogs.openCloudSaveDialog()

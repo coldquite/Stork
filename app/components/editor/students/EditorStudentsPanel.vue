@@ -1,5 +1,12 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
+import EditorCommitteeBasicsCard from '~/components/editor/committee/EditorCommitteeBasicsCard.vue'
+import EditorCommitteeHeaderActions from '~/components/editor/committee/EditorCommitteeHeaderActions.vue'
+import EditorCommitteeInvigilatorsCard from '~/components/editor/committee/EditorCommitteeInvigilatorsCard.vue'
+import EditorCommitteeMembersCard from '~/components/editor/committee/EditorCommitteeMembersCard.vue'
+import EditorCommitteeStartTimeRow from '~/components/editor/committee/EditorCommitteeStartTimeRow.vue'
+import EditorCommitteeStudyProgramCard from '~/components/editor/committee/EditorCommitteeStudyProgramCard.vue'
+import EditorStudentsSortableTable from '~/components/editor/students/EditorStudentsSortableTable.client.vue'
 import type {
   EditorCommitteeStringFieldPayload,
   EditorStudentHighlightRequest,

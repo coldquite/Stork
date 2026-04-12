@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import type { StudyLanguageDto, StudyProgramTypeDto } from '#shared/types/time-schedules'
+import EditorCommitteeBasicsCard from '~/components/editor/committee/EditorCommitteeBasicsCard.vue'
+import EditorCommitteeStudyProgramCard from '~/components/editor/committee/EditorCommitteeStudyProgramCard.vue'
 import type { EditorCommitteeStringFieldPayload } from '~/types/editor'
 import type { ScheduleDraftCommittee } from '~/types/schedule-draft'
 

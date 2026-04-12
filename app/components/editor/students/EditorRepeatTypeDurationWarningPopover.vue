@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import EditorWarningAlert from '~/components/editor/shared/EditorWarningAlert.vue'
+
 const props = withDefaults(
   defineProps<{
     open: boolean

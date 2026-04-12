@@ -6,6 +6,7 @@ import type {
   StudyProgramTypeDto,
   ThesisLanguageDto
 } from '#shared/types/time-schedules'
+import EditorRepeatTypeDurationWarningPopover from '~/components/editor/students/EditorRepeatTypeDurationWarningPopover.vue'
 import type {
   EditorCreateStudentDraft,
   EditorCreateStudentMinutesField,

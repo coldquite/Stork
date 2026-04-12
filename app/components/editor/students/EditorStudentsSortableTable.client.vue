@@ -2,6 +2,8 @@
 import type { TableColumn } from '@nuxt/ui'
 import { useSortable } from '@vueuse/integrations/useSortable'
 import { resolveEditorSpecializationOptionForDepartment } from '#shared/constants/editor'
+import EditorRepeatTypeDurationWarningPopover from '~/components/editor/students/EditorRepeatTypeDurationWarningPopover.vue'
+import EditorStudentTableInlineCell from '~/components/editor/students/EditorStudentTableInlineCell.vue'
 import type {
   PauseTypeDto,
   RepeatTypeDto,

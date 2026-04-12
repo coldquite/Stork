@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils'
 import { h } from 'vue'
 import { describe, expect, it } from 'vitest'
-import EditorStudentTableInlineCell from '~/components/editor/EditorStudentTableInlineCell.vue'
+import EditorStudentTableInlineCell from '~/components/editor/students/EditorStudentTableInlineCell.vue'
 
 function mountInlineCell(
   isEditing: boolean,

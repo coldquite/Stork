@@ -2,7 +2,7 @@ import { mockNuxtImport } from '@nuxt/test-utils/runtime'
 import { reactive, ref } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ScheduleDraft } from '~/types/schedule-draft'
-import { useEditorStudentSearch } from '~/composables/editor/useEditorStudentSearch'
+import { useEditorStudentSearch } from '~/composables/editor/students/useEditorStudentSearch'
 import { EDITOR_STUDENT_SEARCH_DEBOUNCE_MS } from '~/constants/editor-student-search'
 
 const { i18nTranslateMock } = vi.hoisted(() => ({
