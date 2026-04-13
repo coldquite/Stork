@@ -148,45 +148,43 @@ function requestOpenStudent(committeeId: string, studentId: string): void {
               </div>
 
               <div v-if="isCommitteeExpanded(committee.committeeId)" class="border-default border-t-2 p-3">
-                <div class="flex flex-col gap-1.5 xl:flex-row xl:items-start xl:justify-between">
-                  <div class="w-full xl:w-[49%] [&>*]:!w-full">
-                    <EditorCommitteeValidationCard
-                      v-if="committee.committeeErrorCount > 0"
-                      :title="t('editor.committee.validation.title')"
-                      :error-count="committee.committeeErrorCount"
-                      :sections="committee.committeeSections"
-                    />
-                    <UAlert
-                      v-else
-                      color="success"
-                      variant="outline"
-                      icon="i-lucide-check"
-                      :title="t('editor.committee.validation.title')"
-                      :description="t('editor.schedule.validationSummary.modal.committeeErrorsEmpty')"
-                      :ui="successStateAlertUi"
-                      class="w-full"
-                    />
-                  </div>
+                <div class="flex flex-col gap-1.5 xl:flex-row xl:items-stretch xl:justify-between">
+                  <EditorCommitteeValidationCard
+                    v-if="committee.committeeErrorCount > 0"
+                    :title="t('editor.committee.validation.title')"
+                    :error-count="committee.committeeErrorCount"
+                    :sections="committee.committeeSections"
+                    class="!w-full self-stretch xl:!w-[49%]"
+                  />
+                  <UAlert
+                    v-else
+                    color="success"
+                    variant="outline"
+                    icon="i-lucide-check"
+                    :title="t('editor.committee.validation.title')"
+                    :description="t('editor.schedule.validationSummary.modal.committeeErrorsEmpty')"
+                    :ui="successStateAlertUi"
+                    class="w-full self-stretch xl:w-[49%]"
+                  />
 
-                  <div class="w-full xl:w-[49%] [&>*]:!w-full">
-                    <EditorStudentValidationCard
-                      v-if="committee.studentErrorCount > 0"
-                      :title="t('editor.student.validation.title')"
-                      :error-count="committee.studentErrorCount"
-                      :students="committee.studentGroups"
-                      @focus-student="requestOpenStudent(committee.committeeId, $event)"
-                    />
-                    <UAlert
-                      v-else
-                      color="success"
-                      variant="outline"
-                      icon="i-lucide-check"
-                      :title="t('editor.student.validation.title')"
-                      :description="t('editor.schedule.validationSummary.modal.studentErrorsEmpty')"
-                      :ui="successStateAlertUi"
-                      class="w-full"
-                    />
-                  </div>
+                  <EditorStudentValidationCard
+                    v-if="committee.studentErrorCount > 0"
+                    :title="t('editor.student.validation.title')"
+                    :error-count="committee.studentErrorCount"
+                    :students="committee.studentGroups"
+                    class="!w-full self-stretch xl:!w-[49%]"
+                    @focus-student="requestOpenStudent(committee.committeeId, $event)"
+                  />
+                  <UAlert
+                    v-else
+                    color="success"
+                    variant="outline"
+                    icon="i-lucide-check"
+                    :title="t('editor.student.validation.title')"
+                    :description="t('editor.schedule.validationSummary.modal.studentErrorsEmpty')"
+                    :ui="successStateAlertUi"
+                    class="w-full self-stretch xl:w-[49%]"
+                  />
                 </div>
               </div>
             </div>
