@@ -213,6 +213,8 @@ export interface EditorValidationSummaryCommitteeView {
 /** i18n strings for committee form blocks inside EditorStudentsPanel */
 export interface EditorStudentsPanelCommitteeLabels {
   committeeTitle: string
+  emptyStateTitle: string
+  emptyStateDescription: string
   startTime: string
   startTimeHour: string
   startTimeMinute: string

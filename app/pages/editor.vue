@@ -51,6 +51,8 @@ const exportAriaLabel = computed(() => t('editor.schedule.export.ariaLabel', { n
 
 const committeeLabels = computed(() => ({
   committeeTitle: t('editor.committee.title'),
+  emptyStateTitle: t('editor.committee.emptyState.title'),
+  emptyStateDescription: t('editor.committee.emptyState.description'),
   startTime: t('editor.committee.startTime'),
   startTimeHour: t('editor.committee.startTimeHour'),
   startTimeMinute: t('editor.committee.startTimeMinute'),

@@ -65,7 +65,10 @@ const deleteActionButtonUi = {
       </div>
     </div>
 
-    <UTooltip :text="t('editor.committees.sidebar.studentsBadgeTooltip', { count: props.studentsCount })">
+    <UTooltip
+      v-if="props.hasCommittee"
+      :text="t('editor.committees.sidebar.studentsBadgeTooltip', { count: props.studentsCount })"
+    >
       <UBadge
         color="primary"
         variant="outline"

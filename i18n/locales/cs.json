@@ -459,6 +459,10 @@
     },
     "committee": {
       "title": "Vybraná komise",
+      "emptyState": {
+        "title": "Nejprve vytvořte komisi",
+        "description": "V levém panelu klikněte na „Přidat komisi“. Potom bude možné upravovat údaje komise i studenty."
+      },
       "startTime": "Začátek první zkoušky před komisí",
       "startTimeHour": "Hodina",
       "startTimeMinute": "Minuta",
