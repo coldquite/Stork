@@ -869,7 +869,7 @@ function resolveStudyProgramTypeLabel(value: StudyProgramTypeDto): string {
 
 function displayText(value: string): string {
   const normalized = value.trim()
-  return normalized.length > 0 ? normalized : '-'
+  return normalized.length > 0 ? normalized : '—'
 }
 
 function studyProgramNameOptionsForRow(row: EditorStudentTableRow): string[] {
@@ -1093,6 +1093,7 @@ onBeforeUnmount(() => {
               :items="studyLanguageOptions"
               value-key="value"
               label-key="label"
+              placeholder="—"
               :search-input="false"
               size="md"
               :class="resolveSelectClass(row.original, 'studyLanguage')"
@@ -1131,6 +1132,7 @@ onBeforeUnmount(() => {
                 :items="studyProgramTypeOptions"
                 value-key="value"
                 label-key="label"
+                placeholder="—"
                 :search-input="false"
                 size="md"
                 :class="resolveSelectClass(row.original, 'studyProgramType')"
@@ -1170,6 +1172,7 @@ onBeforeUnmount(() => {
             <USelectMenu
               :model-value="row.original.studyProgramName"
               :items="studyProgramNameOptionsForRow(row.original)"
+              placeholder="—"
               :search-input="false"
               size="md"
               :class="resolveSelectClass(row.original, 'studyProgramName')"
@@ -1207,6 +1210,7 @@ onBeforeUnmount(() => {
               :items="specializationOptionsForRow(row.original)"
               value-key="specializationCode"
               label-key="specializationCode"
+              placeholder="—"
               :search-input="false"
               size="md"
               :class="resolveSelectClass(row.original, 'specializationCode')"
@@ -1292,6 +1296,7 @@ onBeforeUnmount(() => {
               :items="thesisLanguageOptions"
               value-key="value"
               label-key="label"
+              placeholder="—"
               :search-input="false"
               size="md"
               :class="resolveSelectClass(row.original, 'thesisLanguage')"
@@ -1388,6 +1393,7 @@ onBeforeUnmount(() => {
                 :items="repeatTypeOptions"
                 value-key="value"
                 label-key="label"
+                placeholder="—"
                 :search-input="false"
                 size="md"
                 :class="resolveSelectClass(row.original, 'repeatType')"

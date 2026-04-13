@@ -40,7 +40,7 @@ const emit = defineEmits<{
 
 function displayText(value: string): string {
   const normalized = value.trim()
-  return normalized.length > 0 ? normalized : '-'
+  return normalized.length > 0 ? normalized : '—'
 }
 
 const hasWarningMarker = computed(() => {
