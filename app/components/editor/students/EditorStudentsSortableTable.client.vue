@@ -158,33 +158,41 @@ function isStudentDepartmentResolvable(row: EditorStudentTableRow): boolean {
   )
 }
 
-const studentValidationFieldsByStudentId = computed(() => {
-  const fieldsByStudentId = new Map<string, Set<EditorStudentValidationFieldKey>>()
+const studentValidationIssuesByStudentId = computed(() => {
+  const issuesByStudentId = new Map<string, EditorStudentValidationIssue[]>()
 
   props.studentValidationIssues.forEach((issue) => {
-    const studentFields = fieldsByStudentId.get(issue.studentId) ?? new Set<EditorStudentValidationFieldKey>()
-    studentFields.add(issue.fieldKey)
-    fieldsByStudentId.set(issue.studentId, studentFields)
+    const studentIssues = issuesByStudentId.get(issue.studentId) ?? []
+    studentIssues.push(issue)
+    issuesByStudentId.set(issue.studentId, studentIssues)
   })
 
-  return fieldsByStudentId
+  return issuesByStudentId
 })
 
 function resolveCommitteeThesisValidationFieldKey(): EditorStudentValidationFieldKey {
   return props.committeeLanguage === 'ENGLISH' ? 'thesisTitleEn' : 'thesisTitleLocal'
 }
 
+function resolveStudentFieldValidationIssues(
+  row: EditorStudentTableRow,
+  fieldKey: EditorStudentValidationUiFieldKey
+): EditorStudentValidationIssue[] {
+  const studentIssues = studentValidationIssuesByStudentId.value.get(row.id) ?? []
+  if (studentIssues.length < 1) {
+    return []
+  }
+
+  const resolvedFieldKey = fieldKey === 'thesisTitle' ? resolveCommitteeThesisValidationFieldKey() : fieldKey
+  return studentIssues.filter((issue) => issue.fieldKey === resolvedFieldKey)
+}
+
 function isStudentFieldInvalid(row: EditorStudentTableRow, fieldKey: EditorStudentValidationUiFieldKey): boolean {
-  const studentValidationFields = studentValidationFieldsByStudentId.value.get(row.id)
-  if (!studentValidationFields) {
-    return false
-  }
+  return resolveStudentFieldValidationIssues(row, fieldKey).length > 0
+}
 
-  if (fieldKey === 'thesisTitle') {
-    return studentValidationFields.has(resolveCommitteeThesisValidationFieldKey())
-  }
-
-  return studentValidationFields.has(fieldKey)
+function isStudentFieldRingInvalid(row: EditorStudentTableRow, fieldKey: EditorStudentValidationUiFieldKey): boolean {
+  return resolveStudentFieldValidationIssues(row, fieldKey).some((issue) => issue.code !== 'COMMITTEE_PROFILE_MISMATCH')
 }
 
 function resolveInvalidTextClass(isInvalid: boolean): string | null {
@@ -200,15 +208,21 @@ function resolveSelectClass(row: EditorStudentTableRow, fieldKey: EditorStudentV
 }
 
 function resolveSelectUi(row: EditorStudentTableRow, fieldKey: EditorStudentValidationUiFieldKey) {
-  return isStudentFieldInvalid(row, fieldKey) ? invalidSelectUi : undefined
+  return isStudentFieldRingInvalid(row, fieldKey) ? invalidSelectUi : undefined
 }
 
 function resolveSpecializationIsInvalid(row: EditorStudentTableRow): boolean {
   return isStudentFieldInvalid(row, 'specializationCode') || !isStudentDepartmentResolvable(row)
 }
 
+function resolveSpecializationHasRingInvalid(row: EditorStudentTableRow): boolean {
+  return isStudentFieldRingInvalid(row, 'specializationCode') || !isStudentDepartmentResolvable(row)
+}
+
 function resolveSpecializationDisplayFrameClass(row: EditorStudentTableRow): string {
-  return resolveSpecializationIsInvalid(row) ? invalidInlineReadonlySelectFrameClass : inlineReadonlySelectFrameClass
+  return resolveSpecializationHasRingInvalid(row)
+    ? invalidInlineReadonlySelectFrameClass
+    : inlineReadonlySelectFrameClass
 }
 
 function clearRowHighlightTimer(): void {

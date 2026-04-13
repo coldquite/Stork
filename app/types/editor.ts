@@ -165,6 +165,7 @@ export type EditorStudentValidationIssueCode =
   | 'REQUIRED'
   | 'INVALID_VALUE'
   | 'UNRESOLVED_DEPARTMENT'
+  | 'COMMITTEE_PROFILE_MISMATCH'
   | 'REPEAT_TYPE_UNKNOWN'
   | 'PREPARE_MINUTES_NEGATIVE'
   | 'EXAM_MINUTES_NOT_POSITIVE'
@@ -178,6 +179,7 @@ export interface EditorStudentValidationIssue {
   fieldKey: EditorStudentValidationFieldKey
   code: EditorStudentValidationIssueCode
   severity: EditorStudentValidationSeverity
+  committeeValue?: string
 }
 
 export interface EditorStudentValidationIssueView {

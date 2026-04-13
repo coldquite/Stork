@@ -249,6 +249,37 @@ export function useEditorPage() {
     return t(`editor.student.validation.fields.${fieldKey}`)
   }
 
+  function resolveCommitteeValueLabelForStudentValidationIssue(issue: EditorStudentValidationIssue): string {
+    const committeeValue = issue.committeeValue?.trim() ?? ''
+    if (committeeValue.length < 1) {
+      return '—'
+    }
+
+    if (issue.fieldKey === 'studyLanguage') {
+      switch (committeeValue) {
+        case 'CZECH':
+          return t('editor.table.studyLanguageOptions.czech')
+        case 'ENGLISH':
+          return t('editor.table.studyLanguageOptions.english')
+        default:
+          return committeeValue
+      }
+    }
+
+    if (issue.fieldKey === 'studyProgramType') {
+      switch (committeeValue) {
+        case 'BACHELOR':
+          return t('editor.table.studyProgramTypeOptions.bachelor')
+        case 'MASTER':
+          return t('editor.table.studyProgramTypeOptions.master')
+        default:
+          return committeeValue
+      }
+    }
+
+    return committeeValue
+  }
+
   function resolveStudentValidationMessage(issue: EditorStudentValidationIssue): string {
     switch (issue.code) {
       case 'REQUIRED':
@@ -261,6 +292,11 @@ export function useEditorPage() {
         })
       case 'UNRESOLVED_DEPARTMENT':
         return t('editor.student.validation.messages.unresolvedDepartment')
+      case 'COMMITTEE_PROFILE_MISMATCH':
+        return t('editor.student.validation.messages.committeeProfileMismatch', {
+          field: resolveStudentValidationFieldLabel(issue.fieldKey),
+          committeeValue: resolveCommitteeValueLabelForStudentValidationIssue(issue)
+        })
       case 'REPEAT_TYPE_UNKNOWN':
         return t('editor.student.validation.messages.repeatTypeUnknown')
       case 'PREPARE_MINUTES_NEGATIVE':

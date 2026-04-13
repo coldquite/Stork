@@ -8,6 +8,7 @@ import type {
   EditorStudentValidationIssueCode
 } from '~/types/editor'
 import type { ScheduleDraftCommittee } from '~/types/schedule-draft'
+import { normalizeSpecializationCodeForComparison } from '~/utils/import-mapper/core/normalize'
 import { isStudentItem, normalizeRequiredText } from '~/utils/editor/draft-committee'
 import { isValidRepeatType } from '~/utils/editor/repeat-type'
 import { isValidStudyLanguage } from '~/utils/editor/study-language'
@@ -34,7 +35,10 @@ function createIssue(
   studentId: string,
   studentOrder: number,
   fieldKey: EditorStudentValidationFieldKey,
-  code: EditorStudentValidationIssueCode
+  code: EditorStudentValidationIssueCode,
+  options: {
+    committeeValue?: string
+  } = {}
 ): EditorStudentValidationIssue {
   return {
     issueId: buildIssueId(committeeId, studentId, fieldKey, code),
@@ -43,7 +47,8 @@ function createIssue(
     studentOrder,
     fieldKey,
     code,
-    severity: 'error'
+    severity: 'error',
+    committeeValue: options.committeeValue
   }
 }
 
@@ -65,6 +70,21 @@ function appendInvalidValueIssue(
   fieldKey: EditorStudentValidationFieldKey
 ): void {
   issues.push(createIssue(committeeId, studentId, studentOrder, fieldKey, 'INVALID_VALUE'))
+}
+
+function appendCommitteeProfileMismatchIssue(
+  issues: EditorStudentValidationIssue[],
+  committeeId: string,
+  studentId: string,
+  studentOrder: number,
+  fieldKey: 'studyLanguage' | 'studyProgramType' | 'studyProgramName' | 'specializationCode',
+  committeeValue: string
+): void {
+  issues.push(
+    createIssue(committeeId, studentId, studentOrder, fieldKey, 'COMMITTEE_PROFILE_MISMATCH', {
+      committeeValue
+    })
+  )
 }
 
 function validateStudentProfileIssues(
@@ -121,6 +141,85 @@ function validateStudentProfileIssues(
   )
   if (!resolvedDepartment) {
     issues.push(createIssue(committeeId, studentId, studentOrder, 'specializationCode', 'UNRESOLVED_DEPARTMENT'))
+  }
+}
+
+function validateStudentCommitteeProfileConsistencyIssues(
+  committee: ScheduleDraftCommittee,
+  studentId: string,
+  studentOrder: number,
+  studyProgramType: unknown,
+  studyLanguage: unknown,
+  studyProgramName: string,
+  specializationCode: string,
+  issues: EditorStudentValidationIssue[]
+): void {
+  const studyLanguageAsString = String(studyLanguage)
+  if (isValidStudyLanguage(studyLanguageAsString) && studyLanguageAsString !== committee.language) {
+    appendCommitteeProfileMismatchIssue(
+      issues,
+      committee.localId,
+      studentId,
+      studentOrder,
+      'studyLanguage',
+      committee.language
+    )
+  }
+
+  const studyProgramTypeAsString = String(studyProgramType)
+  if (isValidStudyProgramType(studyProgramTypeAsString) && studyProgramTypeAsString !== committee.studyProgramType) {
+    appendCommitteeProfileMismatchIssue(
+      issues,
+      committee.localId,
+      studentId,
+      studentOrder,
+      'studyProgramType',
+      committee.studyProgramType
+    )
+  }
+
+  const normalizedStudentStudyProgramName = normalizeRequiredText(studyProgramName)
+  const normalizedCommitteeStudyProgramName = normalizeRequiredText(committee.studyProgramName)
+  if (
+    normalizedStudentStudyProgramName.length > 0 &&
+    normalizedCommitteeStudyProgramName.length > 0 &&
+    normalizedStudentStudyProgramName !== normalizedCommitteeStudyProgramName
+  ) {
+    appendCommitteeProfileMismatchIssue(
+      issues,
+      committee.localId,
+      studentId,
+      studentOrder,
+      'studyProgramName',
+      normalizedCommitteeStudyProgramName
+    )
+  }
+
+  const normalizedStudentSpecializationCode = normalizeRequiredText(specializationCode)
+  const normalizedCommitteeSpecializationCode = normalizeRequiredText(committee.specializationCode)
+  if (normalizedStudentSpecializationCode.length < 1 || normalizedCommitteeSpecializationCode.length < 1) {
+    return
+  }
+
+  const normalizedStudentSpecializationCodeForComparison = normalizeSpecializationCodeForComparison(
+    normalizedStudentSpecializationCode
+  )
+  const normalizedCommitteeSpecializationCodeForComparison = normalizeSpecializationCodeForComparison(
+    normalizedCommitteeSpecializationCode
+  )
+  if (
+    normalizedStudentSpecializationCodeForComparison.length > 0 &&
+    normalizedCommitteeSpecializationCodeForComparison.length > 0 &&
+    !normalizedStudentSpecializationCodeForComparison.startsWith(normalizedCommitteeSpecializationCodeForComparison)
+  ) {
+    appendCommitteeProfileMismatchIssue(
+      issues,
+      committee.localId,
+      studentId,
+      studentOrder,
+      'specializationCode',
+      normalizedCommitteeSpecializationCode
+    )
   }
 }
 
@@ -211,6 +310,16 @@ export function collectStudentValidationIssues(
 
       validateStudentProfileIssues(
         committee.localId,
+        item.localId,
+        studentOrder,
+        student.studyProgramType,
+        student.studyLanguage,
+        student.studyProgramName,
+        student.specializationCode,
+        issues
+      )
+      validateStudentCommitteeProfileConsistencyIssues(
+        committee,
         item.localId,
         studentOrder,
         student.studyProgramType,

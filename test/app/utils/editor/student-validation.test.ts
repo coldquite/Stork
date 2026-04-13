@@ -140,7 +140,7 @@ describe('student-validation', () => {
 
     const issues = collectStudentValidationIssues([committee])
 
-    expect(issues).toHaveLength(17)
+    expect(issues).toHaveLength(18)
     expect(
       issues.some(
         (issue) => issue.studentId === 'student-invalid' && issue.fieldKey === 'firstName' && issue.code === 'REQUIRED'
@@ -231,6 +231,15 @@ describe('student-validation', () => {
           issue.studentId === 'student-marker' &&
           issue.fieldKey === 'specializationCode' &&
           issue.code === 'UNRESOLVED_DEPARTMENT'
+      )
+    ).toBe(true)
+    expect(
+      issues.some(
+        (issue) =>
+          issue.studentId === 'student-marker' &&
+          issue.fieldKey === 'specializationCode' &&
+          issue.code === 'COMMITTEE_PROFILE_MISMATCH' &&
+          issue.committeeValue === 'BI-SI.21'
       )
     ).toBe(true)
     expect(
@@ -369,7 +378,112 @@ describe('student-validation', () => {
     expect(Object.keys(issuesByCommitteeId).sort()).toEqual(['committee-a', 'committee-b'])
     expect(countByCommitteeId).toEqual({
       'committee-a': 1,
-      'committee-b': 1
+      'committee-b': 2
     })
+  })
+
+  it('adds committee-profile mismatch issues for study profile fields and includes committee value', () => {
+    const student = createStudentItem({
+      localId: 'student-mismatch',
+      position: 1,
+      student: {
+        firstName: 'Jan',
+        lastName: 'Novák',
+        email: 'student-mismatch@fit.cvut.cz',
+        thesisTitleLocal: 'Lokální název',
+        thesisTitleEn: 'English title',
+        thesisLanguage: 'ENGLISH',
+        supervisorName: 'Vedoucí',
+        reviewerName: 'Oponent',
+        studyLanguage: 'ENGLISH',
+        studyProgramType: 'MASTER',
+        studyProgramName: 'Informatics',
+        specializationCode: 'NI-ZI.24'
+      }
+    })
+    const committee = createCommittee({
+      localId: 'committee-mismatch',
+      language: 'CZECH',
+      studyProgramType: 'BACHELOR',
+      studyProgramName: 'Informatika',
+      specializationCode: 'BI-SI.21',
+      items: [student]
+    })
+
+    const issues = collectStudentValidationIssues([committee])
+
+    expect(
+      issues.some(
+        (issue) =>
+          issue.studentId === 'student-mismatch' &&
+          issue.fieldKey === 'studyLanguage' &&
+          issue.code === 'COMMITTEE_PROFILE_MISMATCH' &&
+          issue.committeeValue === 'CZECH'
+      )
+    ).toBe(true)
+    expect(
+      issues.some(
+        (issue) =>
+          issue.studentId === 'student-mismatch' &&
+          issue.fieldKey === 'studyProgramType' &&
+          issue.code === 'COMMITTEE_PROFILE_MISMATCH' &&
+          issue.committeeValue === 'BACHELOR'
+      )
+    ).toBe(true)
+    expect(
+      issues.some(
+        (issue) =>
+          issue.studentId === 'student-mismatch' &&
+          issue.fieldKey === 'studyProgramName' &&
+          issue.code === 'COMMITTEE_PROFILE_MISMATCH' &&
+          issue.committeeValue === 'Informatika'
+      )
+    ).toBe(true)
+    expect(
+      issues.some(
+        (issue) =>
+          issue.studentId === 'student-mismatch' &&
+          issue.fieldKey === 'specializationCode' &&
+          issue.code === 'COMMITTEE_PROFILE_MISMATCH' &&
+          issue.committeeValue === 'BI-SI.21'
+      )
+    ).toBe(true)
+  })
+
+  it('treats specialization with different year and K- prefix as matching committee specialization', () => {
+    const student = createStudentItem({
+      localId: 'student-specialization-compatible',
+      position: 1,
+      student: {
+        firstName: 'Jan',
+        lastName: 'Novák',
+        email: 'student-specialization-compatible@fit.cvut.cz',
+        thesisTitleLocal: 'Lokální název',
+        thesisTitleEn: 'English title',
+        thesisLanguage: 'CZECH',
+        supervisorName: 'Vedoucí',
+        reviewerName: 'Oponent',
+        studyLanguage: 'CZECH',
+        studyProgramType: 'BACHELOR',
+        studyProgramName: 'Informatika',
+        specializationCode: 'BIK-SI.21'
+      }
+    })
+    const committee = createCommittee({
+      localId: 'committee-specialization-compatible',
+      specializationCode: 'BI-SI.24',
+      items: [student]
+    })
+
+    const issues = collectStudentValidationIssues([committee])
+
+    expect(
+      issues.some(
+        (issue) =>
+          issue.studentId === 'student-specialization-compatible' &&
+          issue.fieldKey === 'specializationCode' &&
+          issue.code === 'COMMITTEE_PROFILE_MISMATCH'
+      )
+    ).toBe(false)
   })
 })
