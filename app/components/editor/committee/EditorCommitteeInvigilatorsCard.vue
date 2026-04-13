@@ -57,14 +57,7 @@ function emitPreparationRoom(value: string | number): void {
 </script>
 
 <template>
-  <div
-    :class="[
-      'border-default w-fit max-w-full min-w-0 rounded-md border p-2',
-      props.isInvigilatorsEmpty
-        ? 'border-error/70 ring-error/40 dark:border-error dark:ring-error/80 ring-2 ring-inset'
-        : ''
-    ]"
-  >
+  <div class="border-default w-fit max-w-full min-w-0 rounded-md border p-2">
     <div class="flex flex-col gap-3">
       <div class="space-y-2">
         <div class="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2">
@@ -79,7 +72,7 @@ function emitPreparationRoom(value: string | number): void {
           />
         </div>
 
-        <p class="text-sm font-medium">
+        <p :class="['text-sm font-medium', props.isInvigilatorsEmpty ? 'text-error' : '']">
           {{ props.invigilatorsCountLabel }}
         </p>
 
