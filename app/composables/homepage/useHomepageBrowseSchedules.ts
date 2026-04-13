@@ -8,6 +8,7 @@ type BrowseSchedulesTabKey = 'manual' | 'auto'
 
 export function useHomepageBrowseSchedules() {
   const { t } = useI18n()
+  const deletionToasts = useDeletionToasts()
 
   const isBrowseSchedulesDialogOpen = ref(false)
   const isBrowseSchedulesLoading = ref(false)
@@ -248,6 +249,7 @@ export function useHomepageBrowseSchedules() {
         method: 'DELETE'
       })
       manualSchedules.value = manualSchedules.value.filter((entry) => entry.id !== schedule.id)
+      deletionToasts.showManualScheduleDeleted(schedule.name)
     } catch (error: unknown) {
       manualScheduleDeleteError.value =
         extractHttpErrorMessage(error) ?? t('homepage.schedulesModal.delete.errorRequestFailedDescription')

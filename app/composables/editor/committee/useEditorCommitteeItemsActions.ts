@@ -70,6 +70,7 @@ export function useEditorCommitteeItemsActions(
 ) {
   const { t } = useI18n()
   const scheduleDraftStore = useScheduleDraftStore()
+  const deletionToasts = useDeletionToasts()
 
   const isDeleteItemConfirmOpen = ref(false)
   const deleteItemLocalId = ref<string | null>(null)
@@ -154,7 +155,12 @@ export function useEditorCommitteeItemsActions(
       return
     }
 
-    removeCommitteeItemByLocalId(committee, targetLocalId)
+    const deletedItemTarget = deleteItemTarget.value
+    const isRemoved = removeCommitteeItemByLocalId(committee, targetLocalId)
+    if (isRemoved && deletedItemTarget) {
+      deletionToasts.showCommitteeItemDeleted(deletedItemTarget.kind, deletedItemTarget.label)
+    }
+
     closeDeleteItemConfirm()
   }
 

@@ -218,6 +218,11 @@
         "openAriaLabel": "Smazat plán {name}",
         "confirmAction": "Smazat plán",
         "confirmDescription": "Opravdu chcete smazat plán „{name}“? Tato akce je nevratná.",
+        "fallbackScheduleName": "Bez názvu",
+        "toast": {
+          "successTitle": "Smazáno",
+          "successDescription": "Plán „{name}“ byl smazán."
+        },
         "errorTitle": "Plán se nepodařilo smazat",
         "errorRequestFailedDescription": "Nepodařilo se smazat vybraný plán. Zkuste to prosím znovu."
       },
@@ -454,7 +459,11 @@
         "action": "Smazat",
         "confirmAction": "Smazat komisi",
         "description": "Opravdu chcete smazat komisi „{name}“ včetně všech studentů v této komisi? Tato akce je nevratná.",
-        "openAriaLabel": "Smazat komisi {name}"
+        "openAriaLabel": "Smazat komisi {name}",
+        "toast": {
+          "successTitle": "Smazáno",
+          "successDescription": "Komise „{name}“ byla smazána."
+        }
       }
     },
     "committee": {
@@ -681,7 +690,12 @@
         "studentDescription": "Opravdu chcete smazat studenta „{name}“? Tato akce je nevratná.",
         "pauseDescription": "Opravdu chcete smazat pauzu „{name}“? Tato akce je nevratná.",
         "fallbackStudentName": "Neznámý student",
-        "fallbackPauseName": "Pauza"
+        "fallbackPauseName": "Pauza",
+        "toast": {
+          "successTitle": "Smazáno",
+          "studentSuccessDescription": "Student „{name}“ byl smazán.",
+          "pauseSuccessDescription": "Pauza „{name}“ byla smazána."
+        }
       },
       "move": {
         "dialogTitle": "Přesunout studenta do jiné komise",
@@ -817,6 +831,11 @@
         "openAriaLabel": "Smazat záznam osoby {name}",
         "confirmAction": "Smazat záznam",
         "confirmDescription": "Opravdu chcete smazat záznam osoby „{name}“? Tato akce je nevratná.",
+        "fallbackEntryName": "Neznámá osoba",
+        "toast": {
+          "successTitle": "Smazáno",
+          "successDescription": "Záznam osoby „{name}“ byl smazán."
+        },
         "errorTitle": "Záznam se nepodařilo smazat",
         "errorRequestFailedDescription": "Nepodařilo se smazat vybraný záznam. Zkuste to prosím znovu."
       },

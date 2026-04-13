@@ -12,6 +12,10 @@ const { i18nTranslateMock } = vi.hoisted(() => ({
   i18nTranslateMock: vi.fn((key: string) => key)
 }))
 
+const { toastAddMock } = vi.hoisted(() => ({
+  toastAddMock: vi.fn()
+}))
+
 const { saveManualDraftMock } = vi.hoisted(() => ({
   saveManualDraftMock: vi.fn()
 }))
@@ -89,6 +93,12 @@ mockNuxtImport('useI18n', () => {
 
 mockNuxtImport('useRequestFetch', () => {
   return () => requestFetchMock
+})
+
+mockNuxtImport('useToast', () => {
+  return () => ({
+    add: toastAddMock
+  })
 })
 
 vi.mock('~/stores/schedule-draft', () => {
@@ -237,6 +247,7 @@ function createDraftWithTwoCommittees(): ScheduleDraft {
 describe('useEditorPage', () => {
   beforeEach(() => {
     i18nTranslateMock.mockClear()
+    toastAddMock.mockReset()
     saveManualDraftMock.mockReset()
     exportQuestionsEnvelopeCsvMock.mockReset()
     requestFetchMock.mockReset()
@@ -714,6 +725,14 @@ describe('useEditorPage', () => {
     expect(scheduleDraftStoreMock.draft?.committees.map((entry) => entry.localId)).toEqual(['committee-late'])
     expect(page.committeeList.selectedCommitteeId.value).toBe('committee-late')
     expect(page.committeeList.isDeleteCommitteeConfirmOpen.value).toBe(false)
+    expect(toastAddMock).toHaveBeenCalledTimes(1)
+    expect(toastAddMock).toHaveBeenCalledWith({
+      title: 'editor.committees.delete.toast.successTitle',
+      description: 'editor.committees.delete.toast.successDescription',
+      color: 'success',
+      icon: 'i-lucide-trash-2',
+      duration: 10000
+    })
   })
 
   it('exposes committee validation counts for sidebar badges and selected committee sections', async () => {
@@ -836,6 +855,14 @@ describe('useEditorPage', () => {
     expect(committee?.items.map((item) => item.localId)).toEqual(['student-a', 'student-b'])
     expect(committee?.items.map((item) => item.position)).toEqual([1, 2])
     expect(page.committeeItemsActions.isDeleteItemConfirmOpen.value).toBe(false)
+    expect(toastAddMock).toHaveBeenCalledTimes(1)
+    expect(toastAddMock).toHaveBeenCalledWith({
+      title: 'editor.items.delete.toast.successTitle',
+      description: 'editor.items.delete.toast.pauseSuccessDescription',
+      color: 'success',
+      icon: 'i-lucide-trash-2',
+      duration: 10000
+    })
   })
 
   it('deletes student item from selected committee after confirm', async () => {
@@ -855,6 +882,14 @@ describe('useEditorPage', () => {
     expect(committee?.items.map((item) => item.position)).toEqual([1, 2])
     expect(page.studentTable.selectedStudents.value.map((row) => row.id)).toEqual(['student-b'])
     expect(page.committeeItemsActions.isDeleteItemConfirmOpen.value).toBe(false)
+    expect(toastAddMock).toHaveBeenCalledTimes(1)
+    expect(toastAddMock).toHaveBeenCalledWith({
+      title: 'editor.items.delete.toast.successTitle',
+      description: 'editor.items.delete.toast.studentSuccessDescription',
+      color: 'success',
+      icon: 'i-lucide-trash-2',
+      duration: 10000
+    })
   })
 
   it('moves student to target committee, switches selection and emits highlight request', async () => {
@@ -1308,6 +1343,7 @@ describe('useEditorPage', () => {
 
     expect(scheduleDraftStoreMock.draft?.committees[0]?.invigilators).toEqual([])
     expect(page.invigilators.isDeleteInvigilatorConfirmOpen.value).toBe(false)
+    expect(toastAddMock).not.toHaveBeenCalled()
   })
 
   it('updates selected committee language in draft store', async () => {

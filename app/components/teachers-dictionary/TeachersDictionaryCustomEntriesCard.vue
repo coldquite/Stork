@@ -4,6 +4,7 @@ import type { GetTeachersDictionaryResponseDto, TeachersDictionaryEntryDto } fro
 
 const { t } = useI18n()
 const requestFetch = useRequestFetch()
+const deletionToasts = useDeletionToasts()
 
 const CUSTOM_METADATA_ASYNC_KEY = 'teachers-dictionary-custom-metadata'
 const {
@@ -100,6 +101,7 @@ async function confirmDeleteEntry(): Promise<void> {
     isDeleteConfirmOpen.value = false
     pendingDeleteEntry.value = null
     await Promise.all([refresh(), refreshCustomMetadata()])
+    deletionToasts.showTeachersDictionaryEntryDeleted(entry.canonicalName)
   } catch (error: unknown) {
     deleteError.value =
       extractHttpErrorMessage(error) ?? t('teachersDictionary.table.delete.errorRequestFailedDescription')

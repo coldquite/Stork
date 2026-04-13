@@ -22,6 +22,7 @@ import { createLocalId } from '~/utils/id'
 export function useEditorCommitteeList() {
   const { t } = useI18n()
   const scheduleDraftStore = useScheduleDraftStore()
+  const deletionToasts = useDeletionToasts()
 
   const selectedCommitteeId = ref('')
   const isCreateCommitteeDialogOpen = ref(false)
@@ -329,6 +330,10 @@ export function useEditorCommitteeList() {
     if (deletedCommittee && selectedCommitteeId.value === deletedCommittee.localId) {
       const nextCommittee = committees.value[0]?.committee
       selectedCommitteeId.value = nextCommittee?.localId ?? ''
+    }
+
+    if (deletedCommittee) {
+      deletionToasts.showCommitteeDeleted(deletedCommittee.name)
     }
 
     closeDeleteCommitteeConfirm()

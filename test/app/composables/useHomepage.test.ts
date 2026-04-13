@@ -9,12 +9,14 @@ const {
   scheduleDraftStoreMock,
   requestFetchMock,
   navigateToMock,
-  mapImportPayloadToDraftSourceMock
+  mapImportPayloadToDraftSourceMock,
+  toastAddMock
 } = vi.hoisted(() => ({
   i18nTranslateMock: vi.fn((key: string) => key),
   requestFetchMock: vi.fn(),
   navigateToMock: vi.fn(async () => {}),
   mapImportPayloadToDraftSourceMock: vi.fn(),
+  toastAddMock: vi.fn(),
   scheduleDraftStoreMock: {
     hasDraft: false,
     draft: null,
@@ -37,6 +39,12 @@ mockNuxtImport('useRequestFetch', () => {
 
 mockNuxtImport('navigateTo', () => {
   return navigateToMock
+})
+
+mockNuxtImport('useToast', () => {
+  return () => ({
+    add: toastAddMock
+  })
 })
 
 vi.mock('~/utils/import-mapper', () => {
@@ -127,6 +135,7 @@ function createTimeScheduleListItem(index: number, type: 'MANUAL' | 'AUTO'): Tim
 describe('useHomepage submitCreateScheduleImport', () => {
   beforeEach(() => {
     i18nTranslateMock.mockClear()
+    toastAddMock.mockReset()
     scheduleDraftStoreMock.hasDraft = false
     requestFetchMock.mockReset()
     requestFetchMock.mockImplementation(async (url: string) => {
@@ -505,6 +514,7 @@ describe('useHomepage submitCreateScheduleImport', () => {
 describe('useHomepage browse schedules pagination', () => {
   beforeEach(() => {
     requestFetchMock.mockReset()
+    toastAddMock.mockReset()
   })
 
   it('loads first page for manual and auto schedules when browse dialog opens', async () => {
@@ -664,6 +674,14 @@ describe('useHomepage browse schedules pagination', () => {
     })
 
     expect(homepage.manualScheduleDeleteError.value).toBeNull()
+    expect(toastAddMock).toHaveBeenCalledTimes(1)
+    expect(toastAddMock).toHaveBeenCalledWith({
+      title: 'homepage.schedulesModal.delete.toast.successTitle',
+      description: 'homepage.schedulesModal.delete.toast.successDescription',
+      color: 'success',
+      icon: 'i-lucide-trash-2',
+      duration: 10000
+    })
   })
 
   it('stores delete error when manual schedule delete request fails', async () => {
@@ -706,5 +724,6 @@ describe('useHomepage browse schedules pagination', () => {
 
     expect(homepage.manualScheduleDeleteError.value).toBe('delete failed')
     expect(homepage.manualSchedules.value).toHaveLength(1)
+    expect(toastAddMock).not.toHaveBeenCalled()
   })
 })
