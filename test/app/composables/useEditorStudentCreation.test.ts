@@ -241,4 +241,41 @@ describe('useEditorStudentCreation', () => {
     expect(creation.createStudentDraft.value?.prepareMinutes).toBe(45)
     expect(creation.createStudentDraft.value?.examMinutes).toBe(20)
   })
+
+  it('keeps negative minutes during input and relies on validation to block submit', async () => {
+    const selectedCommittee = ref<ScheduleDraftCommittee | null>(createCommittee())
+    const { useEditorStudentCreation } = await import('~/composables/editor/students/useEditorStudentCreation')
+    const creation = useEditorStudentCreation(computed(() => selectedCommittee.value))
+
+    creation.openCreateStudentDialog()
+    creation.updateCreateStudentMinutesField('prepareMinutes', '-2')
+    creation.updateCreateStudentMinutesField('examMinutes', '-1')
+
+    expect(creation.createStudentDraft.value?.prepareMinutes).toBe(-2)
+    expect(creation.createStudentDraft.value?.examMinutes).toBe(-1)
+  })
+
+  it('validates prepare/exam minutes and blocks submit when values are invalid', async () => {
+    const selectedCommittee = ref<ScheduleDraftCommittee | null>(createCommittee())
+    const { useEditorStudentCreation } = await import('~/composables/editor/students/useEditorStudentCreation')
+    const creation = useEditorStudentCreation(computed(() => selectedCommittee.value))
+
+    creation.openCreateStudentDialog()
+    fillMinimalRequiredFields(creation.updateCreateStudentTextField)
+    creation.updateCreateStudentSpecializationCode('BI-SI.21')
+    creation.updateCreateStudentMinutesField('examMinutes', '0')
+    if (creation.createStudentDraft.value) {
+      creation.createStudentDraft.value.prepareMinutes = -1
+    }
+
+    creation.submitCreateStudent()
+
+    expect(creation.createStudentValidationErrors.value.prepareMinutes).toBe(
+      'editor.students.add.validation.prepareMinutesNegative'
+    )
+    expect(creation.createStudentValidationErrors.value.examMinutes).toBe(
+      'editor.students.add.validation.examMinutesNotPositive'
+    )
+    expect(selectedCommittee.value?.items).toHaveLength(3)
+  })
 })

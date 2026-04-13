@@ -72,15 +72,22 @@ function resolveDefaultThesisLanguage(committee: ScheduleDraftCommittee): Thesis
   return committee.language === 'ENGLISH' ? 'ENGLISH' : 'CZECH'
 }
 
-function resolveIntegerFromInput(value: unknown, fallback: number): number {
-  const parsedValue =
-    typeof value === 'number' ? value : typeof value === 'string' ? Number.parseInt(value, 10) : Number.NaN
-
-  if (!Number.isFinite(parsedValue)) {
-    return fallback
+function resolveIntegerFromInput(value: unknown): number {
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? Math.trunc(value) : Number.NaN
   }
 
-  return Math.max(Math.trunc(parsedValue), 0)
+  if (typeof value === 'string') {
+    const normalized = value.trim()
+    if (normalized.length < 1 || normalized === '-') {
+      return Number.NaN
+    }
+
+    const parsedValue = Number.parseInt(normalized, 10)
+    return Number.isFinite(parsedValue) ? Math.trunc(parsedValue) : Number.NaN
+  }
+
+  return Number.NaN
 }
 
 function createInitialStudentDraft(committee: ScheduleDraftCommittee): EditorCreateStudentDraft {
@@ -202,6 +209,22 @@ export function useEditorStudentCreation(selectedCommittee: ComputedRef<Schedule
     return null
   }
 
+  function validatePrepareMinutesField(value: number): string | null {
+    if (!Number.isFinite(value) || value < 0) {
+      return t('editor.students.add.validation.prepareMinutesNegative')
+    }
+
+    return null
+  }
+
+  function validateExamMinutesField(value: number): string | null {
+    if (!Number.isFinite(value) || value <= 0) {
+      return t('editor.students.add.validation.examMinutesNotPositive')
+    }
+
+    return null
+  }
+
   function validateCreateStudentDraft(draft: EditorCreateStudentDraft): boolean {
     createStudentValidationErrors.value = {}
 
@@ -226,6 +249,16 @@ export function useEditorStudentCreation(selectedCommittee: ComputedRef<Schedule
     const emailValidationError = validateEmailField(draft.email)
     if (emailValidationError) {
       setValidationError('email', emailValidationError)
+    }
+
+    const prepareMinutesValidationError = validatePrepareMinutesField(draft.prepareMinutes)
+    if (prepareMinutesValidationError) {
+      setValidationError('prepareMinutes', prepareMinutesValidationError)
+    }
+
+    const examMinutesValidationError = validateExamMinutesField(draft.examMinutes)
+    if (examMinutesValidationError) {
+      setValidationError('examMinutes', examMinutesValidationError)
     }
 
     const hasSpecializationValidationError = Boolean(createStudentValidationErrors.value.specializationCode)
@@ -280,7 +313,12 @@ export function useEditorStudentCreation(selectedCommittee: ComputedRef<Schedule
       return
     }
 
-    draft[field] = resolveIntegerFromInput(value, draft[field])
+    const nextValue = resolveIntegerFromInput(value)
+    draft[field] = nextValue
+
+    if (Number.isFinite(nextValue)) {
+      clearValidationError(field)
+    }
   }
 
   function updateCreateStudentStudyLanguage(value: unknown): void {
@@ -338,6 +376,8 @@ export function useEditorStudentCreation(selectedCommittee: ComputedRef<Schedule
       )
       draft.prepareMinutes = mappedDuration.prepareMinutes
       draft.examMinutes = mappedDuration.examMinutes
+      clearValidationError('prepareMinutes')
+      clearValidationError('examMinutes')
     }
 
     clearValidationError('studyProgramName')
@@ -417,6 +457,8 @@ export function useEditorStudentCreation(selectedCommittee: ComputedRef<Schedule
     const mappedDuration = resolveStudentDurationByStudyProgramAndRepeat(draft.studyProgramType, nextRepeatType)
     draft.prepareMinutes = mappedDuration.prepareMinutes
     draft.examMinutes = mappedDuration.examMinutes
+    clearValidationError('prepareMinutes')
+    clearValidationError('examMinutes')
   }
 
   function submitCreateStudent(): void {

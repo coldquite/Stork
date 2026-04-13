@@ -303,6 +303,8 @@ export type EditorCreateStudentValidationField =
   | 'supervisorName'
   | 'reviewerName'
   | 'studyProgramName'
+  | 'prepareMinutes'
+  | 'examMinutes'
   | 'specializationCode'
 
 export type EditorCreateStudentValidationErrors = Partial<Record<EditorCreateStudentValidationField, string>>

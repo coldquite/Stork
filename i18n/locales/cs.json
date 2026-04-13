@@ -631,6 +631,8 @@
           "required": "Pole musí obsahovat alespoň 1 znak bez mezer.",
           "leadingTrailingWhitespace": "Pole nesmí začínat ani končit mezerou.",
           "emailInvalid": "Zadejte e-mail ve správném formátu.",
+          "prepareMinutesNegative": "Příprava v min musí být 0 nebo více.",
+          "examMinutesNotPositive": "Zkouška v min musí být větší než 0.",
           "unresolvedDepartment": "Pro zadanou specializaci nelze určit katedru. Vyberte platnou specializaci z nabídky."
         }
       }

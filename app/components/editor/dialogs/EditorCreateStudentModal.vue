@@ -78,6 +78,8 @@ const draft = computed(() => props.draft ?? EMPTY_DRAFT)
 const isInputDisabled = computed(() => props.draft === null)
 const isStudyProgramTypeSelectOpen = ref(false)
 const isRepeatTypeSelectOpen = ref(false)
+const prepareMinutesInputValue = ref(String(EMPTY_DRAFT.prepareMinutes))
+const examMinutesInputValue = ref(String(EMPTY_DRAFT.examMinutes))
 const isSpecializationPickerDisabled = computed(
   () => isInputDisabled.value || draft.value.studyProgramName.trim().length < 1
 )
@@ -154,17 +156,54 @@ function emitMinutesField(field: EditorCreateStudentMinutesField, value: unknown
   emit('update:minutesField', { field, value })
 }
 
+function resolveMinutesInputValue(value: number): string {
+  return Number.isFinite(value) ? String(Math.trunc(value)) : ''
+}
+
+function updateMinutesInputValue(field: EditorCreateStudentMinutesField, value: unknown): void {
+  const normalizedValue = String(value ?? '')
+  if (field === 'prepareMinutes') {
+    prepareMinutesInputValue.value = normalizedValue
+    return
+  }
+
+  examMinutesInputValue.value = normalizedValue
+}
+
+function resolveMinutesInputFieldValue(field: EditorCreateStudentMinutesField): string {
+  return field === 'prepareMinutes' ? prepareMinutesInputValue.value : examMinutesInputValue.value
+}
+
+function commitMinutesField(field: EditorCreateStudentMinutesField): void {
+  if (isInputDisabled.value) {
+    return
+  }
+
+  emitMinutesField(field, resolveMinutesInputFieldValue(field))
+}
+
 function submit(): void {
   if (isInputDisabled.value) {
     return
   }
 
+  commitMinutesField('prepareMinutes')
+  commitMinutesField('examMinutes')
   emit('submit')
 }
 
 function cancel(): void {
   emit('cancel')
 }
+
+watch(
+  () => [draft.value.prepareMinutes, draft.value.examMinutes] as const,
+  ([prepareMinutes, examMinutes]) => {
+    prepareMinutesInputValue.value = resolveMinutesInputValue(prepareMinutes)
+    examMinutesInputValue.value = resolveMinutesInputValue(examMinutes)
+  },
+  { immediate: true }
+)
 
 watch(
   () => props.open,
@@ -447,24 +486,32 @@ watch(
             <span class="text-sm font-medium">{{ t('editor.students.add.fields.prepareMinutes') }}</span>
             <UInput
               type="number"
-              :model-value="draft.prepareMinutes"
+              :model-value="prepareMinutesInputValue"
               :class="inputClass"
               :disabled="isInputDisabled"
-              min="0"
-              @update:model-value="emitMinutesField('prepareMinutes', $event)"
+              @update:model-value="updateMinutesInputValue('prepareMinutes', $event)"
+              @blur="commitMinutesField('prepareMinutes')"
+              @keydown.enter.prevent="commitMinutesField('prepareMinutes')"
             />
+            <p v-if="props.validationErrors.prepareMinutes" :class="errorClass">
+              {{ props.validationErrors.prepareMinutes }}
+            </p>
           </div>
 
           <div class="space-y-1">
             <span class="text-sm font-medium">{{ t('editor.students.add.fields.examMinutes') }}</span>
             <UInput
               type="number"
-              :model-value="draft.examMinutes"
+              :model-value="examMinutesInputValue"
               :class="inputClass"
               :disabled="isInputDisabled"
-              min="0"
-              @update:model-value="emitMinutesField('examMinutes', $event)"
+              @update:model-value="updateMinutesInputValue('examMinutes', $event)"
+              @blur="commitMinutesField('examMinutes')"
+              @keydown.enter.prevent="commitMinutesField('examMinutes')"
             />
+            <p v-if="props.validationErrors.examMinutes" :class="errorClass">
+              {{ props.validationErrors.examMinutes }}
+            </p>
           </div>
         </div>
       </div>
