@@ -195,22 +195,31 @@ function requestFocusValidationStudent(studentId: string): void {
             @delete-invigilator="emit('deleteInvigilator', $event)"
           />
 
-          <EditorCommitteeValidationCard
-            v-if="hasCommitteeValidationErrors"
-            class="self-stretch"
-            :title="props.committeeValidationTitle"
-            :error-count="props.committeeValidationCount"
-            :sections="props.committeeValidationSections"
-          />
+          <div v-if="hasCommitteeValidationErrors || hasStudentValidationErrors" class="flex items-stretch gap-3">
+            <div
+              aria-hidden="true"
+              class="bg-primary/60 dark:bg-primary/70 hidden w-1 self-stretch rounded-full sm:block"
+            />
 
-          <EditorStudentValidationCard
-            v-if="hasStudentValidationErrors"
-            class="self-stretch"
-            :title="props.studentValidationTitle"
-            :error-count="props.studentValidationCount"
-            :students="props.studentValidationStudents"
-            @focus-student="requestFocusValidationStudent"
-          />
+            <div class="flex flex-wrap items-stretch gap-2">
+              <EditorCommitteeValidationCard
+                v-if="hasCommitteeValidationErrors"
+                class="self-stretch"
+                :title="props.committeeValidationTitle"
+                :error-count="props.committeeValidationCount"
+                :sections="props.committeeValidationSections"
+              />
+
+              <EditorStudentValidationCard
+                v-if="hasStudentValidationErrors"
+                class="self-stretch"
+                :title="props.studentValidationTitle"
+                :error-count="props.studentValidationCount"
+                :students="props.studentValidationStudents"
+                @focus-student="requestFocusValidationStudent"
+              />
+            </div>
+          </div>
         </div>
 
         <div class="border-default w-full min-w-0 border-t pt-3">

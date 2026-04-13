@@ -58,7 +58,7 @@ function handleStudentGroupKeydown(event: KeyboardEvent, studentId: string): voi
       :text="t('editor.student.validation.focusStudentTooltip')"
     >
       <div
-        class="border-error/30 hover:bg-warning/15 focus-visible:bg-warning/15 bg-default cursor-pointer rounded-md border p-2 transition-colors focus-visible:outline-none"
+        class="border-error/30 hover:border-stork-600 hover:bg-stork-100 focus-visible:border-stork-600 focus-visible:bg-stork-100 dark:hover:border-stork-300 dark:hover:bg-stork-800/35 dark:focus-visible:border-stork-300 dark:focus-visible:bg-stork-800/35 bg-default cursor-pointer rounded-md border p-2 transition-colors focus-visible:outline-none"
         role="button"
         tabindex="0"
         @click="focusStudent(student.studentId)"
