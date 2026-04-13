@@ -41,6 +41,7 @@ export function useEditorScheduleDialogs() {
   const isCloudSaveDialogOpen = ref(false)
   const cloudSaveName = ref('')
   const cloudSaveValidationError = ref<string | null>(null)
+  const isValidationSummaryDialogOpen = ref(false)
   const isCsvExportDialogOpen = ref(false)
   const selectedCsvExportCommitteeIds = ref<string[]>([])
   const csvExportErrorItems = ref<string[]>([])
@@ -225,6 +226,14 @@ export function useEditorScheduleDialogs() {
     isCloudSaveDialogOpen.value = false
     cloudSaveName.value = ''
     cloudSaveValidationError.value = null
+  }
+
+  function openValidationSummaryDialog(): void {
+    isValidationSummaryDialogOpen.value = true
+  }
+
+  function closeValidationSummaryDialog(): void {
+    isValidationSummaryDialogOpen.value = false
   }
 
   function openCsvExportDialog(): void {
@@ -505,6 +514,7 @@ export function useEditorScheduleDialogs() {
     cloudSaveName,
     cloudSaveValidationError,
     isCloudSaveLoading,
+    isValidationSummaryDialogOpen,
     isCsvExportDialogOpen,
     selectedCsvExportCommitteeIds,
     csvExportErrorItems,
@@ -526,6 +536,8 @@ export function useEditorScheduleDialogs() {
     closeRenameDraftDialog,
     openCloudSaveDialog,
     closeCloudSaveDialog,
+    openValidationSummaryDialog,
+    closeValidationSummaryDialog,
     openCsvExportDialog,
     closeCsvExportDialog,
     updateSelectedCsvExportCommitteeIds,

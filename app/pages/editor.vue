@@ -23,6 +23,7 @@ const {
   committeeFields,
   committeeValidation,
   studentValidation,
+  validationSummary,
   invigilators,
   studentCreation,
   pauseCreation,
@@ -36,6 +37,16 @@ const cardAccentRootClass = 'h-full rounded-none ring-0 shadow-none divide-y-2 d
 const draftRenameAriaLabel = computed(() => t('editor.schedule.rename.openAriaLabel', { name: draftName.value }))
 const searchStudentsAriaLabel = computed(() => t('editor.studentSearch.openAriaLabel'))
 const cloudSaveAriaLabel = computed(() => t('editor.schedule.cloudSave.ariaLabel', { name: draftName.value }))
+const validationSummaryErrorCount = computed(() => validationSummary.totalErrorCount.value)
+const validationSummaryHasErrors = computed(() => validationSummaryErrorCount.value > 0)
+const validationSummaryButtonLabel = computed(() =>
+  validationSummaryHasErrors.value
+    ? t('editor.schedule.validationSummary.button.errorsLabel', { count: validationSummaryErrorCount.value })
+    : t('editor.schedule.validationSummary.button.noErrorsLabel')
+)
+const validationSummaryButtonAriaLabel = computed(() =>
+  t('editor.schedule.validationSummary.button.ariaLabel', { count: validationSummaryErrorCount.value })
+)
 const exportAriaLabel = computed(() => t('editor.schedule.export.ariaLabel', { name: draftName.value }))
 
 const committeeLabels = computed(() => ({
@@ -284,6 +295,9 @@ const draftNameText = computed(() => draftName.value)
         :cloud-save-aria-label="cloudSaveAriaLabel"
         :cloud-save-label="t('editor.schedule.cloudSave.action')"
         :cloud-save-loading="cloudSaveLoading"
+        :validation-summary-aria-label="validationSummaryButtonAriaLabel"
+        :validation-summary-label="validationSummaryButtonLabel"
+        :validation-summary-has-errors="validationSummaryHasErrors"
         :export-aria-label="exportAriaLabel"
         :export-label="t('editor.schedule.export.action')"
         :export-public-pdf-label="t('editor.schedule.export.options.publicPdf')"
@@ -292,6 +306,7 @@ const draftNameText = computed(() => draftName.value)
         @rename-draft="scheduleDialogs.openRenameDraftDialog"
         @search-students="studentSearch.openStudentSearchDialog"
         @save-to-cloud="scheduleDialogs.openCloudSaveDialog"
+        @open-validation-summary="scheduleDialogs.openValidationSummaryDialog"
         @export-public-pdf="scheduleDialogs.openPdfPublicExportDialog"
         @export-invigilators-pdf="scheduleDialogs.openPdfInvigilatorsExportDialog"
         @export-csv-questions-envelope="scheduleDialogs.openCsvExportDialog"
@@ -375,6 +390,8 @@ const draftNameText = computed(() => draftName.value)
       :student-creation="studentCreation"
       :pause-creation="pauseCreation"
       :schedule-dialogs="scheduleDialogs"
+      :validation-summary="validationSummary"
+      :student-search="studentSearch"
       :copy="dialogCopy"
       :committee-labels="committeeLabels"
     />

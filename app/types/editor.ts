@@ -192,6 +192,17 @@ export interface EditorStudentValidationStudentGroupView {
   issues: EditorStudentValidationIssueView[]
 }
 
+export interface EditorValidationSummaryCommitteeView {
+  committeeId: string
+  committeeLabel: string
+  committeeDescription: string
+  totalErrorCount: number
+  committeeErrorCount: number
+  studentErrorCount: number
+  committeeSections: EditorCommitteeValidationSectionView[]
+  studentGroups: EditorStudentValidationStudentGroupView[]
+}
+
 /** i18n strings for committee form blocks inside EditorStudentsPanel */
 export interface EditorStudentsPanelCommitteeLabels {
   committeeTitle: string

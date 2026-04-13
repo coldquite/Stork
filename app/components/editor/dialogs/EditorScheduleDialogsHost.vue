@@ -4,6 +4,7 @@ import EditorCreateCommitteeModal from '~/components/editor/dialogs/EditorCreate
 import EditorCreatePauseModal from '~/components/editor/dialogs/EditorCreatePauseModal.vue'
 import EditorCreateStudentModal from '~/components/editor/dialogs/EditorCreateStudentModal.vue'
 import EditorMoveStudentDialog from '~/components/editor/dialogs/EditorMoveStudentDialog.vue'
+import EditorValidationSummaryModal from '~/components/editor/dialogs/EditorValidationSummaryModal.vue'
 import EditorCsvExportCommitteesModal from '~/components/export/EditorCsvExportCommitteesModal.vue'
 import EditorPdfInvigilatorsExportModal from '~/components/export/EditorPdfInvigilatorsExportModal.vue'
 import type { useEditorPage } from '~/composables/editor/page/useEditorPage'
@@ -18,6 +19,8 @@ const props = defineProps<{
   studentCreation: EditorPageGroups['studentCreation']
   pauseCreation: EditorPageGroups['pauseCreation']
   scheduleDialogs: EditorPageGroups['scheduleDialogs']
+  validationSummary: EditorPageGroups['validationSummary']
+  studentSearch: EditorPageGroups['studentSearch']
   copy: EditorScheduleDialogsCopy
   committeeLabels: EditorStudentsPanelCommitteeLabels
 }>()
@@ -28,6 +31,8 @@ const cia = props.committeeItemsActions
 const sc = props.studentCreation
 const pc = props.pauseCreation
 const sd = props.scheduleDialogs
+const vs = props.validationSummary
+const ss = props.studentSearch
 
 const renameCommitteeOpen = computed({
   get: () => cl.isRenameCommitteeDialogOpen.value,
@@ -67,6 +72,18 @@ const cloudSaveNameModel = computed({
     sd.cloudSaveName.value = v
   }
 })
+const validationSummaryOpen = computed({
+  get: () => sd.isValidationSummaryDialogOpen.value,
+  set: (v: boolean) => {
+    if (v) {
+      sd.isValidationSummaryDialogOpen.value = true
+      return
+    }
+
+    sd.closeValidationSummaryDialog()
+  }
+})
+const validationSummaryCommittees = computed(() => vs.committeesWithErrors.value)
 
 const csvExportOpen = computed({
   get: () => sd.isCsvExportDialogOpen.value,
@@ -229,6 +246,16 @@ const moveStudentRewritePreview = computed(() => cia.moveStudentRewritePreview.v
 const moveStudentHasRewriteChanges = computed(() => cia.moveStudentHasRewriteChanges.value)
 const moveStudentSubmitLabel = computed(() => cia.moveStudentSubmitLabel.value)
 const isMoveStudentSubmitDisabled = computed(() => cia.isMoveStudentSubmitDisabled.value)
+
+function openCommitteeFromValidationSummary(committeeId: string): void {
+  cl.selectedCommitteeId.value = committeeId
+  sd.closeValidationSummaryDialog()
+}
+
+function openStudentFromValidationSummary(payload: { committeeId: string; studentId: string }): void {
+  ss.focusStudentInCommittee(payload.committeeId, payload.studentId)
+  sd.closeValidationSummaryDialog()
+}
 </script>
 
 <template>
@@ -273,6 +300,13 @@ const isMoveStudentSubmitDisabled = computed(() => cia.isMoveStudentSubmitDisabl
     :validation-error="cloudSaveValidationText"
     @cancel="sd.closeCloudSaveDialog()"
     @submit="sd.submitCloudSave()"
+  />
+
+  <EditorValidationSummaryModal
+    v-model:open="validationSummaryOpen"
+    :committees="validationSummaryCommittees"
+    @open-committee="openCommitteeFromValidationSummary($event)"
+    @open-student="openStudentFromValidationSummary($event)"
   />
 
   <EditorCsvExportCommitteesModal

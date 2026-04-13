@@ -10,6 +10,9 @@ const props = defineProps<{
   cloudSaveAriaLabel: string
   cloudSaveLabel: string
   cloudSaveLoading: boolean
+  validationSummaryAriaLabel: string
+  validationSummaryLabel: string
+  validationSummaryHasErrors: boolean
   exportAriaLabel: string
   exportLabel: string
   exportPublicPdfLabel: string
@@ -23,6 +26,7 @@ const emit = defineEmits<{
       | 'renameDraft'
       | 'searchStudents'
       | 'saveToCloud'
+      | 'openValidationSummary'
       | 'exportPublicPdf'
       | 'exportInvigilatorsPdf'
       | 'exportCsvQuestionsEnvelope'
@@ -39,6 +43,10 @@ function requestSaveToCloud(): void {
 
 function requestSearchStudents(): void {
   emit('searchStudents')
+}
+
+function requestOpenValidationSummary(): void {
+  emit('openValidationSummary')
 }
 
 function requestExportPublicPdf(close: () => void): void {
@@ -109,6 +117,27 @@ function requestExportCsvQuestionsEnvelope(close: () => void): void {
               base: 'h-10 bg-default border-2 border-success-600/65 text-success-700 hover:border-success-600/85 hover:bg-success-100 dark:border-success-400/70 dark:bg-default dark:text-success-100 dark:hover:border-success-300 dark:hover:bg-success-700/25'
             }"
             @click="requestSaveToCloud"
+          />
+
+          <div
+            aria-hidden="true"
+            class="bg-primary/60 dark:bg-primary/70 hidden w-0.5 self-stretch rounded-full sm:block"
+          />
+
+          <UButton
+            color="neutral"
+            variant="ghost"
+            size="md"
+            :icon="props.validationSummaryHasErrors ? 'i-lucide-circle-x' : 'i-lucide-circle-check'"
+            :label="props.validationSummaryLabel"
+            :aria-label="props.validationSummaryAriaLabel"
+            class="shrink-0 cursor-pointer"
+            :ui="{
+              base: props.validationSummaryHasErrors
+                ? 'h-10 bg-default border-2 border-error-500 text-error-700 hover:border-error-600 hover:bg-error-100 dark:border-error-400 dark:bg-default dark:text-error-100 dark:hover:border-error-300 dark:hover:bg-error-700/25'
+                : 'h-10 bg-default border-2 border-success-600/65 text-success-700 hover:border-success-600/85 hover:bg-success-100 dark:border-success-400/70 dark:bg-default dark:text-success-100 dark:hover:border-success-300 dark:hover:bg-success-700/25'
+            }"
+            @click="requestOpenValidationSummary"
           />
 
           <UPopover :content="{ side: 'top', align: 'start' }">

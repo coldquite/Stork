@@ -17,6 +17,7 @@ import type {
   EditorStudentValidationIssue,
   EditorStudentValidationIssueView,
   EditorStudentValidationStudentGroupView,
+  EditorValidationSummaryCommitteeView,
   EditorStudentsTableViewMode
 } from '~/types/editor'
 import type { ScheduleDraftCommittee, ScheduleDraftThesisTitleDisplayMode } from '~/types/schedule-draft'
@@ -154,14 +155,9 @@ export function useEditorPage() {
 
     return collectStudentValidationIssues([selectedCommittee])
   })
-  const selectedCommitteeStudentInfoById = computed(() => {
-    const selectedCommittee = committeeList.selectedCommittee.value
+  function buildStudentInfoById(committee: ScheduleDraftCommittee): Map<string, { order: number; fullName: string }> {
     const infoByStudentId = new Map<string, { order: number; fullName: string }>()
-    if (!selectedCommittee) {
-      return infoByStudentId
-    }
-
-    const orderedItems = selectedCommittee.items.slice().sort((left, right) => left.position - right.position)
+    const orderedItems = committee.items.slice().sort((left, right) => left.position - right.position)
     let studentOrder = 0
 
     orderedItems.forEach((item) => {
@@ -184,6 +180,15 @@ export function useEditorPage() {
     })
 
     return infoByStudentId
+  }
+
+  const selectedCommitteeStudentInfoById = computed(() => {
+    const selectedCommittee = committeeList.selectedCommittee.value
+    if (!selectedCommittee) {
+      return new Map<string, { order: number; fullName: string }>()
+    }
+
+    return buildStudentInfoById(selectedCommittee)
   })
 
   function resolveValidationSectionLabel(section: EditorCommitteeValidationSection): string {
@@ -273,8 +278,10 @@ export function useEditorPage() {
     }
   }
 
-  const selectedCommitteeValidationSections = computed<EditorCommitteeValidationSectionView[]>(() =>
-    groupCommitteeValidationIssuesBySection(selectedCommitteeValidationIssues.value).map((group) => ({
+  function buildCommitteeValidationSectionViews(
+    issues: EditorCommitteeValidationIssue[]
+  ): EditorCommitteeValidationSectionView[] {
+    return groupCommitteeValidationIssuesBySection(issues).map((group) => ({
       section: group.section,
       label: resolveValidationSectionLabel(group.section),
       issues: group.issues.map((issue) => ({
@@ -283,12 +290,15 @@ export function useEditorPage() {
         message: resolveCommitteeValidationMessage(issue)
       }))
     }))
-  )
-  const selectedCommitteeValidationCount = computed(() => selectedCommitteeValidationIssues.value.length)
-  const selectedCommitteeStudentValidationGroups = computed<EditorStudentValidationStudentGroupView[]>(() => {
+  }
+
+  function buildStudentValidationStudentGroups(
+    issues: EditorStudentValidationIssue[],
+    studentInfoById: Map<string, { order: number; fullName: string }>
+  ): EditorStudentValidationStudentGroupView[] {
     const issuesByStudentId = new Map<string, EditorStudentValidationIssue[]>()
 
-    selectedCommitteeStudentValidationIssues.value.forEach((issue) => {
+    issues.forEach((issue) => {
       const studentIssues = issuesByStudentId.get(issue.studentId) ?? []
       studentIssues.push(issue)
       issuesByStudentId.set(issue.studentId, studentIssues)
@@ -296,12 +306,12 @@ export function useEditorPage() {
 
     const fallbackStudentName = t('editor.student.validation.fallbackStudentName')
     return Array.from(issuesByStudentId.entries())
-      .map(([studentId, issues]) => {
-        const studentInfo = selectedCommitteeStudentInfoById.value.get(studentId)
-        const studentOrder = studentInfo?.order ?? issues[0]?.studentOrder ?? Number.MAX_SAFE_INTEGER
+      .map(([studentId, studentIssues]) => {
+        const studentInfo = studentInfoById.get(studentId)
+        const studentOrder = studentInfo?.order ?? studentIssues[0]?.studentOrder ?? Number.MAX_SAFE_INTEGER
         const studentName = studentInfo && studentInfo.fullName.length > 0 ? studentInfo.fullName : fallbackStudentName
 
-        const issueViews: EditorStudentValidationIssueView[] = issues.map((issue) => ({
+        const issueViews: EditorStudentValidationIssueView[] = studentIssues.map((issue) => ({
           issueId: issue.issueId,
           fieldKey: issue.fieldKey,
           message: resolveStudentValidationMessage(issue)
@@ -315,15 +325,59 @@ export function useEditorPage() {
         }
       })
       .sort((left, right) => left.studentOrder - right.studentOrder || left.studentId.localeCompare(right.studentId))
-      .map(({ studentId, studentLabel, issues }) => ({
+      .map(({ studentId, studentLabel, issues: studentIssues }) => ({
         studentId,
         studentLabel,
-        issues
+        issues: studentIssues
       }))
-  })
+  }
+
+  const selectedCommitteeValidationSections = computed<EditorCommitteeValidationSectionView[]>(() =>
+    buildCommitteeValidationSectionViews(selectedCommitteeValidationIssues.value)
+  )
+  const selectedCommitteeValidationCount = computed(() => selectedCommitteeValidationIssues.value.length)
+  const selectedCommitteeStudentValidationGroups = computed<EditorStudentValidationStudentGroupView[]>(() =>
+    buildStudentValidationStudentGroups(
+      selectedCommitteeStudentValidationIssues.value,
+      selectedCommitteeStudentInfoById.value
+    )
+  )
   const selectedCommitteeStudentValidationCount = computed(() => selectedCommitteeStudentValidationIssues.value.length)
   const hasAnyValidationErrors = computed(() =>
     Object.values(totalValidationCountByCommitteeId.value).some((count) => count > 0)
+  )
+  const totalValidationErrorCount = computed(() =>
+    Object.values(totalValidationCountByCommitteeId.value).reduce((sum, count) => sum + count, 0)
+  )
+  const validationSummaryCommitteesWithErrors = computed<EditorValidationSummaryCommitteeView[]>(() =>
+    committeeList.committees.value.flatMap((entry) => {
+      const committeeId = entry.committee.localId
+      const committeeIssues = committeeValidationIssuesByCommitteeId.value[committeeId] ?? []
+      const studentIssues = studentValidationIssuesByCommitteeId.value[committeeId] ?? []
+      const totalErrorCount = committeeIssues.length + studentIssues.length
+      if (totalErrorCount < 1) {
+        return []
+      }
+
+      return [
+        {
+          committeeId,
+          committeeLabel: entry.label,
+          committeeDescription: t('editor.schedule.validationSummary.modal.committeeDescription', {
+            date: entry.dateLabel,
+            room: entry.roomLabel,
+            start: entry.timelineStartLabel,
+            end: entry.timelineEndLabel,
+            students: t('editor.students.count', { count: entry.studentsCount })
+          }),
+          totalErrorCount,
+          committeeErrorCount: committeeIssues.length,
+          studentErrorCount: studentIssues.length,
+          committeeSections: buildCommitteeValidationSectionViews(committeeIssues),
+          studentGroups: buildStudentValidationStudentGroups(studentIssues, buildStudentInfoById(entry.committee))
+        }
+      ]
+    })
   )
 
   function updateThesisTitleDisplayMode(nextMode: ScheduleDraftThesisTitleDisplayMode): void {
@@ -450,7 +504,9 @@ export function useEditorPage() {
 
     validationSummary: {
       countByCommitteeId: totalValidationCountByCommitteeId,
-      hasAnyErrors: hasAnyValidationErrors
+      hasAnyErrors: hasAnyValidationErrors,
+      totalErrorCount: totalValidationErrorCount,
+      committeesWithErrors: validationSummaryCommitteesWithErrors
     },
 
     invigilators: {
@@ -512,6 +568,7 @@ export function useEditorPage() {
       cloudSaveName: scheduleDialogs.cloudSaveName,
       cloudSaveValidationError: scheduleDialogs.cloudSaveValidationError,
       isCloudSaveLoading: scheduleDialogs.isCloudSaveLoading,
+      isValidationSummaryDialogOpen: scheduleDialogs.isValidationSummaryDialogOpen,
       isCsvExportDialogOpen: scheduleDialogs.isCsvExportDialogOpen,
       selectedCsvExportCommitteeIds: scheduleDialogs.selectedCsvExportCommitteeIds,
       csvExportErrorItems: scheduleDialogs.csvExportErrorItems,
@@ -533,6 +590,8 @@ export function useEditorPage() {
       closeRenameDraftDialog: scheduleDialogs.closeRenameDraftDialog,
       openCloudSaveDialog: scheduleDialogs.openCloudSaveDialog,
       closeCloudSaveDialog: scheduleDialogs.closeCloudSaveDialog,
+      openValidationSummaryDialog: scheduleDialogs.openValidationSummaryDialog,
+      closeValidationSummaryDialog: scheduleDialogs.closeValidationSummaryDialog,
       openCsvExportDialog: scheduleDialogs.openCsvExportDialog,
       closeCsvExportDialog: scheduleDialogs.closeCsvExportDialog,
       updateSelectedCsvExportCommitteeIds: scheduleDialogs.updateSelectedCsvExportCommitteeIds,

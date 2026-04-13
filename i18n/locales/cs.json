@@ -275,6 +275,29 @@
           "submit": "Uložit do cloudu"
         }
       },
+      "validationSummary": {
+        "button": {
+          "errorsLabel": "Chyby: {count}",
+          "noErrorsLabel": "Bez chyb",
+          "ariaLabel": "Zobrazit chyby v plánu, celkem {count}"
+        },
+        "modal": {
+          "title": "Chyby v komisích",
+          "description": "Seznam komisí s chybami v údajích. Kliknutím na kartu komise přejdete přímo na vybranou komisi.",
+          "close": "Zavřít",
+          "emptyTitle": "V plánu nejsou žádné chyby",
+          "emptyDescription": "Všechny komise i studenti mají vyplněné povinné údaje.",
+          "totalErrorsTooltip": "Celkový počet chyb v komisi",
+          "committeeErrorsCount": "Komise: {count}",
+          "studentErrorsCount": "Studenti: {count}",
+          "openCommitteeTooltip": "Kliknutím přejdete na komisi.",
+          "expandAriaLabel": "Rozbalit detaily chyb komise",
+          "collapseAriaLabel": "Sbalit detaily chyb komise",
+          "committeeErrorsEmpty": "V této komisi nejsou chyby v údajích komise.",
+          "studentErrorsEmpty": "V této komisi nejsou chyby ve studentských údajích.",
+          "committeeDescription": "{date}  {'|'}  {room}  {'|'}  {start} - {end}  {'|'}  {students}"
+        }
+      },
       "export": {
         "action": "Export",
         "ariaLabel": "Exportovat plán {name}",
