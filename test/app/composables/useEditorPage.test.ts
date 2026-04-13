@@ -724,16 +724,27 @@ describe('useEditorPage', () => {
       (item) => item.kind === 'committee'
     )
     expect(sidebarCommitteeItems.map((item) => ({ committeeId: item.value, errorCount: item.errorCount }))).toEqual([
-      { committeeId: 'committee-early', errorCount: 1 },
+      { committeeId: 'committee-early', errorCount: 2 },
       { committeeId: 'committee-late', errorCount: 2 }
     ])
     expect(page.committeeValidation.countByCommitteeId.value).toEqual({
-      'committee-early': 1,
+      'committee-early': 2,
       'committee-late': 2
     })
 
-    expect(page.committeeValidation.selectedCommitteeCount.value).toBe(1)
+    expect(page.committeeValidation.selectedCommitteeCount.value).toBe(2)
     expect(page.committeeValidation.selectedCommitteeSections.value).toEqual([
+      {
+        section: 'BASICS',
+        label: 'editor.committee.validation.sections.basics',
+        issues: [
+          {
+            issueId: 'committee-early:startMinute:STUDENT_START_BEFORE_ALLOWED_TIME',
+            fieldKey: 'startMinute',
+            message: 'editor.committee.validation.messages.studentStartBeforeAllowedTime'
+          }
+        ]
+      },
       {
         section: 'INVIGILATORS',
         label: 'editor.committee.validation.sections.invigilators',
@@ -788,7 +799,7 @@ describe('useEditorPage', () => {
       (item) => item.kind === 'committee'
     )
     expect(sidebarCommitteeItems.map((item) => ({ committeeId: item.value, errorCount: item.errorCount }))).toEqual([
-      { committeeId: 'committee-early', errorCount: 3 },
+      { committeeId: 'committee-early', errorCount: 4 },
       { committeeId: 'committee-late', errorCount: 2 }
     ])
 

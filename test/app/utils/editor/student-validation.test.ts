@@ -7,6 +7,13 @@ import {
   groupStudentValidationIssuesByCommitteeId
 } from '~/utils/editor/student-validation'
 
+function createIsoDateFromToday(dayOffset: number): string {
+  const date = new Date()
+  date.setHours(0, 0, 0, 0)
+  date.setDate(date.getDate() + dayOffset)
+  return date.toISOString()
+}
+
 function createStudentItem({
   localId,
   position,
@@ -59,7 +66,7 @@ function createCommittee({
     localId,
     name: '048-BI-PV.24',
     startMinute: 540,
-    date: '2026-05-28T00:00:00.000Z',
+    date: createIsoDateFromToday(14),
     room: 'TH:A-1435',
     preparationRoom: 'TH:A-1510',
     secretaryName: 'Secretary 048-BI-PV.24',

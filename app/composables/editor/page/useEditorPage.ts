@@ -7,6 +7,11 @@ import { useEditorScheduleDialogs } from '~/composables/editor/dialogs/useEditor
 import { useEditorStudentCreation } from '~/composables/editor/students/useEditorStudentCreation'
 import { useEditorStudentSearch } from '~/composables/editor/students/useEditorStudentSearch'
 import { useEditorStudentTable } from '~/composables/editor/students/useEditorStudentTable'
+import {
+  EDITOR_CONSECUTIVE_STUDENTS_WITHOUT_PAUSE_ERROR_THRESHOLD,
+  EDITOR_STUDENT_END_MINUTE_MAX,
+  EDITOR_STUDENT_START_MINUTE_MIN
+} from '~/constants/editor-validation-rules'
 import { useEditorTablePreferencesStore } from '~/stores/editor-table-preferences'
 import { useScheduleDraftStore } from '~/stores/schedule-draft'
 import type {
@@ -27,6 +32,7 @@ import {
   groupCommitteeValidationIssuesByCommitteeId,
   groupCommitteeValidationIssuesBySection
 } from '~/utils/editor/committee-validation'
+import { formatEditorMinuteLabel } from '~/utils/editor/committee-timeline'
 import { isStudentItem, normalizeRequiredText } from '~/utils/editor/draft-committee'
 import {
   collectStudentValidationIssues,
@@ -226,9 +232,23 @@ export function useEditorPage() {
         return t('editor.committee.validation.messages.invalidDate', {
           field: resolveValidationFieldLabel(issue.fieldKey)
         })
+      case 'DATE_IN_PAST':
+        return t('editor.committee.validation.messages.dateInPast')
       case 'INVALID_START_MINUTE':
         return t('editor.committee.validation.messages.invalidStartMinute', {
           field: resolveValidationFieldLabel(issue.fieldKey)
+        })
+      case 'STUDENT_START_BEFORE_ALLOWED_TIME':
+        return t('editor.committee.validation.messages.studentStartBeforeAllowedTime', {
+          minTime: formatEditorMinuteLabel(EDITOR_STUDENT_START_MINUTE_MIN)
+        })
+      case 'STUDENT_END_AFTER_ALLOWED_TIME':
+        return t('editor.committee.validation.messages.studentEndAfterAllowedTime', {
+          maxTime: formatEditorMinuteLabel(EDITOR_STUDENT_END_MINUTE_MAX)
+        })
+      case 'CONSECUTIVE_STUDENTS_WITHOUT_PAUSE':
+        return t('editor.committee.validation.messages.consecutiveStudentsWithoutPause', {
+          count: EDITOR_CONSECUTIVE_STUDENTS_WITHOUT_PAUSE_ERROR_THRESHOLD
         })
       case 'UNRESOLVED_DEPARTMENT':
         return t('editor.committee.validation.messages.unresolvedDepartment')

@@ -1,5 +1,10 @@
-import { isValid, parseISO } from 'date-fns'
+import { isBefore, isValid, parseISO, startOfDay } from 'date-fns'
 import { resolveEditorSpecializationOptionForDepartment } from '#shared/constants/editor'
+import {
+  EDITOR_CONSECUTIVE_STUDENTS_WITHOUT_PAUSE_ERROR_THRESHOLD,
+  EDITOR_STUDENT_END_MINUTE_MAX,
+  EDITOR_STUDENT_START_MINUTE_MIN
+} from '~/constants/editor-validation-rules'
 import type {
   EditorCommitteeValidationFieldKey,
   EditorCommitteeValidationIssue,
@@ -8,6 +13,7 @@ import type {
   EditorCommitteeValidationSectionGroup
 } from '~/types/editor'
 import type { ScheduleDraftCommittee } from '~/types/schedule-draft'
+import { buildCommitteeTimelineEntries } from '~/utils/editor/committee-timeline'
 
 const MIN_START_MINUTE = 0
 const MAX_START_MINUTE = 24 * 60 - 1
@@ -83,8 +89,13 @@ function collectBasicsIssues(committee: ScheduleDraftCommittee, issues: EditorCo
 
   if (isBlankText(committee.date)) {
     appendRequiredIssue(issues, committee.localId, 'BASICS', 'date')
-  } else if (!isValid(parseISO(committee.date))) {
-    issues.push(createIssue(committee.localId, 'BASICS', 'date', 'INVALID_DATE'))
+  } else {
+    const parsedDate = parseISO(committee.date)
+    if (!isValid(parsedDate)) {
+      issues.push(createIssue(committee.localId, 'BASICS', 'date', 'INVALID_DATE'))
+    } else if (isBefore(startOfDay(parsedDate), startOfDay(new Date()))) {
+      issues.push(createIssue(committee.localId, 'BASICS', 'date', 'DATE_IN_PAST'))
+    }
   }
 
   if (
@@ -101,6 +112,51 @@ function collectBasicsIssues(committee: ScheduleDraftCommittee, issues: EditorCo
 
   if (isBlankText(committee.secretaryName)) {
     appendRequiredIssue(issues, committee.localId, 'BASICS', 'secretary')
+  }
+}
+
+function collectCommitteeTimelineIssues(
+  committee: ScheduleDraftCommittee,
+  issues: EditorCommitteeValidationIssue[]
+): void {
+  const timelineEntries = buildCommitteeTimelineEntries(committee)
+  const hasValidStartMinute =
+    Number.isInteger(committee.startMinute) &&
+    committee.startMinute >= MIN_START_MINUTE &&
+    committee.startMinute <= MAX_START_MINUTE
+
+  if (
+    hasValidStartMinute &&
+    timelineEntries.some(
+      (timelineEntry) => timelineEntry.kind === 'STUDENT' && timelineEntry.startMinute < EDITOR_STUDENT_START_MINUTE_MIN
+    )
+  ) {
+    issues.push(createIssue(committee.localId, 'BASICS', 'startMinute', 'STUDENT_START_BEFORE_ALLOWED_TIME'))
+  }
+
+  if (
+    hasValidStartMinute &&
+    timelineEntries.some(
+      (timelineEntry) => timelineEntry.kind === 'STUDENT' && timelineEntry.endMinute > EDITOR_STUDENT_END_MINUTE_MAX
+    )
+  ) {
+    issues.push(createIssue(committee.localId, 'BASICS', 'startMinute', 'STUDENT_END_AFTER_ALLOWED_TIME'))
+  }
+
+  let consecutiveStudentsCount = 0
+  for (const timelineEntry of timelineEntries) {
+    if (timelineEntry.kind === 'STUDENT') {
+      consecutiveStudentsCount += 1
+
+      if (consecutiveStudentsCount >= EDITOR_CONSECUTIVE_STUDENTS_WITHOUT_PAUSE_ERROR_THRESHOLD) {
+        issues.push(createIssue(committee.localId, 'BASICS', 'timeline', 'CONSECUTIVE_STUDENTS_WITHOUT_PAUSE'))
+        return
+      }
+
+      continue
+    }
+
+    consecutiveStudentsCount = 0
   }
 }
 
@@ -191,6 +247,7 @@ export function collectCommitteeValidationIssues(
     collectStudyIssues(committee, issues)
     collectMembersIssues(committee, issues)
     collectInvigilatorsIssues(committee, issues)
+    collectCommitteeTimelineIssues(committee, issues)
   })
 
   return issues

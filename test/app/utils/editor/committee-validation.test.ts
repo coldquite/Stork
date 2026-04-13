@@ -7,6 +7,58 @@ import {
   groupCommitteeValidationIssuesBySection
 } from '~/utils/editor/committee-validation'
 
+function createIsoDateFromToday(dayOffset: number): string {
+  const date = new Date()
+  date.setHours(0, 0, 0, 0)
+  date.setDate(date.getDate() + dayOffset)
+  return date.toISOString()
+}
+
+function createStudentItem(localId: string, position: number): ScheduleDraftItem {
+  return {
+    localId,
+    type: 'STUDENT',
+    position,
+    student: {
+      firstName: 'Jan',
+      lastName: 'Novák',
+      email: 'jan.novak@fit.cvut.cz',
+      titlesBefore: null,
+      titlesAfter: null,
+      thesisTitleLocal: 'Lokální název práce',
+      thesisTitleEn: 'English thesis title',
+      thesisLanguage: 'CZECH',
+      supervisorName: 'Vedoucí práce',
+      reviewerName: 'Oponent práce',
+      additionalSupervisorName: null,
+      additionalReviewerName: null,
+      studyProgramName: 'Informatika',
+      studyProgramType: 'BACHELOR',
+      specializationName: 'Softwarové inženýrství 2021',
+      specializationCode: 'BI-SI.21',
+      studyLanguage: 'CZECH',
+      repeatType: 'NONE',
+      prepareMinutes: 45,
+      examMinutes: 30
+    },
+    pause: null
+  }
+}
+
+function createPauseItem(localId: string, position: number, durationMinutes: number): ScheduleDraftItem {
+  return {
+    localId,
+    type: 'PAUSE',
+    position,
+    student: null,
+    pause: {
+      label: 'Pauza',
+      pauseType: 'BREAK',
+      durationMinutes
+    }
+  }
+}
+
 function createCommittee({
   localId,
   ...overrides
@@ -14,7 +66,7 @@ function createCommittee({
   return {
     name: '048-BI-PV.24',
     startMinute: 540,
-    date: '2026-05-28T00:00:00.000Z',
+    date: createIsoDateFromToday(14),
     room: 'TH:A-1435',
     preparationRoom: 'TH:A-1510',
     secretaryName: 'Secretary 048-BI-PV.24',
@@ -167,5 +219,94 @@ describe('committee-validation', () => {
       'committee-unresolved': 1
     })
     expect(groupedBySection.map((group) => group.section)).toEqual(['BASICS', 'STUDY', 'MEMBERS', 'INVIGILATORS'])
+  })
+
+  it('collects issue when committee date is in the past', () => {
+    const committee = createCommittee({
+      localId: 'committee-past-date',
+      date: createIsoDateFromToday(-1)
+    })
+
+    const issues = collectCommitteeValidationIssues([committee])
+
+    expect(issues).toHaveLength(1)
+    expect(issues[0]).toMatchObject({
+      committeeId: 'committee-past-date',
+      section: 'BASICS',
+      fieldKey: 'date',
+      code: 'DATE_IN_PAST'
+    })
+  })
+
+  it('collects issue when at least one student starts before 08:45', () => {
+    const committee = createCommittee({
+      localId: 'committee-early-student-start',
+      startMinute: 520,
+      items: [createStudentItem('student-1', 1)]
+    })
+
+    const issues = collectCommitteeValidationIssues([committee])
+
+    expect(issues).toHaveLength(1)
+    expect(issues[0]).toMatchObject({
+      committeeId: 'committee-early-student-start',
+      section: 'BASICS',
+      fieldKey: 'startMinute',
+      code: 'STUDENT_START_BEFORE_ALLOWED_TIME'
+    })
+  })
+
+  it('collects issue when at least one student ends after 19:30', () => {
+    const committee = createCommittee({
+      localId: 'committee-late-student-end',
+      startMinute: 1170,
+      items: [createStudentItem('student-1', 1)]
+    })
+
+    const issues = collectCommitteeValidationIssues([committee])
+
+    expect(issues).toHaveLength(1)
+    expect(issues[0]).toMatchObject({
+      committeeId: 'committee-late-student-end',
+      section: 'BASICS',
+      fieldKey: 'startMinute',
+      code: 'STUDENT_END_AFTER_ALLOWED_TIME'
+    })
+  })
+
+  it('collects issue when 6 students are consecutive without pause', () => {
+    const committee = createCommittee({
+      localId: 'committee-consecutive-students-without-pause',
+      items: Array.from({ length: 6 }, (_, index) => createStudentItem(`student-${index + 1}`, index + 1))
+    })
+
+    const issues = collectCommitteeValidationIssues([committee])
+
+    expect(issues).toHaveLength(1)
+    expect(issues[0]).toMatchObject({
+      committeeId: 'committee-consecutive-students-without-pause',
+      section: 'BASICS',
+      fieldKey: 'timeline',
+      code: 'CONSECUTIVE_STUDENTS_WITHOUT_PAUSE'
+    })
+  })
+
+  it('does not collect consecutive-students issue when pause breaks the sequence', () => {
+    const committee = createCommittee({
+      localId: 'committee-pause-breaks-sequence',
+      items: [
+        createStudentItem('student-1', 1),
+        createStudentItem('student-2', 2),
+        createStudentItem('student-3', 3),
+        createStudentItem('student-4', 4),
+        createStudentItem('student-5', 5),
+        createPauseItem('pause-1', 6, 20),
+        createStudentItem('student-6', 7)
+      ]
+    })
+
+    const issues = collectCommitteeValidationIssues([committee])
+
+    expect(issues).toHaveLength(0)
   })
 })
