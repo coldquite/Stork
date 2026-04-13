@@ -28,6 +28,8 @@ interface EditorExportCommitteeDayGroup {
   committees: EditorExportCommitteeItem[]
 }
 
+type EditorExportDialogTarget = 'CSV' | 'PDF_PUBLIC' | 'PDF_INVIGILATORS'
+
 /**
  * Draft rename, manual cloud-save, and export modal flows.
  */
@@ -42,6 +44,8 @@ export function useEditorScheduleDialogs() {
   const cloudSaveName = ref('')
   const cloudSaveValidationError = ref<string | null>(null)
   const isValidationSummaryDialogOpen = ref(false)
+  const isExportValidationWarningDialogOpen = ref(false)
+  const exportValidationWarningTarget = ref<EditorExportDialogTarget | null>(null)
   const isCsvExportDialogOpen = ref(false)
   const selectedCsvExportCommitteeIds = ref<string[]>([])
   const csvExportErrorItems = ref<string[]>([])
@@ -234,6 +238,48 @@ export function useEditorScheduleDialogs() {
 
   function closeValidationSummaryDialog(): void {
     isValidationSummaryDialogOpen.value = false
+  }
+
+  function openExportValidationWarningDialog(target: EditorExportDialogTarget): void {
+    exportValidationWarningTarget.value = target
+    isExportValidationWarningDialogOpen.value = true
+  }
+
+  function closeExportValidationWarningDialog(): void {
+    isExportValidationWarningDialogOpen.value = false
+    exportValidationWarningTarget.value = null
+  }
+
+  function openExportDialogByTarget(target: EditorExportDialogTarget): void {
+    switch (target) {
+      case 'CSV':
+        openCsvExportDialog()
+        return
+      case 'PDF_PUBLIC':
+        openPdfPublicExportDialog()
+        return
+      case 'PDF_INVIGILATORS':
+        openPdfInvigilatorsExportDialog()
+        return
+      default:
+        return
+    }
+  }
+
+  function continueExportAfterValidationWarning(): void {
+    const target = exportValidationWarningTarget.value
+    if (!target) {
+      closeExportValidationWarningDialog()
+      return
+    }
+
+    closeExportValidationWarningDialog()
+    openExportDialogByTarget(target)
+  }
+
+  function openValidationSummaryFromExportWarning(): void {
+    closeExportValidationWarningDialog()
+    openValidationSummaryDialog()
   }
 
   function openCsvExportDialog(): void {
@@ -515,6 +561,8 @@ export function useEditorScheduleDialogs() {
     cloudSaveValidationError,
     isCloudSaveLoading,
     isValidationSummaryDialogOpen,
+    isExportValidationWarningDialogOpen,
+    exportValidationWarningTarget,
     isCsvExportDialogOpen,
     selectedCsvExportCommitteeIds,
     csvExportErrorItems,
@@ -538,6 +586,10 @@ export function useEditorScheduleDialogs() {
     closeCloudSaveDialog,
     openValidationSummaryDialog,
     closeValidationSummaryDialog,
+    openExportValidationWarningDialog,
+    closeExportValidationWarningDialog,
+    continueExportAfterValidationWarning,
+    openValidationSummaryFromExportWarning,
     openCsvExportDialog,
     closeCsvExportDialog,
     updateSelectedCsvExportCommitteeIds,

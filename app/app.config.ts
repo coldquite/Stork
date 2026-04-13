@@ -50,6 +50,24 @@ export default defineAppConfig({
         }
       }
     },
+    alert: {
+      compoundVariants: [
+        {
+          color: 'warning',
+          variant: 'soft',
+          class: {
+            root: 'bg-warning/10 ring ring-inset ring-warning/35 text-secondary-800 dark:text-secondary-100'
+          }
+        },
+        {
+          color: 'warning',
+          variant: 'subtle',
+          class: {
+            root: 'bg-warning/10 ring ring-inset ring-warning/35 text-secondary-800 dark:text-secondary-100'
+          }
+        }
+      ]
+    },
     separator: {
       defaultVariants: {
         size: 'sm'

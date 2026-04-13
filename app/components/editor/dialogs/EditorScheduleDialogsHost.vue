@@ -3,6 +3,7 @@ import EditorCommitteeNameModal from '~/components/editor/dialogs/EditorCommitte
 import EditorCreateCommitteeModal from '~/components/editor/dialogs/EditorCreateCommitteeModal.vue'
 import EditorCreatePauseModal from '~/components/editor/dialogs/EditorCreatePauseModal.vue'
 import EditorCreateStudentModal from '~/components/editor/dialogs/EditorCreateStudentModal.vue'
+import EditorExportValidationWarningModal from '~/components/editor/dialogs/EditorExportValidationWarningModal.vue'
 import EditorMoveStudentDialog from '~/components/editor/dialogs/EditorMoveStudentDialog.vue'
 import EditorValidationSummaryModal from '~/components/editor/dialogs/EditorValidationSummaryModal.vue'
 import EditorCsvExportCommitteesModal from '~/components/export/EditorCsvExportCommitteesModal.vue'
@@ -84,6 +85,18 @@ const validationSummaryOpen = computed({
   }
 })
 const validationSummaryCommittees = computed(() => vs.committeesWithErrors.value)
+const exportValidationWarningOpen = computed({
+  get: () => sd.isExportValidationWarningDialogOpen.value,
+  set: (v: boolean) => {
+    if (v) {
+      sd.isExportValidationWarningDialogOpen.value = true
+      return
+    }
+
+    sd.closeExportValidationWarningDialog()
+  }
+})
+const exportValidationWarningTarget = computed(() => sd.exportValidationWarningTarget.value)
 
 const csvExportOpen = computed({
   get: () => sd.isCsvExportDialogOpen.value,
@@ -307,6 +320,14 @@ function openStudentFromValidationSummary(payload: { committeeId: string; studen
     :committees="validationSummaryCommittees"
     @open-committee="openCommitteeFromValidationSummary($event)"
     @open-student="openStudentFromValidationSummary($event)"
+  />
+
+  <EditorExportValidationWarningModal
+    v-model:open="exportValidationWarningOpen"
+    :target="exportValidationWarningTarget"
+    @cancel="sd.closeExportValidationWarningDialog()"
+    @open-validation="sd.openValidationSummaryFromExportWarning()"
+    @continue-export="sd.continueExportAfterValidationWarning()"
   />
 
   <EditorCsvExportCommitteesModal

@@ -306,6 +306,14 @@
           "invigilatorsPdf": "PDF pro dozor",
           "questionsEnvelopeCsv": "CSV pro tisk obálek na otázky"
         },
+        "validationWarning": {
+          "title": "V plánu jsou chyby",
+          "description": "Před exportem „{target}“ doporučujeme zkontrolovat chyby v komisích a studentech.",
+          "alertTitle": "Export může obsahovat neúplné nebo nesprávné údaje",
+          "alertDescription": "Můžete nejdřív otevřít seznam chyb a data opravit, nebo pokračovat v exportu i přes varování.",
+          "openErrors": "Otevřít chyby",
+          "continueExport": "Pokračovat v exportu"
+        },
         "csvCommitteesDialog": {
           "title": "Export CSV pro tisk obálek na otázky",
           "description": "Vyberte komise, které chcete zahrnout do exportu CSV pro tisk obálek na otázky",

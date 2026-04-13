@@ -240,6 +240,33 @@ function requestMoveStudentToAnotherCommittee(studentId: string): void {
   committeeItemsActions.openMoveStudentDialog(studentId)
 }
 
+function requestExportPublicPdf(): void {
+  if (validationSummary.hasAnyErrors.value) {
+    scheduleDialogs.openExportValidationWarningDialog('PDF_PUBLIC')
+    return
+  }
+
+  scheduleDialogs.openPdfPublicExportDialog()
+}
+
+function requestExportInvigilatorsPdf(): void {
+  if (validationSummary.hasAnyErrors.value) {
+    scheduleDialogs.openExportValidationWarningDialog('PDF_INVIGILATORS')
+    return
+  }
+
+  scheduleDialogs.openPdfInvigilatorsExportDialog()
+}
+
+function requestExportCsvQuestionsEnvelope(): void {
+  if (validationSummary.hasAnyErrors.value) {
+    scheduleDialogs.openExportValidationWarningDialog('CSV')
+    return
+  }
+
+  scheduleDialogs.openCsvExportDialog()
+}
+
 function focusStudentFromValidation(studentId: string): void {
   const selectedCommitteeId = committeeList.selectedCommitteeId.value
   if (!selectedCommitteeId) {
@@ -307,9 +334,9 @@ const draftNameText = computed(() => draftName.value)
         @search-students="studentSearch.openStudentSearchDialog"
         @save-to-cloud="scheduleDialogs.openCloudSaveDialog"
         @open-validation-summary="scheduleDialogs.openValidationSummaryDialog"
-        @export-public-pdf="scheduleDialogs.openPdfPublicExportDialog"
-        @export-invigilators-pdf="scheduleDialogs.openPdfInvigilatorsExportDialog"
-        @export-csv-questions-envelope="scheduleDialogs.openCsvExportDialog"
+        @export-public-pdf="requestExportPublicPdf"
+        @export-invigilators-pdf="requestExportInvigilatorsPdf"
+        @export-csv-questions-envelope="requestExportCsvQuestionsEnvelope"
       />
 
       <div class="ring-default overflow-hidden rounded-lg ring-2">
