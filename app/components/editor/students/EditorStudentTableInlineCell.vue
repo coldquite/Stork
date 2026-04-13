@@ -38,6 +38,8 @@ const emit = defineEmits<{
   'update:modelValue': [value: unknown]
 }>()
 
+const localNumberEditValue = ref('')
+
 function displayText(value: string): string {
   const normalized = value.trim()
   return normalized.length > 0 ? normalized : '—'
@@ -91,6 +93,66 @@ const resolvedInputClass = computed(() => {
 const resolvedInputUi = computed(() => {
   return hasInvalidState.value ? EDITOR_INVALID_INPUT_UI : undefined
 })
+
+function normalizeNumberInputValue(value: unknown): string {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return String(value)
+  }
+
+  if (typeof value === 'string') {
+    return value
+  }
+
+  return ''
+}
+
+function syncLocalNumberEditValueFromModel(): void {
+  if (props.mode !== 'number') {
+    return
+  }
+
+  localNumberEditValue.value = normalizeNumberInputValue(props.modelValue)
+}
+
+function emitTextInputValue(value: unknown): void {
+  emit('update:modelValue', value)
+}
+
+function emitNumberInputValue(value: unknown): void {
+  localNumberEditValue.value = normalizeNumberInputValue(value)
+  emit('update:modelValue', value)
+}
+
+function commitNumberInputValue(): void {
+  const parsedValue = Number.parseInt(localNumberEditValue.value, 10)
+  const normalizedValue = Number.isFinite(parsedValue) ? Math.max(Math.trunc(parsedValue), 0) : 0
+  localNumberEditValue.value = String(normalizedValue)
+  emit('update:modelValue', normalizedValue)
+  emit('commit')
+}
+
+watch(
+  () => props.isEditing,
+  (isEditing) => {
+    if (!isEditing) {
+      return
+    }
+
+    syncLocalNumberEditValueFromModel()
+  },
+  { immediate: true }
+)
+
+watch(
+  () => props.modelValue,
+  () => {
+    if (props.isEditing) {
+      return
+    }
+
+    syncLocalNumberEditValueFromModel()
+  }
+)
 </script>
 
 <template>
@@ -117,21 +179,21 @@ const resolvedInputUi = computed(() => {
             placeholder="—"
             :class="resolvedInputClass"
             :ui="resolvedInputUi"
-            @update:model-value="emit('update:modelValue', $event)"
+            @update:model-value="emitTextInputValue"
             @blur="emit('commit')"
             @keydown.enter="emit('commit')"
           />
           <UInput
             v-else
-            :model-value="String(props.modelValue)"
+            :model-value="localNumberEditValue"
             type="number"
             min="0"
             size="sm"
             :class="resolvedInputClass"
             :ui="resolvedInputUi"
-            @update:model-value="emit('update:modelValue', $event)"
-            @blur="emit('commit')"
-            @keydown.enter="emit('commit')"
+            @update:model-value="emitNumberInputValue"
+            @blur="commitNumberInputValue"
+            @keydown.enter.prevent="commitNumberInputValue"
           />
         </slot>
       </div>

@@ -1,7 +1,28 @@
 import { mount } from '@vue/test-utils'
-import { h } from 'vue'
+import { defineComponent, h } from 'vue'
 import { describe, expect, it } from 'vitest'
 import EditorStudentTableInlineCell from '~/components/editor/students/EditorStudentTableInlineCell.vue'
+
+const UInputStub = defineComponent({
+  name: 'UInputStub',
+  props: {
+    modelValue: {
+      type: [String, Number],
+      required: false,
+      default: ''
+    }
+  },
+  emits: ['update:model-value', 'blur', 'keydown.enter'],
+  template: `
+    <input
+      data-test="u-input"
+      :value="modelValue"
+      @input="$emit('update:model-value', $event.target.value)"
+      @blur="$emit('blur')"
+      @keydown.enter="$emit('keydown.enter', $event)"
+    />
+  `
+})
 
 function mountInlineCell(
   isEditing: boolean,
@@ -28,9 +49,7 @@ function mountInlineCell(
     slots,
     global: {
       stubs: {
-        UInput: {
-          template: '<input data-test="u-input" />'
-        }
+        UInput: UInputStub
       }
     }
   })
@@ -103,5 +122,26 @@ describe('EditorStudentTableInlineCell', () => {
     await editInput.trigger('keydown.enter')
 
     expect(wrapper.emitted('commit')).toHaveLength(2)
+  })
+
+  it('keeps number input clearable and falls back to 0 on commit', async () => {
+    const wrapper = mountInlineCell(true, {
+      modelValue: 12,
+      mode: 'number'
+    })
+    const editInput = wrapper.find<HTMLInputElement>('[data-test="u-input"]')
+
+    expect(editInput.exists()).toBe(true)
+
+    await editInput.setValue('')
+
+    const modelUpdatesAfterClear = wrapper.emitted('update:modelValue') ?? []
+    expect(modelUpdatesAfterClear.at(-1)).toEqual([''])
+
+    await editInput.trigger('blur')
+
+    const modelUpdatesAfterCommit = wrapper.emitted('update:modelValue') ?? []
+    expect(modelUpdatesAfterCommit.at(-1)).toEqual([0])
+    expect(wrapper.emitted('commit')).toHaveLength(1)
   })
 })
