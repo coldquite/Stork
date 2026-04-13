@@ -6,9 +6,22 @@ export const generatedLicensesOutputPath = resolve(process.cwd(), 'public/licens
 
 const nonDependencyLicensesDir = resolve(process.cwd(), 'non_dependecy_third_party_licenses')
 const LICENSE_NEWLINE = '\n'
+const DEPENDENCY_SORT_SEPARATOR = '\u0000'
 
 export function normalizeLineEndings(content: string): string {
   return content.replace(/\r\n?/g, LICENSE_NEWLINE)
+}
+
+function compareTextValues(left: string, right: string): number {
+  if (left === right) {
+    return 0
+  }
+
+  return left < right ? -1 : 1
+}
+
+function buildDependencySortKey(dependency: Dependency, dependencyText: string): string {
+  return [dependency.name, dependency.version, dependency.license, dependencyText].join(DEPENDENCY_SORT_SEPARATOR)
 }
 
 function renderNonDependencyLicenses(): string {
@@ -36,8 +49,18 @@ function renderNonDependencyLicenses(): string {
 }
 
 export function buildLicensesReport(dependencies: Dependency[]): string {
-  const dependenciesSection = dependencies
-    .map((dependency) => normalizeLineEndings(dependency.text()))
+  const sortedDependencies = dependencies
+    .map((dependency) => {
+      const dependencyText = normalizeLineEndings(dependency.text())
+      return {
+        dependencyText,
+        sortKey: buildDependencySortKey(dependency, dependencyText)
+      }
+    })
+    .sort((left, right) => compareTextValues(left.sortKey, right.sortKey))
+
+  const dependenciesSection = sortedDependencies
+    .map(({ dependencyText }) => dependencyText)
     .join(`${LICENSE_NEWLINE}${LICENSE_NEWLINE}---${LICENSE_NEWLINE}${LICENSE_NEWLINE}`)
 
   return normalizeLineEndings(`${dependenciesSection}${renderNonDependencyLicenses()}`)

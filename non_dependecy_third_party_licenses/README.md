@@ -2,3 +2,4 @@
 
 This directory stores third-party license texts that are not discovered from `package.json` by @rollup-plugin-license.
 During build, all `.txt` files from this directory are appended to the end of `public/licenses.txt`.
+Discovered package dependencies are sorted deterministically before rendering, so `public/licenses.txt` stays stable across rebuilds.
