@@ -62,7 +62,8 @@ function mountPanel(selectedCommittee: unknown) {
       },
       invigilatorLabels: {
         addAction: '',
-        deleteAria: ''
+        deleteAria: '',
+        applyPreparationRoomToAll: ''
       },
       invigilators: [],
       invigilatorsCountLabel: '',
@@ -105,5 +106,17 @@ describe('EditorStudentsPanel', () => {
 
     expect(wrapper.find('[data-test="empty-state"]').exists()).toBe(false)
     expect(wrapper.find('editor-students-sortable-table-stub').exists()).toBe(true)
+  })
+
+  it('forwards applyPreparationRoomToAll event from invigilators card', async () => {
+    const wrapper = mountPanel({
+      localId: 'committee-1',
+      language: 'CZECH'
+    })
+    const invigilatorsCard = wrapper.findComponent({ name: 'EditorCommitteeInvigilatorsCard' })
+
+    await invigilatorsCard.vm.$emit('applyPreparationRoomToAll')
+
+    expect(wrapper.emitted('applyPreparationRoomToAll')).toHaveLength(1)
   })
 })

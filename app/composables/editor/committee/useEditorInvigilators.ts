@@ -1,5 +1,7 @@
 import { useValidationField } from '~/composables/useValidationField'
+import { useScheduleDraftStore } from '~/stores/schedule-draft'
 import type { ScheduleDraftCommittee } from '~/types/schedule-draft'
+import { assignCommitteePreparationRoom, normalizeOptionalText } from '~/utils/editor/draft-committee'
 import { createLocalId } from '~/utils/id'
 
 /**
@@ -7,12 +9,15 @@ import { createLocalId } from '~/utils/id'
  */
 export function useEditorInvigilators(selectedCommittee: ComputedRef<ScheduleDraftCommittee | null>) {
   const { t } = useI18n()
+  const scheduleDraftStore = useScheduleDraftStore()
 
   const isAddInvigilatorDialogOpen = ref(false)
   const newInvigilatorName = ref('')
   const invigilatorValidationError = ref<string | null>(null)
   const isDeleteInvigilatorConfirmOpen = ref(false)
   const deleteInvigilatorLocalId = ref<string | null>(null)
+  const isApplyPreparationRoomToAllConfirmOpen = ref(false)
+  const applyPreparationRoomToAllSourceRoom = ref<string | null>(null)
 
   const selectedInvigilators = computed(() => selectedCommittee.value?.invigilators ?? [])
 
@@ -30,6 +35,17 @@ export function useEditorInvigilators(selectedCommittee: ComputedRef<ScheduleDra
   })
   const deleteInvigilatorConfirmDescription = computed(() => {
     return t('editor.committee.invigilators.delete.description', { name: deleteInvigilatorTargetName.value })
+  })
+  const applyPreparationRoomToAllRoom = computed(() => {
+    const selectedRoom = normalizeOptionalText(selectedCommittee.value?.preparationRoom)
+    return normalizeOptionalText(applyPreparationRoomToAllSourceRoom.value) ?? selectedRoom
+  })
+  const applyPreparationRoomToAllCommitteesCount = computed(() => scheduleDraftStore.draft?.committees.length ?? 0)
+  const applyPreparationRoomToAllConfirmDescription = computed(() => {
+    return t('editor.committee.preparationRoomSync.confirm.description', {
+      room: applyPreparationRoomToAllRoom.value ?? '—',
+      count: applyPreparationRoomToAllCommitteesCount.value
+    })
   })
 
   useValidationField(newInvigilatorName, invigilatorValidationError)
@@ -66,6 +82,21 @@ export function useEditorInvigilators(selectedCommittee: ComputedRef<ScheduleDra
   function closeDeleteInvigilatorConfirm(): void {
     isDeleteInvigilatorConfirmOpen.value = false
     deleteInvigilatorLocalId.value = null
+  }
+
+  function openApplyPreparationRoomToAllConfirm(): void {
+    const room = normalizeOptionalText(selectedCommittee.value?.preparationRoom)
+    if (!selectedCommittee.value || !room) {
+      return
+    }
+
+    applyPreparationRoomToAllSourceRoom.value = room
+    isApplyPreparationRoomToAllConfirmOpen.value = true
+  }
+
+  function closeApplyPreparationRoomToAllConfirm(): void {
+    isApplyPreparationRoomToAllConfirmOpen.value = false
+    applyPreparationRoomToAllSourceRoom.value = null
   }
 
   function openAddInvigilatorDialog(): void {
@@ -127,6 +158,27 @@ export function useEditorInvigilators(selectedCommittee: ComputedRef<ScheduleDra
     closeDeleteInvigilatorConfirm()
   }
 
+  function submitApplyPreparationRoomToAll(): void {
+    const draft = scheduleDraftStore.draft
+    if (!draft) {
+      closeApplyPreparationRoomToAllConfirm()
+      return
+    }
+
+    const nextPreparationRoom = normalizeOptionalText(
+      applyPreparationRoomToAllSourceRoom.value ?? selectedCommittee.value?.preparationRoom
+    )
+    if (!nextPreparationRoom) {
+      closeApplyPreparationRoomToAllConfirm()
+      return
+    }
+
+    draft.committees.forEach((committee) => {
+      assignCommitteePreparationRoom(committee, nextPreparationRoom)
+    })
+    closeApplyPreparationRoomToAllConfirm()
+  }
+
   return {
     selectedInvigilators,
     invigilatorsCountLabel,
@@ -135,11 +187,16 @@ export function useEditorInvigilators(selectedCommittee: ComputedRef<ScheduleDra
     invigilatorValidationError,
     isDeleteInvigilatorConfirmOpen,
     deleteInvigilatorConfirmDescription,
+    isApplyPreparationRoomToAllConfirmOpen,
+    applyPreparationRoomToAllConfirmDescription,
     openAddInvigilatorDialog,
     closeAddInvigilatorDialog,
     openDeleteInvigilatorConfirm,
     closeDeleteInvigilatorConfirm,
+    openApplyPreparationRoomToAllConfirm,
+    closeApplyPreparationRoomToAllConfirm,
     submitAddInvigilator,
-    submitDeleteInvigilator
+    submitDeleteInvigilator,
+    submitApplyPreparationRoomToAll
   }
 }

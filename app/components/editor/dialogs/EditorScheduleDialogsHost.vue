@@ -215,6 +215,12 @@ const deleteInvigilatorConfirmOpen = computed({
     inv.isDeleteInvigilatorConfirmOpen.value = v
   }
 })
+const applyPreparationRoomToAllConfirmOpen = computed({
+  get: () => inv.isApplyPreparationRoomToAllConfirmOpen.value,
+  set: (v: boolean) => {
+    inv.isApplyPreparationRoomToAllConfirmOpen.value = v
+  }
+})
 const deleteItemConfirmOpen = computed({
   get: () => cia.isDeleteItemConfirmOpen.value,
   set: (v: boolean) => {
@@ -248,6 +254,7 @@ const createCommitteeSubmitDisabled = computed(() => cl.isCreateCommitteeSubmitD
 
 const deleteCommitteeDescriptionText = computed(() => cl.deleteCommitteeConfirmDescription.value)
 const deleteInvigilatorDescriptionText = computed(() => inv.deleteInvigilatorConfirmDescription.value)
+const applyPreparationRoomToAllDescriptionText = computed(() => inv.applyPreparationRoomToAllConfirmDescription.value)
 const deleteItemActionLabel = computed(() => cia.deleteItemConfirmActionLabel.value)
 const deleteItemDescriptionText = computed(() => cia.deleteItemConfirmDescription.value)
 const moveStudentDialogTitle = computed(() => cia.moveStudentDialogTitle.value)
@@ -535,6 +542,15 @@ function openStudentFromValidationSummary(payload: { committeeId: string; studen
     :confirm-label="copy.deleteInvigilatorConfirmAction"
     @cancel="inv.closeDeleteInvigilatorConfirm()"
     @confirm="inv.submitDeleteInvigilator()"
+  />
+
+  <CommonAppActionConfirmDialog
+    v-model:open="applyPreparationRoomToAllConfirmOpen"
+    :action-label="copy.applyPreparationRoomToAllConfirmAction"
+    :description="applyPreparationRoomToAllDescriptionText"
+    :confirm-label="copy.applyPreparationRoomToAllConfirmAction"
+    @cancel="inv.closeApplyPreparationRoomToAllConfirm()"
+    @confirm="inv.submitApplyPreparationRoomToAll()"
   />
 
   <CommonAppActionConfirmDialog

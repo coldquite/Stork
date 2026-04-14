@@ -261,6 +261,7 @@ export interface EditorStudentsPanelStudentsEmptyLabels {
 export interface EditorStudentsPanelInvigilatorLabels {
   addAction: string
   deleteAria: string
+  applyPreparationRoomToAll: string
 }
 
 /** String committee fields emitted as a single event (date/language/type use dedicated emits). */
@@ -407,4 +408,5 @@ export interface EditorScheduleDialogsCopy {
   pdfInvigilatorsExportCommittees: EditorExportCommitteesDialogCopy
   deleteCommitteeConfirmAction: string
   deleteInvigilatorConfirmAction: string
+  applyPreparationRoomToAllConfirmAction: string
 }

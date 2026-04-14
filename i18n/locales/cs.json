@@ -533,6 +533,13 @@
           "description": "Opravdu chcete smazat člena dozoru „{name}“? Tato akce je nevratná."
         }
       },
+      "preparationRoomSync": {
+        "tooltip": "Použít místnost písemné přípravy pro všechny komise v návrhu",
+        "confirm": {
+          "action": "Použít pro všechny komise",
+          "description": "Opravdu chcete nastavit místnost písemné přípravy „{room}“ pro všech {count} komisí v tomto návrhu? Tato akce přepíše stávající hodnoty."
+        }
+      },
       "validation": {
         "title": "Komise: chybné údaje",
         "sidebarBadgeAriaLabel": "Počet chyb v komisi: {count}",

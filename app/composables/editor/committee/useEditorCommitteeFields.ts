@@ -1,6 +1,10 @@
 import { resolveEditorSpecializationOptionByCode, resolveEditorStudyProgramNameOptions } from '#shared/constants/editor'
 import type { ScheduleDraftCommittee } from '~/types/schedule-draft'
-import { normalizeOptionalText, normalizeRequiredText } from '~/utils/editor/draft-committee'
+import {
+  assignCommitteePreparationRoom,
+  normalizeOptionalText,
+  normalizeRequiredText
+} from '~/utils/editor/draft-committee'
 
 /**
  * Mutations for committee metadata fields (rooms, members, study program chain) on the selected committee.
@@ -31,7 +35,7 @@ export function useEditorCommitteeFields(selectedCommittee: ComputedRef<Schedule
 
   function updateSelectedCommitteePreparationRoom(nextRoom: string): void {
     withSelectedCommittee((committee) => {
-      committee.preparationRoom = normalizeOptionalText(nextRoom)
+      assignCommitteePreparationRoom(committee, nextRoom)
     })
   }
 

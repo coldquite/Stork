@@ -43,6 +43,13 @@ export function normalizeOptionalText(value: string | null | undefined): string 
   return normalized.length > 0 ? normalized : null
 }
 
+export function assignCommitteePreparationRoom(
+  committee: ScheduleDraftCommittee,
+  nextPreparationRoom: string | null | undefined
+): void {
+  committee.preparationRoom = normalizeOptionalText(nextPreparationRoom)
+}
+
 function resolveCommitteeRoomLabel(committee: ScheduleDraftCommittee): string {
   const normalizedRoom = committee.room?.trim() ?? ''
   return normalizedRoom.length > 0 ? normalizedRoom : '—'

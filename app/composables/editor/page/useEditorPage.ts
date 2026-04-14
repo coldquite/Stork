@@ -573,12 +573,17 @@ export function useEditorPage() {
       invigilatorValidationError: invigilators.invigilatorValidationError,
       isDeleteInvigilatorConfirmOpen: invigilators.isDeleteInvigilatorConfirmOpen,
       deleteInvigilatorConfirmDescription: invigilators.deleteInvigilatorConfirmDescription,
+      isApplyPreparationRoomToAllConfirmOpen: invigilators.isApplyPreparationRoomToAllConfirmOpen,
+      applyPreparationRoomToAllConfirmDescription: invigilators.applyPreparationRoomToAllConfirmDescription,
       openAddInvigilatorDialog: invigilators.openAddInvigilatorDialog,
       closeAddInvigilatorDialog: invigilators.closeAddInvigilatorDialog,
       openDeleteInvigilatorConfirm: invigilators.openDeleteInvigilatorConfirm,
       closeDeleteInvigilatorConfirm: invigilators.closeDeleteInvigilatorConfirm,
+      openApplyPreparationRoomToAllConfirm: invigilators.openApplyPreparationRoomToAllConfirm,
+      closeApplyPreparationRoomToAllConfirm: invigilators.closeApplyPreparationRoomToAllConfirm,
       submitAddInvigilator: invigilators.submitAddInvigilator,
-      submitDeleteInvigilator: invigilators.submitDeleteInvigilator
+      submitDeleteInvigilator: invigilators.submitDeleteInvigilator,
+      submitApplyPreparationRoomToAll: invigilators.submitApplyPreparationRoomToAll
     },
 
     studentCreation: {

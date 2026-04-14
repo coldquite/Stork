@@ -187,6 +187,7 @@ function createCommittee(options: {
   date: string
   items?: ScheduleDraftItem[]
   invigilators?: ScheduleDraftCommittee['invigilators']
+  preparationRoom?: ScheduleDraftCommittee['preparationRoom']
   language?: ScheduleDraftCommittee['language']
   studyProgramName?: ScheduleDraftCommittee['studyProgramName']
   studyProgramType?: ScheduleDraftCommittee['studyProgramType']
@@ -199,6 +200,7 @@ function createCommittee(options: {
     startMinute: options.startMinute,
     date: options.date,
     room: 'TH:A-1435',
+    preparationRoom: options.preparationRoom ?? null,
     secretaryName: 'Sekretář',
     invigilators: options.invigilators ?? [{ localId: 'invigilator-dozor', name: 'Dozor' }],
     language: options.language ?? 'CZECH',
@@ -1344,6 +1346,51 @@ describe('useEditorPage', () => {
     expect(scheduleDraftStoreMock.draft?.committees[0]?.invigilators).toEqual([])
     expect(page.invigilators.isDeleteInvigilatorConfirmOpen.value).toBe(false)
     expect(toastAddMock).not.toHaveBeenCalled()
+  })
+
+  it('opens confirmation and applies selected preparation room to all committees', async () => {
+    const draft = createDraftWithTwoCommittees()
+    draft.committees[0]!.preparationRoom = '  TH:A-1510  '
+    draft.committees[1]!.preparationRoom = 'TH:A-1900'
+    scheduleDraftStoreMock.draft = draft
+
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
+    const page = useEditorPage()
+
+    page.invigilators.openApplyPreparationRoomToAllConfirm()
+    expect(page.invigilators.isApplyPreparationRoomToAllConfirmOpen.value).toBe(true)
+    expect(page.invigilators.applyPreparationRoomToAllConfirmDescription.value).toBe(
+      'editor.committee.preparationRoomSync.confirm.description'
+    )
+
+    page.invigilators.submitApplyPreparationRoomToAll()
+
+    expect(scheduleDraftStoreMock.draft?.committees.map((committee) => committee.preparationRoom)).toEqual([
+      'TH:A-1510',
+      'TH:A-1510'
+    ])
+    expect(page.invigilators.isApplyPreparationRoomToAllConfirmOpen.value).toBe(false)
+  })
+
+  it('does not open or submit preparation room sync when selected value is blank', async () => {
+    const draft = createDraftWithTwoCommittees()
+    draft.committees[0]!.preparationRoom = '   '
+    draft.committees[1]!.preparationRoom = 'TH:A-1900'
+    scheduleDraftStoreMock.draft = draft
+
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
+    const page = useEditorPage()
+
+    page.invigilators.openApplyPreparationRoomToAllConfirm()
+    expect(page.invigilators.isApplyPreparationRoomToAllConfirmOpen.value).toBe(false)
+
+    page.invigilators.submitApplyPreparationRoomToAll()
+
+    expect(scheduleDraftStoreMock.draft?.committees.map((committee) => committee.preparationRoom)).toEqual([
+      '   ',
+      'TH:A-1900'
+    ])
+    expect(page.invigilators.isApplyPreparationRoomToAllConfirmOpen.value).toBe(false)
   })
 
   it('updates selected committee language in draft store', async () => {

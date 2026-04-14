@@ -100,7 +100,8 @@ const studentsEmpty = computed(() => ({
 
 const invigilatorLabels = computed(() => ({
   addAction: t('editor.committee.invigilators.add.action'),
-  deleteAria: t('editor.committee.invigilators.delete.ariaLabel')
+  deleteAria: t('editor.committee.invigilators.delete.ariaLabel'),
+  applyPreparationRoomToAll: t('editor.committee.preparationRoomSync.tooltip')
 }))
 
 const dialogCopy = computed(() => ({
@@ -195,7 +196,8 @@ const dialogCopy = computed(() => ({
     submit: t('editor.committee.invigilators.add.submit')
   },
   deleteCommitteeConfirmAction: t('editor.committees.delete.confirmAction'),
-  deleteInvigilatorConfirmAction: t('editor.committee.invigilators.delete.confirmAction')
+  deleteInvigilatorConfirmAction: t('editor.committee.invigilators.delete.confirmAction'),
+  applyPreparationRoomToAllConfirmAction: t('editor.committee.preparationRoomSync.confirm.action')
 }))
 
 function onCommitteeStringField(payload: EditorCommitteeStringFieldPayload): void {
@@ -397,6 +399,7 @@ const draftNameText = computed(() => draftName.value)
             @request-delete-item="requestDeleteCommitteeItem"
             @request-move-student="requestMoveStudentToAnotherCommittee"
             @add-invigilator="invigilators.openAddInvigilatorDialog"
+            @apply-preparation-room-to-all="invigilators.openApplyPreparationRoomToAllConfirm"
             @delete-invigilator="invigilators.openDeleteInvigilatorConfirm($event)"
             @rename-committee="committeeList.openRenameCommitteeDialog($event)"
             @delete-committee="committeeList.openDeleteCommitteeConfirm($event)"

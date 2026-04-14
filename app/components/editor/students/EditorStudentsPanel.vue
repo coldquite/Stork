@@ -74,7 +74,7 @@ const emit = defineEmits<{
   (event: 'update:tableViewMode', value: EditorStudentsTableViewMode): void
   (event: 'update:committeeLanguage', value: StudyLanguageDto): void
   (event: 'update:committeeStudyProgramType', value: StudyProgramTypeDto): void
-  (event: 'addStudent' | 'addPause' | 'addInvigilator'): void
+  (event: 'addStudent' | 'addPause' | 'addInvigilator' | 'applyPreparationRoomToAll'): void
 }>()
 
 const labels = computed(() => props.committeeLabels)
@@ -186,6 +186,7 @@ function requestFocusValidationStudent(studentId: string): void {
               class="self-stretch"
               :selected-committee="props.selectedCommittee"
               :preparation-room-label="labels.preparationRoom"
+              :apply-preparation-room-to-all-label="props.invigilatorLabels.applyPreparationRoomToAll"
               :invigilators="props.invigilators"
               :invigilators-count-label="props.invigilatorsCountLabel"
               :add-action-label="props.invigilatorLabels.addAction"
@@ -193,6 +194,7 @@ function requestFocusValidationStudent(studentId: string): void {
               :is-invigilators-empty="isInvigilatorsEmpty"
               @committee-string-field="forwardStringField"
               @add-invigilator="emit('addInvigilator')"
+              @apply-preparation-room-to-all="emit('applyPreparationRoomToAll')"
               @delete-invigilator="emit('deleteInvigilator', $event)"
             />
 
