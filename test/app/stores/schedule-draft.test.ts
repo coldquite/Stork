@@ -9,18 +9,13 @@ import type {
 import type { ScheduleDraftOperationErrorCode } from '~/types/schedule-draft'
 import { useScheduleDraftStore } from '~/stores/schedule-draft'
 
-const { requestFetchMock, captureExceptionMock } = vi.hoisted(() => ({
-  requestFetchMock: vi.fn(),
-  captureExceptionMock: vi.fn()
+const { requestFetchMock } = vi.hoisted(() => ({
+  requestFetchMock: vi.fn()
 }))
 
 mockNuxtImport('useRequestFetch', () => {
   return () => requestFetchMock
 })
-
-vi.mock('@sentry/nuxt', () => ({
-  captureException: captureExceptionMock
-}))
 
 async function expectRejectsWithCode(promise: Promise<unknown>, code: ScheduleDraftOperationErrorCode): Promise<void> {
   await expect(promise).rejects.toMatchObject({ code })
@@ -119,7 +114,6 @@ describe('useScheduleDraftStore', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     requestFetchMock.mockReset()
-    captureExceptionMock.mockReset()
   })
 
   afterEach(() => {
@@ -205,6 +199,50 @@ describe('useScheduleDraftStore', () => {
     expect(store.isDirty).toBe(false)
     expect(store.lastSavedScheduleId).toBe('saved-manual-1')
     expect(store.lastSavedType).toBe('MANUAL')
+  })
+
+  it('builds manual save payload via explicit mapping and drops non-serializable metadata', async () => {
+    const store = useScheduleDraftStore()
+    store.setAutoSavePolicy({ enabled: false })
+    store.initializeFromSource(createApiSchedule('D-FALLBACK'))
+
+    if (!store.draft) {
+      throw new Error('Expected draft to be initialized')
+    }
+
+    const firstCommittee = store.draft.committees[0]
+    if (!firstCommittee) {
+      throw new Error('Expected first committee')
+    }
+
+    // Simulates accidental UI metadata/function leakage into the draft state.
+    ;(firstCommittee as Record<string, unknown>).nonSerializable = () => 'non-serializable-marker'
+
+    requestFetchMock.mockResolvedValueOnce({
+      id: 'saved-manual-fallback',
+      createdAt: '2026-06-11T10:31:00.000Z'
+    })
+
+    await store.saveManualDraft('Uložení fallback')
+
+    expect(requestFetchMock).toHaveBeenCalledTimes(1)
+    const manualSaveCall = requestFetchMock.mock.calls.at(0)
+    expect(manualSaveCall).toBeDefined()
+
+    if (!manualSaveCall) {
+      throw new Error('Expected manual save call to be captured')
+    }
+
+    const [, requestOptions] = manualSaveCall
+    expect(requestOptions).toBeDefined()
+
+    if (!requestOptions) {
+      throw new Error('Expected request options in manual save call')
+    }
+
+    const payload = requestOptions.body as PostTimeScheduleRequestDto
+    expect(payload.name).toBe('Uložení fallback')
+    expect(payload.committees[0]).not.toHaveProperty('nonSerializable')
   })
 
   it('resets last saved metadata when replacing draft source', async () => {
@@ -459,7 +497,7 @@ describe('useScheduleDraftStore', () => {
     expect(store.isManualSaveLoading).toBe(false)
   })
 
-  it('blocks manual save when department cannot be resolved and reports to sentry', async () => {
+  it('allows manual save when department cannot be resolved', async () => {
     const store = useScheduleDraftStore()
     store.initializeFromSource(createApiSchedule('DEPARTMENT-BLOCK'))
 
@@ -475,19 +513,16 @@ describe('useScheduleDraftStore', () => {
     firstCommittee.specializationCode = 'UNKNOWN-SPECIALIZATION'
     await nextTick()
 
-    await expectRejectsWithCode(store.saveManualDraft(), 'REQUEST_FAILED')
-
-    expect(requestFetchMock).not.toHaveBeenCalled()
-    expect(store.manualSaveErrorCode).toBe('REQUEST_FAILED')
-    expect(captureExceptionMock).toHaveBeenCalledTimes(1)
-
-    const [reportedError, reportContext] = captureExceptionMock.mock.calls[0] ?? []
-    expect(reportedError).toBeInstanceOf(Error)
-    expect(reportContext).toMatchObject({
-      tags: {
-        workflow: 'schedule-draft-save'
-      }
+    requestFetchMock.mockResolvedValueOnce({
+      id: 'saved-manual-department-unresolved',
+      createdAt: '2026-06-11T11:40:00.000Z'
     })
+
+    await store.saveManualDraft()
+
+    expect(requestFetchMock).toHaveBeenCalledTimes(1)
+    expect(store.manualSaveErrorCode).toBeNull()
+    expect(store.lastSavedType).toBe('MANUAL')
   })
 
   it('schedules autosave retry and recovers after transient autosave error', async () => {
@@ -529,7 +564,7 @@ describe('useScheduleDraftStore', () => {
     expect(store.lastSavedAt).toBe('2026-06-11T12:00:00.000Z')
   })
 
-  it('does not schedule autosave retry when department resolution fails', async () => {
+  it('runs autosave even when department cannot be resolved', async () => {
     vi.useFakeTimers()
 
     try {
@@ -552,23 +587,22 @@ describe('useScheduleDraftStore', () => {
       }
 
       firstCommittee.specializationCode = 'UNKNOWN-SPECIALIZATION'
-      store.draft.name = 'Autosave without retry'
+      requestFetchMock.mockResolvedValueOnce({
+        id: 'saved-auto-department-unresolved',
+        createdAt: '2026-06-11T12:10:00.000Z'
+      })
+
+      store.draft.name = 'Autosave with unresolved department'
       await nextTick()
 
       expect(store.nextAutoSaveAt).not.toBeNull()
 
       await vi.advanceTimersByTimeAsync(60)
 
-      expect(requestFetchMock).not.toHaveBeenCalled()
-      expect(store.autoSaveErrorCode).toBe('REQUEST_FAILED')
+      expect(requestFetchMock).toHaveBeenCalledTimes(1)
+      expect(store.autoSaveErrorCode).toBeNull()
       expect(store.nextAutoSaveAt).toBeNull()
-      expect(captureExceptionMock).toHaveBeenCalledTimes(1)
-
-      await vi.advanceTimersByTimeAsync(500)
-
-      expect(requestFetchMock).not.toHaveBeenCalled()
-      expect(store.nextAutoSaveAt).toBeNull()
-      expect(captureExceptionMock).toHaveBeenCalledTimes(1)
+      expect(store.lastSavedType).toBe('AUTO')
     } finally {
       vi.useRealTimers()
     }

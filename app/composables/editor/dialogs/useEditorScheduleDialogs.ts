@@ -2,7 +2,6 @@ import { EDITOR_DRAFT_NAME_MAX_LENGTH } from '#shared/constants/editor'
 import { useValidationField } from '~/composables/useValidationField'
 import { useScheduleDraftStore } from '~/stores/schedule-draft'
 import { buildEditorCommitteeListEntries } from '~/utils/editor/draft-committee'
-import { extractHttpErrorMessage } from '~/utils/http-error'
 import { createQuestionsEnvelopeCsvEnumLabelResolver } from '~/utils/export/questions-envelope-csv-enums'
 import {
   buildPdfInvigilatorsExportPayload,
@@ -393,8 +392,9 @@ export function useEditorScheduleDialogs() {
       return
     }
 
+    const normalizedCloudSaveName = cloudSaveName.value.trim()
     const savedSuccessfully = await scheduleDraftStore
-      .saveManualDraft(cloudSaveName.value.trim(), true)
+      .saveManualDraft(normalizedCloudSaveName, true)
       .then(() => true)
       .catch(() => false)
 

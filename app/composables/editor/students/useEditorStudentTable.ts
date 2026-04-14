@@ -47,28 +47,32 @@ function updateStudentItemFromRow(
   const normalizedCurrentSpecializationCode = normalizeRequiredText(studentItem.student.specializationCode)
   const normalizedRowStudyProgramName = normalizeRequiredText(row.studyProgramName)
   const normalizedRowSpecializationCode = normalizeRequiredText(row.specializationCode)
+  const hasStudyLanguageChanged = row.studyLanguage !== studentItem.student.studyLanguage
+  const hasStudyProgramTypeChanged = row.studyProgramType !== studentItem.student.studyProgramType
+  const hasStudyProgramNameChanged = normalizedRowStudyProgramName !== normalizedCurrentStudyProgramName
+  const hasSpecializationCodeChanged = normalizedRowSpecializationCode !== normalizedCurrentSpecializationCode
   const hasStudyProfileChanged =
-    row.studyLanguage !== studentItem.student.studyLanguage ||
-    row.studyProgramType !== studentItem.student.studyProgramType ||
-    normalizedRowStudyProgramName !== normalizedCurrentStudyProgramName
-  const shouldClearSpecializationAfterProfileChange =
-    hasStudyProfileChanged && normalizedRowSpecializationCode === normalizedCurrentSpecializationCode
+    hasStudyLanguageChanged || hasStudyProgramTypeChanged || hasStudyProgramNameChanged || hasSpecializationCodeChanged
+  const hasPrimaryStudyProfileChanged =
+    hasStudyLanguageChanged || hasStudyProgramTypeChanged || hasStudyProgramNameChanged
+  const shouldClearSpecializationAfterProfileChange = hasPrimaryStudyProfileChanged && !hasSpecializationCodeChanged
 
-  let nextStudyProfile = applyStudyLanguageChange(
-    {
-      studyLanguage: studentItem.student.studyLanguage,
-      studyProgramType: studentItem.student.studyProgramType,
-      studyProgramName: studentItem.student.studyProgramName,
-      specializationCode: studentItem.student.specializationCode
-    },
-    row.studyLanguage
-  )
-  nextStudyProfile = applyStudyProgramTypeChange(nextStudyProfile, row.studyProgramType)
-  nextStudyProfile = applyStudyProgramNameChange(nextStudyProfile, row.studyProgramName)
-  nextStudyProfile = applySpecializationCodeChange(
-    nextStudyProfile,
-    shouldClearSpecializationAfterProfileChange ? '' : row.specializationCode
-  )
+  let nextStudyProfile = {
+    studyLanguage: studentItem.student.studyLanguage,
+    studyProgramType: studentItem.student.studyProgramType,
+    studyProgramName: studentItem.student.studyProgramName,
+    specializationCode: studentItem.student.specializationCode
+  }
+
+  if (hasStudyProfileChanged) {
+    nextStudyProfile = applyStudyLanguageChange(nextStudyProfile, row.studyLanguage)
+    nextStudyProfile = applyStudyProgramTypeChange(nextStudyProfile, row.studyProgramType)
+    nextStudyProfile = applyStudyProgramNameChange(nextStudyProfile, row.studyProgramName)
+    nextStudyProfile = applySpecializationCodeChange(
+      nextStudyProfile,
+      shouldClearSpecializationAfterProfileChange ? '' : row.specializationCode
+    )
+  }
 
   const previousStudyProgramType = studentItem.student.studyProgramType
   const previousRepeatType = studentItem.student.repeatType

@@ -10,7 +10,9 @@ const pauseTypeSchema = z.enum(['BREAK', 'LUNCH'])
 const repeatTypeSchema = z.enum(['NONE', 'THESIS_DEFENSE', 'ORAL_EXAM', 'BOTH', 'UNKNOWN'])
 const timeScheduleTypeSchema = z.enum(['MANUAL', 'AUTO'])
 
-const nonEmptyTrimmedStringSchema = z.string().trim().min(1, {
+const trimmedStringSchema = z.string().trim()
+
+const nonEmptyTrimmedStringSchema = trimmedStringSchema.min(1, {
   message: 'must have at least 1 non-whitespace character'
 })
 
@@ -20,8 +22,8 @@ const dateStringSchema = z.string().refine((value) => !Number.isNaN(Date.parse(v
 
 const studentItemSchema = z
   .object({
-    firstName: nonEmptyTrimmedStringSchema,
-    lastName: nonEmptyTrimmedStringSchema,
+    firstName: trimmedStringSchema,
+    lastName: trimmedStringSchema,
     email: z.string().nullable(),
     titlesBefore: z.string().nullable(),
     titlesAfter: z.string().nullable(),

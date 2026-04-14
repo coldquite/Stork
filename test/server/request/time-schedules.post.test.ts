@@ -111,6 +111,105 @@ async function readErrorMessage(response: Response): Promise<string> {
   }
 }
 
+async function readPersistedSchedule(scheduleId: string) {
+  return prisma.timeSchedule.findUnique({
+    where: {
+      id: scheduleId
+    },
+    include: {
+      committees: {
+        orderBy: [{ date: 'asc' }, { startMinute: 'asc' }, { id: 'asc' }],
+        include: {
+          items: {
+            orderBy: {
+              position: 'asc'
+            },
+            include: {
+              student: true,
+              pause: true
+            }
+          }
+        }
+      }
+    }
+  })
+}
+
+function withFirstCommittee(
+  payload: PostTimeScheduleRequestDto,
+  mutateCommittee: (committee: PostCommitteeDraft) => PostCommitteeDraft
+): PostTimeScheduleRequestDto {
+  const firstCommittee = payload.committees[0]
+  if (!firstCommittee) {
+    throw new Error('Expected first committee in payload')
+  }
+
+  return {
+    ...payload,
+    committees: [mutateCommittee(firstCommittee), ...payload.committees.slice(1)]
+  }
+}
+
+function withFirstStudent(
+  payload: PostTimeScheduleRequestDto,
+  mutateStudent: (
+    student: Extract<PostCommitteeItemDraft, { type: 'STUDENT' }>['student']
+  ) => Extract<PostCommitteeItemDraft, { type: 'STUDENT' }>['student']
+): PostTimeScheduleRequestDto {
+  return withFirstCommittee(payload, (committee) => {
+    const firstStudentIndex = committee.items.findIndex((item) => item.type === 'STUDENT')
+    if (firstStudentIndex < 0) {
+      throw new Error('Expected STUDENT item in first committee')
+    }
+
+    const targetItem = committee.items[firstStudentIndex]
+    if (!targetItem || targetItem.type !== 'STUDENT') {
+      throw new Error('Expected STUDENT item in first committee')
+    }
+
+    const nextItems = committee.items.slice()
+    nextItems[firstStudentIndex] = {
+      ...targetItem,
+      student: mutateStudent(targetItem.student)
+    }
+
+    return {
+      ...committee,
+      items: nextItems
+    }
+  })
+}
+
+function withFirstPause(
+  payload: PostTimeScheduleRequestDto,
+  mutatePause: (
+    pause: Extract<PostCommitteeItemDraft, { type: 'PAUSE' }>['pause']
+  ) => Extract<PostCommitteeItemDraft, { type: 'PAUSE' }>['pause']
+): PostTimeScheduleRequestDto {
+  return withFirstCommittee(payload, (committee) => {
+    const firstPauseIndex = committee.items.findIndex((item) => item.type === 'PAUSE')
+    if (firstPauseIndex < 0) {
+      throw new Error('Expected PAUSE item in first committee')
+    }
+
+    const targetItem = committee.items[firstPauseIndex]
+    if (!targetItem || targetItem.type !== 'PAUSE') {
+      throw new Error('Expected PAUSE item in first committee')
+    }
+
+    const nextItems = committee.items.slice()
+    nextItems[firstPauseIndex] = {
+      ...targetItem,
+      pause: mutatePause(targetItem.pause)
+    }
+
+    return {
+      ...committee,
+      items: nextItems
+    }
+  })
+}
+
 describe('POST /api/time-schedules (integration)', () => {
   beforeEach(async () => {
     await cleanupFixture()
@@ -259,6 +358,184 @@ describe('POST /api/time-schedules (integration)', () => {
 
     expect(response.status).toBe(409)
     expect(statusMessage).toContain('unique constraints')
+  })
+
+  it.each([
+    {
+      name: 'student firstName trimmed to empty string',
+      mutate: (payload: PostTimeScheduleRequestDto) =>
+        withFirstStudent(payload, (student) => ({
+          ...student,
+          firstName: '   '
+        })),
+      assertPersisted: (persistedSchedule: NonNullable<Awaited<ReturnType<typeof readPersistedSchedule>>>) => {
+        const committee = persistedSchedule.committees[0]
+        expect(committee).toBeDefined()
+        const studentItem = committee?.items.find((item) => item.type === 'STUDENT')
+        expect(studentItem?.student?.firstName).toBe('')
+      }
+    },
+    {
+      name: 'student lastName trimmed to empty string',
+      mutate: (payload: PostTimeScheduleRequestDto) =>
+        withFirstStudent(payload, (student) => ({
+          ...student,
+          lastName: '   '
+        })),
+      assertPersisted: (persistedSchedule: NonNullable<Awaited<ReturnType<typeof readPersistedSchedule>>>) => {
+        const committee = persistedSchedule.committees[0]
+        expect(committee).toBeDefined()
+        const studentItem = committee?.items.find((item) => item.type === 'STUDENT')
+        expect(studentItem?.student?.lastName).toBe('')
+      }
+    },
+    {
+      name: 'student profile fields can be empty strings',
+      mutate: (payload: PostTimeScheduleRequestDto) =>
+        withFirstStudent(payload, (student) => ({
+          ...student,
+          studyProgramName: '',
+          specializationName: '',
+          specializationCode: ''
+        })),
+      assertPersisted: (persistedSchedule: NonNullable<Awaited<ReturnType<typeof readPersistedSchedule>>>) => {
+        const committee = persistedSchedule.committees[0]
+        expect(committee).toBeDefined()
+        const studentItem = committee?.items.find((item) => item.type === 'STUDENT')
+        expect(studentItem?.student?.studyProgramName).toBe('')
+        expect(studentItem?.student?.specializationName).toBe('')
+        expect(studentItem?.student?.specializationCode).toBe('')
+      }
+    },
+    {
+      name: 'optional committee fields can be null and invigilators empty',
+      mutate: (payload: PostTimeScheduleRequestDto) =>
+        withFirstCommittee(payload, (committee) => ({
+          ...committee,
+          room: null,
+          preparationRoom: null,
+          secretaryName: null,
+          invigilators: []
+        })),
+      assertPersisted: (persistedSchedule: NonNullable<Awaited<ReturnType<typeof readPersistedSchedule>>>) => {
+        const committee = persistedSchedule.committees[0]
+        expect(committee).toBeDefined()
+        expect(committee?.room).toBeNull()
+        expect(committee?.preparationRoom).toBeNull()
+        expect(committee?.secretaryName).toBeNull()
+        expect(committee?.invigilators).toEqual([])
+      }
+    },
+    {
+      name: 'committee member names can be empty strings',
+      mutate: (payload: PostTimeScheduleRequestDto) =>
+        withFirstCommittee(payload, (committee) => ({
+          ...committee,
+          chairName: '',
+          viceChairName: '',
+          member1Name: '',
+          member2Name: '',
+          member3Name: ''
+        })),
+      assertPersisted: (persistedSchedule: NonNullable<Awaited<ReturnType<typeof readPersistedSchedule>>>) => {
+        const committee = persistedSchedule.committees[0]
+        expect(committee).toBeDefined()
+        expect(committee?.chairName).toBe('')
+        expect(committee?.viceChairName).toBe('')
+        expect(committee?.member1Name).toBe('')
+        expect(committee?.member2Name).toBe('')
+        expect(committee?.member3Name).toBe('')
+      }
+    },
+    {
+      name: 'optional student text fields can be null',
+      mutate: (payload: PostTimeScheduleRequestDto) =>
+        withFirstStudent(payload, (student) => ({
+          ...student,
+          email: null,
+          titlesBefore: null,
+          titlesAfter: null,
+          additionalSupervisorName: null,
+          additionalReviewerName: null
+        })),
+      assertPersisted: (persistedSchedule: NonNullable<Awaited<ReturnType<typeof readPersistedSchedule>>>) => {
+        const committee = persistedSchedule.committees[0]
+        expect(committee).toBeDefined()
+        const studentItem = committee?.items.find((item) => item.type === 'STUDENT')
+        expect(studentItem?.student?.email).toBeNull()
+        expect(studentItem?.student?.titlesBefore).toBeNull()
+        expect(studentItem?.student?.titlesAfter).toBeNull()
+        expect(studentItem?.student?.additionalSupervisorName).toBeNull()
+        expect(studentItem?.student?.additionalReviewerName).toBeNull()
+      }
+    },
+    {
+      name: 'pause label can be an empty string',
+      mutate: (payload: PostTimeScheduleRequestDto) =>
+        withFirstPause(payload, (pause) => ({
+          ...pause,
+          label: ''
+        })),
+      assertPersisted: (persistedSchedule: NonNullable<Awaited<ReturnType<typeof readPersistedSchedule>>>) => {
+        const committee = persistedSchedule.committees[0]
+        expect(committee).toBeDefined()
+        const pauseItem = committee?.items.find((item) => item.type === 'PAUSE')
+        expect(pauseItem?.pause?.label).toBe('')
+      }
+    }
+  ])('accepts GUI-generated edge payload: $name', async ({ mutate, assertPersisted }) => {
+    const payload = mutate(createPostPayload(`GUI_EDGE_OK_${Math.random().toString(36).slice(2, 8)}`))
+
+    const response = await postTimeSchedule(payload, createAuthCookie())
+    expect(response.status).toBe(201)
+
+    const responseBody = (await response.json()) as PostTimeScheduleResponseDto
+    const persistedSchedule = await readPersistedSchedule(responseBody.id)
+
+    expect(persistedSchedule).toBeTruthy()
+    if (!persistedSchedule) {
+      throw new Error('Expected persisted schedule in database')
+    }
+
+    assertPersisted(persistedSchedule)
+  })
+
+  it.each([
+    {
+      name: 'student prepareMinutes = 0 (possible from inline table edit)',
+      mutate: (payload: PostTimeScheduleRequestDto) =>
+        withFirstStudent(payload, (student) => ({
+          ...student,
+          prepareMinutes: 0
+        }))
+    },
+    {
+      name: 'student examMinutes = 0 (possible from inline table edit)',
+      mutate: (payload: PostTimeScheduleRequestDto) =>
+        withFirstStudent(payload, (student) => ({
+          ...student,
+          examMinutes: 0
+        }))
+    }
+  ])('returns 400 for DB-constrained GUI edge payload: $name', async ({ mutate }) => {
+    const payload = mutate(createPostPayload(`GUI_EDGE_DB_${Math.random().toString(36).slice(2, 8)}`))
+    const schedulesBefore = await prisma.timeSchedule.count({
+      where: {
+        name: payload.name
+      }
+    })
+
+    const response = await postTimeSchedule(payload, createAuthCookie())
+    const statusMessage = await readErrorMessage(response)
+    const schedulesAfter = await prisma.timeSchedule.count({
+      where: {
+        name: payload.name
+      }
+    })
+
+    expect(response.status).toBe(400)
+    expect(statusMessage).toContain('Invalid time schedule payload')
+    expect(schedulesAfter).toBe(schedulesBefore)
   })
 
   it.each([

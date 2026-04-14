@@ -153,6 +153,46 @@ describe('time-schedules post contracts', () => {
     expect(parsedStudent.student.lastName).toBe('Novák')
   })
 
+  it('allows empty student first and last names after trim', () => {
+    const payload = createPayload()
+    const firstCommittee = payload.committees[0]
+    if (!firstCommittee) {
+      throw new Error('Expected committee in payload')
+    }
+
+    const firstItem = firstCommittee.items[0]
+    if (!firstItem || firstItem.type !== 'STUDENT') {
+      throw new Error('Expected first item to be STUDENT')
+    }
+
+    const parsed = parsePostTimeSchedulePayload({
+      ...payload,
+      committees: [
+        {
+          ...firstCommittee,
+          items: [
+            {
+              ...firstItem,
+              student: {
+                ...firstItem.student,
+                firstName: '   ',
+                lastName: '   '
+              }
+            }
+          ]
+        }
+      ]
+    })
+
+    const parsedStudent = parsed.committees[0]?.items[0]
+    if (!parsedStudent || parsedStudent.type !== 'STUDENT') {
+      throw new Error('Expected parsed student item')
+    }
+
+    expect(parsedStudent.student.firstName).toBe('')
+    expect(parsedStudent.student.lastName).toBe('')
+  })
+
   it('accepts student email without format validation', () => {
     const payload = createPayload()
     const firstCommittee = payload.committees[0]
