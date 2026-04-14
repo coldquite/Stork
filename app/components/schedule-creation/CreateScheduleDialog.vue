@@ -127,6 +127,10 @@ function handleImportSubmit(): void {
 function handleClearImportFiles(): void {
   resetImportState()
 }
+
+function resolveImportFileInputId(fieldKey: string): string {
+  return `import-file-${fieldKey}`
+}
 </script>
 
 <template>
@@ -145,9 +149,9 @@ function handleClearImportFiles(): void {
         <template #import>
           <div class="w-full space-y-4">
             <div class="space-y-2">
-              <p class="text-muted text-sm">
+              <CommonAppFieldLabel as="p" required class="text-muted text-sm">
                 {{ $t('homepage.actions.create.nameDialogTitle') }}
-              </p>
+              </CommonAppFieldLabel>
 
               <UInput
                 v-model="name"
@@ -197,12 +201,17 @@ function handleClearImportFiles(): void {
                 :key="field.key"
                 class="border-default space-y-2 rounded-lg border p-3"
               >
-                <label :for="`import-file-${field.key}`" class="text-sm font-medium">
+                <CommonAppFieldLabel
+                  as="label"
+                  :for-id="resolveImportFileInputId(field.key)"
+                  required
+                  class="text-sm font-medium"
+                >
                   {{ $t(field.labelKey) }}
-                </label>
+                </CommonAppFieldLabel>
 
                 <input
-                  :id="`import-file-${field.key}`"
+                  :id="resolveImportFileInputId(field.key)"
                   type="file"
                   multiple
                   accept=".csv,text/csv"
@@ -212,7 +221,7 @@ function handleClearImportFiles(): void {
                 />
 
                 <label
-                  :for="`import-file-${field.key}`"
+                  :for="resolveImportFileInputId(field.key)"
                   class="bg-elevated border-default group flex items-center gap-3 rounded-md border px-3 py-2 transition-colors"
                   :class="props.loading ? 'pointer-events-none opacity-50' : 'hover:bg-accented cursor-pointer'"
                 >
@@ -251,9 +260,9 @@ function handleClearImportFiles(): void {
 
         <template #empty>
           <div class="w-full space-y-2">
-            <p class="text-muted text-sm">
+            <CommonAppFieldLabel as="p" required class="text-muted text-sm">
               {{ $t('homepage.actions.create.nameDialogTitle') }}
-            </p>
+            </CommonAppFieldLabel>
 
             <UInput
               v-model="name"

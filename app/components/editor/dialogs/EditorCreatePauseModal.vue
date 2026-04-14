@@ -40,6 +40,8 @@ const dialogDescription = computed(() =>
   isCreateMode.value ? t('editor.pause.add.description') : t('editor.pause.edit.description')
 )
 const submitLabel = computed(() => (isCreateMode.value ? t('editor.pause.add.submit') : t('editor.pause.edit.submit')))
+const customLabelInputId = useId()
+const durationInputId = useId()
 
 function selectPauseType(value: PauseTypeDto): void {
   if (isInputDisabled.value) {
@@ -127,8 +129,16 @@ function cancel(): void {
         </div>
 
         <div v-if="draft.useCustomLabel" class="space-y-1">
-          <span class="text-sm font-medium">{{ t('editor.pause.fields.customLabel') }}</span>
+          <CommonAppFieldLabel
+            as="label"
+            :for-id="customLabelInputId"
+            :required="draft.useCustomLabel"
+            class="text-sm font-medium"
+          >
+            {{ t('editor.pause.fields.customLabel') }}
+          </CommonAppFieldLabel>
           <UInput
+            :id="customLabelInputId"
             :model-value="draft.customLabel"
             class="w-full"
             :disabled="isInputDisabled"
@@ -141,8 +151,11 @@ function cancel(): void {
         </div>
 
         <div class="space-y-1">
-          <span class="text-sm font-medium">{{ t('editor.pause.fields.durationMinutes') }}</span>
+          <CommonAppFieldLabel as="label" :for-id="durationInputId" required class="text-sm font-medium">
+            {{ t('editor.pause.fields.durationMinutes') }}
+          </CommonAppFieldLabel>
           <UInput
+            :id="durationInputId"
             type="number"
             :model-value="draft.durationMinutes"
             class="w-full"

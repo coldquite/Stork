@@ -275,6 +275,7 @@
         "dialog": {
           "title": "Uložit plán do cloudu",
           "description": "Zadejte název, pod kterým se plán uloží do cloudu. Název rozpracovaného plánu v editoru se tím nezmění.",
+          "fieldLabel": "Název plánu",
           "placeholder": "Např. SZZ Informatika - červen 2026",
           "hint": "Název nesmí začínat ani končit mezerou a může mít maximálně {max} znaků.",
           "submit": "Uložit do cloudu"
@@ -400,6 +401,7 @@
         "action": "Přejmenovat",
         "title": "Přejmenovat plán",
         "description": "Upravte název aktuálního časového plánu.",
+        "fieldLabel": "Název plánu",
         "placeholder": "Např. SZZ Informatika - červen 2026",
         "hint": "Název nesmí začínat ani končit mezerou a může mít maximálně {max} znaků.",
         "submit": "Uložit název",
@@ -437,6 +439,7 @@
       "create": {
         "title": "Přidat komisi",
         "description": "Zadejte název nové komise.",
+        "fieldLabel": "Název komise",
         "placeholder": "Např. 1-BI-SI.21",
         "hint": "Název komise musí být v rámci tohoto plánu unikátní.",
         "submit": "Vytvořit komisi",
@@ -446,6 +449,7 @@
         "action": "Přejmenovat",
         "title": "Přejmenovat komisi",
         "description": "Upravte název komise „{name}“.",
+        "fieldLabel": "Název komise",
         "placeholder": "Např. 1-BI-SI.21",
         "hint": "Název komise musí být v rámci tohoto plánu unikátní.",
         "submit": "Uložit název",
@@ -514,6 +518,7 @@
           "action": "Přidat člena dozoru",
           "title": "Přidat člena dozoru",
           "description": "Zadejte jméno nového člena dozoru.",
+          "fieldLabel": "Jméno člena dozoru",
           "placeholder": "Např. Ing. Jan Blizničenko, Ph.D.",
           "hint": "Jméno člena dozoru nesmí začínat ani končit mezerou.",
           "submit": "Přidat člena",

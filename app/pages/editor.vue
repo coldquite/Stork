@@ -107,6 +107,7 @@ const dialogCopy = computed(() => ({
   commonCancel: t('common.confirmDialog.cancel'),
   renameCommittee: {
     title: t('editor.committees.rename.title'),
+    fieldLabel: t('editor.committees.rename.fieldLabel'),
     placeholder: t('editor.committees.rename.placeholder'),
     hint: t('editor.committees.rename.hint'),
     submit: t('editor.committees.rename.submit')
@@ -114,6 +115,7 @@ const dialogCopy = computed(() => ({
   createCommittee: {
     title: t('editor.committees.create.title'),
     description: t('editor.committees.create.description'),
+    fieldLabel: t('editor.committees.create.fieldLabel'),
     placeholder: t('editor.committees.create.placeholder'),
     hint: t('editor.committees.create.hint'),
     submit: t('editor.committees.create.submit')
@@ -121,6 +123,7 @@ const dialogCopy = computed(() => ({
   renameDraft: {
     title: t('editor.schedule.rename.title'),
     description: t('editor.schedule.rename.description'),
+    fieldLabel: t('editor.schedule.rename.fieldLabel'),
     placeholder: t('editor.schedule.rename.placeholder'),
     hint: t('editor.schedule.rename.hint', { max: scheduleDialogs.draftNameMaxLength }),
     submit: t('editor.schedule.rename.submit')
@@ -128,6 +131,7 @@ const dialogCopy = computed(() => ({
   cloudSave: {
     title: t('editor.schedule.cloudSave.dialog.title'),
     description: t('editor.schedule.cloudSave.dialog.description'),
+    fieldLabel: t('editor.schedule.cloudSave.dialog.fieldLabel'),
     placeholder: t('editor.schedule.cloudSave.dialog.placeholder'),
     hint: t('editor.schedule.cloudSave.dialog.hint', { max: scheduleDialogs.draftNameMaxLength }),
     submit: t('editor.schedule.cloudSave.dialog.submit')
@@ -185,6 +189,7 @@ const dialogCopy = computed(() => ({
   addInvigilator: {
     title: t('editor.committee.invigilators.add.title'),
     description: t('editor.committee.invigilators.add.description'),
+    fieldLabel: t('editor.committee.invigilators.add.fieldLabel'),
     placeholder: t('editor.committee.invigilators.add.placeholder'),
     hint: t('editor.committee.invigilators.add.hint'),
     submit: t('editor.committee.invigilators.add.submit')

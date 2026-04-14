@@ -174,7 +174,9 @@ function emitSpecializationCode(value: string): void {
       </div>
 
       <div class="flex items-center gap-2">
-        <span class="text-sm whitespace-nowrap">{{ props.studyProgramNameLabel }}:</span>
+        <CommonAppFieldLabel class="text-sm whitespace-nowrap">
+          {{ props.studyProgramNameLabel }}:
+        </CommonAppFieldLabel>
         <USelectMenu
           :model-value="committeeStudyProgramNameValue"
           :items="committeeStudyProgramNameOptions"
@@ -188,7 +190,9 @@ function emitSpecializationCode(value: string): void {
       </div>
 
       <div class="flex items-center gap-2">
-        <span class="text-sm whitespace-nowrap">{{ props.specializationCodeLabel }}:</span>
+        <CommonAppFieldLabel class="text-sm whitespace-nowrap">
+          {{ props.specializationCodeLabel }}:
+        </CommonAppFieldLabel>
         <USelectMenu
           :model-value="committeeSpecializationCodeValue"
           :items="committeeSpecializationCodeOptions"

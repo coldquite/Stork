@@ -267,7 +267,9 @@ watch(
               </div>
 
               <div class="space-y-1">
-                <span class="text-sm font-medium">{{ t('editor.students.add.fields.firstName') }}</span>
+                <CommonAppFieldLabel required class="text-sm font-medium">
+                  {{ t('editor.students.add.fields.firstName') }}
+                </CommonAppFieldLabel>
                 <UInput
                   :model-value="draft.firstName"
                   :class="inputClass"
@@ -280,7 +282,9 @@ watch(
               </div>
 
               <div class="space-y-1">
-                <span class="text-sm font-medium">{{ t('editor.students.add.fields.lastName') }}</span>
+                <CommonAppFieldLabel required class="text-sm font-medium">
+                  {{ t('editor.students.add.fields.lastName') }}
+                </CommonAppFieldLabel>
                 <UInput
                   :model-value="draft.lastName"
                   :class="inputClass"
@@ -338,7 +342,9 @@ watch(
           </div>
 
           <div class="space-y-1">
-            <span class="text-sm font-medium">{{ t('editor.students.add.fields.studyProgramName') }}</span>
+            <CommonAppFieldLabel required class="text-sm font-medium">
+              {{ t('editor.students.add.fields.studyProgramName') }}
+            </CommonAppFieldLabel>
             <USelectMenu
               :model-value="draft.studyProgramName"
               :items="props.studyProgramNameOptions"
@@ -353,7 +359,9 @@ watch(
           </div>
 
           <div class="space-y-1">
-            <span class="text-sm font-medium">{{ t('editor.students.add.fields.specializationCode') }}</span>
+            <CommonAppFieldLabel required class="text-sm font-medium">
+              {{ t('editor.students.add.fields.specializationCode') }}
+            </CommonAppFieldLabel>
             <USelectMenu
               :model-value="draft.specializationCode"
               :items="props.specializationOptions"
@@ -374,7 +382,9 @@ watch(
           </div>
 
           <div class="space-y-1">
-            <span class="text-sm font-medium">{{ t('editor.students.add.fields.thesisTitleLocal') }}</span>
+            <CommonAppFieldLabel required class="text-sm font-medium">
+              {{ t('editor.students.add.fields.thesisTitleLocal') }}
+            </CommonAppFieldLabel>
             <UTextarea
               :model-value="draft.thesisTitleLocal"
               :class="inputClass"
@@ -389,7 +399,9 @@ watch(
           </div>
 
           <div class="space-y-1">
-            <span class="text-sm font-medium">{{ t('editor.students.add.fields.thesisTitleEn') }}</span>
+            <CommonAppFieldLabel required class="text-sm font-medium">
+              {{ t('editor.students.add.fields.thesisTitleEn') }}
+            </CommonAppFieldLabel>
             <UTextarea
               :model-value="draft.thesisTitleEn"
               :class="inputClass"
@@ -404,7 +416,9 @@ watch(
           </div>
 
           <div class="space-y-1">
-            <span class="text-sm font-medium">{{ t('editor.students.add.fields.supervisorName') }}</span>
+            <CommonAppFieldLabel required class="text-sm font-medium">
+              {{ t('editor.students.add.fields.supervisorName') }}
+            </CommonAppFieldLabel>
             <UInput
               :model-value="draft.supervisorName"
               :class="inputClass"
@@ -427,7 +441,9 @@ watch(
           </div>
 
           <div class="space-y-1">
-            <span class="text-sm font-medium">{{ t('editor.students.add.fields.reviewerName') }}</span>
+            <CommonAppFieldLabel required class="text-sm font-medium">
+              {{ t('editor.students.add.fields.reviewerName') }}
+            </CommonAppFieldLabel>
             <UInput
               :model-value="draft.reviewerName"
               :class="inputClass"

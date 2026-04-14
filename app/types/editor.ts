@@ -365,6 +365,7 @@ export interface EditorScheduleDialogsCopy {
   commonCancel: string
   renameCommittee: {
     title: string
+    fieldLabel: string
     placeholder: string
     hint: string
     submit: string
@@ -372,6 +373,7 @@ export interface EditorScheduleDialogsCopy {
   createCommittee: {
     title: string
     description: string
+    fieldLabel: string
     placeholder: string
     hint: string
     submit: string
@@ -379,6 +381,7 @@ export interface EditorScheduleDialogsCopy {
   renameDraft: {
     title: string
     description: string
+    fieldLabel: string
     placeholder: string
     hint: string
     submit: string
@@ -386,6 +389,7 @@ export interface EditorScheduleDialogsCopy {
   cloudSave: {
     title: string
     description: string
+    fieldLabel: string
     placeholder: string
     hint: string
     submit: string
@@ -393,6 +397,7 @@ export interface EditorScheduleDialogsCopy {
   addInvigilator: {
     title: string
     description: string
+    fieldLabel: string
     placeholder: string
     hint: string
     submit: string

@@ -3,6 +3,7 @@ const props = withDefaults(
   defineProps<{
     open: boolean
     name: string
+    fieldLabel: string
     title: string
     description: string
     placeholder: string
@@ -23,6 +24,8 @@ const emit = defineEmits<{
   (event: 'update:name', value: string): void
   (event: 'submit' | 'cancel'): void
 }>()
+
+const nameInputId = useId()
 
 function updateName(value: string | number): void {
   emit('update:name', String(value))
@@ -56,7 +59,12 @@ function cancel(): void {
   >
     <template #body>
       <div class="w-full space-y-2">
+        <CommonAppFieldLabel as="label" :for-id="nameInputId" required class="text-muted text-base">
+          {{ props.fieldLabel }}
+        </CommonAppFieldLabel>
+
         <UInput
+          :id="nameInputId"
           :model-value="props.name"
           class="w-full"
           autofocus
