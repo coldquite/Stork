@@ -23,9 +23,12 @@ const userManualPageLabel = computed(() => t('userManual.navigation.openPage'))
 const mobileNavigationDrawerTitle = computed(() => t('layout.header.mobileNavigationTitle'))
 const mobileNavigationDrawerDescription = computed(() => t('layout.header.mobileNavigationDescription'))
 const headerActionButtonClass = 'cursor-pointer hover:bg-primary/20 hover:ring-primary/40'
-const editorHeaderActionButtonClass = `${headerActionButtonClass} whitespace-nowrap shrink-0`
+const headerSegmentedButtonClass =
+  'relative rounded-none -ml-0.5 first:ml-0 first:rounded-l-md last:rounded-r-md hover:z-10 focus-visible:z-10'
+const editorHeaderActionButtonClass = `${headerActionButtonClass} whitespace-nowrap shrink-0 ${headerSegmentedButtonClass}`
 const secondaryHeaderButtonClass = `${editorHeaderActionButtonClass} bg-secondary/20 ring-secondary/30 hover:bg-secondary/30 hover:ring-secondary/70`
 const logoutHeaderButtonClass = `${headerActionButtonClass} whitespace-nowrap shrink-0`
+const desktopLogoutHeaderButtonClass = `${logoutHeaderButtonClass} ${headerSegmentedButtonClass}`
 const logoutButtonLabel = computed(() => {
   return `${t('dashboard.logoutButton')}: ${usernameLabel.value}`
 })
@@ -168,7 +171,7 @@ async function confirmLogout(): Promise<void> {
 
           <nav
             v-if="isEditorRoute"
-            class="hidden items-center gap-3 min-[1700px]:flex"
+            class="isolate hidden items-center gap-0 min-[1700px]:flex"
             :aria-label="t('layout.header.editorNavigation')"
           >
             <UButton
@@ -227,7 +230,10 @@ async function confirmLogout(): Promise<void> {
       </template>
 
       <template #right>
-        <nav class="hidden items-center gap-3 min-[1700px]:flex" :aria-label="t('layout.header.mainNavigation')">
+        <nav
+          class="isolate hidden items-center gap-0 min-[1700px]:flex"
+          :aria-label="t('layout.header.mainNavigation')"
+        >
           <UButton
             v-if="!isEditorRoute"
             to="/teachers-dictionary"
@@ -261,7 +267,7 @@ async function confirmLogout(): Promise<void> {
             size="xl"
             icon="i-lucide-log-out"
             :aria-label="logoutButtonLabel"
-            :class="logoutHeaderButtonClass"
+            :class="desktopLogoutHeaderButtonClass"
             :loading="authStore.isLogoutLoading"
             @click="openLogoutDialog"
           >
