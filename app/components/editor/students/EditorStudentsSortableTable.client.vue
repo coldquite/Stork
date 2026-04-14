@@ -21,11 +21,7 @@ import type {
   EditorStudentsPanelStudentsEmptyLabels,
   EditorTableRow
 } from '~/types/editor'
-import {
-  EDITOR_INVALID_INPUT_UI,
-  EDITOR_INVALID_RING_CLASS,
-  EDITOR_INVALID_TEXT_CLASS
-} from '~/constants/editor-validation-ui'
+import { EDITOR_INVALID_INPUT_UI, EDITOR_INVALID_TEXT_CLASS } from '~/constants/editor-validation-ui'
 import { resolveRepeatTypeFromSelectValue } from '~/utils/editor/repeat-type'
 import {
   applySpecializationCodeChange,
@@ -119,7 +115,6 @@ const inlineEditInputClass = 'w-full [&_input]:text-sm'
 const inlineEditSelectClass = 'w-full [&_[role=combobox]]:text-sm [&_[role=combobox]_span]:text-sm'
 const inlineReadonlyFrameClass = 'w-full min-h-8 px-2.5 py-1.5'
 const inlineReadonlySelectFrameClass = `${inlineReadonlyFrameClass} pe-9`
-const invalidInlineReadonlySelectFrameClass = `${inlineReadonlySelectFrameClass} ${EDITOR_INVALID_RING_CLASS}`
 const inlineReadonlyTextClass = 'block text-sm whitespace-nowrap'
 const thesisCellWrapperClass = `${STUDENT_TABLE_THESIS_COLUMN_WIDTH_CLASS} cursor-pointer`
 const thesisTitleWarningMarker = '[?]'
@@ -213,16 +208,6 @@ function resolveSelectUi(row: EditorStudentTableRow, fieldKey: EditorStudentVali
 
 function resolveSpecializationIsInvalid(row: EditorStudentTableRow): boolean {
   return isStudentFieldInvalid(row, 'specializationCode') || !isStudentDepartmentResolvable(row)
-}
-
-function resolveSpecializationHasRingInvalid(row: EditorStudentTableRow): boolean {
-  return isStudentFieldRingInvalid(row, 'specializationCode') || !isStudentDepartmentResolvable(row)
-}
-
-function resolveSpecializationDisplayFrameClass(row: EditorStudentTableRow): string {
-  return resolveSpecializationHasRingInvalid(row)
-    ? invalidInlineReadonlySelectFrameClass
-    : inlineReadonlySelectFrameClass
 }
 
 function clearRowHighlightTimer(): void {
@@ -1214,7 +1199,7 @@ onBeforeUnmount(() => {
           :model-value="row.original.specializationCode"
           cell-wrapper-class="min-w-32 cursor-pointer"
           :input-class="resolveSelectClass(row.original, 'specializationCode')"
-          :display-frame-class="resolveSpecializationDisplayFrameClass(row.original)"
+          :display-frame-class="inlineReadonlySelectFrameClass"
           mode="text"
           @activate="activateRow(row.original.id)"
         >
@@ -1228,7 +1213,6 @@ onBeforeUnmount(() => {
               :search-input="false"
               size="md"
               :class="resolveSelectClass(row.original, 'specializationCode')"
-              :ui="resolveSpecializationIsInvalid(row.original) ? invalidSelectUi : undefined"
               @update:model-value="updateSpecializationCode(row.original.id, $event)"
             />
           </template>
