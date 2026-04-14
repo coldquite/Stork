@@ -20,6 +20,24 @@ const dateStringSchema = z.string().refine((value) => !Number.isNaN(Date.parse(v
   message: 'must be a valid ISO date string'
 })
 
+const nonNegativeIntegerSchema = z
+  .number()
+  .int({
+    message: 'must be an integer'
+  })
+  .min(0, {
+    message: 'must be greater than or equal to 0'
+  })
+
+const positiveIntegerSchema = z
+  .number()
+  .int({
+    message: 'must be an integer'
+  })
+  .gt(0, {
+    message: 'must be greater than 0'
+  })
+
 const studentItemSchema = z
   .object({
     firstName: trimmedStringSchema,
@@ -40,12 +58,8 @@ const studentItemSchema = z
     specializationCode: z.string(),
     studyLanguage: studyLanguageSchema,
     repeatType: repeatTypeSchema,
-    prepareMinutes: z.number().int({
-      message: 'must be an integer'
-    }),
-    examMinutes: z.number().int({
-      message: 'must be an integer'
-    })
+    prepareMinutes: nonNegativeIntegerSchema,
+    examMinutes: nonNegativeIntegerSchema
   })
   .strict()
 
@@ -53,9 +67,7 @@ const pauseItemSchema = z
   .object({
     label: z.string(),
     pauseType: pauseTypeSchema,
-    durationMinutes: z.number().int({
-      message: 'must be an integer'
-    })
+    durationMinutes: positiveIntegerSchema
   })
   .strict()
 
@@ -63,9 +75,7 @@ const committeeItemSchema = z.discriminatedUnion('type', [
   z
     .object({
       type: z.literal('STUDENT'),
-      position: z.number().int({
-        message: 'must be an integer'
-      }),
+      position: nonNegativeIntegerSchema,
       student: studentItemSchema,
       pause: z.null()
     })
@@ -73,9 +83,7 @@ const committeeItemSchema = z.discriminatedUnion('type', [
   z
     .object({
       type: z.literal('PAUSE'),
-      position: z.number().int({
-        message: 'must be an integer'
-      }),
+      position: nonNegativeIntegerSchema,
       student: z.null(),
       pause: pauseItemSchema
     })
@@ -85,8 +93,8 @@ const committeeItemSchema = z.discriminatedUnion('type', [
 const committeeSchema = z
   .object({
     name: z.string(),
-    startMinute: z.number().int({
-      message: 'must be an integer'
+    startMinute: nonNegativeIntegerSchema.max(1439, {
+      message: 'must be less than or equal to 1439'
     }),
     date: dateStringSchema,
     room: z.string().nullable(),

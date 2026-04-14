@@ -502,41 +502,93 @@ describe('POST /api/time-schedules (integration)', () => {
 
   it.each([
     {
-      name: 'student prepareMinutes = 0 (possible from inline table edit)',
+      name: 'student prepareMinutes = 0 (allowed by DB)',
       mutate: (payload: PostTimeScheduleRequestDto) =>
         withFirstStudent(payload, (student) => ({
           ...student,
           prepareMinutes: 0
-        }))
+        })),
+      assertPersisted: (persistedSchedule: NonNullable<Awaited<ReturnType<typeof readPersistedSchedule>>>) => {
+        const committee = persistedSchedule.committees[0]
+        expect(committee).toBeDefined()
+        const studentItem = committee?.items.find((item) => item.type === 'STUDENT')
+        expect(studentItem?.student?.prepareMinutes).toBe(0)
+      }
     },
     {
-      name: 'student examMinutes = 0 (possible from inline table edit)',
+      name: 'student examMinutes = 0 (allowed by DB)',
       mutate: (payload: PostTimeScheduleRequestDto) =>
         withFirstStudent(payload, (student) => ({
           ...student,
           examMinutes: 0
-        }))
-    }
-  ])('returns 400 for DB-constrained GUI edge payload: $name', async ({ mutate }) => {
-    const payload = mutate(createPostPayload(`GUI_EDGE_DB_${Math.random().toString(36).slice(2, 8)}`))
-    const schedulesBefore = await prisma.timeSchedule.count({
-      where: {
-        name: payload.name
+        })),
+      assertPersisted: (persistedSchedule: NonNullable<Awaited<ReturnType<typeof readPersistedSchedule>>>) => {
+        const committee = persistedSchedule.committees[0]
+        expect(committee).toBeDefined()
+        const studentItem = committee?.items.find((item) => item.type === 'STUDENT')
+        expect(studentItem?.student?.examMinutes).toBe(0)
       }
-    })
+    }
+  ])('accepts DB-allowed student minute payload: $name', async ({ mutate, assertPersisted }) => {
+    const payload = mutate(createPostPayload(`GUI_EDGE_DB_OK_${Math.random().toString(36).slice(2, 8)}`))
 
     const response = await postTimeSchedule(payload, createAuthCookie())
-    const statusMessage = await readErrorMessage(response)
-    const schedulesAfter = await prisma.timeSchedule.count({
-      where: {
-        name: payload.name
-      }
-    })
+    expect(response.status).toBe(201)
 
-    expect(response.status).toBe(400)
-    expect(statusMessage).toContain('Invalid time schedule payload')
-    expect(schedulesAfter).toBe(schedulesBefore)
+    const responseBody = (await response.json()) as PostTimeScheduleResponseDto
+    const persistedSchedule = await readPersistedSchedule(responseBody.id)
+
+    expect(persistedSchedule).toBeTruthy()
+    if (!persistedSchedule) {
+      throw new Error('Expected persisted schedule in database')
+    }
+
+    assertPersisted(persistedSchedule)
   })
+
+  it.each([
+    {
+      name: 'student prepareMinutes = -1',
+      expectedIssueFragment: 'prepareMinutes',
+      mutate: (payload: PostTimeScheduleRequestDto) =>
+        withFirstStudent(payload, (student) => ({
+          ...student,
+          prepareMinutes: -1
+        }))
+    },
+    {
+      name: 'student examMinutes = -1',
+      expectedIssueFragment: 'examMinutes',
+      mutate: (payload: PostTimeScheduleRequestDto) =>
+        withFirstStudent(payload, (student) => ({
+          ...student,
+          examMinutes: -1
+        }))
+    }
+  ])(
+    'returns 400 when student minute payload violates non-negative constraints: $name',
+    async ({ mutate, expectedIssueFragment }) => {
+      const payload = mutate(createPostPayload(`GUI_EDGE_DB_INVALID_${Math.random().toString(36).slice(2, 8)}`))
+      const schedulesBefore = await prisma.timeSchedule.count({
+        where: {
+          name: payload.name
+        }
+      })
+
+      const response = await postTimeSchedule(payload, createAuthCookie())
+      const statusMessage = await readErrorMessage(response)
+      const schedulesAfter = await prisma.timeSchedule.count({
+        where: {
+          name: payload.name
+        }
+      })
+
+      expect(response.status).toBe(400)
+      expect(statusMessage).toContain('Invalid time schedule payload')
+      expect(statusMessage).toContain(expectedIssueFragment)
+      expect(schedulesAfter).toBe(schedulesBefore)
+    }
+  )
 
   it.each([
     {
@@ -923,6 +975,32 @@ describe('POST /api/time-schedules (integration)', () => {
                   pause: {
                     ...pauseItem.pause,
                     pauseType: 'COFFEE'
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      name: 'pause durationMinutes is zero',
+      expectedIssueFragment: 'durationMinutes',
+      mutate: (payload: PostTimeScheduleRequestDto) => {
+        const firstCommittee = payload.committees[0] as PostCommitteeDraft
+        const pauseItem = firstCommittee.items[1] as Extract<PostCommitteeItemDraft, { type: 'PAUSE' }>
+
+        return {
+          ...payload,
+          committees: [
+            {
+              ...firstCommittee,
+              items: [
+                {
+                  ...pauseItem,
+                  pause: {
+                    ...pauseItem.pause,
+                    durationMinutes: 0
                   }
                 }
               ]

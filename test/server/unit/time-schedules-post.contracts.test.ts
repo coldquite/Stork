@@ -296,6 +296,135 @@ describe('time-schedules post contracts', () => {
     expect(statusMessage).toContain('must be an integer')
   })
 
+  it('accepts zero-valued student minute fields', () => {
+    const payload = createPayload()
+    const firstCommittee = payload.committees[0]
+    if (!firstCommittee) {
+      throw new Error('Expected committee in payload')
+    }
+
+    const firstItem = firstCommittee.items[0]
+    if (!firstItem || firstItem.type !== 'STUDENT') {
+      throw new Error('Expected first item to be STUDENT')
+    }
+
+    const parsed = parsePostTimeSchedulePayload({
+      ...payload,
+      committees: [
+        {
+          ...firstCommittee,
+          items: [
+            {
+              ...firstItem,
+              student: {
+                ...firstItem.student,
+                prepareMinutes: 0,
+                examMinutes: 0
+              }
+            }
+          ]
+        }
+      ]
+    })
+
+    const parsedStudent = parsed.committees[0]?.items[0]
+    if (!parsedStudent || parsedStudent.type !== 'STUDENT') {
+      throw new Error('Expected parsed student item')
+    }
+
+    expect(parsedStudent.student.prepareMinutes).toBe(0)
+    expect(parsedStudent.student.examMinutes).toBe(0)
+  })
+
+  it.each([
+    {
+      name: 'student prepareMinutes is negative',
+      expectedIssueFragment: 'payload.committees[0].items[0].student.prepareMinutes',
+      mutateStudent: (
+        student: Extract<PostTimeScheduleRequestDto['committees'][number]['items'][number], { type: 'STUDENT' }>
+      ) => ({
+        ...student,
+        student: {
+          ...student.student,
+          prepareMinutes: -1
+        }
+      })
+    },
+    {
+      name: 'student examMinutes is negative',
+      expectedIssueFragment: 'payload.committees[0].items[0].student.examMinutes',
+      mutateStudent: (
+        student: Extract<PostTimeScheduleRequestDto['committees'][number]['items'][number], { type: 'STUDENT' }>
+      ) => ({
+        ...student,
+        student: {
+          ...student.student,
+          examMinutes: -1
+        }
+      })
+    }
+  ])('rejects payload when $name', ({ expectedIssueFragment, mutateStudent }) => {
+    const payload = createPayload()
+    const firstCommittee = payload.committees[0]
+    if (!firstCommittee) {
+      throw new Error('Expected committee in payload')
+    }
+
+    const firstItem = firstCommittee.items[0]
+    if (!firstItem || firstItem.type !== 'STUDENT') {
+      throw new Error('Expected first item to be STUDENT')
+    }
+
+    const statusMessage = getValidationStatusMessage({
+      ...payload,
+      committees: [
+        {
+          ...firstCommittee,
+          items: [mutateStudent(firstItem)]
+        }
+      ]
+    })
+
+    expect(statusMessage).toContain('Invalid time schedule payload:')
+    expect(statusMessage).toContain(expectedIssueFragment)
+    expect(statusMessage).toContain('greater than or equal to 0')
+  })
+
+  it('rejects pause item when durationMinutes is zero', () => {
+    const payload = createPayload()
+    const firstCommittee = payload.committees[0]
+    if (!firstCommittee) {
+      throw new Error('Expected committee in payload')
+    }
+
+    const pauseItem = firstCommittee.items[1]
+    if (!pauseItem || pauseItem.type !== 'PAUSE') {
+      throw new Error('Expected second item to be PAUSE')
+    }
+
+    const statusMessage = getValidationStatusMessage({
+      ...payload,
+      committees: [
+        {
+          ...firstCommittee,
+          items: [
+            {
+              ...pauseItem,
+              pause: {
+                ...pauseItem.pause,
+                durationMinutes: 0
+              }
+            }
+          ]
+        }
+      ]
+    })
+
+    expect(statusMessage).toContain('Invalid time schedule payload:')
+    expect(statusMessage).toContain('payload.committees[0].items[0].pause.durationMinutes')
+    expect(statusMessage).toContain('greater than 0')
+  })
+
   it('rejects student item when pause is not null', () => {
     const payload = createPayload()
     const firstCommittee = payload.committees[0]
