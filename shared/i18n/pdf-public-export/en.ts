@@ -30,7 +30,7 @@ export const PDF_PUBLIC_EXPORT_EN_DICTIONARY: PdfPublicExportDictionary = {
     preparationStart: 'Start of\nprep\u00ADa\u00ADration',
     committeeExam: 'Examination before committee',
     studentSpecialization: 'Student\nSpecialization',
-    thesisTitle: 'Thesis topic',
+    thesisTitle: 'Final thesis topic',
     supervisorReviewer: 'Supervisor\nReviewer',
     emptyRowsFallback: '—'
   },
