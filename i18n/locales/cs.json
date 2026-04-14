@@ -46,7 +46,7 @@
         "title": "Vytvořit nový plán",
         "description": "Využijte importy z IS KOS nebo začněte s prázdným časovým plánem pro nové SZZ",
         "confirmAction": "Vytvořit nový plán",
-        "confirmDescription": "Opravdu chcete vytvořit nový plán? Aktuální rozpracovaný časový plán bude ztracen.",
+        "confirmDescription": "Opravdu chcete vytvořit nový plán? Aktuálně rozpracovaný časový plán bude zahozen a dojde ke ztrátě neuložených dat.",
         "dialogTitle": "Nový plán",
         "tabs": {
           "import": "Import z KOS",
