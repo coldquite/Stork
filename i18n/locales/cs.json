@@ -58,17 +58,17 @@
           "szzTypeTabs": {
             "bachelor": "Bakalářské",
             "master": "Magisterské",
-            "mixed": "Míchané"
+            "mixed": "Bakalářské a magisterské najednou"
           },
           "fields": {
-            "studentsStork": "Nahrajte soubor \"studenti-Stork\"",
-            "studentsCommittees": "Nahrajte soubor \"studenti-komise\"",
-            "studentsStorkBachelor": "Nahrajte soubor \"studenti-Stork\" (bakalářské)",
-            "studentsStorkMaster": "Nahrajte soubor \"studenti-Stork\" (magisterské)",
-            "studentsCommitteesBachelor": "Nahrajte soubor \"studenti-komise\" (bakalářské)",
-            "studentsCommitteesMaster": "Nahrajte soubor \"studenti-komise\" (magisterské)",
-            "committees": "Nahrajte soubor \"komise\"",
-            "committeesMixed": "Nahrajte soubor \"komise\" (míchané)"
+            "studentsStork": "Nahrajte export formuláře „82010 - přehled studentů“",
+            "studentsCommittees": "Nahrajte export formuláře „82307 - přehled studentů szz“",
+            "studentsStorkBachelor": "Nahrajte export formuláře „82010 - přehled studentů“ (bakalářské)",
+            "studentsStorkMaster": "Nahrajte export formuláře „82010 - přehled studentů“ (magisterské)",
+            "studentsCommitteesBachelor": "Nahrajte export formuláře „82307 - přehled studentů szz“ (bakalářské)",
+            "studentsCommitteesMaster": "Nahrajte export formuláře „82307 - přehled studentů szz“ (magisterské)",
+            "committees": "Nahrajte export formuláře „82304 - soupis a editace komisí pro szz“",
+            "committeesMixed": "Nahrajte export formuláře „82304 - soupis a editace komisí pro szz“ (bakalářské a magisterské)"
           },
           "chooseFileAction": "Vybrat soubory",
           "noFileSelected": "Soubor zatím není vybrán",
@@ -112,8 +112,8 @@
             },
             "contextReasons": {
               "required_value_is_empty": "Povinná hodnota v povinném sloupci je prázdná.",
-              "students_committees_row_reused": "Jeden řádek ve studenti-komise byl použit pro více studentů.",
-              "students_committees_row_without_matching_students_cap": "Ve studenti-komise je řádek bez odpovídajícího studenta v studenti-Stork.",
+              "students_committees_row_reused": "Jeden řádek ve „82307 - přehled studentů szz“ byl použit pro více studentů.",
+              "students_committees_row_without_matching_students_cap": "Ve „82307 - přehled studentů szz“ je řádek bez odpovídajícího studenta v „82010 - přehled studentů“.",
               "first_term_date_without_grade": "Je vyplněné datum 1. termínu, ale chybí hodnocení 1. termínu.",
               "first_term_grade_without_date": "Je vyplněné hodnocení 1. termínu, ale chybí datum 1. termínu.",
               "defense_date_without_first_term_grade": "Datum obhajoby je vyplněné, ale chybí hodnocení 1. termínu.",
@@ -122,24 +122,24 @@
             },
             "contextValues": {
               "stage": {
-                "seed": "Uložení jmen ze studenti-Stork do slovníku",
+                "seed": "Uložení jmen ze „82010 - přehled studentů“ do slovníku",
                 "fetch": "Načtení slovníku učitelů"
               },
               "dataset": {
-                "studentsStork": "studenti-Stork",
-                "studentsCommittees": "studenti-komise",
-                "committees": "komise"
+                "studentsStork": "„82010 - přehled studentů“",
+                "studentsCommittees": "„82307 - přehled studentů szz“",
+                "committees": "„82304 - soupis a editace komisí pro szz“"
               }
             },
             "reasons": {
               "missingDataset": "Chybí povinný vstupní dataset.",
               "missingRequiredValue": "Povinná hodnota je prázdná.",
               "invalidCommitteeName": "Název komise nelze po předzpracování použít.",
-              "duplicateCommitteeName": "Název komise je v souboru komise duplicitní.",
-              "committeeNotFoundInStudents": "Komise ze souboru komise nemá odpovídající záznam ve studenti-komise.",
-              "committeeNotFoundInCommittees": "Komise ze souboru studenti-komise neexistuje v souboru komise.",
-              "committeeGroupInconsistent": "V rámci jedné komise jsou ve studenti-komise nekonzistentní hodnoty.",
-              "committeeFieldMismatch": "Hodnoty mezi komise a studenti-komise se neshodují.",
+              "duplicateCommitteeName": "Název komise je v souboru „82304 - soupis a editace komisí pro szz“ duplicitní.",
+              "committeeNotFoundInStudents": "Komise ze souboru „82304 - soupis a editace komisí pro szz“ nemá odpovídající záznam ve „82307 - přehled studentů szz“.",
+              "committeeNotFoundInCommittees": "Komise ze souboru „82307 - přehled studentů szz“ neexistuje v souboru komise.",
+              "committeeGroupInconsistent": "V rámci jedné komise jsou ve „82307 - přehled studentů szz“ nekonzistentní hodnoty.",
+              "committeeFieldMismatch": "Hodnoty mezi „82304 - soupis a editace komisí pro szz“ a „82307 - přehled studentů szz“ se neshodují.",
               "committeeSzzTypeMismatch": "Typ studia komise neodpovídá vybranému typu SZZ.",
               "invalidCommitteeDate": "Datum komise není ve formátu DD.MM.YYYY nebo je neplatné.",
               "invalidStudyProgramType": "Typ studijního programu nelze určit z importovaných dat.",
