@@ -27,7 +27,7 @@ function createStudent(overrides: Partial<PostStudentItemDto> = {}): PostStudent
     specializationCode: 'BI-SI.21',
     studyLanguage: 'CZECH',
     repeatType: 'THESIS_DEFENSE',
-    prepareMinutes: 45,
+    prepareMinutes: 0,
     examMinutes: 15,
     ...overrides
   }
@@ -90,7 +90,7 @@ describe('student-committee-rewrite utils', () => {
     expect(student.specializationName).toBe(target.specializationName)
     expect(student.specializationCode).toBe(target.specializationCode)
     expect(student.studyLanguage).toBe(target.language)
-    expect(student.prepareMinutes).toBe(45)
+    expect(student.prepareMinutes).toBe(0)
     expect(student.examMinutes).toBe(20)
   })
 })

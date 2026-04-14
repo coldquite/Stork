@@ -390,7 +390,7 @@ describe('mapImportPayloadToDraftSource', () => {
     }
 
     expect(mappedFirstItem.student.repeatType).toBe('THESIS_DEFENSE')
-    expect(mappedFirstItem.student.prepareMinutes).toBe(45)
+    expect(mappedFirstItem.student.prepareMinutes).toBe(0)
     expect(mappedFirstItem.student.examMinutes).toBe(15)
   })
 
@@ -621,7 +621,7 @@ describe('mapImportPayloadToDraftSource', () => {
     }
 
     expect(mappedFirstItem.student.repeatType).toBe('THESIS_DEFENSE')
-    expect(mappedFirstItem.student.prepareMinutes).toBe(45)
+    expect(mappedFirstItem.student.prepareMinutes).toBe(0)
     expect(mappedFirstItem.student.examMinutes).toBe(20)
   })
 

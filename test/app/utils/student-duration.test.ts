@@ -8,7 +8,7 @@ describe('student-duration', () => {
       examMinutes: 30
     })
     expect(resolveStudentDurationByStudyProgramAndRepeat('BACHELOR', 'THESIS_DEFENSE')).toEqual({
-      prepareMinutes: 45,
+      prepareMinutes: 0,
       examMinutes: 15
     })
     expect(resolveStudentDurationByStudyProgramAndRepeat('BACHELOR', 'ORAL_EXAM')).toEqual({
@@ -31,7 +31,7 @@ describe('student-duration', () => {
       examMinutes: 35
     })
     expect(resolveStudentDurationByStudyProgramAndRepeat('MASTER', 'THESIS_DEFENSE')).toEqual({
-      prepareMinutes: 45,
+      prepareMinutes: 0,
       examMinutes: 20
     })
     expect(resolveStudentDurationByStudyProgramAndRepeat('MASTER', 'ORAL_EXAM')).toEqual({

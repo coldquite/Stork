@@ -214,7 +214,7 @@ describe('useEditorStudentCreation', () => {
 
     creation.updateCreateStudentRepeatType('THESIS_DEFENSE')
     expect(creation.createStudentDraft.value?.repeatType).toBe('THESIS_DEFENSE')
-    expect(creation.createStudentDraft.value?.prepareMinutes).toBe(45)
+    expect(creation.createStudentDraft.value?.prepareMinutes).toBe(0)
     expect(creation.createStudentDraft.value?.examMinutes).toBe(15)
 
     creation.updateCreateStudentMinutesField('prepareMinutes', '44')
@@ -238,7 +238,7 @@ describe('useEditorStudentCreation', () => {
 
     expect(creation.createStudentDraft.value?.studyProgramType).toBe('MASTER')
     expect(creation.createStudentDraft.value?.repeatType).toBe('THESIS_DEFENSE')
-    expect(creation.createStudentDraft.value?.prepareMinutes).toBe(45)
+    expect(creation.createStudentDraft.value?.prepareMinutes).toBe(0)
     expect(creation.createStudentDraft.value?.examMinutes).toBe(20)
   })
 
