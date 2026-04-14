@@ -190,9 +190,9 @@ describe('pdf-public-export', () => {
 
     expect(sections[0]?.language).toBe('CZECH')
     expect(sections[0]?.degreeTitle).toBe('BAKALÁŘSKÉ STÁTNÍ ZÁVĚREČNÉ ZKOUŠKY')
-    expect(sections[0]?.semesterLabel).toBe('letní semestr 2024/2025 (červen)')
+    expect(sections[0]?.semesterLabel).toBe('Letní semestr 2024/2025 (červen)')
     expect(sections[0]?.committeeLine).toBe('Komise 1-BI-SI.21')
-    expect(sections[0]?.departmentLine).toBe('katedra obhajoby: Katedra softwarového inženýrství')
+    expect(sections[0]?.departmentLine).toBe('Katedra obhajoby: Katedra softwarového inženýrství')
     expect(sections[0]?.rows).toHaveLength(3)
     expect(sections[0]?.rows[1]).toEqual({
       kind: 'PAUSE',
@@ -211,7 +211,7 @@ describe('pdf-public-export', () => {
 
     expect(sections[1]?.language).toBe('ENGLISH')
     expect(sections[1]?.degreeTitle).toBe('BACHELOR STATE FINAL EXAMINATIONS')
-    expect(sections[1]?.semesterLabel).toBe('summer semester 2024/2025 (June)')
+    expect(sections[1]?.semesterLabel).toBe('Summer semester 2024/2025 (June)')
     expect(sections[1]?.topMetaRoomLine).toBe('classroom TH:A-1455')
     expect(sections[1]?.tableThesisTitleHeader).toBe('Thesis topic')
   })
@@ -230,7 +230,7 @@ describe('pdf-public-export', () => {
     })
 
     expect(sections).toHaveLength(1)
-    expect(sections[0]?.semesterLabel).toBe('zimní semestr 2024/2025 (únor)')
+    expect(sections[0]?.semesterLabel).toBe('Zimní semestr 2024/2025 (únor)')
     expect(sections[0]?.departmentLine).toContain('—')
   })
 

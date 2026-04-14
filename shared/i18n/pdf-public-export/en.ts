@@ -7,9 +7,9 @@ export const PDF_PUBLIC_EXPORT_EN_DICTIONARY: PdfPublicExportDictionary = {
     MASTER: 'MASTER STATE FINAL EXAMINATIONS'
   },
   semesterLabelByCode: {
-    summerJune: (academicYear) => `summer semester ${academicYear} (June)`,
-    summerAugust: (academicYear) => `summer semester ${academicYear} (August)`,
-    winterFebruary: (academicYear) => `winter semester ${academicYear} (February)`,
+    summerJune: (academicYear) => `Summer semester ${academicYear} (June)`,
+    summerAugust: (academicYear) => `Summer semester ${academicYear} (August)`,
+    winterFebruary: (academicYear) => `Winter semester ${academicYear} (February)`,
     fallback: '—'
   },
   studyProgramLineByType: {
@@ -17,10 +17,10 @@ export const PDF_PUBLIC_EXPORT_EN_DICTIONARY: PdfPublicExportDictionary = {
     MASTER: (studyProgramName) => `Master Study Program ${studyProgramName}`
   },
   committeeLine: (committeeLabel) => `Committee ${committeeLabel}`,
-  departmentLine: (departmentName) => `department of defense: ${departmentName}`,
+  departmentLine: (departmentName) => `Department of defense: ${departmentName}`,
   secretaryLine: (secretaryName) => `Secretary: ${secretaryName}`,
   invigilatorsLineLabel: (preparationRoom) => `Invigilation of written preparation (${preparationRoom}):`,
-  membersHeading: 'members of committee:',
+  membersHeading: 'Members of committee:',
   memberRoleChair: 'Chair',
   memberRoleViceChair: 'Vice-Chair',
   topMeta: {

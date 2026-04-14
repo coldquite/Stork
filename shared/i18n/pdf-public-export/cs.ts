@@ -7,17 +7,17 @@ export const PDF_PUBLIC_EXPORT_CS_DICTIONARY: PdfPublicExportDictionary = {
     MASTER: 'MAGISTERSKÉ STÁTNÍ ZÁVĚREČNÉ ZKOUŠKY'
   },
   semesterLabelByCode: {
-    summerJune: (academicYear) => `letní semestr ${academicYear} (červen)`,
-    summerAugust: (academicYear) => `letní semestr ${academicYear} (srpen)`,
-    winterFebruary: (academicYear) => `zimní semestr ${academicYear} (únor)`,
+    summerJune: (academicYear) => `Letní semestr ${academicYear} (červen)`,
+    summerAugust: (academicYear) => `Letní semestr ${academicYear} (srpen)`,
+    winterFebruary: (academicYear) => `Zimní semestr ${academicYear} (únor)`,
     fallback: '—'
   },
   studyProgramLineByType: {
-    BACHELOR: (studyProgramName) => `bakalářský studijní program ${studyProgramName}`,
-    MASTER: (studyProgramName) => `magisterský studijní program ${studyProgramName}`
+    BACHELOR: (studyProgramName) => `Bakalářský studijní program ${studyProgramName}`,
+    MASTER: (studyProgramName) => `Magisterský studijní program ${studyProgramName}`
   },
   committeeLine: (committeeLabel) => `Komise ${committeeLabel}`,
-  departmentLine: (departmentName) => `katedra obhajoby: ${departmentName}`,
+  departmentLine: (departmentName) => `Katedra obhajoby: ${departmentName}`,
   secretaryLine: (secretaryName) => `Tajemník: ${secretaryName}`,
   invigilatorsLineLabel: (preparationRoom) => `Dozor u písemné přípravy (${preparationRoom}):`,
   membersHeading: 'složení komise:',
