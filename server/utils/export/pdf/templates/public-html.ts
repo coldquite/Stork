@@ -13,12 +13,17 @@ import { PDF_VISUAL_COLORS, renderPdfTableBaseStyles } from '#server/utils/expor
 
 const PDF_DOCUMENT_TITLE = 'Plán konání státních závěrečných zkoušek'
 const CZECH_TIME_ZONE = 'Europe/Prague'
+const PDF_EMPTY_VALUE = '—'
 const pageGroupDateFormatter = new Intl.DateTimeFormat('en-CA', {
   timeZone: CZECH_TIME_ZONE,
   day: '2-digit',
   month: '2-digit',
   year: 'numeric'
 })
+type PdfPublicStudentRow = Extract<
+  PostPdfPublicExportRequestDto['sections'][number]['rows'][number],
+  { kind: 'STUDENT' }
+>
 
 function renderDocumentHeaderTitleHtml(title: string): string {
   const words = title
@@ -32,6 +37,31 @@ function renderDocumentHeaderTitleHtml(title: string): string {
   const firstLine = words.slice(0, 2).join(' ')
   const secondLine = words.slice(2).join(' ')
   return `${escapeHtml(firstLine)}<br />${escapeHtml(secondLine)}`
+}
+
+function collectTeacherNames(...names: string[]): string[] {
+  return names.map((name) => name.trim()).filter((name) => name.length > 0)
+}
+
+function resolveTeacherNamesLine(names: string[]): string {
+  return names.length > 0 ? names.join(', ') : PDF_EMPTY_VALUE
+}
+
+function renderTeacherCellHtml(row: PdfPublicStudentRow): string {
+  const supervisorNames = collectTeacherNames(row.supervisorPrimaryLabel, row.supervisorAdditionalLabel)
+  const reviewerNames = collectTeacherNames(row.reviewerPrimaryLabel, row.reviewerAdditionalLabel)
+  const supervisorLine = resolveTeacherNamesLine(supervisorNames)
+  const reviewerLine = resolveTeacherNamesLine(reviewerNames)
+  const isSimpleOneToOne = supervisorNames.length === 1 && reviewerNames.length === 1
+
+  if (isSimpleOneToOne) {
+    return `<span class="teacher-line">${escapeHtml(supervisorLine)}</span>
+      <span class="teacher-line">${escapeHtml(reviewerLine)}</span>`
+  }
+
+  return `<span class="teacher-line">${escapeHtml(supervisorLine)}</span>
+    <span class="teacher-divider" aria-hidden="true"></span>
+    <span class="teacher-line">${escapeHtml(reviewerLine)}</span>`
 }
 
 function renderSectionRows(section: PostPdfPublicExportRequestDto['sections'][number]): string {
@@ -54,8 +84,7 @@ function renderSectionRows(section: PostPdfPublicExportRequestDto['sections'][nu
         </td>
         <td>${escapeHtml(row.thesisTitle)}</td>
         <td>
-          <span class="teacher-line">${escapeHtml(row.supervisorLabel)}</span>
-          <span class="teacher-line">${escapeHtml(row.reviewerLabel)}</span>
+          ${renderTeacherCellHtml(row)}
         </td>
       </tr>`
     })
@@ -337,6 +366,14 @@ export async function renderPdfPublicHtml(payload: PostPdfPublicExportRequestDto
 
       .teacher-line + .teacher-line {
         margin-top: 0.5mm;
+      }
+
+      .teacher-divider {
+        display: block;
+        width: 100%;
+        height: 0.2mm;
+        margin: 0.55mm 0;
+        background-color: ${PDF_VISUAL_COLORS.lightBlueTint50};
       }
 
       .pause-cell {

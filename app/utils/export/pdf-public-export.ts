@@ -198,21 +198,6 @@ function resolveInvigilatorsMembers(committee: ScheduleDraftCommittee): string[]
   return members.length > 0 ? members : [PDF_EXPORT_EMPTY_VALUE]
 }
 
-function resolveTeacherCellLine(primaryName: string, additionalName: string | null): string {
-  const primary = normalizePdfExportText(primaryName)
-  const additional = normalizePdfExportText(additionalName)
-
-  if (primary.length < 1 && additional.length < 1) {
-    return PDF_EXPORT_EMPTY_VALUE
-  }
-
-  if (primary.length > 0 && additional.length > 0) {
-    return `${primary}; ${additional}`
-  }
-
-  return primary || additional
-}
-
 function resolvePauseLine(input: {
   language: StudyLanguageDto
   timelineEntry: Extract<CommitteeTimelineEntry, { kind: 'PAUSE' }>
@@ -266,8 +251,10 @@ function buildSectionRows(input: {
         thesisTitleLocal: student.thesisTitleLocal,
         thesisTitleEn: student.thesisTitleEn
       }),
-      supervisorLabel: resolveTeacherCellLine(student.supervisorName, student.additionalSupervisorName),
-      reviewerLabel: resolveTeacherCellLine(student.reviewerName, student.additionalReviewerName)
+      supervisorPrimaryLabel: normalizePdfExportText(student.supervisorName),
+      supervisorAdditionalLabel: normalizePdfExportText(student.additionalSupervisorName),
+      reviewerPrimaryLabel: normalizePdfExportText(student.reviewerName),
+      reviewerAdditionalLabel: normalizePdfExportText(student.additionalReviewerName)
     }
   })
 }

@@ -26,8 +26,10 @@ const studentRowSchema = z
     studentName: nonEmptyTrimmedStringSchema,
     specializationLabel: nonEmptyTrimmedStringSchema,
     thesisTitle: nonEmptyTrimmedStringSchema,
-    supervisorLabel: nonEmptyTrimmedStringSchema,
-    reviewerLabel: nonEmptyTrimmedStringSchema
+    supervisorPrimaryLabel: z.string().trim(),
+    supervisorAdditionalLabel: z.string().trim(),
+    reviewerPrimaryLabel: z.string().trim(),
+    reviewerAdditionalLabel: z.string().trim()
   })
   .strict()
 

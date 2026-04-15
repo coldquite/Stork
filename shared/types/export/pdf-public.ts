@@ -7,8 +7,10 @@ export interface PdfPublicStudentRowDto {
   studentName: string
   specializationLabel: string
   thesisTitle: string
-  supervisorLabel: string
-  reviewerLabel: string
+  supervisorPrimaryLabel: string
+  supervisorAdditionalLabel: string
+  reviewerPrimaryLabel: string
+  reviewerAdditionalLabel: string
 }
 
 export interface PdfPublicPauseRowDto {

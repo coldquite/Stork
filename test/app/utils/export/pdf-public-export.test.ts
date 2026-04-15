@@ -25,6 +25,8 @@ function createStudentItem(
     specializationCode: string
     supervisorName: string
     reviewerName: string
+    additionalSupervisorName: string | null
+    additionalReviewerName: string | null
     titlesBefore: string | null
     titlesAfter: string | null
   }>
@@ -44,8 +46,8 @@ function createStudentItem(
       thesisLanguage: options.thesisLanguage ?? 'CZECH',
       supervisorName: options.supervisorName ?? 'Ing. Vedoucí',
       reviewerName: options.reviewerName ?? 'Ing. Oponent',
-      additionalSupervisorName: null,
-      additionalReviewerName: null,
+      additionalSupervisorName: options.additionalSupervisorName ?? null,
+      additionalReviewerName: options.additionalReviewerName ?? null,
       studyProgramName: 'Informatika',
       studyProgramType: 'BACHELOR',
       specializationName: 'Softwarové inženýrství',
@@ -210,6 +212,10 @@ describe('pdf-public-export', () => {
     expect(firstStudentRow.preparationStartTime).toBe('08:00')
     expect(firstStudentRow.committeeExamRangeTime).toBe('08:45–09:15')
     expect(firstStudentRow.studentName).toBe('Bc. David Ampapa, DiS.')
+    expect(firstStudentRow.supervisorPrimaryLabel).toBe('Ing. Vedoucí')
+    expect(firstStudentRow.supervisorAdditionalLabel).toBe('')
+    expect(firstStudentRow.reviewerPrimaryLabel).toBe('Ing. Oponent')
+    expect(firstStudentRow.reviewerAdditionalLabel).toBe('')
 
     expect(sections[1]?.language).toBe('ENGLISH')
     expect(sections[1]?.committeeDateIso).toBe('2025-06-23T00:00:00.000Z')
@@ -250,6 +256,38 @@ describe('pdf-public-export', () => {
     expect(payload.sections).toHaveLength(1)
     expect(payload.sections[0]?.committeeDateIso).toBe('2025-06-23T00:00:00.000Z')
     expect(payload.sections[0]?.committeeRoomValue).toBe('TH:A-1455')
+  })
+
+  it('keeps all supervisor and reviewer fields separately for PDF rendering', () => {
+    const sections = buildPdfPublicSections({
+      committees: [
+        createCommittee({
+          localId: 'committee-multi-teachers',
+          items: [
+            createStudentItem({
+              localId: 'student-multi-teachers',
+              position: 1,
+              supervisorName: 'Vedoucí 1',
+              additionalSupervisorName: 'Vedoucí 2',
+              reviewerName: 'Oponent 1',
+              additionalReviewerName: 'Oponent 2'
+            })
+          ]
+        })
+      ],
+      fallbackCommitteeLabel: 'Bez názvu'
+    })
+
+    const firstRow = sections[0]?.rows[0]
+    expect(firstRow?.kind).toBe('STUDENT')
+    if (!firstRow || firstRow.kind !== 'STUDENT') {
+      throw new Error('Expected first row to be STUDENT')
+    }
+
+    expect(firstRow.supervisorPrimaryLabel).toBe('Vedoucí 1')
+    expect(firstRow.supervisorAdditionalLabel).toBe('Vedoucí 2')
+    expect(firstRow.reviewerPrimaryLabel).toBe('Oponent 1')
+    expect(firstRow.reviewerAdditionalLabel).toBe('Oponent 2')
   })
 
   it('builds file name with timestamp and Časový plán SZZ prefix', () => {

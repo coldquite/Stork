@@ -48,6 +48,24 @@ function createSection(overrides: Partial<PdfPublicSectionDto> = {}): PdfPublicS
   }
 }
 
+function createStudentRow(
+  overrides: Partial<Extract<PdfPublicSectionDto['rows'][number], { kind: 'STUDENT' }>> = {}
+): Extract<PdfPublicSectionDto['rows'][number], { kind: 'STUDENT' }> {
+  return {
+    kind: 'STUDENT',
+    preparationStartTime: '08:00',
+    committeeExamRangeTime: '08:45–09:15',
+    studentName: 'Student Example',
+    specializationLabel: 'BI-SI.21',
+    thesisTitle: 'Thesis title',
+    supervisorPrimaryLabel: 'Vedoucí 1',
+    supervisorAdditionalLabel: '',
+    reviewerPrimaryLabel: 'Oponent 1',
+    reviewerAdditionalLabel: '',
+    ...overrides
+  }
+}
+
 function createPayload(sections: PdfPublicSectionDto[]): PostPdfPublicExportRequestDto {
   return {
     draftName: 'SZZ test',
@@ -116,5 +134,50 @@ describe('public pdf html template', () => {
     ])
     expect(html).toContain('.committee-section--new-group')
     expect(html).toContain('break-before: page;')
+  })
+
+  it('renders teacher cell without divider only for 1 supervisor and 1 reviewer', async () => {
+    const html = await renderPdfPublicHtml(
+      createPayload([
+        createSection({
+          rows: [
+            createStudentRow({
+              supervisorPrimaryLabel: 'Vedoucí 1',
+              supervisorAdditionalLabel: '',
+              reviewerPrimaryLabel: 'Oponent 1',
+              reviewerAdditionalLabel: ''
+            }),
+            createStudentRow({
+              supervisorPrimaryLabel: 'Vedoucí 1',
+              supervisorAdditionalLabel: 'Vedoucí 2',
+              reviewerPrimaryLabel: 'Oponent 1',
+              reviewerAdditionalLabel: ''
+            }),
+            createStudentRow({
+              supervisorPrimaryLabel: 'Vedoucí 1',
+              supervisorAdditionalLabel: '',
+              reviewerPrimaryLabel: '',
+              reviewerAdditionalLabel: ''
+            }),
+            createStudentRow({
+              supervisorPrimaryLabel: '',
+              supervisorAdditionalLabel: '',
+              reviewerPrimaryLabel: 'Oponent 1',
+              reviewerAdditionalLabel: 'Oponent 2'
+            })
+          ]
+        })
+      ])
+    )
+
+    expect(html).toContain('<span class="teacher-line">Vedoucí 1</span>')
+    expect(html).toContain('<span class="teacher-line">Oponent 1</span>')
+    expect(html).toContain('Vedoucí 1, Vedoucí 2')
+    expect(html).toContain('Oponent 1, Oponent 2')
+    expect(html).toContain('<span class="teacher-line">—</span>')
+
+    const dividerMatches = Array.from(html.matchAll(/<span class="teacher-divider" aria-hidden="true"><\/span>/g))
+    expect(dividerMatches).toHaveLength(3)
+    expect(html).toContain('.teacher-divider')
   })
 })
