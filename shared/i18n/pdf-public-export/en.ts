@@ -7,9 +7,8 @@ export const PDF_PUBLIC_EXPORT_EN_DICTIONARY: PdfPublicExportDictionary = {
     MASTER: 'MASTER STATE FINAL EXAMINATIONS'
   },
   semesterLabelByCode: {
-    summerJune: (academicYear) => `Summer semester ${academicYear} (June)`,
-    summerAugust: (academicYear) => `Summer semester ${academicYear} (August)`,
-    winterFebruary: (academicYear) => `Winter semester ${academicYear} (February)`,
+    summer: (academicYear, monthLabel) => `Summer semester ${academicYear} (${monthLabel})`,
+    winter: (academicYear, monthLabel) => `Winter semester ${academicYear} (${monthLabel})`,
     fallback: '—'
   },
   studyProgramLineByType: {

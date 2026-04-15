@@ -4,9 +4,8 @@ export interface PdfPublicExportDictionary {
   documentHeaderTitle: string
   degreeTitleByStudyProgramType: Record<StudyProgramTypeDto, string>
   semesterLabelByCode: {
-    summerJune: (academicYear: string) => string
-    summerAugust: (academicYear: string) => string
-    winterFebruary: (academicYear: string) => string
+    summer: (academicYear: string, monthLabel: string) => string
+    winter: (academicYear: string, monthLabel: string) => string
     fallback: string
   }
   studyProgramLineByType: Record<StudyProgramTypeDto, (studyProgramName: string) => string>

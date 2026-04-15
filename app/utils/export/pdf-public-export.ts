@@ -30,7 +30,7 @@ interface BuildPdfPublicExportPayloadInput extends BuildPdfPublicSectionsInput {
   draftName: string
 }
 
-type SemesterCode = 'summerJune' | 'summerAugust' | 'winterFebruary' | 'fallback'
+type SemesterCode = 'summer' | 'winter' | '—'
 
 const PDF_PUBLIC_FILE_PREFIX = 'Časový plán SZZ'
 
@@ -56,6 +56,16 @@ const englishLongDateFormatter = new Intl.DateTimeFormat('en-US', {
   day: 'numeric',
   month: 'long',
   year: 'numeric'
+})
+
+const czechMonthFormatter = new Intl.DateTimeFormat('cs-CZ', {
+  timeZone: CZECH_TIME_ZONE,
+  month: 'long'
+})
+
+const englishMonthFormatter = new Intl.DateTimeFormat('en-US', {
+  timeZone: CZECH_TIME_ZONE,
+  month: 'long'
 })
 
 const datePartsFormatter = new Intl.DateTimeFormat('en-CA', {
@@ -92,22 +102,19 @@ function resolveDateParts(date: Date): { year: number; month: number; day: numbe
 function resolveSemesterCodeByDate(date: Date): SemesterCode {
   const parts = resolveDateParts(date)
   if (!parts) {
-    return 'fallback'
+    return '—'
   }
 
-  if (parts.month === 6 && parts.day >= 1 && parts.day <= 30) {
-    return 'summerJune'
+  const isWinterSemester =
+    (parts.month === 9 && parts.day >= 20) ||
+    parts.month >= 10 ||
+    parts.month === 1 ||
+    (parts.month === 2 && parts.day <= 15)
+  if (isWinterSemester) {
+    return 'winter'
   }
 
-  if ((parts.month === 8 && parts.day >= 15) || (parts.month === 9 && parts.day <= 5)) {
-    return 'summerAugust'
-  }
-
-  if ((parts.month === 1 && parts.day >= 28) || (parts.month === 2 && parts.day <= 28)) {
-    return 'winterFebruary'
-  }
-
-  return 'fallback'
+  return 'summer'
 }
 
 function resolveAcademicYearForDate(date: Date): string | null {
@@ -116,7 +123,16 @@ function resolveAcademicYearForDate(date: Date): string | null {
     return null
   }
 
-  return `${parts.year - 1}/${parts.year}`
+  const academicYearStart = parts.month > 9 || (parts.month === 9 && parts.day >= 20) ? parts.year : parts.year - 1
+  return `${academicYearStart}/${academicYearStart + 1}`
+}
+
+function resolveMonthLabel(input: { language: StudyLanguageDto; date: Date }): string {
+  if (input.language === 'ENGLISH') {
+    return normalizePdfExportText(englishMonthFormatter.format(input.date))
+  }
+
+  return normalizePdfExportText(czechMonthFormatter.format(input.date))
 }
 
 function resolveSemesterLabel(input: { language: StudyLanguageDto; firstCommitteeDate: Date | null }): string {
@@ -127,7 +143,7 @@ function resolveSemesterLabel(input: { language: StudyLanguageDto; firstCommitte
   }
 
   const semesterCode = resolveSemesterCodeByDate(firstCommitteeDate)
-  if (semesterCode === 'fallback') {
+  if (semesterCode === '—') {
     return dictionary.semesterLabelByCode.fallback
   }
 
@@ -136,7 +152,15 @@ function resolveSemesterLabel(input: { language: StudyLanguageDto; firstCommitte
     return dictionary.semesterLabelByCode.fallback
   }
 
-  return dictionary.semesterLabelByCode[semesterCode](academicYear)
+  const monthLabel = resolveMonthLabel({
+    language: input.language,
+    date: firstCommitteeDate
+  })
+  if (monthLabel.length < 1) {
+    return dictionary.semesterLabelByCode.fallback
+  }
+
+  return dictionary.semesterLabelByCode[semesterCode](academicYear, monthLabel)
 }
 
 function resolveTopMetaDayLabel(input: { language: StudyLanguageDto; committeeDate: string }): string {

@@ -7,9 +7,8 @@ export const PDF_PUBLIC_EXPORT_CS_DICTIONARY: PdfPublicExportDictionary = {
     MASTER: 'MAGISTERSKÉ STÁTNÍ ZÁVĚREČNÉ ZKOUŠKY'
   },
   semesterLabelByCode: {
-    summerJune: (academicYear) => `Letní semestr ${academicYear} (červen)`,
-    summerAugust: (academicYear) => `Letní semestr ${academicYear} (srpen)`,
-    winterFebruary: (academicYear) => `Zimní semestr ${academicYear} (únor)`,
+    summer: (academicYear, monthLabel) => `Letní semestr ${academicYear} (${monthLabel})`,
+    winter: (academicYear, monthLabel) => `Zimní semestr ${academicYear} (${monthLabel})`,
     fallback: '—'
   },
   studyProgramLineByType: {

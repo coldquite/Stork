@@ -244,6 +244,72 @@ describe('pdf-public-export', () => {
     expect(sections[0]?.departmentLine).toContain('—')
   })
 
+  it('builds semester label from first committee date for arbitrary month in both languages', () => {
+    const sections = buildPdfPublicSections({
+      committees: [
+        createCommittee({
+          localId: 'committee-cs-april',
+          date: '2025-04-10T00:00:00.000Z',
+          language: 'CZECH',
+          items: [createStudentItem({ localId: 'student-cs-april', position: 1 })]
+        }),
+        createCommittee({
+          localId: 'committee-en-april',
+          date: '2025-04-10T00:00:00.000Z',
+          language: 'ENGLISH',
+          items: [createStudentItem({ localId: 'student-en-april', position: 1 })]
+        })
+      ],
+      fallbackCommitteeLabel: 'Bez názvu'
+    })
+
+    expect(sections).toHaveLength(2)
+    expect(sections[0]?.semesterLabel).toBe('Letní semestr 2024/2025 (duben)')
+    expect(sections[1]?.semesterLabel).toBe('Summer semester 2024/2025 (April)')
+  })
+
+  it('switches semester on configured boundary dates', () => {
+    const septemberBoundarySections = buildPdfPublicSections({
+      committees: [
+        createCommittee({
+          localId: 'committee-september-boundary',
+          date: '2024-09-20T00:00:00.000Z',
+          language: 'CZECH',
+          items: [createStudentItem({ localId: 'student-september-boundary', position: 1 })]
+        })
+      ],
+      fallbackCommitteeLabel: 'Bez názvu'
+    })
+
+    const winterBoundarySections = buildPdfPublicSections({
+      committees: [
+        createCommittee({
+          localId: 'committee-winter-boundary',
+          date: '2025-02-15T00:00:00.000Z',
+          language: 'ENGLISH',
+          items: [createStudentItem({ localId: 'student-winter-boundary', position: 1 })]
+        })
+      ],
+      fallbackCommitteeLabel: 'Bez názvu'
+    })
+
+    const summerBoundarySections = buildPdfPublicSections({
+      committees: [
+        createCommittee({
+          localId: 'committee-summer-boundary',
+          date: '2025-02-16T00:00:00.000Z',
+          language: 'CZECH',
+          items: [createStudentItem({ localId: 'student-summer-boundary', position: 1 })]
+        })
+      ],
+      fallbackCommitteeLabel: 'Bez názvu'
+    })
+
+    expect(septemberBoundarySections[0]?.semesterLabel).toBe('Zimní semestr 2024/2025 (září)')
+    expect(winterBoundarySections[0]?.semesterLabel).toBe('Winter semester 2024/2025 (February)')
+    expect(summerBoundarySections[0]?.semesterLabel).toBe('Letní semestr 2024/2025 (únor)')
+  })
+
   it('builds request payload with static document header title', () => {
     const payload = buildPdfPublicExportPayload({
       draftName: 'SZZ test',
