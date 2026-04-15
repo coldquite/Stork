@@ -396,6 +396,8 @@ export function useEditorStudentTable(
             }
 
             const hiddenColumns = new Set([
+              'titlesBefore',
+              'titlesAfter',
               'thesisLanguage',
               'studyLanguage',
               'studyProgramType',
