@@ -78,6 +78,7 @@ body {
   line-height: 1.35;
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
+  text-rendering: geometricPrecision;
 }
 `.trim()
 }
@@ -152,7 +153,7 @@ h2 {
 
 export function renderPdfTableBaseStyles(): string {
   const tableBorderWidth = formatMillimeters(PDF_TABLE_BORDER_WIDTH_MM)
-  const bodyFontWeight = 450
+  const bodyFontWeight = 500
   const headerFontWeight = 400
 
   return `

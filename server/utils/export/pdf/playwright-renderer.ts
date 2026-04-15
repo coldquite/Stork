@@ -5,7 +5,13 @@ let sharedBrowserPromise: Promise<Browser> | null = null
 function launchSharedBrowser(): Promise<Browser> {
   return chromium.launch({
     headless: true,
-    args: ['--disable-dev-shm-usage']
+    args: [
+      '--disable-dev-shm-usage',
+      // Without this, headless Chromium on Linux uses subpixel glyph positioning (HINTING_FULL),
+      // which causes uneven letter spacing — pairs like "ra" visually merge together.
+      // See: https://chromium.googlesource.com/chromium/src/+/e1b855d4545dc4fff19cee500d7ce105126f3bd2
+      '--font-render-hinting=none'
+    ]
   })
 }
 

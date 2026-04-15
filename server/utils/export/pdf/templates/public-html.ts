@@ -248,7 +248,7 @@ export async function renderPdfPublicHtml(payload: PostPdfPublicExportRequestDto
       .committee-top-meta-line {
         margin: 0.45mm 0 0;
         font-size: 9pt;
-        font-weight: 600;
+        font-weight: 700;
         line-height: 1.25;
         letter-spacing: 0.02em;
       }
@@ -320,7 +320,7 @@ export async function renderPdfPublicHtml(payload: PostPdfPublicExportRequestDto
 
       .invigilators-meta {
         margin: 0.45mm 0 0;
-        font-weight: 450;
+        font-weight: 500;
       }
 
       .invigilators-member-item {
@@ -334,7 +334,7 @@ export async function renderPdfPublicHtml(payload: PostPdfPublicExportRequestDto
 
       .members-heading {
         margin: 0;
-        font-weight: 600;
+        font-weight: 700;
       }
 
       .member-line {
@@ -371,7 +371,7 @@ export async function renderPdfPublicHtml(payload: PostPdfPublicExportRequestDto
 
       .student-repeat-label {
         margin-top: 0.5mm;
-        font-weight: 550;
+        font-weight: 700;
         font-size: 9pt;
       }
 
