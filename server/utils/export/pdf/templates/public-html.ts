@@ -397,12 +397,12 @@ export async function renderPdfPublicHtml(payload: PostPdfPublicExportRequestDto
 
       th:nth-child(3),
       td:nth-child(3) {
-        width: 17%;
+        width: 22%;
       }
 
       th:nth-child(4),
       td:nth-child(4) {
-        width: 34.8%;
+        width: 29.8%;
       }
 
       th:nth-child(5),
