@@ -9,6 +9,7 @@ function createStudentItem(options: {
   lastName?: string
   thesisTitleLocal?: string
   thesisTitleEn?: string
+  thesisLanguage?: 'CZECH' | 'ENGLISH' | 'SLOVAK'
   prepareMinutes?: number
   examMinutes?: number
 }): ScheduleDraftItem {
@@ -24,7 +25,7 @@ function createStudentItem(options: {
       titlesAfter: null,
       thesisTitleLocal: options.thesisTitleLocal ?? 'Český název',
       thesisTitleEn: options.thesisTitleEn ?? 'English title',
-      thesisLanguage: 'CZECH',
+      thesisLanguage: options.thesisLanguage ?? 'CZECH',
       supervisorName: 'Vedoucí',
       reviewerName: 'Oponent',
       additionalSupervisorName: null,
@@ -118,15 +119,15 @@ describe('student-table rows', () => {
     expect(rows[1]?.examTime).toBe('09:35 - 10:05')
   })
 
-  it('selects thesis title language by committee language', () => {
+  it('selects thesis title language by thesis language', () => {
     const committee = createCommittee({
-      language: 'ENGLISH',
       items: [
         createStudentItem({
           localId: 'student-1',
           position: 1,
           thesisTitleLocal: 'Lokální název',
-          thesisTitleEn: 'English thesis title'
+          thesisTitleEn: 'English thesis title',
+          thesisLanguage: 'ENGLISH'
         })
       ]
     })
@@ -136,15 +137,51 @@ describe('student-table rows', () => {
     expect(rows[0]?.thesisTitle).toBe('English thesis title')
   })
 
-  it('does not fallback thesis title from EN to CS when committee language is czech', () => {
+  it('selects local thesis title when thesis language is czech', () => {
     const committee = createCommittee({
-      language: 'CZECH',
+      items: [
+        createStudentItem({
+          localId: 'student-1',
+          position: 1,
+          thesisTitleLocal: 'Lokální název',
+          thesisTitleEn: 'English thesis title',
+          thesisLanguage: 'CZECH'
+        })
+      ]
+    })
+
+    const rows = buildStudentRowsForCommittee(committee)
+
+    expect(rows[0]?.thesisTitle).toBe('Lokální název')
+  })
+
+  it('selects local thesis title when thesis language is slovak', () => {
+    const committee = createCommittee({
+      items: [
+        createStudentItem({
+          localId: 'student-1',
+          position: 1,
+          thesisTitleLocal: 'Lokální název',
+          thesisTitleEn: 'English thesis title',
+          thesisLanguage: 'SLOVAK'
+        })
+      ]
+    })
+
+    const rows = buildStudentRowsForCommittee(committee)
+
+    expect(rows[0]?.thesisTitle).toBe('Lokální název')
+  })
+
+  it('does not fallback thesis title from EN to CS when thesis language is czech', () => {
+    const committee = createCommittee({
       items: [
         createStudentItem({
           localId: 'student-1',
           position: 1,
           thesisTitleLocal: '',
-          thesisTitleEn: 'English thesis title'
+          thesisTitleEn: 'English thesis title',
+          thesisLanguage: 'CZECH'
         })
       ]
     })
@@ -156,15 +193,15 @@ describe('student-table rows', () => {
     expect(rows[0]?.thesisTitleEn).toBe('English thesis title')
   })
 
-  it('does not fallback thesis title from CS to EN when committee language is english', () => {
+  it('does not fallback thesis title from CS to EN when thesis language is english', () => {
     const committee = createCommittee({
-      language: 'ENGLISH',
       items: [
         createStudentItem({
           localId: 'student-1',
           position: 1,
           thesisTitleLocal: 'Lokální název',
-          thesisTitleEn: ''
+          thesisTitleEn: '',
+          thesisLanguage: 'ENGLISH'
         })
       ]
     })

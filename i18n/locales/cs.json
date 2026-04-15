@@ -482,7 +482,7 @@
       "columnDisplaySettingsAction": "Nastavení sloupců",
       "thesisTitleDisplayMode": "Ukazovat sloupec „Název práce“",
       "thesisTitleDisplayModeOptions": {
-        "auto": "Jenom v jazyce komise",
+        "auto": "Jenom v jazyce ZP",
         "both": "CS/SK + EN názvy"
       },
       "tableViewMode": "Režim zobrazení tabulky",

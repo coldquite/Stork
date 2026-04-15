@@ -1,5 +1,4 @@
 import { addMinutes, format, startOfDay, subMinutes } from 'date-fns'
-import type { StudyLanguageDto } from '#shared/types/time-schedules'
 import type { EditorPauseTableRow, EditorStudentTableRow, EditorTableRow } from '~/types/editor'
 import type { ScheduleDraftCommittee, ScheduleDraftItem } from '~/types/schedule-draft'
 import { buildCommitteeTimelineEntries, formatEditorMinuteLabel } from '~/utils/editor/committee-timeline'
@@ -10,14 +9,11 @@ function formatPrepareTime(examStartMinute: number, prepareMinutes: number): str
   return format(subMinutes(addMinutes(REFERENCE_DAY_START, examStartMinute), prepareMinutes), 'HH:mm')
 }
 
-function resolveThesisTitleByCommitteeLanguage(
-  student: ScheduleDraftItem & { type: 'STUDENT' },
-  committeeLanguage: StudyLanguageDto
-): string {
+function resolveThesisTitleByThesisLanguage(student: ScheduleDraftItem & { type: 'STUDENT' }): string {
   const localTitle = resolveLocalThesisTitle(student)
   const englishTitle = resolveEnglishThesisTitle(student)
 
-  if (committeeLanguage === 'ENGLISH') {
+  if (student.student.thesisLanguage === 'ENGLISH') {
     return englishTitle
   }
 
@@ -34,7 +30,6 @@ function resolveEnglishThesisTitle(student: ScheduleDraftItem & { type: 'STUDENT
 
 function buildStudentRow(
   item: ScheduleDraftItem & { type: 'STUDENT' },
-  committeeLanguage: StudyLanguageDto,
   examStartMinute: number,
   examEndMinute: number,
   studentOrder: number
@@ -54,7 +49,7 @@ function buildStudentRow(
     studyProgramType: item.student.studyProgramType,
     studyProgramName: item.student.studyProgramName,
     specializationCode: item.student.specializationCode,
-    thesisTitle: resolveThesisTitleByCommitteeLanguage(item, committeeLanguage),
+    thesisTitle: resolveThesisTitleByThesisLanguage(item),
     thesisTitleLocal: resolveLocalThesisTitle(item),
     thesisTitleEn: resolveEnglishThesisTitle(item),
     thesisLanguage: item.student.thesisLanguage,
@@ -100,15 +95,7 @@ export function buildEditorTableRowsForCommittee(committee: ScheduleDraftCommitt
     }
 
     studentOrder += 1
-    rows.push(
-      buildStudentRow(
-        timelineEntry.item,
-        committee.language,
-        timelineEntry.startMinute,
-        timelineEntry.endMinute,
-        studentOrder
-      )
-    )
+    rows.push(buildStudentRow(timelineEntry.item, timelineEntry.startMinute, timelineEntry.endMinute, studentOrder))
   }
 
   return rows

@@ -337,7 +337,6 @@ function requestFocusValidationStudent(studentId: string): void {
       :model-value="props.students"
       :columns="props.columns"
       :empty-labels="props.studentsEmpty"
-      :committee-language="props.selectedCommittee?.language ?? null"
       :student-validation-issues="props.studentValidationIssues"
       :highlight-request="props.highlightRequest"
       @update:model-value="emit('update:students', $event)"

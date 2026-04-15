@@ -95,7 +95,10 @@ function updateStudentItemFromRow(
     studentItem.student.thesisTitleEn = normalizeRequiredText(row.thesisTitleEn)
   } else {
     const normalizedThesisTitle = normalizeRequiredText(row.thesisTitle)
-    if (committee.language === 'ENGLISH') {
+    // thesisTitle was built from the field corresponding to the stored (old) thesis language.
+    // We must write it back to that same field — not the new row language — otherwise
+    // changing thesisLanguage would overwrite the wrong field with the old language's value.
+    if (studentItem.student.thesisLanguage === 'ENGLISH') {
       studentItem.student.thesisTitleEn = normalizedThesisTitle
     } else {
       studentItem.student.thesisTitleLocal = normalizedThesisTitle

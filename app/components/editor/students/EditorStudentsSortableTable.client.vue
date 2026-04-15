@@ -85,7 +85,6 @@ const props = defineProps<{
   modelValue: EditorTableRow[]
   columns: TableColumn<EditorTableRow>[]
   emptyLabels: EditorStudentsPanelStudentsEmptyLabels
-  committeeLanguage: StudyLanguageDto | null
   studentValidationIssues: EditorStudentValidationIssue[]
   highlightRequest?: EditorStudentHighlightRequest | null
 }>()
@@ -165,8 +164,8 @@ const studentValidationIssuesByStudentId = computed(() => {
   return issuesByStudentId
 })
 
-function resolveCommitteeThesisValidationFieldKey(): EditorStudentValidationFieldKey {
-  return props.committeeLanguage === 'ENGLISH' ? 'thesisTitleEn' : 'thesisTitleLocal'
+function resolveThesisValidationFieldKey(row: EditorStudentTableRow): EditorStudentValidationFieldKey {
+  return row.thesisLanguage === 'ENGLISH' ? 'thesisTitleEn' : 'thesisTitleLocal'
 }
 
 function resolveStudentFieldValidationIssues(
@@ -178,7 +177,7 @@ function resolveStudentFieldValidationIssues(
     return []
   }
 
-  const resolvedFieldKey = fieldKey === 'thesisTitle' ? resolveCommitteeThesisValidationFieldKey() : fieldKey
+  const resolvedFieldKey = fieldKey === 'thesisTitle' ? resolveThesisValidationFieldKey(row) : fieldKey
   return studentIssues.filter((issue) => issue.fieldKey === resolvedFieldKey)
 }
 
