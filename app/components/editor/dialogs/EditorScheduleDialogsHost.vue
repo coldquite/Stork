@@ -13,6 +13,8 @@ import type { EditorScheduleDialogsCopy, EditorStudentsPanelCommitteeLabels } fr
 
 type EditorPageGroups = ReturnType<typeof useEditorPage>
 
+const { t } = useI18n()
+
 const props = defineProps<{
   committeeList: EditorPageGroups['committeeList']
   invigilators: EditorPageGroups['invigilators']
@@ -248,6 +250,11 @@ const pdfPublicExportLoadingFlag = computed(() => sd.isPdfPublicExportLoading.va
 const isPdfPublicExportSubmitDisabled = computed(() => sd.isPdfPublicExportSubmitDisabled.value)
 const pdfInvigilatorsExportLoadingFlag = computed(() => sd.isPdfInvigilatorsExportLoading.value)
 const isPdfInvigilatorsExportSubmitDisabled = computed(() => sd.isPdfInvigilatorsExportSubmitDisabled.value)
+const pdfInvigilatorsNoQualifyingStudentsHint = computed(() =>
+  !sd.hasPdfInvigilatorsQualifyingStudents.value
+    ? t('editor.schedule.export.pdfInvigilatorsDialog.noQualifyingStudentsHint')
+    : undefined
+)
 const invigilatorValidationText = computed(() => inv.invigilatorValidationError.value)
 const createCommitteeValidationText = computed(() => cl.createCommitteeValidationError.value)
 const createCommitteeSubmitDisabled = computed(() => cl.isCreateCommitteeSubmitDisabled.value)
@@ -415,6 +422,7 @@ function openStudentFromValidationSummary(payload: { committeeId: string; studen
     :error-description="copy.pdfInvigilatorsExportCommittees.errorDescription ?? ''"
     :error-items="pdfInvigilatorsExportErrorItems"
     :submit-disabled="isPdfInvigilatorsExportSubmitDisabled"
+    :no-qualifying-students-hint="pdfInvigilatorsNoQualifyingStudentsHint"
     @update-selected-committee-ids="sd.updateSelectedPdfInvigilatorsExportCommitteeIds($event)"
     @select-all="sd.selectAllPdfInvigilatorsExportCommittees()"
     @clear-all="sd.clearPdfInvigilatorsExportCommittees()"

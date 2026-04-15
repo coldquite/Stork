@@ -648,6 +648,7 @@ export function useEditorPage() {
       pdfInvigilatorsExportErrorItems: scheduleDialogs.pdfInvigilatorsExportErrorItems,
       isPdfInvigilatorsExportLoading: scheduleDialogs.isPdfInvigilatorsExportLoading,
       pdfInvigilatorsExportDayGroups: scheduleDialogs.pdfInvigilatorsExportDayGroups,
+      hasPdfInvigilatorsQualifyingStudents: scheduleDialogs.hasPdfInvigilatorsQualifyingStudents,
       isPdfInvigilatorsExportSubmitDisabled: scheduleDialogs.isPdfInvigilatorsExportSubmitDisabled,
       openRenameDraftDialog: scheduleDialogs.openRenameDraftDialog,
       closeRenameDraftDialog: scheduleDialogs.closeRenameDraftDialog,

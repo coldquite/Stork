@@ -272,7 +272,7 @@ function buildSectionRows(input: {
         titlesAfter: student.titlesAfter
       }),
       specializationLabel: normalizePdfExportTextOrFallback(student.specializationCode),
-      repeatLabel: dictionary.repeatTypeLabelByValue[student.repeatType],
+      repeatLabel: normalizePdfExportText(dictionary.repeatTypeLabelByValue[student.repeatType] ?? ''),
       thesisTitle: resolvePdfThesisTitleByLanguage({
         thesisLanguage: student.thesisLanguage,
         thesisTitleLocal: student.thesisTitleLocal,

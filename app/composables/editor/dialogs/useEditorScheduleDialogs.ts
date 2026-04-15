@@ -164,11 +164,23 @@ export function useEditorScheduleDialogs() {
       selectedPdfPublicExportCommitteeIds.value.length < 1
     )
   })
+  const hasPdfInvigilatorsQualifyingStudents = computed(() => {
+    const selectedIds = new Set(selectedPdfInvigilatorsExportCommitteeIds.value)
+    return exportCommitteeEntries.value
+      .filter((entry) => selectedIds.has(entry.committee.localId))
+      .some((entry) =>
+        entry.committee.items.some(
+          (item) => item.type === 'STUDENT' && item.student !== null && item.student.prepareMinutes > 0
+        )
+      )
+  })
+
   const isPdfInvigilatorsExportSubmitDisabled = computed(() => {
     return (
       isPdfInvigilatorsExportLoading.value ||
       exportCommitteeItems.value.length < 1 ||
-      selectedPdfInvigilatorsExportCommitteeIds.value.length < 1
+      selectedPdfInvigilatorsExportCommitteeIds.value.length < 1 ||
+      !hasPdfInvigilatorsQualifyingStudents.value
     )
   })
 
@@ -579,6 +591,7 @@ export function useEditorScheduleDialogs() {
     pdfInvigilatorsExportErrorItems,
     isPdfInvigilatorsExportLoading,
     pdfInvigilatorsExportDayGroups,
+    hasPdfInvigilatorsQualifyingStudents,
     isPdfInvigilatorsExportSubmitDisabled,
     openRenameDraftDialog,
     closeRenameDraftDialog,

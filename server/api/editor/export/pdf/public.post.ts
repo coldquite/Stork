@@ -65,7 +65,7 @@ const sectionSchema = z
     tableThesisTitleHeader: nonEmptyTrimmedStringSchema,
     tableSupervisorReviewerHeader: nonEmptyTrimmedStringSchema,
     rowsEmptyFallback: nonEmptyTrimmedStringSchema,
-    rows: z.array(z.union([studentRowSchema, pauseRowSchema]))
+    rows: z.array(z.discriminatedUnion('kind', [studentRowSchema, pauseRowSchema]))
   })
   .strict()
 

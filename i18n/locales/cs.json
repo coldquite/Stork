@@ -394,6 +394,7 @@
           "emptyTitle": "V plánu zatím nejsou žádné komise",
           "emptyDescription": "Jakmile přidáte první komisi, bude možné pokračovat v exportu.",
           "daySelectedCount": "Vybráno {selected}/{total}",
+          "noQualifyingStudentsHint": "Žádný ze studentů ve vybraných komisích nemá nastavený čas přípravy. PDF pro dozor obsahuje pouze studenty s časem přípravy větším než 0 minut.",
           "errors": {
             "title": "Export PDF pro dozor se nepodařilo dokončit",
             "description": "Zkuste export prosím znovu. Pokud problém přetrvá, zkontrolujte data komise nebo server.",

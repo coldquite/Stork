@@ -39,6 +39,7 @@ const props = withDefaults(
     errorDescription?: string
     errorItems?: string[]
     submitDisabled: boolean
+    noQualifyingStudentsHint?: string
   }>(),
   {
     loading: false,
@@ -190,6 +191,17 @@ function resolveDaySelectedCountLabel(day: EditorPdfInvigilatorsDayGroup): strin
       <div class="relative">
         <div :class="dimmedContainerClass">
           <div v-if="hasCommittees" class="space-y-4">
+            <div
+              v-if="props.noQualifyingStudentsHint"
+              class="border-error/50 bg-error/10 flex items-start gap-2 rounded-md border p-3"
+              role="alert"
+            >
+              <UIcon name="i-lucide-circle-alert" class="text-error mt-0.5 size-4 shrink-0" />
+              <p class="text-error text-sm leading-snug">
+                {{ props.noQualifyingStudentsHint }}
+              </p>
+            </div>
+
             <div
               v-if="props.errorItems.length > 0"
               class="border-error/50 bg-error/10 space-y-2 rounded-md border p-3"
