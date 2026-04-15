@@ -29,6 +29,7 @@ function createStudentItem(
     additionalReviewerName: string | null
     titlesBefore: string | null
     titlesAfter: string | null
+    repeatType: 'NONE' | 'THESIS_DEFENSE' | 'ORAL_EXAM' | 'BOTH' | 'UNKNOWN'
   }>
 ): ScheduleDraftItem {
   return {
@@ -53,7 +54,7 @@ function createStudentItem(
       specializationName: 'Softwarové inženýrství',
       specializationCode: options.specializationCode ?? 'BI-SI.21',
       studyLanguage: 'CZECH',
-      repeatType: 'NONE',
+      repeatType: options.repeatType ?? 'NONE',
       prepareMinutes: 45,
       examMinutes: 30
     },
@@ -212,6 +213,7 @@ describe('pdf-public-export', () => {
     expect(firstStudentRow.preparationStartTime).toBe('08:00')
     expect(firstStudentRow.committeeExamRangeTime).toBe('08:45–09:15')
     expect(firstStudentRow.studentName).toBe('Bc. David Ampapa, DiS.')
+    expect(firstStudentRow.repeatLabel).toBe('')
     expect(firstStudentRow.supervisorPrimaryLabel).toBe('Ing. Vedoucí')
     expect(firstStudentRow.supervisorAdditionalLabel).toBe('')
     expect(firstStudentRow.reviewerPrimaryLabel).toBe('Ing. Oponent')
@@ -354,6 +356,87 @@ describe('pdf-public-export', () => {
     expect(firstRow.supervisorAdditionalLabel).toBe('Vedoucí 2')
     expect(firstRow.reviewerPrimaryLabel).toBe('Oponent 1')
     expect(firstRow.reviewerAdditionalLabel).toBe('Oponent 2')
+  })
+
+  it('shows czech repeat label for repeating student in czech committee', () => {
+    const sections = buildPdfPublicSections({
+      committees: [
+        createCommittee({
+          localId: 'committee-repeat-cs',
+          language: 'CZECH',
+          items: [
+            createStudentItem({ localId: 'student-defense', position: 1, repeatType: 'THESIS_DEFENSE' }),
+            createStudentItem({ localId: 'student-oral', position: 2, repeatType: 'ORAL_EXAM' }),
+            createStudentItem({ localId: 'student-both', position: 3, repeatType: 'BOTH' }),
+            createStudentItem({ localId: 'student-none', position: 4, repeatType: 'NONE' }),
+            createStudentItem({ localId: 'student-unknown', position: 5, repeatType: 'UNKNOWN' })
+          ]
+        })
+      ],
+      fallbackCommitteeLabel: 'Bez názvu'
+    })
+
+    const rows = sections[0]?.rows.filter((row) => row.kind === 'STUDENT') ?? []
+    expect(rows).toHaveLength(5)
+    if (
+      rows[0]?.kind !== 'STUDENT' ||
+      rows[1]?.kind !== 'STUDENT' ||
+      rows[2]?.kind !== 'STUDENT' ||
+      rows[3]?.kind !== 'STUDENT' ||
+      rows[4]?.kind !== 'STUDENT'
+    ) {
+      throw new Error('Expected all rows to be STUDENT')
+    }
+
+    expect(rows[0].repeatLabel).toBe('Opakuje obhajobu')
+    expect(rows[1].repeatLabel).toBe('Opakuje zkoušku')
+    expect(rows[2].repeatLabel).toBe('Opakuje zkoušku i obhajobu')
+    expect(rows[3].repeatLabel).toBe('')
+    expect(rows[4].repeatLabel).toBe('')
+  })
+
+  it('shows english repeat label for repeating student in english committee', () => {
+    const sections = buildPdfPublicSections({
+      committees: [
+        createCommittee({
+          localId: 'committee-repeat-en',
+          language: 'ENGLISH',
+          studyProgramName: 'INFORMATICS 2021',
+          specializationCode: 'BIE-SI.21',
+          items: [
+            createStudentItem({
+              localId: 'student-defense-en',
+              position: 1,
+              repeatType: 'THESIS_DEFENSE',
+              specializationCode: 'BIE-SI.21'
+            }),
+            createStudentItem({
+              localId: 'student-oral-en',
+              position: 2,
+              repeatType: 'ORAL_EXAM',
+              specializationCode: 'BIE-SI.21'
+            }),
+            createStudentItem({
+              localId: 'student-none-en',
+              position: 3,
+              repeatType: 'NONE',
+              specializationCode: 'BIE-SI.21'
+            })
+          ]
+        })
+      ],
+      fallbackCommitteeLabel: 'Bez názvu'
+    })
+
+    const rows = sections[0]?.rows.filter((row) => row.kind === 'STUDENT') ?? []
+    expect(rows).toHaveLength(3)
+    if (rows[0]?.kind !== 'STUDENT' || rows[1]?.kind !== 'STUDENT' || rows[2]?.kind !== 'STUDENT') {
+      throw new Error('Expected all rows to be STUDENT')
+    }
+
+    expect(rows[0].repeatLabel).toBe('Repeats thesis defense')
+    expect(rows[1].repeatLabel).toBe('Repeats oral exam')
+    expect(rows[2].repeatLabel).toBe('')
   })
 
   it('builds file name with timestamp and Časový plán SZZ prefix', () => {

@@ -243,6 +243,8 @@ function buildSectionRows(input: {
   language: StudyLanguageDto
   committee: ScheduleDraftCommittee
 }): PdfPublicSectionDto['rows'] {
+  const dictionary = PDF_PUBLIC_EXPORT_DICTIONARY[input.language]
+
   return buildCommitteeTimelineEntries(input.committee).map((timelineEntry) => {
     if (timelineEntry.kind === 'PAUSE') {
       return {
@@ -270,6 +272,7 @@ function buildSectionRows(input: {
         titlesAfter: student.titlesAfter
       }),
       specializationLabel: normalizePdfExportTextOrFallback(student.specializationCode),
+      repeatLabel: dictionary.repeatTypeLabelByValue[student.repeatType],
       thesisTitle: resolvePdfThesisTitleByLanguage({
         thesisLanguage: student.thesisLanguage,
         thesisTitleLocal: student.thesisTitleLocal,

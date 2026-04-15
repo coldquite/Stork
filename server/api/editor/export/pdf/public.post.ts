@@ -25,6 +25,7 @@ const studentRowSchema = z
     committeeExamRangeTime: nonEmptyTrimmedStringSchema,
     studentName: nonEmptyTrimmedStringSchema,
     specializationLabel: nonEmptyTrimmedStringSchema,
+    repeatLabel: z.string().trim(),
     thesisTitle: nonEmptyTrimmedStringSchema,
     supervisorPrimaryLabel: z.string().trim(),
     supervisorAdditionalLabel: z.string().trim(),

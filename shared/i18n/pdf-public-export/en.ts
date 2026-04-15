@@ -33,6 +33,13 @@ export const PDF_PUBLIC_EXPORT_EN_DICTIONARY: PdfPublicExportDictionary = {
     supervisorReviewer: 'Supervisor\nReviewer',
     emptyRowsFallback: '—'
   },
+  repeatTypeLabelByValue: {
+    NONE: '',
+    THESIS_DEFENSE: 'Repeats thesis defense',
+    ORAL_EXAM: 'Repeats oral exam',
+    BOTH: 'Repeats oral exam and thesis defense',
+    UNKNOWN: ''
+  },
   pause: {
     defaultBreakLabel: 'BREAK',
     defaultLunchLabel: 'LUNCH',

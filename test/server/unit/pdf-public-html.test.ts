@@ -57,6 +57,7 @@ function createStudentRow(
     committeeExamRangeTime: '08:45–09:15',
     studentName: 'Student Example',
     specializationLabel: 'BI-SI.21',
+    repeatLabel: '',
     thesisTitle: 'Thesis title',
     supervisorPrimaryLabel: 'Vedoucí 1',
     supervisorAdditionalLabel: '',

@@ -75,12 +75,16 @@ function renderSectionRows(section: PostPdfPublicExportRequestDto['sections'][nu
         return `<tr class="pause-row"><td colspan="5" class="pause-cell">${escapeHtml(row.pauseLine)}</td></tr>`
       }
 
+      const repeatLabelHtml =
+        row.repeatLabel.length > 0 ? `<span class="student-repeat-label">${escapeHtml(row.repeatLabel)}</span>` : ''
+
       return `<tr>
         <td>${escapeHtml(row.preparationStartTime)}</td>
         <td>${escapeHtml(row.committeeExamRangeTime)}</td>
         <td>
           <span class="student-name">${escapeHtml(row.studentName)}</span>
           <span class="student-specialization">${escapeHtml(row.specializationLabel)}</span>
+          ${repeatLabelHtml}
         </td>
         <td>${escapeHtml(row.thesisTitle)}</td>
         <td>
@@ -356,12 +360,19 @@ export async function renderPdfPublicHtml(payload: PostPdfPublicExportRequestDto
 
       .student-name,
       .student-specialization,
+      .student-repeat-label,
       .teacher-line {
         display: block;
       }
 
       .student-specialization {
         margin-top: 0.5mm;
+      }
+
+      .student-repeat-label {
+        margin-top: 0.5mm;
+        font-weight: 550;
+        font-size: 9pt;
       }
 
       .teacher-line + .teacher-line {

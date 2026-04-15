@@ -1,4 +1,4 @@
-import type { StudyProgramTypeDto } from '#shared/types/time-schedules'
+import type { RepeatTypeDto, StudyProgramTypeDto } from '#shared/types/time-schedules'
 
 export interface PdfPublicExportDictionary {
   documentHeaderTitle: string
@@ -27,6 +27,7 @@ export interface PdfPublicExportDictionary {
     supervisorReviewer: string
     emptyRowsFallback: string
   }
+  repeatTypeLabelByValue: Record<RepeatTypeDto, string>
   pause: {
     defaultBreakLabel: string
     defaultLunchLabel: string

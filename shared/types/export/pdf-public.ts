@@ -6,6 +6,7 @@ export interface PdfPublicStudentRowDto {
   committeeExamRangeTime: string
   studentName: string
   specializationLabel: string
+  repeatLabel: string
   thesisTitle: string
   supervisorPrimaryLabel: string
   supervisorAdditionalLabel: string

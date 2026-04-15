@@ -33,6 +33,13 @@ export const PDF_PUBLIC_EXPORT_CS_DICTIONARY: PdfPublicExportDictionary = {
     supervisorReviewer: 'Vedoucí\nOponent',
     emptyRowsFallback: '—'
   },
+  repeatTypeLabelByValue: {
+    NONE: '',
+    THESIS_DEFENSE: 'Opakuje obhajobu',
+    ORAL_EXAM: 'Opakuje zkoušku',
+    BOTH: 'Opakuje zkoušku i obhajobu',
+    UNKNOWN: ''
+  },
   pause: {
     defaultBreakLabel: 'PŘESTÁVKA',
     defaultLunchLabel: 'OBĚD',
