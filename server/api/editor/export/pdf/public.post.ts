@@ -11,6 +11,13 @@ const nonEmptyTrimmedStringSchema = z.string().trim().min(1, {
   message: 'must have at least 1 non-whitespace character'
 })
 
+const isoDateStringSchema = z
+  .string()
+  .trim()
+  .refine((value) => !Number.isNaN(Date.parse(value)), {
+    message: 'must be a valid ISO date string'
+  })
+
 const studentRowSchema = z
   .object({
     kind: z.literal('STUDENT'),
@@ -34,6 +41,8 @@ const pauseRowSchema = z
 const sectionSchema = z
   .object({
     committeeId: nonEmptyTrimmedStringSchema,
+    committeeDateIso: isoDateStringSchema,
+    committeeRoomValue: nonEmptyTrimmedStringSchema,
     language: z.enum(['CZECH', 'ENGLISH']),
     topMetaDayLabel: nonEmptyTrimmedStringSchema,
     topMetaRoomLine: nonEmptyTrimmedStringSchema,

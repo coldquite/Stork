@@ -12,6 +12,13 @@ import {
 import { PDF_VISUAL_COLORS, renderPdfTableBaseStyles } from '#server/utils/export/pdf/templates/visual-style'
 
 const PDF_DOCUMENT_TITLE = 'Plán konání státních závěrečných zkoušek'
+const CZECH_TIME_ZONE = 'Europe/Prague'
+const pageGroupDateFormatter = new Intl.DateTimeFormat('en-CA', {
+  timeZone: CZECH_TIME_ZONE,
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric'
+})
 
 function renderDocumentHeaderTitleHtml(title: string): string {
   const words = title
@@ -70,13 +77,37 @@ function renderInvigilatorsMetaHtml(section: PostPdfPublicExportRequestDto['sect
   </p>`
 }
 
+function resolveCommitteeDayKey(committeeDateIso: string): string {
+  const parsedDate = new Date(committeeDateIso)
+  if (Number.isNaN(parsedDate.getTime())) {
+    return `invalid-${committeeDateIso}`
+  }
+
+  const parts = pageGroupDateFormatter.formatToParts(parsedDate)
+  const year = parts.find((part) => part.type === 'year')?.value
+  const month = parts.find((part) => part.type === 'month')?.value
+  const day = parts.find((part) => part.type === 'day')?.value
+  if (!year || !month || !day) {
+    return `invalid-${committeeDateIso}`
+  }
+
+  return `${year}-${month}-${day}`
+}
+
+function resolveSectionPageGroupKey(section: PostPdfPublicExportRequestDto['sections'][number]): string {
+  const dayKey = resolveCommitteeDayKey(section.committeeDateIso)
+  const roomKey = section.committeeRoomValue.toLocaleLowerCase('cs-CZ')
+  return `${dayKey}__${roomKey}`
+}
+
 function renderCommitteeSection(
   section: PostPdfPublicExportRequestDto['sections'][number],
-  brandHeaderHtml: string
+  brandHeaderHtml: string,
+  sectionClass: string
 ): string {
   const membersLines = section.membersLines.map((line) => `<p class="member-line">${escapeHtml(line)}</p>`).join('')
 
-  return `<section class="committee-section">
+  return `<section class="${sectionClass}">
     <div class="section-heading-block">
       ${brandHeaderHtml}
       <h2 class="degree-title">${escapeHtml(section.degreeTitle)}</h2>
@@ -127,8 +158,14 @@ export async function renderPdfPublicHtml(payload: PostPdfPublicExportRequestDto
     brandTitleWidthPercent: 54
   })
   const tableBaseStyles = renderPdfTableBaseStyles()
+  let previousPageGroupKey: string | null = null
   const sectionsHtml = payload.sections
     .map((section, index) => {
+      const pageGroupKey = resolveSectionPageGroupKey(section)
+      const isNewPageGroup = pageGroupKey !== previousPageGroupKey
+      previousPageGroupKey = pageGroupKey
+      const sectionClass =
+        isNewPageGroup && index > 0 ? 'committee-section committee-section--new-group' : 'committee-section'
       const brandHeaderHtml =
         index === 0
           ? renderPdfBrandHeaderHtml({
@@ -137,7 +174,7 @@ export async function renderPdfPublicHtml(payload: PostPdfPublicExportRequestDto
             })
           : ''
 
-      return renderCommitteeSection(section, brandHeaderHtml)
+      return renderCommitteeSection(section, brandHeaderHtml, sectionClass)
     })
     .join('\n')
 
@@ -153,6 +190,11 @@ export async function renderPdfPublicHtml(payload: PostPdfPublicExportRequestDto
         margin: 0 0 8mm;
         break-inside: avoid-page;
         page-break-inside: avoid;
+      }
+
+      .committee-section--new-group {
+        break-before: page;
+        page-break-before: always;
       }
 
       .section-heading-block {

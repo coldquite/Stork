@@ -189,6 +189,8 @@ describe('pdf-public-export', () => {
     expect(sections).toHaveLength(2)
 
     expect(sections[0]?.language).toBe('CZECH')
+    expect(sections[0]?.committeeDateIso).toBe('2025-06-23T00:00:00.000Z')
+    expect(sections[0]?.committeeRoomValue).toBe('TH:A-1455')
     expect(sections[0]?.degreeTitle).toBe('BAKALÁŘSKÉ STÁTNÍ ZÁVĚREČNÉ ZKOUŠKY')
     expect(sections[0]?.semesterLabel).toBe('Letní semestr 2024/2025 (červen)')
     expect(sections[0]?.committeeLine).toBe('Komise 1-BI-SI.21')
@@ -210,10 +212,12 @@ describe('pdf-public-export', () => {
     expect(firstStudentRow.studentName).toBe('Bc. David Ampapa, DiS.')
 
     expect(sections[1]?.language).toBe('ENGLISH')
+    expect(sections[1]?.committeeDateIso).toBe('2025-06-23T00:00:00.000Z')
+    expect(sections[1]?.committeeRoomValue).toBe('TH:A-1455')
     expect(sections[1]?.degreeTitle).toBe('BACHELOR STATE FINAL EXAMINATIONS')
     expect(sections[1]?.semesterLabel).toBe('Summer semester 2024/2025 (June)')
     expect(sections[1]?.topMetaRoomLine).toBe('classroom TH:A-1455')
-    expect(sections[1]?.tableThesisTitleHeader).toBe('Thesis topic')
+    expect(sections[1]?.tableThesisTitleHeader).toBe('Final thesis topic')
   })
 
   it('uses winter semester label and falls back to dash when department is unknown', () => {
@@ -244,6 +248,8 @@ describe('pdf-public-export', () => {
     expect(payload.draftName).toBe('SZZ test')
     expect(payload.documentHeaderTitle).toBe('PLÁN KONÁNÍ STÁTNÍCH ZÁVĚREČNÝCH ZKOUŠEK')
     expect(payload.sections).toHaveLength(1)
+    expect(payload.sections[0]?.committeeDateIso).toBe('2025-06-23T00:00:00.000Z')
+    expect(payload.sections[0]?.committeeRoomValue).toBe('TH:A-1455')
   })
 
   it('builds file name with timestamp and Časový plán SZZ prefix', () => {

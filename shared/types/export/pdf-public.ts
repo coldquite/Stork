@@ -20,6 +20,8 @@ export type PdfPublicRowDto = PdfPublicStudentRowDto | PdfPublicPauseRowDto
 
 export interface PdfPublicSectionDto {
   committeeId: string
+  committeeDateIso: string
+  committeeRoomValue: string
   language: StudyLanguageDto
   topMetaDayLabel: string
   topMetaRoomLine: string

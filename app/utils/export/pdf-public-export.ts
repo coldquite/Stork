@@ -287,6 +287,8 @@ export function buildPdfPublicSections(input: BuildPdfPublicSectionsInput): PdfP
 
     return {
       committeeId: committee.localId,
+      committeeDateIso: committee.date,
+      committeeRoomValue: normalizePdfExportTextOrFallback(committee.room),
       language,
       topMetaDayLabel: resolveTopMetaDayLabel({
         language,
