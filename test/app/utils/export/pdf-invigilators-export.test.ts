@@ -191,7 +191,8 @@ describe('pdf-invigilators-export', () => {
       repeatTypeLabelResolver: (repeatType) => repeatLabels[repeatType]
     })
 
-    expect(sections).toHaveLength(3)
+    // committee-4 (Friday, no items) produces no students after filtering — its section is omitted
+    expect(sections).toHaveLength(2)
     expect(sections[0]?.dayLabel).toBe('ČTVRTEK 28. 8. 2025')
     expect(sections[0]?.roomLabel).toBe('TH:PR-200')
     expect(sections[0]?.invigilatorsLabel).toBe('jan novák, Eva Dvořáková, Petr Svoboda')
@@ -206,8 +207,6 @@ describe('pdf-invigilators-export', () => {
 
     expect(sections[1]?.roomLabel).toBe('—')
     expect(sections[1]?.invigilatorsLabel).toBe('—')
-    expect(sections[2]?.dayLabel).toBe('PÁTEK 29. 8. 2025')
-    expect(sections[2]?.roomLabel).toBe('—')
   })
 
   it('builds request payload using computed sections', () => {
@@ -233,5 +232,71 @@ describe('pdf-invigilators-export', () => {
     const fileName = buildPdfInvigilatorsFileName('Název plánu', fixedNow)
 
     expect(fileName).toBe('Dozor_Název plánu_11.04.2026_12-20-30.pdf')
+  })
+
+  it('excludes students with prepareMinutes = 0 and omits sections that become empty after filtering', () => {
+    const committees: ScheduleDraftCommittee[] = [
+      createCommittee({
+        localId: 'committee-with-mixed',
+        name: 'Komise A',
+        startMinute: 540,
+        date: '2025-08-28T00:00:00.000Z',
+        room: 'TH:A-1500',
+        preparationRoom: 'TH:PR-200',
+        invigilators: [createInvigilator('Dozorce', 'inv-1')],
+        items: [
+          createStudentItem({
+            localId: 'student-with-prep',
+            position: 1,
+            firstName: 'Karel',
+            lastName: 'Novotný',
+            prepareMinutes: 45,
+            examMinutes: 30
+          }),
+          createStudentItem({
+            localId: 'student-no-prep',
+            position: 2,
+            firstName: 'Lenka',
+            lastName: 'Marková',
+            prepareMinutes: 0,
+            examMinutes: 30
+          })
+        ]
+      }),
+      // Committee where all students have prepareMinutes = 0 — section should be omitted
+      createCommittee({
+        localId: 'committee-all-zero',
+        name: 'Komise B',
+        startMinute: 600,
+        date: '2025-08-28T00:00:00.000Z',
+        room: 'TH:A-2000',
+        preparationRoom: 'TH:PR-300',
+        invigilators: [],
+        items: [
+          createStudentItem({
+            localId: 'student-zero-only',
+            position: 1,
+            firstName: 'Tomáš',
+            lastName: 'Blažek',
+            prepareMinutes: 0,
+            examMinutes: 30
+          })
+        ]
+      })
+    ]
+
+    const sections = buildPdfInvigilatorsSections({
+      committees,
+      fallbackCommitteeLabel: 'Bez názvu',
+      repeatTypeLabelResolver: (repeatType) => repeatLabels[repeatType]
+    })
+
+    // Section for TH:PR-200 stays (has one valid student)
+    expect(sections).toHaveLength(1)
+    expect(sections[0]?.roomLabel).toBe('TH:PR-200')
+    expect(sections[0]?.students).toHaveLength(1)
+    expect(sections[0]?.students[0]?.studentName).toBe('Karel Novotný')
+
+    // Section for TH:PR-300 is omitted entirely (all students had prepareMinutes = 0)
   })
 })

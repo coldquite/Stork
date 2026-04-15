@@ -217,6 +217,12 @@ export function buildPdfInvigilatorsSections(input: BuildPdfInvigilatorsSections
         continue
       }
 
+      // Students with no preparation time do not attend the preparation room,
+      // so they are excluded from the invigilators schedule.
+      if (timelineEntry.item.student.prepareMinutes <= 0) {
+        continue
+      }
+
       committeeStudentOrder += 1
       group.students.push(
         buildStudentAccumulator(
@@ -231,20 +237,22 @@ export function buildPdfInvigilatorsSections(input: BuildPdfInvigilatorsSections
     }
   }
 
-  return Array.from(groups.values()).map((group) => {
-    const students = group.students
-      .slice()
-      .sort(sortStudentsByPrepareStart)
-      .map((row) => toStudentRowDto(row))
+  return Array.from(groups.values())
+    .filter((group) => group.students.length > 0)
+    .map((group) => {
+      const students = group.students
+        .slice()
+        .sort(sortStudentsByPrepareStart)
+        .map((row) => toStudentRowDto(row))
 
-    return {
-      dayKey: group.dayKey,
-      dayLabel: group.dayLabel,
-      roomLabel: group.roomLabel,
-      invigilatorsLabel: group.invigilators.join(', ') || PDF_EXPORT_EMPTY_VALUE,
-      students
-    }
-  })
+      return {
+        dayKey: group.dayKey,
+        dayLabel: group.dayLabel,
+        roomLabel: group.roomLabel,
+        invigilatorsLabel: group.invigilators.join(', ') || PDF_EXPORT_EMPTY_VALUE,
+        students
+      }
+    })
 }
 
 export function buildPdfInvigilatorsFileName(draftName: string, now: Date = new Date()): string {
