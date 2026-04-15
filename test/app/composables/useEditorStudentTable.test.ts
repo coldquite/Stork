@@ -252,6 +252,113 @@ describe('useEditorStudentTable', () => {
     expect(firstItem.student.specializationCode).toBe('BI-UI.21')
   })
 
+  it('in AUTO mode saves thesisTitle to the stored language field, not the new one', () => {
+    const selectedCommittee = ref(
+      createCommitteeWithSingleStudent({
+        student: {
+          firstName: 'Jan',
+          lastName: 'Novák',
+          email: 'jan.novak@fit.cvut.cz',
+          titlesBefore: null,
+          titlesAfter: null,
+          thesisTitleLocal: 'Český název',
+          thesisTitleEn: 'English title',
+          thesisLanguage: 'CZECH',
+          supervisorName: 'Vedoucí',
+          reviewerName: 'Oponent',
+          additionalSupervisorName: null,
+          additionalReviewerName: null,
+          studyProgramName: 'Informatika',
+          studyProgramType: 'BACHELOR',
+          specializationName: 'Uživatelská rozhraní',
+          specializationCode: 'BI-UI.21',
+          studyLanguage: 'CZECH',
+          repeatType: 'NONE',
+          prepareMinutes: 45,
+          examMinutes: 30
+        }
+      })
+    )
+    const table = useEditorStudentTable(
+      computed(() => selectedCommittee.value),
+      computed(() => 'AUTO' as const),
+      computed(() => 'MAXIMIZED' as const)
+    )
+
+    const firstRow = table.selectedRows.value[0]
+    if (!firstRow || firstRow.kind !== 'STUDENT') {
+      throw new Error('Expected first table row to be a student')
+    }
+
+    // User switches thesis language from CZECH to ENGLISH — thesisTitle still contains the Czech value
+    // because the row was built before the language change propagated.
+    table.selectedRows.value = [{ ...firstRow, thesisLanguage: 'ENGLISH' }]
+
+    const firstItem = selectedCommittee.value.items[0]
+    if (!firstItem || firstItem.type !== 'STUDENT') {
+      throw new Error('Expected first committee item to be a student')
+    }
+
+    // thesisTitle came from thesisTitleLocal (old CZECH language), so it must be saved there.
+    // thesisTitleEn must remain unchanged.
+    expect(firstItem.student.thesisTitleLocal).toBe('Český název')
+    expect(firstItem.student.thesisTitleEn).toBe('English title')
+    expect(firstItem.student.thesisLanguage).toBe('ENGLISH')
+  })
+
+  it('in AUTO mode saves thesisTitle to english field when stored language was english', () => {
+    const selectedCommittee = ref(
+      createCommitteeWithSingleStudent({
+        student: {
+          firstName: 'Jan',
+          lastName: 'Novák',
+          email: 'jan.novak@fit.cvut.cz',
+          titlesBefore: null,
+          titlesAfter: null,
+          thesisTitleLocal: 'Český název',
+          thesisTitleEn: 'English title',
+          thesisLanguage: 'ENGLISH',
+          supervisorName: 'Vedoucí',
+          reviewerName: 'Oponent',
+          additionalSupervisorName: null,
+          additionalReviewerName: null,
+          studyProgramName: 'Informatika',
+          studyProgramType: 'BACHELOR',
+          specializationName: 'Uživatelská rozhraní',
+          specializationCode: 'BI-UI.21',
+          studyLanguage: 'CZECH',
+          repeatType: 'NONE',
+          prepareMinutes: 45,
+          examMinutes: 30
+        }
+      })
+    )
+    const table = useEditorStudentTable(
+      computed(() => selectedCommittee.value),
+      computed(() => 'AUTO' as const),
+      computed(() => 'MAXIMIZED' as const)
+    )
+
+    const firstRow = table.selectedRows.value[0]
+    if (!firstRow || firstRow.kind !== 'STUDENT') {
+      throw new Error('Expected first table row to be a student')
+    }
+
+    // User switches thesis language from ENGLISH to CZECH — thesisTitle still contains the English value.
+    table.selectedRows.value = [{ ...firstRow, thesisLanguage: 'CZECH' }]
+
+    const firstItem = selectedCommittee.value.items[0]
+    if (!firstItem || firstItem.type !== 'STUDENT') {
+      throw new Error('Expected first committee item to be a student')
+    }
+
+    // thesisTitle came from thesisTitleEn (old ENGLISH language), so it must be saved there.
+    // thesisTitleLocal must remain unchanged.
+    expect(firstItem.student.thesisTitleEn).toBe('English title')
+    expect(firstItem.student.thesisTitleLocal).toBe('Český název')
+    expect(firstItem.student.thesisLanguage).toBe('CZECH')
+  })
+
   it('still applies study profile cleanup when profile fields are changed', () => {
     const selectedCommittee = ref(createCommitteeWithSingleStudent())
     const table = useEditorStudentTable(

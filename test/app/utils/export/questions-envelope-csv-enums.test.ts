@@ -4,6 +4,8 @@ import { createQuestionsEnvelopeCsvEnumLabelResolver } from '~/utils/export/ques
 const translationMap: Record<string, string> = {
   'editor.schedule.export.questionsEnvelopeCsvExport.enums.studyProgramType.BACHELOR': 'Bakalářský',
   'editor.schedule.export.questionsEnvelopeCsvExport.enums.studyProgramType.MASTER': 'Magisterský',
+  'editor.schedule.export.questionsEnvelopeCsvExport.enums.studyProgramTypeEn.BACHELOR': 'Bachelor',
+  'editor.schedule.export.questionsEnvelopeCsvExport.enums.studyProgramTypeEn.MASTER': 'Master',
   'editor.schedule.export.questionsEnvelopeCsvExport.enums.thesisLanguage.CZECH': 'Čeština',
   'editor.schedule.export.questionsEnvelopeCsvExport.enums.thesisLanguage.ENGLISH': 'Angličtina',
   'editor.schedule.export.questionsEnvelopeCsvExport.enums.thesisLanguage.SLOVAK': 'Slovenština',
@@ -19,9 +21,19 @@ const enumLabelResolver = createQuestionsEnvelopeCsvEnumLabelResolver((key) => {
 })
 
 describe('questions-envelope-csv-enums', () => {
-  it('maps study program type values to Czech labels', () => {
+  it('maps study program type values to Czech labels when study language is czech', () => {
+    expect(enumLabelResolver.resolveStudyProgramTypeLabel('BACHELOR', 'CZECH')).toBe('Bakalářský')
+    expect(enumLabelResolver.resolveStudyProgramTypeLabel('MASTER', 'CZECH')).toBe('Magisterský')
+  })
+
+  it('maps study program type values to Czech labels when study language is not provided', () => {
     expect(enumLabelResolver.resolveStudyProgramTypeLabel('BACHELOR')).toBe('Bakalářský')
     expect(enumLabelResolver.resolveStudyProgramTypeLabel('MASTER')).toBe('Magisterský')
+  })
+
+  it('maps study program type values to English labels when study language is english', () => {
+    expect(enumLabelResolver.resolveStudyProgramTypeLabel('BACHELOR', 'ENGLISH')).toBe('Bachelor')
+    expect(enumLabelResolver.resolveStudyProgramTypeLabel('MASTER', 'ENGLISH')).toBe('Master')
   })
 
   it('maps thesis language values to Czech labels', () => {

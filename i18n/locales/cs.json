@@ -339,6 +339,10 @@
               "BACHELOR": "Bakalářský",
               "MASTER": "Magisterský"
             },
+            "studyProgramTypeEn": {
+              "BACHELOR": "Bachelor",
+              "MASTER": "Master"
+            },
             "thesisLanguage": {
               "CZECH": "Čeština",
               "ENGLISH": "Angličtina",

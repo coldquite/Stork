@@ -136,11 +136,16 @@ export function buildQuestionsEnvelopeCsvRows(input: BuildQuestionsEnvelopeCsvRo
         Titul: normalizeCsvCell(item.student.titlesBefore),
         'Titul za': normalizeCsvCell(item.student.titlesAfter),
         Email: normalizeCsvCell(item.student.email),
-        'Typ studijního plánu': input.enumLabelResolver.resolveStudyProgramTypeLabel(item.student.studyProgramType),
+        'Typ studijního plánu': input.enumLabelResolver.resolveStudyProgramTypeLabel(
+          item.student.studyProgramType,
+          item.student.studyLanguage
+        ),
         'Název studijního plánu': normalizeCsvCell(item.student.studyProgramName),
         'Název specializace': normalizeCsvCell(item.student.specializationName),
         'Kód studijního plánu': normalizeCsvCell(item.student.specializationCode),
-        'Katedra studenta (název)': normalizeCsvCell(department.departmentNameCs),
+        'Katedra studenta (název)': normalizeCsvCell(
+          item.student.studyLanguage === 'ENGLISH' ? department.departmentNameEn : department.departmentNameCs
+        ),
         'Katedra studenta (kód)': normalizeCsvCell(department.departmentCode),
         'Jazyk práce': input.enumLabelResolver.resolveThesisLanguageLabel(item.student.thesisLanguage),
         'Název práce': normalizeCsvCell(item.student.thesisTitleLocal),

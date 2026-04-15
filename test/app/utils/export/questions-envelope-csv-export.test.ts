@@ -10,7 +10,11 @@ import {
 } from '~/utils/export/questions-envelope-csv-export'
 
 const enumLabelResolver: QuestionsEnvelopeCsvEnumLabelResolver = {
-  resolveStudyProgramTypeLabel(value) {
+  resolveStudyProgramTypeLabel(value, studyLanguage) {
+    if (studyLanguage === 'ENGLISH') {
+      return value === 'BACHELOR' ? 'Bachelor' : 'Master'
+    }
+
     if (value === 'BACHELOR') {
       return 'Bakalářský'
     }
@@ -168,6 +172,89 @@ describe('questions-envelope-csv-export', () => {
     expect(rows[1]?.Email).toBe('')
     expect(rows[1]?.['Vedoucí práce 2']).toBe('Vedoucí 2')
     expect(rows[1]?.['Oponent práce 2']).toBe('Oponent 2')
+    expect(rows[0]?.['Katedra studenta (název)']).toBe('Katedra softwarového inženýrství')
+    expect(rows[0]?.['Katedra studenta (kód)']).toBe('18102')
+  })
+
+  it('uses english study program type label when student study language is english', () => {
+    const committee = createCommittee('committee-a', '1-BIE-SI.21', '2026-06-23T00:00:00.000Z', [
+      createStudentItem('student-1', 1, {
+        studyLanguage: 'ENGLISH',
+        studyProgramType: 'BACHELOR',
+        studyProgramName: 'Informatics',
+        specializationCode: 'BIE-SI.21'
+      }),
+      createStudentItem('student-2', 2, {
+        studyLanguage: 'ENGLISH',
+        studyProgramType: 'MASTER',
+        studyProgramName: 'Informatics',
+        specializationCode: 'NIE-SI'
+      })
+    ])
+
+    const rows = buildQuestionsEnvelopeCsvRows({
+      committees: [committee],
+      fallbackCommitteeLabel: 'Bez názvu',
+      enumLabelResolver
+    })
+
+    expect(rows[0]?.['Typ studijního plánu']).toBe('Bachelor')
+    expect(rows[1]?.['Typ studijního plánu']).toBe('Master')
+  })
+
+  it('uses czech study program type label when student study language is czech', () => {
+    const committee = createCommittee('committee-a', '1-BI-SI.21', '2026-06-23T00:00:00.000Z', [
+      createStudentItem('student-1', 1, {
+        studyLanguage: 'CZECH',
+        studyProgramType: 'BACHELOR',
+        studyProgramName: 'Informatika',
+        specializationCode: 'BI-SI.21'
+      })
+    ])
+
+    const rows = buildQuestionsEnvelopeCsvRows({
+      committees: [committee],
+      fallbackCommitteeLabel: 'Bez názvu',
+      enumLabelResolver
+    })
+
+    expect(rows[0]?.['Typ studijního plánu']).toBe('Bakalářský')
+  })
+
+  it('uses english department name when student study language is english', () => {
+    const committee = createCommittee('committee-a', '1-BIE-SI.21', '2026-06-23T00:00:00.000Z', [
+      createStudentItem('student-1', 1, {
+        studyLanguage: 'ENGLISH',
+        studyProgramName: 'Informatics',
+        specializationCode: 'BIE-SI.21'
+      })
+    ])
+
+    const rows = buildQuestionsEnvelopeCsvRows({
+      committees: [committee],
+      fallbackCommitteeLabel: 'Bez názvu',
+      enumLabelResolver
+    })
+
+    expect(rows[0]?.['Katedra studenta (název)']).toBe('Department of Software Engineering')
+    expect(rows[0]?.['Katedra studenta (kód)']).toBe('18102')
+  })
+
+  it('uses czech department name when student study language is czech', () => {
+    const committee = createCommittee('committee-a', '1-BI-SI.21', '2026-06-23T00:00:00.000Z', [
+      createStudentItem('student-1', 1, {
+        studyLanguage: 'CZECH',
+        studyProgramName: 'Informatika',
+        specializationCode: 'BI-SI.21'
+      })
+    ])
+
+    const rows = buildQuestionsEnvelopeCsvRows({
+      committees: [committee],
+      fallbackCommitteeLabel: 'Bez názvu',
+      enumLabelResolver
+    })
+
     expect(rows[0]?.['Katedra studenta (název)']).toBe('Katedra softwarového inženýrství')
     expect(rows[0]?.['Katedra studenta (kód)']).toBe('18102')
   })

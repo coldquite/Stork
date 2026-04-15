@@ -1,9 +1,14 @@
-import type { RepeatTypeDto, StudyProgramTypeDto, ThesisLanguageDto } from '#shared/types/time-schedules'
+import type {
+  RepeatTypeDto,
+  StudyLanguageDto,
+  StudyProgramTypeDto,
+  ThesisLanguageDto
+} from '#shared/types/time-schedules'
 
 type QuestionsEnvelopeCsvTranslate = (key: string) => string
 
 export interface QuestionsEnvelopeCsvEnumLabelResolver {
-  resolveStudyProgramTypeLabel: (value: StudyProgramTypeDto) => string
+  resolveStudyProgramTypeLabel: (value: StudyProgramTypeDto, studyLanguage?: StudyLanguageDto) => string
   resolveThesisLanguageLabel: (value: ThesisLanguageDto) => string
   resolveRepeatTypeLabel: (value: RepeatTypeDto) => string
 }
@@ -11,6 +16,11 @@ export interface QuestionsEnvelopeCsvEnumLabelResolver {
 const STUDY_PROGRAM_TYPE_KEY_BY_VALUE: Record<StudyProgramTypeDto, string> = {
   BACHELOR: 'editor.schedule.export.questionsEnvelopeCsvExport.enums.studyProgramType.BACHELOR',
   MASTER: 'editor.schedule.export.questionsEnvelopeCsvExport.enums.studyProgramType.MASTER'
+}
+
+const STUDY_PROGRAM_TYPE_EN_KEY_BY_VALUE: Record<StudyProgramTypeDto, string> = {
+  BACHELOR: 'editor.schedule.export.questionsEnvelopeCsvExport.enums.studyProgramTypeEn.BACHELOR',
+  MASTER: 'editor.schedule.export.questionsEnvelopeCsvExport.enums.studyProgramTypeEn.MASTER'
 }
 
 const THESIS_LANGUAGE_KEY_BY_VALUE: Record<ThesisLanguageDto, string> = {
@@ -36,8 +46,10 @@ export function createQuestionsEnvelopeCsvEnumLabelResolver(
   translate: QuestionsEnvelopeCsvTranslate
 ): QuestionsEnvelopeCsvEnumLabelResolver {
   return {
-    resolveStudyProgramTypeLabel(value) {
-      return resolveI18nEnumLabel(translate, STUDY_PROGRAM_TYPE_KEY_BY_VALUE[value], value)
+    resolveStudyProgramTypeLabel(value, studyLanguage) {
+      const key =
+        studyLanguage === 'ENGLISH' ? STUDY_PROGRAM_TYPE_EN_KEY_BY_VALUE[value] : STUDY_PROGRAM_TYPE_KEY_BY_VALUE[value]
+      return resolveI18nEnumLabel(translate, key, value)
     },
     resolveThesisLanguageLabel(value) {
       return resolveI18nEnumLabel(translate, THESIS_LANGUAGE_KEY_BY_VALUE[value], value)
