@@ -67,6 +67,7 @@ function createCommittee(
     date: string
     room: string | null
     preparationRoom: string | null
+    secretaryName: string | null
     invigilators: ScheduleDraftInvigilator[]
     items: ScheduleDraftItem[]
   }>
@@ -78,7 +79,7 @@ function createCommittee(
     date: options.date ?? '2025-08-28T00:00:00.000Z',
     room: options.room ?? 'TH:A-1500',
     preparationRoom: options.preparationRoom ?? null,
-    secretaryName: null,
+    secretaryName: options.secretaryName ?? null,
     invigilators: options.invigilators ?? [],
     language: 'CZECH',
     studyProgramName: 'Informatika',
@@ -112,6 +113,7 @@ describe('pdf-invigilators-export', () => {
         date: '2025-08-28T00:00:00.000Z',
         room: 'TH:A-1500',
         preparationRoom: 'TH:PR-200',
+        secretaryName: 'doc. Ing. Karel Novotný',
         invigilators: [createInvigilator('Jan Novák', 'inv-1'), createInvigilator('Petr Svoboda', 'inv-2')],
         items: [
           createStudentItem({
@@ -200,13 +202,16 @@ describe('pdf-invigilators-export', () => {
     expect(sections[0]?.students[0]?.committeeExamRangeTime).toBe('08:45–09:15')
     expect(sections[0]?.students[0]?.committeeLabel).toBe('Bez názvu')
     expect(sections[0]?.students[0]?.roomLabel).toBe('TH:A-1600')
+    expect(sections[0]?.students[0]?.secretaryLabel).toBe('—')
     expect(sections[0]?.students[1]?.roomLabel).toBe('TH:A-1500')
     expect(sections[0]?.students[1]?.studentName).toBe('Ing. Adam Procházka, Ph.D.')
-    expect(sections[0]?.students[2]?.thesisTitle).toBe('English B')
+    expect(sections[0]?.students[1]?.secretaryLabel).toBe('doc. Ing. Karel Novotný')
     expect(sections[0]?.students[2]?.repeatLabel).toBe('Opakuje obhajobu')
+    expect(sections[0]?.students[2]?.secretaryLabel).toBe('doc. Ing. Karel Novotný')
 
     expect(sections[1]?.roomLabel).toBe('—')
     expect(sections[1]?.invigilatorsLabel).toBe('—')
+    expect(sections[1]?.students[0]?.secretaryLabel).toBe('—')
   })
 
   it('builds request payload using computed sections', () => {

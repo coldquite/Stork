@@ -10,8 +10,8 @@ export const PDF_INVIGILATORS_EXPORT_CS_DICTIONARY: PdfInvigilatorsExportDiction
     preparationStart: 'Začátek přípravy',
     committeeExam: 'Zkouška před komisí',
     student: 'Student',
-    thesisTitle: 'Téma závěrečné práce',
     committeeAndRoom: 'Komise\nmístnost',
+    secretary: 'Tajemník',
     emptyRowsFallback: '—'
   },
   fileNamePrefix: 'Dozor',

@@ -20,7 +20,6 @@ import {
   normalizePdfExportTextOrFallback,
   PDF_EXPORT_EMPTY_VALUE,
   resolvePdfStudentFullName,
-  resolvePdfThesisTitleByLanguage,
   tryParsePdfExportDate
 } from '~/utils/export/pdf-export-shared'
 
@@ -115,6 +114,7 @@ function buildStudentAccumulator(
   const examStartMinute = timelineEntry.startMinute
   const committeeLabel = resolveCommitteeLabel(committee, fallbackCommitteeLabel)
   const roomLabel = resolveCommitteeRoomLabel(committee)
+  const secretaryLabel = normalizePdfExportTextOrFallback(committee.secretaryName)
 
   return {
     prepareStartTime: formatEditorMinuteLabel(prepareStartMinute),
@@ -128,13 +128,9 @@ function buildStudentAccumulator(
       titlesAfter: student.titlesAfter
     }),
     repeatLabel: normalizePdfExportTextOrFallback(repeatTypeLabelResolver(student.repeatType)),
-    thesisTitle: resolvePdfThesisTitleByLanguage({
-      thesisLanguage: student.thesisLanguage,
-      thesisTitleLocal: student.thesisTitleLocal,
-      thesisTitleEn: student.thesisTitleEn
-    }),
     committeeLabel,
     roomLabel,
+    secretaryLabel,
     prepareStartMinute,
     examStartMinute,
     committeeSortIndex,

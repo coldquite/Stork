@@ -7,8 +7,8 @@ export interface PdfInvigilatorsExportDictionary {
     preparationStart: string
     committeeExam: string
     student: string
-    thesisTitle: string
     committeeAndRoom: string
+    secretary: string
     emptyRowsFallback: string
   }
   fileNamePrefix: string

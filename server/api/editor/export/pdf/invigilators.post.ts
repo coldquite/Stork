@@ -18,9 +18,9 @@ const studentRowSchema = z
     committeeExamRangeTime: nonEmptyTrimmedStringSchema,
     studentName: nonEmptyTrimmedStringSchema,
     repeatLabel: nonEmptyTrimmedStringSchema,
-    thesisTitle: nonEmptyTrimmedStringSchema,
     committeeLabel: nonEmptyTrimmedStringSchema,
-    roomLabel: nonEmptyTrimmedStringSchema
+    roomLabel: nonEmptyTrimmedStringSchema,
+    secretaryLabel: nonEmptyTrimmedStringSchema
   })
   .strict()
 

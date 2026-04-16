@@ -19,10 +19,10 @@ import {
 const PDF_TABLE_COLUMNS = [
   PDF_INVIGILATORS_EXPORT_DICTIONARY.table.preparationStart,
   PDF_INVIGILATORS_EXPORT_DICTIONARY.table.committeeExam,
-  PDF_INVIGILATORS_EXPORT_DICTIONARY.table.student,
-  PDF_INVIGILATORS_EXPORT_DICTIONARY.table.thesisTitle
+  PDF_INVIGILATORS_EXPORT_DICTIONARY.table.student
 ] as const
 const PDF_TABLE_COMMITTEE_HEADER_LABEL = PDF_INVIGILATORS_EXPORT_DICTIONARY.table.committeeAndRoom
+const PDF_TABLE_SECRETARY_HEADER_LABEL = PDF_INVIGILATORS_EXPORT_DICTIONARY.table.secretary
 const PDF_DOCUMENT_TITLE = PDF_INVIGILATORS_EXPORT_DICTIONARY.documentHeaderTitle
 const EMPTY_VALUE = PDF_INVIGILATORS_EXPORT_DICTIONARY.table.emptyRowsFallback
 
@@ -50,11 +50,11 @@ function renderStudentsTableRows(section: PostPdfInvigilatorsExportRequestDto['s
           <span class="student-name">${escapeHtml(student.studentName)}</span>
           <span class="student-repeat">${escapeHtml(student.repeatLabel)}</span>
         </td>
-        <td><span class="thesis-title-value">${escapeHtml(student.thesisTitle)}</span></td>
         <td>
           <span class="committee-cell-name">${escapeHtml(student.committeeLabel)}</span>
           <span class="committee-cell-room">${escapeHtml(student.roomLabel)}</span>
         </td>
+        <td>${escapeHtml(student.secretaryLabel)}</td>
       </tr>`
     })
     .join('')
@@ -95,6 +95,7 @@ export async function renderPdfInvigilatorsHtml(payload: PostPdfInvigilatorsExpo
             <tr>
               ${PDF_TABLE_COLUMNS.map((column) => `<th>${escapeHtml(column)}</th>`).join('')}
               <th>${renderPdfTableHeaderLabelHtml(PDF_TABLE_COMMITTEE_HEADER_LABEL, { withDivider: true })}</th>
+              <th>${escapeHtml(PDF_TABLE_SECRETARY_HEADER_LABEL)}</th>
             </tr>
           </thead>
           <tbody>
@@ -172,10 +173,6 @@ export async function renderPdfInvigilatorsHtml(payload: PostPdfInvigilatorsExpo
         font-weight: 450;
       }
 
-      .thesis-title-value {
-        display: block;
-      }
-
       .committee-cell-name,
       .committee-cell-room {
         display: block;
@@ -215,12 +212,12 @@ export async function renderPdfInvigilatorsHtml(payload: PostPdfInvigilatorsExpo
 
       th:nth-child(4),
       td:nth-child(4) {
-        width: 37.2%;
+        width: 14%;
       }
 
       th:nth-child(5),
       td:nth-child(5) {
-        width: 14%;
+        width: 37%;
       }
     </style>
   </head>

@@ -3,9 +3,9 @@ export interface PdfInvigilatorsStudentRowDto {
   committeeExamRangeTime: string
   studentName: string
   repeatLabel: string
-  thesisTitle: string
   committeeLabel: string
   roomLabel: string
+  secretaryLabel: string
 }
 
 export interface PdfInvigilatorsSectionDto {
