@@ -115,6 +115,10 @@ vi.mock('~/stores/editor-table-preferences', () => {
 
 vi.mock('~/utils/export/questions-envelope-csv-export', () => {
   return {
+    DEFAULT_QUESTIONS_ENVELOPE_CSV_FILTERS: {
+      studyProgramType: 'ALL',
+      studyLanguage: 'ALL'
+    },
     exportQuestionsEnvelopeCsv: exportQuestionsEnvelopeCsvMock,
     QuestionsEnvelopeCsvDepartmentMappingError: QuestionsEnvelopeCsvDepartmentMappingErrorMock
   }
@@ -1046,6 +1050,8 @@ describe('useEditorPage', () => {
 
     expect(page.scheduleDialogs.isCsvExportDialogOpen.value).toBe(true)
     expect(page.scheduleDialogs.selectedCsvExportCommitteeIds.value).toEqual(['committee-early', 'committee-late'])
+    expect(page.scheduleDialogs.csvExportStudyProgramTypeFilter.value).toBe('ALL')
+    expect(page.scheduleDialogs.csvExportStudyLanguageFilter.value).toBe('ALL')
     expect(page.scheduleDialogs.isCsvExportSubmitDisabled.value).toBe(false)
 
     page.scheduleDialogs.clearCsvExportCommittees()
@@ -1056,9 +1062,16 @@ describe('useEditorPage', () => {
     expect(page.scheduleDialogs.selectedCsvExportCommitteeIds.value).toEqual(['committee-early', 'committee-late'])
     expect(page.scheduleDialogs.isCsvExportSubmitDisabled.value).toBe(false)
 
+    page.scheduleDialogs.updateCsvExportStudyProgramTypeFilter('MASTER')
+    page.scheduleDialogs.updateCsvExportStudyLanguageFilter('ENGLISH')
+    expect(page.scheduleDialogs.csvExportStudyProgramTypeFilter.value).toBe('MASTER')
+    expect(page.scheduleDialogs.csvExportStudyLanguageFilter.value).toBe('ENGLISH')
+
     page.scheduleDialogs.closeCsvExportDialog()
     expect(page.scheduleDialogs.isCsvExportDialogOpen.value).toBe(false)
     expect(page.scheduleDialogs.selectedCsvExportCommitteeIds.value).toEqual([])
+    expect(page.scheduleDialogs.csvExportStudyProgramTypeFilter.value).toBe('ALL')
+    expect(page.scheduleDialogs.csvExportStudyLanguageFilter.value).toBe('ALL')
   })
 
   it('exports selected committees to questions-envelope csv and closes dialog', async () => {
@@ -1067,6 +1080,8 @@ describe('useEditorPage', () => {
 
     page.scheduleDialogs.openCsvExportDialog()
     page.scheduleDialogs.updateSelectedCsvExportCommitteeIds(['committee-late'])
+    page.scheduleDialogs.updateCsvExportStudyProgramTypeFilter('MASTER')
+    page.scheduleDialogs.updateCsvExportStudyLanguageFilter('ENGLISH')
     page.scheduleDialogs.submitCsvExportSelection()
 
     expect(exportQuestionsEnvelopeCsvMock).toHaveBeenCalledTimes(1)
@@ -1074,11 +1089,17 @@ describe('useEditorPage', () => {
       expect.objectContaining({
         draftName: 'Plán',
         fallbackCommitteeLabel: 'editor.untitled',
-        committees: [expect.objectContaining({ localId: 'committee-late' })]
+        committees: [expect.objectContaining({ localId: 'committee-late' })],
+        filters: {
+          studyProgramType: 'MASTER',
+          studyLanguage: 'ENGLISH'
+        }
       })
     )
     expect(page.scheduleDialogs.isCsvExportDialogOpen.value).toBe(false)
     expect(page.scheduleDialogs.selectedCsvExportCommitteeIds.value).toEqual([])
+    expect(page.scheduleDialogs.csvExportStudyProgramTypeFilter.value).toBe('ALL')
+    expect(page.scheduleDialogs.csvExportStudyLanguageFilter.value).toBe('ALL')
   })
 
   it('keeps csv export dialog open and lists all problematic students when department mapping fails', async () => {

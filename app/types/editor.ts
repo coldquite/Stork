@@ -361,6 +361,17 @@ export interface EditorExportCommitteesDialogCopy {
   errorDescription?: string
 }
 
+export interface EditorCsvExportCommitteesDialogCopy extends EditorExportCommitteesDialogCopy {
+  studyProgramTypeFilterLabel: string
+  studyProgramTypeFilterAll: string
+  studyProgramTypeFilterBachelor: string
+  studyProgramTypeFilterMaster: string
+  studyLanguageFilterLabel: string
+  studyLanguageFilterAll: string
+  studyLanguageFilterEnglish: string
+  studyLanguageFilterCzech: string
+}
+
 /** Pre-translated strings for [EditorScheduleDialogsHost.vue](app/components/editor/dialogs/EditorScheduleDialogsHost.vue). */
 export interface EditorScheduleDialogsCopy {
   commonCancel: string
@@ -403,7 +414,7 @@ export interface EditorScheduleDialogsCopy {
     hint: string
     submit: string
   }
-  csvExportCommittees: EditorExportCommitteesDialogCopy
+  csvExportCommittees: EditorCsvExportCommitteesDialogCopy
   pdfPublicExportCommittees: EditorExportCommitteesDialogCopy
   pdfInvigilatorsExportCommittees: EditorExportCommitteesDialogCopy
   deleteCommitteeConfirmAction: string

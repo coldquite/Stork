@@ -259,6 +259,79 @@ describe('questions-envelope-csv-export', () => {
     expect(rows[0]?.['Katedra studenta (kód)']).toBe('18102')
   })
 
+  it('filters rows by selected study program type', () => {
+    const committee = createCommittee('committee-a', '1-BI-SI.21', '2026-06-23T00:00:00.000Z', [
+      createStudentItem('student-1', 1, {
+        firstName: 'Adam',
+        studyProgramType: 'BACHELOR'
+      }),
+      createStudentItem('student-2', 2, {
+        firstName: 'Eva',
+        studyProgramType: 'MASTER',
+        studyLanguage: 'ENGLISH',
+        studyProgramName: 'Informatics',
+        specializationCode: 'NIE-SI'
+      })
+    ])
+
+    const rows = buildQuestionsEnvelopeCsvRows({
+      committees: [committee],
+      fallbackCommitteeLabel: 'Bez názvu',
+      enumLabelResolver,
+      filters: {
+        studyProgramType: 'MASTER'
+      }
+    })
+
+    expect(rows).toHaveLength(1)
+    expect(rows[0]?.Jméno).toBe('Eva')
+    expect(rows[0]?.Pořadí).toBe('2')
+  })
+
+  it('filters rows by selected study language', () => {
+    const committee = createCommittee('committee-a', '1-BI-SI.21', '2026-06-23T00:00:00.000Z', [
+      createStudentItem('student-1', 1, {
+        firstName: 'Adam',
+        studyLanguage: 'CZECH'
+      }),
+      createStudentItem('student-2', 2, {
+        firstName: 'Eva',
+        studyLanguage: 'ENGLISH',
+        studyProgramName: 'Informatics',
+        specializationCode: 'NIE-SI',
+        studyProgramType: 'MASTER'
+      }),
+      createStudentItem('student-3', 3, {
+        firstName: 'Milan',
+        studyLanguage: 'CZECH'
+      })
+    ])
+
+    const englishRows = buildQuestionsEnvelopeCsvRows({
+      committees: [committee],
+      fallbackCommitteeLabel: 'Bez názvu',
+      enumLabelResolver,
+      filters: {
+        studyLanguage: 'ENGLISH'
+      }
+    })
+    const czechRows = buildQuestionsEnvelopeCsvRows({
+      committees: [committee],
+      fallbackCommitteeLabel: 'Bez názvu',
+      enumLabelResolver,
+      filters: {
+        studyLanguage: 'CZECH'
+      }
+    })
+
+    expect(englishRows).toHaveLength(1)
+    expect(englishRows[0]?.Jméno).toBe('Eva')
+    expect(englishRows[0]?.Pořadí).toBe('2')
+
+    expect(czechRows).toHaveLength(2)
+    expect(czechRows.map((row) => row.Jméno)).toEqual(['Adam', 'Milan'])
+  })
+
   it('serializes CSV with semicolon delimiter and keeps header row for empty exports', () => {
     const csv = serializeQuestionsEnvelopeCsv([])
 

@@ -18,19 +18,31 @@ function mapRows(rows: readonly EditorSpecializationRawRow[]): EditorSpecializat
   return rows.map(enrichSpecializationRow)
 }
 
-/** Duplicate bachelor .21 codes as .24 for UI/back-compat (same labels, new code year). */
+/**
+ * Czech bachelor Informatika: duplicate .21 codes as .24 for UI/back-compat.
+ * The .24 clone shifts "2021" → "2024" in the display name so the code year matches the label.
+ * English Informatics uses a single explicit .24 row where needed (see BACHELOR.Informatics below).
+ */
 function duplicateBi21CodesWith24(options: EditorSpecializationOption[]): EditorSpecializationOption[] {
   const bi24Duplicates = options
     .filter((option) => /^BIE?-[A-Z]+\.21$/.test(option.specializationCode))
     .map((option) => ({
       ...option,
-      specializationCode: option.specializationCode.replace('.21', '.24')
+      specializationCode: option.specializationCode.replace('.21', '.24'),
+      specializationName: option.specializationName.replace(/\b2021\b/g, '2024')
     }))
 
   return [...options, ...bi24Duplicates]
 }
 
 const raw = EDITOR_SPECIALIZATION_RAW
+
+/** Explicit .24 option for English bachelor Computer Engineering */
+const BACHELOR_INFORMATICS_BIE_PI_24: EditorSpecializationRawRow = {
+  specializationCode: 'BIE-PI.24',
+  specializationName: 'Computer Engineering 2024',
+  departmentCode: '18103'
+}
 
 /**
  * Full specialization picker table: type → study program name → options with department labels.
@@ -39,7 +51,7 @@ export const EDITOR_SPECIALIZATION_OPTIONS_BY_TYPE_AND_STUDY_PROGRAM_NAME: Edito
   {
     BACHELOR: {
       Informatika: duplicateBi21CodesWith24(mapRows(raw.BACHELOR.Informatika)),
-      Informatics: mapRows(raw.BACHELOR.Informatics)
+      Informatics: [...mapRows(raw.BACHELOR.Informatics), enrichSpecializationRow(BACHELOR_INFORMATICS_BIE_PI_24)]
     },
     MASTER: {
       'Aplikovaná informatika': mapRows(raw.MASTER['Aplikovaná informatika']),

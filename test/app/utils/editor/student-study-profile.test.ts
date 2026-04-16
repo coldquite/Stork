@@ -67,6 +67,18 @@ describe('student-study-profile', () => {
     expect(specializationName).toBe('Software Engineering 2021')
   })
 
+  it('resolves BIE-PI.24 to explicit English catalog label', () => {
+    expect(resolveSpecializationNameForStudyProfile('BACHELOR', 'Informatics', 'BIE-PI.24')).toBe(
+      'Computer Engineering 2024'
+    )
+  })
+
+  it('resolves .24 bachelor Czech specialization name with 2024 label from catalog duplicate', () => {
+    expect(resolveSpecializationNameForStudyProfile('BACHELOR', 'Informatika', 'BI-SI.24')).toBe(
+      'Softwarové inženýrství 2024'
+    )
+  })
+
   it('keeps current study program name in options when not in catalog', () => {
     const options = resolveStudyProgramNameOptionsForStudyProfile('BACHELOR', 'CZECH', 'Vlastní program')
 

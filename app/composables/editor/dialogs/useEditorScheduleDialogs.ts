@@ -10,6 +10,9 @@ import {
 } from '~/utils/export/pdf-invigilators-export'
 import { buildPdfPublicExportPayload, buildPdfPublicFileName } from '~/utils/export/pdf-public-export'
 import {
+  DEFAULT_QUESTIONS_ENVELOPE_CSV_FILTERS,
+  type QuestionsEnvelopeCsvStudyLanguageFilter,
+  type QuestionsEnvelopeCsvStudyProgramTypeFilter,
   QuestionsEnvelopeCsvDepartmentMappingError,
   exportQuestionsEnvelopeCsv
 } from '~/utils/export/questions-envelope-csv-export'
@@ -47,6 +50,12 @@ export function useEditorScheduleDialogs() {
   const exportValidationWarningTarget = ref<EditorExportDialogTarget | null>(null)
   const isCsvExportDialogOpen = ref(false)
   const selectedCsvExportCommitteeIds = ref<string[]>([])
+  const csvExportStudyProgramTypeFilter = ref<QuestionsEnvelopeCsvStudyProgramTypeFilter>(
+    DEFAULT_QUESTIONS_ENVELOPE_CSV_FILTERS.studyProgramType
+  )
+  const csvExportStudyLanguageFilter = ref<QuestionsEnvelopeCsvStudyLanguageFilter>(
+    DEFAULT_QUESTIONS_ENVELOPE_CSV_FILTERS.studyLanguage
+  )
   const csvExportErrorItems = ref<string[]>([])
   const isPdfPublicExportDialogOpen = ref(false)
   const selectedPdfPublicExportCommitteeIds = ref<string[]>([])
@@ -295,11 +304,13 @@ export function useEditorScheduleDialogs() {
 
   function openCsvExportDialog(): void {
     csvExportErrorItems.value = []
+    resetCsvExportFilters()
     openExportDialog(isCsvExportDialogOpen, selectedCsvExportCommitteeIds)
   }
 
   function closeCsvExportDialog(): void {
     closeExportDialog(isCsvExportDialogOpen, selectedCsvExportCommitteeIds)
+    resetCsvExportFilters()
     csvExportErrorItems.value = []
   }
 
@@ -315,6 +326,21 @@ export function useEditorScheduleDialogs() {
 
   function clearCsvExportCommittees(): void {
     clearExportCommittees(selectedCsvExportCommitteeIds)
+    csvExportErrorItems.value = []
+  }
+
+  function resetCsvExportFilters(): void {
+    csvExportStudyProgramTypeFilter.value = DEFAULT_QUESTIONS_ENVELOPE_CSV_FILTERS.studyProgramType
+    csvExportStudyLanguageFilter.value = DEFAULT_QUESTIONS_ENVELOPE_CSV_FILTERS.studyLanguage
+  }
+
+  function updateCsvExportStudyProgramTypeFilter(nextFilter: QuestionsEnvelopeCsvStudyProgramTypeFilter): void {
+    csvExportStudyProgramTypeFilter.value = nextFilter
+    csvExportErrorItems.value = []
+  }
+
+  function updateCsvExportStudyLanguageFilter(nextFilter: QuestionsEnvelopeCsvStudyLanguageFilter): void {
+    csvExportStudyLanguageFilter.value = nextFilter
     csvExportErrorItems.value = []
   }
 
@@ -441,6 +467,10 @@ export function useEditorScheduleDialogs() {
         committees: selectedCommittees,
         fallbackCommitteeLabel: fallbackCommitteeLabel.value,
         enumLabelResolver: questionsEnvelopeCsvEnumLabelResolver,
+        filters: {
+          studyProgramType: csvExportStudyProgramTypeFilter.value,
+          studyLanguage: csvExportStudyLanguageFilter.value
+        },
         draftName: draft.name
       })
     } catch (error: unknown) {
@@ -577,6 +607,8 @@ export function useEditorScheduleDialogs() {
     exportValidationWarningTarget,
     isCsvExportDialogOpen,
     selectedCsvExportCommitteeIds,
+    csvExportStudyProgramTypeFilter,
+    csvExportStudyLanguageFilter,
     csvExportErrorItems,
     csvExportCommitteeItems,
     isCsvExportSubmitDisabled,
@@ -608,6 +640,8 @@ export function useEditorScheduleDialogs() {
     updateSelectedCsvExportCommitteeIds,
     selectAllCsvExportCommittees,
     clearCsvExportCommittees,
+    updateCsvExportStudyProgramTypeFilter,
+    updateCsvExportStudyLanguageFilter,
     openPdfPublicExportDialog,
     closePdfPublicExportDialog,
     updateSelectedPdfPublicExportCommitteeIds,

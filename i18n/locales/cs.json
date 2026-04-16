@@ -325,6 +325,20 @@
           "description": "Vyberte komise, které chcete zahrnout do exportu CSV pro tisk obálek na otázky",
           "selectedCount": "Vybráno komisí: {count}",
           "orderingHint": "Komise jsou seřazeny podle data a času začátku (stejně jako v bočním panelu editoru). Studenti v CSV jsou řazeni nejprve podle komise a poté podle pořadí v komisi.",
+          "filters": {
+            "studyProgramType": {
+              "label": "Typ studijního programu",
+              "all": "Vše",
+              "bachelor": "Bakaláři",
+              "master": "Magistři"
+            },
+            "studyLanguage": {
+              "label": "Jazyk studia",
+              "all": "Vše",
+              "english": "Angličtina",
+              "czech": "Čeština"
+            }
+          },
           "checklistAriaLabel": "Výběr komisí pro export CSV",
           "selectAll": "Vybrat všechny komise",
           "clearAll": "Zrušit výběr všech komisí",

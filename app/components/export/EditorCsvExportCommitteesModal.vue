@@ -5,6 +5,10 @@ import {
   EXPORT_LOADING_OVERLAY_CLASS,
   EXPORT_SELECT_ALL_BUTTON_UI
 } from '~/constants/export-modal-ui'
+import type {
+  QuestionsEnvelopeCsvStudyLanguageFilter,
+  QuestionsEnvelopeCsvStudyProgramTypeFilter
+} from '~/utils/export/questions-envelope-csv-export'
 
 interface EditorCsvExportCommitteeItem {
   id: string
@@ -20,6 +24,17 @@ const props = withDefaults(
     selectedCommitteeIds: string[]
     selectedCountLabel: string
     orderingHintLabel: string
+    showCsvStudentFilters?: boolean
+    studyProgramTypeFilter?: QuestionsEnvelopeCsvStudyProgramTypeFilter
+    studyProgramTypeFilterLabel?: string
+    studyProgramTypeFilterAllLabel?: string
+    studyProgramTypeFilterBachelorLabel?: string
+    studyProgramTypeFilterMasterLabel?: string
+    studyLanguageFilter?: QuestionsEnvelopeCsvStudyLanguageFilter
+    studyLanguageFilterLabel?: string
+    studyLanguageFilterAllLabel?: string
+    studyLanguageFilterEnglishLabel?: string
+    studyLanguageFilterCzechLabel?: string
     checklistAriaLabel: string
     selectAllLabel: string
     clearAllLabel: string
@@ -37,6 +52,17 @@ const props = withDefaults(
   {
     loading: false,
     loadingLabel: '',
+    showCsvStudentFilters: false,
+    studyProgramTypeFilter: 'ALL',
+    studyProgramTypeFilterLabel: '',
+    studyProgramTypeFilterAllLabel: '',
+    studyProgramTypeFilterBachelorLabel: '',
+    studyProgramTypeFilterMasterLabel: '',
+    studyLanguageFilter: 'ALL',
+    studyLanguageFilterLabel: '',
+    studyLanguageFilterAllLabel: '',
+    studyLanguageFilterEnglishLabel: '',
+    studyLanguageFilterCzechLabel: '',
     errorTitle: '',
     errorDescription: '',
     errorItems: () => []
@@ -49,6 +75,8 @@ const emit = defineEmits<{
   selectAll: []
   clearAll: []
   updateSelectedCommitteeIds: [value: string[]]
+  updateStudyProgramTypeFilter: [value: QuestionsEnvelopeCsvStudyProgramTypeFilter]
+  updateStudyLanguageFilter: [value: QuestionsEnvelopeCsvStudyLanguageFilter]
 }>()
 
 const open = defineModel<boolean>('open', { default: false })
@@ -87,7 +115,26 @@ const selectedCommitteeIdsModel = computed({
   }
 })
 
+const studyProgramTypeFilterModel = computed(() => props.studyProgramTypeFilter)
+const studyLanguageFilterModel = computed(() => props.studyLanguageFilter)
+const showCsvStudentFilters = computed(() => props.showCsvStudentFilters)
 const hasCommittees = computed(() => props.committees.length > 0)
+
+function setStudyProgramTypeFilter(nextFilter: QuestionsEnvelopeCsvStudyProgramTypeFilter): void {
+  if (isLoading.value) {
+    return
+  }
+
+  emit('updateStudyProgramTypeFilter', nextFilter)
+}
+
+function setStudyLanguageFilter(nextFilter: QuestionsEnvelopeCsvStudyLanguageFilter): void {
+  if (isLoading.value) {
+    return
+  }
+
+  emit('updateStudyLanguageFilter', nextFilter)
+}
 </script>
 
 <template>
@@ -157,6 +204,84 @@ const hasCommittees = computed(() => props.committees.length > 0)
                 >
                   {{ props.clearAllLabel }}
                 </UButton>
+              </div>
+            </div>
+
+            <div v-if="showCsvStudentFilters" class="space-y-3">
+              <div class="w-full min-w-0 space-y-1">
+                <p class="text-muted text-sm font-medium">
+                  {{ props.studyProgramTypeFilterLabel }}
+                </p>
+                <div class="border-default flex w-full min-w-0 items-center gap-1 rounded-md border p-1">
+                  <UButton
+                    color="primary"
+                    size="xs"
+                    :variant="studyProgramTypeFilterModel === 'BACHELOR' ? 'solid' : 'ghost'"
+                    :disabled="isLoading"
+                    class="min-w-0 flex-1 cursor-pointer justify-center"
+                    @click="setStudyProgramTypeFilter('BACHELOR')"
+                  >
+                    {{ props.studyProgramTypeFilterBachelorLabel }}
+                  </UButton>
+                  <UButton
+                    color="primary"
+                    size="xs"
+                    :variant="studyProgramTypeFilterModel === 'ALL' ? 'solid' : 'ghost'"
+                    :disabled="isLoading"
+                    class="min-w-0 flex-1 cursor-pointer justify-center"
+                    @click="setStudyProgramTypeFilter('ALL')"
+                  >
+                    {{ props.studyProgramTypeFilterAllLabel }}
+                  </UButton>
+                  <UButton
+                    color="primary"
+                    size="xs"
+                    :variant="studyProgramTypeFilterModel === 'MASTER' ? 'solid' : 'ghost'"
+                    :disabled="isLoading"
+                    class="min-w-0 flex-1 cursor-pointer justify-center"
+                    @click="setStudyProgramTypeFilter('MASTER')"
+                  >
+                    {{ props.studyProgramTypeFilterMasterLabel }}
+                  </UButton>
+                </div>
+              </div>
+
+              <div class="w-full min-w-0 space-y-1">
+                <p class="text-muted text-sm font-medium">
+                  {{ props.studyLanguageFilterLabel }}
+                </p>
+                <div class="border-default flex w-full min-w-0 items-center gap-1 rounded-md border p-1">
+                  <UButton
+                    color="primary"
+                    size="xs"
+                    :variant="studyLanguageFilterModel === 'CZECH' ? 'solid' : 'ghost'"
+                    :disabled="isLoading"
+                    class="min-w-0 flex-1 cursor-pointer justify-center"
+                    @click="setStudyLanguageFilter('CZECH')"
+                  >
+                    {{ props.studyLanguageFilterCzechLabel }}
+                  </UButton>
+                  <UButton
+                    color="primary"
+                    size="xs"
+                    :variant="studyLanguageFilterModel === 'ALL' ? 'solid' : 'ghost'"
+                    :disabled="isLoading"
+                    class="min-w-0 flex-1 cursor-pointer justify-center"
+                    @click="setStudyLanguageFilter('ALL')"
+                  >
+                    {{ props.studyLanguageFilterAllLabel }}
+                  </UButton>
+                  <UButton
+                    color="primary"
+                    size="xs"
+                    :variant="studyLanguageFilterModel === 'ENGLISH' ? 'solid' : 'ghost'"
+                    :disabled="isLoading"
+                    class="min-w-0 flex-1 cursor-pointer justify-center"
+                    @click="setStudyLanguageFilter('ENGLISH')"
+                  >
+                    {{ props.studyLanguageFilterEnglishLabel }}
+                  </UButton>
+                </div>
               </div>
             </div>
 

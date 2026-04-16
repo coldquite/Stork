@@ -44,10 +44,24 @@ const QUESTIONS_ENVELOPE_CSV_COLUMNS = [
 type QuestionsEnvelopeCsvColumn = (typeof QUESTIONS_ENVELOPE_CSV_COLUMNS)[number]
 type QuestionsEnvelopeCsvRow = Record<QuestionsEnvelopeCsvColumn, string>
 
+export type QuestionsEnvelopeCsvStudyProgramTypeFilter = 'ALL' | StudyProgramTypeDto
+export type QuestionsEnvelopeCsvStudyLanguageFilter = 'ALL' | 'ENGLISH' | 'CZECH'
+
+export interface QuestionsEnvelopeCsvFilters {
+  studyProgramType: QuestionsEnvelopeCsvStudyProgramTypeFilter
+  studyLanguage: QuestionsEnvelopeCsvStudyLanguageFilter
+}
+
+export const DEFAULT_QUESTIONS_ENVELOPE_CSV_FILTERS: QuestionsEnvelopeCsvFilters = {
+  studyProgramType: 'ALL',
+  studyLanguage: 'ALL'
+}
+
 interface BuildQuestionsEnvelopeCsvRowsInput {
   committees: ScheduleDraftCommittee[]
   fallbackCommitteeLabel: string
   enumLabelResolver: QuestionsEnvelopeCsvEnumLabelResolver
+  filters?: Partial<QuestionsEnvelopeCsvFilters>
 }
 
 interface ExportQuestionsEnvelopeCsvInput extends BuildQuestionsEnvelopeCsvRowsInput {
@@ -95,9 +109,36 @@ function resolveStudentFullName(lastName: string, firstName: string): string {
   return fullName.length > 0 ? fullName : 'Neznámý student'
 }
 
+function resolveQuestionsEnvelopeCsvFilters(
+  filters: Partial<QuestionsEnvelopeCsvFilters> | undefined
+): QuestionsEnvelopeCsvFilters {
+  return {
+    studyProgramType: filters?.studyProgramType ?? DEFAULT_QUESTIONS_ENVELOPE_CSV_FILTERS.studyProgramType,
+    studyLanguage: filters?.studyLanguage ?? DEFAULT_QUESTIONS_ENVELOPE_CSV_FILTERS.studyLanguage
+  }
+}
+
+function matchesQuestionsEnvelopeCsvFilters(
+  student: NonNullable<ScheduleDraftCommittee['items'][number]['student']>,
+  filters: QuestionsEnvelopeCsvFilters
+): boolean {
+  const matchesStudyProgramType =
+    filters.studyProgramType === 'ALL' || student.studyProgramType === filters.studyProgramType
+  if (!matchesStudyProgramType) {
+    return false
+  }
+
+  if (filters.studyLanguage === 'ALL') {
+    return true
+  }
+
+  return student.studyLanguage === filters.studyLanguage
+}
+
 export function buildQuestionsEnvelopeCsvRows(input: BuildQuestionsEnvelopeCsvRowsInput): QuestionsEnvelopeCsvRow[] {
   const rows: QuestionsEnvelopeCsvRow[] = []
   const departmentMappingIssues: QuestionsEnvelopeCsvDepartmentMappingIssue[] = []
+  const filters = resolveQuestionsEnvelopeCsvFilters(input.filters)
 
   for (const committee of input.committees) {
     const committeeLabel = resolveCommitteeLabel(committee, input.fallbackCommitteeLabel)
@@ -111,6 +152,10 @@ export function buildQuestionsEnvelopeCsvRows(input: BuildQuestionsEnvelopeCsvRo
       }
 
       studentOrder += 1
+      if (!matchesQuestionsEnvelopeCsvFilters(item.student, filters)) {
+        continue
+      }
+
       const department = resolveStudentDepartmentFromSpecialization(
         item.student.studyProgramType,
         item.student.studyProgramName,
@@ -202,7 +247,8 @@ export function exportQuestionsEnvelopeCsv(input: ExportQuestionsEnvelopeCsvInpu
   const rows = buildQuestionsEnvelopeCsvRows({
     committees: input.committees,
     fallbackCommitteeLabel: input.fallbackCommitteeLabel,
-    enumLabelResolver: input.enumLabelResolver
+    enumLabelResolver: input.enumLabelResolver,
+    filters: input.filters
   })
   const csv = serializeQuestionsEnvelopeCsv(rows)
   const contentWithBom = addUtf8Bom(csv)

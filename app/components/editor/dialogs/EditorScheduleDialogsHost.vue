@@ -112,6 +112,8 @@ const csvExportOpen = computed({
   }
 })
 const csvExportSelectedCommitteeIds = computed(() => sd.selectedCsvExportCommitteeIds.value)
+const csvExportStudyProgramTypeFilter = computed(() => sd.csvExportStudyProgramTypeFilter.value)
+const csvExportStudyLanguageFilter = computed(() => sd.csvExportStudyLanguageFilter.value)
 const csvExportCommittees = computed(() => sd.csvExportCommitteeItems.value)
 const csvExportErrorItems = computed(() => sd.csvExportErrorItems.value)
 
@@ -355,6 +357,17 @@ function openStudentFromValidationSummary(payload: { committeeId: string; studen
     :selected-committee-ids="csvExportSelectedCommitteeIds"
     :selected-count-label="copy.csvExportCommittees.selectedCount"
     :ordering-hint-label="copy.csvExportCommittees.orderingHint"
+    :show-csv-student-filters="true"
+    :study-program-type-filter="csvExportStudyProgramTypeFilter"
+    :study-program-type-filter-label="copy.csvExportCommittees.studyProgramTypeFilterLabel"
+    :study-program-type-filter-all-label="copy.csvExportCommittees.studyProgramTypeFilterAll"
+    :study-program-type-filter-bachelor-label="copy.csvExportCommittees.studyProgramTypeFilterBachelor"
+    :study-program-type-filter-master-label="copy.csvExportCommittees.studyProgramTypeFilterMaster"
+    :study-language-filter="csvExportStudyLanguageFilter"
+    :study-language-filter-label="copy.csvExportCommittees.studyLanguageFilterLabel"
+    :study-language-filter-all-label="copy.csvExportCommittees.studyLanguageFilterAll"
+    :study-language-filter-english-label="copy.csvExportCommittees.studyLanguageFilterEnglish"
+    :study-language-filter-czech-label="copy.csvExportCommittees.studyLanguageFilterCzech"
     :checklist-aria-label="copy.csvExportCommittees.checklistAriaLabel"
     :select-all-label="copy.csvExportCommittees.selectAll"
     :clear-all-label="copy.csvExportCommittees.clearAll"
@@ -367,6 +380,8 @@ function openStudentFromValidationSummary(payload: { committeeId: string; studen
     :error-items="csvExportErrorItems"
     :submit-disabled="isCsvExportSubmitDisabled"
     @update-selected-committee-ids="sd.updateSelectedCsvExportCommitteeIds($event)"
+    @update-study-program-type-filter="sd.updateCsvExportStudyProgramTypeFilter($event)"
+    @update-study-language-filter="sd.updateCsvExportStudyLanguageFilter($event)"
     @select-all="sd.selectAllCsvExportCommittees()"
     @clear-all="sd.clearCsvExportCommittees()"
     @cancel="sd.closeCsvExportDialog()"
