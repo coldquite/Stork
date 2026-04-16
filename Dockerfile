@@ -11,7 +11,7 @@ RUN corepack enable
 COPY . .
 
 RUN pnpm install --frozen-lockfile
-RUN NODE_OPTIONS=--max-old-space-size=4096 pnpm build
+RUN NODE_OPTIONS=--max-old-space-size=5120 pnpm build
 
 EXPOSE 3000
 CMD ["node", "--import", "./.output/server/sentry.server.config.mjs", ".output/server/index.mjs"]

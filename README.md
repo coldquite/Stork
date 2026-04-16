@@ -197,7 +197,7 @@ Odstranění starého image je implementováno z důvodu úspory diskového pros
 jinak docházelo k hromadění již zastaralých image.
 
 Sestavení image je vyčleněno do samostatného GitLab jobu, protože se v praxi ukázalo, že pro jeho build jsou zapotřebí
-přibližně 4 GB operační paměti RAM, zatímco produkční VPS může mít k dispozici méně. Využití swapu navíc celý proces
+přibližně 5 GB operační paměti RAM, zatímco produkční VPS může mít k dispozici méně. Využití swapu navíc celý proces
 kriticky zpomaluje.
 
 # Monitoring a logování (Sentry)
@@ -242,14 +242,20 @@ přibude nová specializace, následně rozšiřte také seznam podporovaných s
 
 ### Správa podporovaných specializací
 
-Seznam specializací je
+Seznam specializací je primárně
 v [shared/constants/editor/specialization-raw.ts](./shared/constants/editor/specialization-raw.ts) a má strukturu
-`typ studia` → `název plánu` → `pole specializací`:
+`typ studia` → `název plánu` → `pole specializací`.
+
+Nad těmito daty se skládá tabulka pro editor
+v [shared/constants/editor/specialization-table.ts](./shared/constants/editor/specialization-table.ts), kde se doplňují
+názvy kateder a některé kódy se rozšiřují o varianty `.24`.
 
 1. Identifikujte příslušnou skupinu (např. `BACHELOR.Informatika`)
 2. Vložte objekt s trojicí polí `specializationCode`, `specializationName`, `departmentCode`
 3. Ověřte, že `departmentCode` existuje v `EDITOR_DEPARTMENTS_BY_CODE` (viz další sekce)
-4. Pokud přibude kód nové katedry, nejprve rozšiřte seznam podporovaných kateder (viz následující sekci).
+4. Pokud potřebujete i variantu `.24`, zkontrolujte pravidla v `specialization-table.ts` (co se doplní automaticky a co je
+   potřeba přidat ručně)
+5. Pokud přibude kód nové katedry, nejprve rozšiřte seznam podporovaných kateder (viz následující sekci).
 
 > Změna vyžaduje nové nasazení aplikace, viz [začátek této sekce](#správa-nasazené-aplikace).
 
