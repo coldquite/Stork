@@ -11,6 +11,7 @@ import {
   renderPdfTableHeaderLabelStyles
 } from '#server/utils/export/pdf/templates/table-header'
 import {
+  PDF_VISUAL_COLORS,
   renderPdfSectionHeadingStyles,
   renderPdfTableBaseStyles
 } from '#server/utils/export/pdf/templates/visual-style'
@@ -30,9 +31,19 @@ function renderStudentsTableRows(section: PostPdfInvigilatorsExportRequestDto['s
     return `<tr><td colspan="5" class="empty-cell">${escapeHtml(EMPTY_VALUE)}</td></tr>`
   }
 
+  let currentTime = ''
+  let groupIndex = -1
+
   return section.students
     .map((student) => {
-      return `<tr>
+      if (student.prepareStartTime !== currentTime) {
+        currentTime = student.prepareStartTime
+        groupIndex += 1
+      }
+
+      const rowClass = groupIndex % 2 === 1 ? ' class="time-group-tinted"' : ''
+
+      return `<tr${rowClass}>
         <td>${escapeHtml(student.prepareStartTime)}</td>
         <td>${escapeHtml(student.committeeExamRangeTime)}</td>
         <td>
@@ -181,6 +192,10 @@ export async function renderPdfInvigilatorsHtml(payload: PostPdfInvigilatorsExpo
       tbody tr {
         break-inside: avoid-page;
         page-break-inside: avoid;
+      }
+
+      tbody tr.time-group-tinted td {
+        background-color: ${PDF_VISUAL_COLORS.lightBlueTint25};
       }
 
       th:nth-child(1),
