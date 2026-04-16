@@ -246,10 +246,10 @@ Seznam specializací je
 v [shared/constants/editor/specialization-raw.ts](./shared/constants/editor/specialization-raw.ts) a má strukturu
 `typ studia` → `název plánu` → `pole specializací`:
 
-1) Identifikujte příslušnou skupinu (např. `BACHELOR.Informatika`)
-2) Vložte objekt s trojicí polí `specializationCode`, `specializationName`, `departmentCode`
-3) Ověřte, že `departmentCode` existuje v `EDITOR_DEPARTMENTS_BY_CODE` (viz další sekce)
-4) Pokud přibude kód nové katedry, nejprve rozšiřte seznam podporovaných kateder (viz následující sekci).
+1. Identifikujte příslušnou skupinu (např. `BACHELOR.Informatika`)
+2. Vložte objekt s trojicí polí `specializationCode`, `specializationName`, `departmentCode`
+3. Ověřte, že `departmentCode` existuje v `EDITOR_DEPARTMENTS_BY_CODE` (viz další sekce)
+4. Pokud přibude kód nové katedry, nejprve rozšiřte seznam podporovaných kateder (viz následující sekci).
 
 > Změna vyžaduje nové nasazení aplikace, viz [začátek této sekce](#správa-nasazené-aplikace).
 
@@ -258,9 +258,9 @@ v [shared/constants/editor/specialization-raw.ts](./shared/constants/editor/spec
 Katedry jsou definovány v [shared/constants/editor/departments.ts](./shared/constants/editor/departments.ts) jako mapa
 kódu na objekt s českým a anglickým názvem:
 
-1) Rozšiřte typ EditorDepartmentCode o nový literál (např. '18107')
-2) Přidejte záznam do `EDITOR_DEPARTMENTS_BY_CODE`
-3) Pokud přibude nová specializace, následně rozšiřte také seznam podporovaných specializací (viz předchozí sekce).
+1. Rozšiřte typ EditorDepartmentCode o nový literál (např. '18107')
+2. Přidejte záznam do `EDITOR_DEPARTMENTS_BY_CODE`
+3. Pokud přibude nová specializace, následně rozšiřte také seznam podporovaných specializací (viz předchozí sekce).
 
 > Změna vyžaduje nové nasazení aplikace, viz [začátek této sekce](#správa-nasazené-aplikace).
 

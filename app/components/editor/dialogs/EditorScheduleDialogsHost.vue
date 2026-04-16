@@ -253,7 +253,7 @@ const isPdfPublicExportSubmitDisabled = computed(() => sd.isPdfPublicExportSubmi
 const pdfInvigilatorsExportLoadingFlag = computed(() => sd.isPdfInvigilatorsExportLoading.value)
 const isPdfInvigilatorsExportSubmitDisabled = computed(() => sd.isPdfInvigilatorsExportSubmitDisabled.value)
 const pdfInvigilatorsNoQualifyingStudentsHint = computed(() =>
-  !sd.hasPdfInvigilatorsQualifyingStudents.value
+  sd.selectedPdfInvigilatorsExportCommitteeIds.value.length > 0 && !sd.hasPdfInvigilatorsQualifyingStudents.value
     ? t('editor.schedule.export.pdfInvigilatorsDialog.noQualifyingStudentsHint')
     : undefined
 )
