@@ -36,7 +36,7 @@
     "errorDefault": "Přihlášení se nepodařilo dokončit. Zkuste to prosím znovu.",
     "errorState": "Přihlášení bylo z bezpečnostních důvodů odmítnuto. Spusťte přihlášení znovu.",
     "errorConfig": "Přihlášení není dostupné, protože server není správně nakonfigurován.",
-    "errorForbidden": "Tento účet nemá oprávnění pro přístup do aplikace."
+    "errorForbidden": "Tento účet nemá oprávnění pro přístup do aplikace. Pokud potřebujete přístup, kontaktujte správce aplikace, Ing. Jana Blizničenka, Ph.D. (https://usermap.cvut.cz/profile/030461bf-8031-4307-baa4-46a89b05bbdc)."
   },
   "homepage": {
     "title": "Správa harmonogramů SZZ na jednom místě",
@@ -878,9 +878,17 @@
     "navigation": {
       "openPage": "Uživatelská příručka"
     },
-    "page": {
-      "title": "Uživatelská příručka",
-      "placeholder": "TODO"
+    "pages": {
+      "title": "Stránky příručky"
+    },
+    "toc": {
+      "title": "Obsah stránky"
+    },
+    "search": {
+      "buttonLabel": "Hledat",
+      "modalTitle": "Vyhledávání v dokumentaci",
+      "modalDescription": "Prohledejte všechny dostupné stránky dokumentace.",
+      "placeholder": "Hledat..."
     }
   },
   "dashboard": {

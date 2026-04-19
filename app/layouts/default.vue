@@ -44,7 +44,7 @@ const mobileNavigationItems = computed(() => {
     {
       label: userManualPageLabel.value,
       icon: 'i-lucide-book-user',
-      to: '/user-manual',
+      to: '/user-manual/',
       onSelect: closeNavigationDrawer
     }
   ]
@@ -249,7 +249,7 @@ async function confirmLogout(): Promise<void> {
           </UButton>
 
           <UButton
-            to="/user-manual"
+            to="/user-manual/"
             color="secondary"
             variant="subtle"
             size="xl"

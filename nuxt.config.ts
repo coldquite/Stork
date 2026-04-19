@@ -12,6 +12,7 @@ export default defineNuxtConfig({
   modules: [
     '@nuxt/eslint',
     '@nuxt/ui',
+    '@nuxt/content',
     '@pinia/nuxt',
     'pinia-plugin-persistedstate/nuxt',
     '@nuxtjs/i18n',
@@ -27,6 +28,17 @@ export default defineNuxtConfig({
   },
 
   css: ['~/assets/css/main.css'],
+
+  content: {
+    build: {
+      markdown: {
+        toc: { depth: 3, searchDepth: 3 }
+      }
+    },
+    experimental: {
+      sqliteConnector: 'native'
+    }
+  },
 
   runtimeConfig: {
     fitAuthClientId: '',
@@ -66,9 +78,28 @@ export default defineNuxtConfig({
 
   compatibilityDate: '2025-01-15',
 
+  nitro: {
+    // Keep Prisma adapter and runtime external so that `require('@prisma/adapter-pg')`
+    // in server/utils/db.ts resolves correctly at runtime (including during
+    // @nuxt/content prerender pass, where Nitro rewrites `import.meta.url`
+    // to a virtual `/_entry.js` and bundled requires cannot be resolved).
+    externals: {
+      external: ['@prisma/adapter-pg', '@prisma/client']
+    }
+  },
+
   vite: {
     optimizeDeps: {
-      include: ['date-fns', 'date-fns/locale', 'date-fns/locale/cs', '@vueuse/integrations/useSortable', 'uuid']
+      include: [
+        'date-fns',
+        'date-fns/locale',
+        'date-fns/locale/cs',
+        '@vueuse/integrations/useSortable',
+        'uuid',
+        'papaparse', // CJS
+        '@formkit/auto-animate/vue',
+        '@internationalized/date'
+      ]
     },
     plugins: [
       license({

@@ -1,9 +1,6 @@
 import { createRequire } from 'node:module'
 import { PrismaClient } from '~~/prisma/generated/client/client'
 
-const require = createRequire(import.meta.url)
-const { PrismaPg } = require('@prisma/adapter-pg') as typeof import('@prisma/adapter-pg')
-
 function resolveDatabaseUrl(): string {
   const databaseUrl = process.env.DATABASE_URL
   if (!databaseUrl || databaseUrl.trim().length === 0) {
@@ -28,6 +25,12 @@ function resolveDatabaseUrl(): string {
 }
 
 const prismaClientSingleton = () => {
+  // Loaded lazily so that neither the adapter's CJS require nor the DATABASE_URL
+  // check run at module load time. This matters for the @nuxt/content prerender
+  // pass, which loads the full server bundle to render content routes but never
+  // hits Prisma-using endpoints — and would otherwise fail on module init.
+  const require = createRequire(import.meta.url)
+  const { PrismaPg } = require('@prisma/adapter-pg') as typeof import('@prisma/adapter-pg')
   const pool = new PrismaPg({ connectionString: resolveDatabaseUrl() })
   return new PrismaClient({ adapter: pool })
 }
@@ -38,6 +41,18 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClientSingleton | undefined
 }
 
-export const prisma = globalForPrisma.prisma ?? prismaClientSingleton()
+let resolvedPrisma: PrismaClientSingleton | undefined
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+function getPrisma(): PrismaClientSingleton {
+  if (resolvedPrisma) return resolvedPrisma
+  if (globalForPrisma.prisma) return (resolvedPrisma = globalForPrisma.prisma)
+  resolvedPrisma = prismaClientSingleton()
+  if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = resolvedPrisma
+  return resolvedPrisma
+}
+
+export const prisma = new Proxy({} as PrismaClientSingleton, {
+  get(_target, prop) {
+    return Reflect.get(getPrisma() as object, prop)
+  }
+}) as PrismaClientSingleton
