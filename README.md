@@ -160,7 +160,7 @@ Pro nasazení aplikace jsou na cílovém serveru vyžadovány následující př
 
 - `Docker` ve verzi 28 nebo novější. Použití starších verzí nebo alternativních nástrojů (například podman)je teoreticky
   možné, avšak v rámci vývoje ani testování nebylo ověřeno.
-- Alespoň 1 GB operační paměti RAM
+- Alespoň 1.5 GB operační paměti RAM
 - Uživatel `deploy`
   s [přístupem k Dockeru bez administrátorských oprávnění](https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user).
 - SSH přístup uživatele `deploy` na VPS. Odpovídající privátní klíč je uložen jako CI/CD proměnná
