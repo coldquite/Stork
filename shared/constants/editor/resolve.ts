@@ -37,11 +37,7 @@ export function resolveEditorSpecializationOptionByCode(
   return options.find((option) => option.specializationCode === specializationCode) ?? null
 }
 
-/**
- * Normalizes specialization code for department lookup.
- * Example: BI-SI21 => BI-SI.21
- */
-export function normalizeEditorSpecializationCodeForDepartmentLookup(value: string): string {
+function normalizeEditorSpecializationCodeWithVersion(value: string): string {
   const normalizedValue = value.trim().toUpperCase()
   const matchedValue = normalizedValue.match(/^(.*?)(\d+)$/)
   if (!matchedValue) {
@@ -57,14 +53,26 @@ export function normalizeEditorSpecializationCodeForDepartmentLookup(value: stri
   return `${prefix}.${digits}`
 }
 
+/**
+ * Normalizes specialization code for department lookup.
+ * Example:
+ *   - BI-SI21 => BI-SI
+ *   - BI-SI.2027 => BI-SI
+ */
+export function normalizeEditorSpecializationCodeForDepartmentLookup(value: string): string {
+  const withNormalizedVersion = normalizeEditorSpecializationCodeWithVersion(value)
+  return withNormalizedVersion.replace(/\.\d+$/u, '')
+}
+
 const EDITOR_SPECIALIZATION_OPTIONS_BY_CODE = (() => {
   const optionsByCode = new Map<string, EditorSpecializationOption>()
 
   for (const optionsByProgramName of Object.values(EDITOR_SPECIALIZATION_OPTIONS_BY_TYPE_AND_STUDY_PROGRAM_NAME)) {
     for (const options of Object.values(optionsByProgramName)) {
       for (const option of options) {
-        if (!optionsByCode.has(option.specializationCode)) {
-          optionsByCode.set(option.specializationCode, option)
+        const normalizedOptionCode = normalizeEditorSpecializationCodeForDepartmentLookup(option.specializationCode)
+        if (!optionsByCode.has(normalizedOptionCode)) {
+          optionsByCode.set(normalizedOptionCode, option)
         }
       }
     }
@@ -81,18 +89,31 @@ export function resolveEditorSpecializationOptionForDepartment(
   studyProgramName: string,
   specializationCode: string
 ): EditorSpecializationOption | null {
+  const exactSpecializationCode = normalizeEditorSpecializationCodeWithVersion(specializationCode)
   const normalizedSpecializationCode = normalizeEditorSpecializationCodeForDepartmentLookup(specializationCode)
   if (normalizedSpecializationCode.length < 1) {
     return null
   }
 
-  const specializationInCurrentProgram = resolveEditorSpecializationOptionByCode(
+  const specializationInCurrentProgramExact = resolveEditorSpecializationOptionByCode(
     studyProgramType,
     studyProgramName,
-    normalizedSpecializationCode
+    exactSpecializationCode
   )
-  if (specializationInCurrentProgram) {
-    return specializationInCurrentProgram
+  if (specializationInCurrentProgramExact) {
+    return specializationInCurrentProgramExact
+  }
+
+  const specializationInCurrentProgramNormalized = resolveEditorSpecializationOptions(
+    studyProgramType,
+    studyProgramName
+  ).find((option) => {
+    return (
+      normalizeEditorSpecializationCodeForDepartmentLookup(option.specializationCode) === normalizedSpecializationCode
+    )
+  })
+  if (specializationInCurrentProgramNormalized) {
+    return specializationInCurrentProgramNormalized
   }
 
   return EDITOR_SPECIALIZATION_OPTIONS_BY_CODE.get(normalizedSpecializationCode) ?? null
