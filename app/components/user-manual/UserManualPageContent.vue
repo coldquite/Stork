@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { ContentNavigationItem } from '@nuxt/content'
 import { CONTENT_PAGE_COLLECTIONS } from '~/constants/content-collections'
+import { USER_MANUAL_SEARCH_FUSE_OPTIONS } from '~/constants/user-manual-search'
 
 const route = useRoute()
 const { t } = useI18n()
@@ -166,7 +167,8 @@ useSeoMeta({
         :files="searchFiles"
         :navigation="searchNavigation"
         shortcut="meta_k"
-        :fuse="{ resultLimit: 42 }"
+        :fuse="USER_MANUAL_SEARCH_FUSE_OPTIONS"
+        :color-mode="false"
       />
     </ClientOnly>
   </div>
