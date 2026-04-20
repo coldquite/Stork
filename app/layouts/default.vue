@@ -14,7 +14,18 @@ const editorHeaderUi = {
 
 const usernameLabel = computed(() => authStore.username || '-')
 const isEditorRoute = computed(() => route.path.startsWith('/editor'))
+const isUserManualRoute = computed(() => route.path === '/user-manual' || route.path.startsWith('/user-manual/'))
+const isTeachersDictionaryRoute = computed(
+  () => route.path === '/teachers-dictionary' || route.path.startsWith('/teachers-dictionary/')
+)
 const headerUi = computed(() => (isEditorRoute.value ? editorHeaderUi : undefined))
+const shouldShowHomepageBackInMainNavigation = computed(
+  () => !isEditorRoute.value && (isUserManualRoute.value || isTeachersDictionaryRoute.value)
+)
+const shouldShowTeachersDictionaryInMainNavigation = computed(
+  () => !isEditorRoute.value && !isTeachersDictionaryRoute.value
+)
+const shouldShowUserManualInMainNavigation = computed(() => !isUserManualRoute.value)
 const editorBackToHomepageLabel = computed(() => t('editor.navigation.backToHomepage'))
 const editorOpenSavedSchedulesLabel = computed(() => t('editor.navigation.openSavedSchedulesTitle'))
 const editorCreateScheduleFromImportLabel = computed(() => t('editor.navigation.createScheduleFromImportTitle'))
@@ -34,20 +45,34 @@ const logoutButtonLabel = computed(() => {
 })
 
 const mobileNavigationItems = computed(() => {
-  const commonItems = [
-    {
+  const commonItems = []
+
+  if (!isEditorRoute.value && (isUserManualRoute.value || isTeachersDictionaryRoute.value)) {
+    commonItems.push({
+      label: editorBackToHomepageLabel.value,
+      icon: 'i-lucide-house',
+      to: '/',
+      onSelect: closeNavigationDrawer
+    })
+  }
+
+  if (!isTeachersDictionaryRoute.value) {
+    commonItems.push({
       label: teachersDictionaryPageLabel.value,
       icon: 'i-lucide-graduation-cap',
       to: '/teachers-dictionary',
       onSelect: closeNavigationDrawer
-    },
-    {
+    })
+  }
+
+  if (!isUserManualRoute.value) {
+    commonItems.push({
       label: userManualPageLabel.value,
       icon: 'i-lucide-book-user',
       to: '/user-manual/',
       onSelect: closeNavigationDrawer
-    }
-  ]
+    })
+  }
 
   if (!isEditorRoute.value) {
     return commonItems
@@ -235,7 +260,21 @@ async function confirmLogout(): Promise<void> {
           :aria-label="t('layout.header.mainNavigation')"
         >
           <UButton
-            v-if="!isEditorRoute"
+            v-if="shouldShowHomepageBackInMainNavigation"
+            to="/"
+            color="secondary"
+            variant="subtle"
+            size="xl"
+            icon="i-lucide-house"
+            :aria-label="editorBackToHomepageLabel"
+            :class="secondaryHeaderButtonClass"
+            :ui="{ leadingIcon: 'text-toned' }"
+          >
+            <span class="text-default">{{ editorBackToHomepageLabel }}</span>
+          </UButton>
+
+          <UButton
+            v-if="shouldShowTeachersDictionaryInMainNavigation"
             to="/teachers-dictionary"
             color="secondary"
             variant="subtle"
@@ -249,6 +288,7 @@ async function confirmLogout(): Promise<void> {
           </UButton>
 
           <UButton
+            v-if="shouldShowUserManualInMainNavigation"
             to="/user-manual/"
             color="secondary"
             variant="subtle"
