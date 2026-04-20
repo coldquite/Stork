@@ -78,6 +78,34 @@ function resolveCommitteeDayTimestamp(committee: ScheduleDraftCommittee): number
   return isValid(parsedDate) ? parsedDate.getTime() : Number.POSITIVE_INFINITY
 }
 
+const COMMITTEE_PREFIX_SEPARATOR_PATTERN = /^[-_.),:;/\\\s]+/u
+
+function parseCommitteeSortKey(name: string): {
+  normalizedName: string
+  numericPrefix: number | null
+  suffixWithoutPrefix: string
+} {
+  const normalizedName = name.trim()
+  const matchedPrefix = normalizedName.match(/^(\d+)/u)
+  if (!matchedPrefix) {
+    return {
+      normalizedName,
+      numericPrefix: null,
+      suffixWithoutPrefix: normalizedName
+    }
+  }
+
+  const numericPrefix = Number.parseInt(matchedPrefix[1] ?? '', 10)
+  const rawSuffix = normalizedName.slice((matchedPrefix[1] ?? '').length)
+  const suffixWithoutPrefix = rawSuffix.replace(COMMITTEE_PREFIX_SEPARATOR_PATTERN, '')
+
+  return {
+    normalizedName,
+    numericPrefix: Number.isFinite(numericPrefix) ? numericPrefix : null,
+    suffixWithoutPrefix
+  }
+}
+
 export function compareCommitteesByTimeline(left: ScheduleDraftCommittee, right: ScheduleDraftCommittee): number {
   const dayDiff = resolveCommitteeDayTimestamp(left) - resolveCommitteeDayTimestamp(right)
   if (dayDiff !== 0) {
@@ -89,7 +117,24 @@ export function compareCommitteesByTimeline(left: ScheduleDraftCommittee, right:
     return minuteDiff
   }
 
-  const nameDiff = left.name.localeCompare(right.name, 'cs')
+  const leftSortKey = parseCommitteeSortKey(left.name)
+  const rightSortKey = parseCommitteeSortKey(right.name)
+
+  if (leftSortKey.numericPrefix !== null && rightSortKey.numericPrefix !== null) {
+    const numericPrefixDiff = leftSortKey.numericPrefix - rightSortKey.numericPrefix
+    if (numericPrefixDiff !== 0) {
+      return numericPrefixDiff
+    }
+
+    const suffixDiff = leftSortKey.suffixWithoutPrefix.localeCompare(rightSortKey.suffixWithoutPrefix, 'cs')
+    if (suffixDiff !== 0) {
+      return suffixDiff
+    }
+  } else if (leftSortKey.numericPrefix !== null || rightSortKey.numericPrefix !== null) {
+    return leftSortKey.numericPrefix === null ? 1 : -1
+  }
+
+  const nameDiff = leftSortKey.normalizedName.localeCompare(rightSortKey.normalizedName, 'cs')
   if (nameDiff !== 0) {
     return nameDiff
   }

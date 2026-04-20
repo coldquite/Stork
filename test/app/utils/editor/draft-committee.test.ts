@@ -190,6 +190,93 @@ describe('draft-committee sidebar items', () => {
     ])
   })
 
+  it('sorts committees with equal date/time by numeric prefix in name and then by remaining name', () => {
+    const items = buildEditorCommitteeSidebarItems(
+      [
+        createCommittee({
+          localId: 'committee-10',
+          name: '10-NI-ZI',
+          date: '2026-08-28T00:00:00.000Z',
+          startMinute: 525
+        }),
+        createCommittee({
+          localId: 'committee-2',
+          name: '2-BI-SI.21',
+          date: '2026-08-28T00:00:00.000Z',
+          startMinute: 525
+        }),
+        createCommittee({
+          localId: 'committee-11',
+          name: '11-BI-UI.21',
+          date: '2026-08-28T00:00:00.000Z',
+          startMinute: 525
+        }),
+        createCommittee({
+          localId: 'committee-1',
+          name: '1-BI-SI.21',
+          date: '2026-08-28T00:00:00.000Z',
+          startMinute: 525
+        }),
+        createCommittee({
+          localId: 'committee-text',
+          name: 'Komise A',
+          date: '2026-08-28T00:00:00.000Z',
+          startMinute: 525
+        })
+      ],
+      'Bez názvu'
+    )
+
+    expect(items).toEqual([
+      { kind: 'day-bookmark', id: 'day-28.08.2026', dayLabel: '28.08.2026' },
+      {
+        kind: 'committee',
+        label: '1-BI-SI.21',
+        value: 'committee-1',
+        studentsCount: 0,
+        roomLabel: '—',
+        timelineStartLabel: '—',
+        timelineEndLabel: '—'
+      },
+      {
+        kind: 'committee',
+        label: '2-BI-SI.21',
+        value: 'committee-2',
+        studentsCount: 0,
+        roomLabel: '—',
+        timelineStartLabel: '—',
+        timelineEndLabel: '—'
+      },
+      {
+        kind: 'committee',
+        label: '10-NI-ZI',
+        value: 'committee-10',
+        studentsCount: 0,
+        roomLabel: '—',
+        timelineStartLabel: '—',
+        timelineEndLabel: '—'
+      },
+      {
+        kind: 'committee',
+        label: '11-BI-UI.21',
+        value: 'committee-11',
+        studentsCount: 0,
+        roomLabel: '—',
+        timelineStartLabel: '—',
+        timelineEndLabel: '—'
+      },
+      {
+        kind: 'committee',
+        label: 'Komise A',
+        value: 'committee-text',
+        studentsCount: 0,
+        roomLabel: '—',
+        timelineStartLabel: '—',
+        timelineEndLabel: '—'
+      }
+    ])
+  })
+
   it('uses room and computes timeline range from first to last committee item', () => {
     const items = buildEditorCommitteeSidebarItems(
       [
