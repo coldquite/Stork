@@ -17,6 +17,7 @@
     "typecheck": "nuxt typecheck",
     "test": "vitest run",
     "test:unit": "vitest run test/server/unit",
+    "test:non-db": "vitest run --exclude \"test/server/request/**\"",
     "test:integration": "vitest run test/server/request",
     "db:generate": "prisma generate",
     "db:format": "prisma format",

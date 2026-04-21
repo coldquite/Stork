@@ -79,15 +79,15 @@ prisma_schema_and_migrations_eqivalance_check:
     - PGPASSWORD="$POSTGRES_PASSWORD" psql -h db -U "$POSTGRES_USER" -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE stork_shadow;"
     - pnpm db:migrations:check
 
-test:
+test_non_db:
   stage: tests
   needs:
     - job: install_dependencies
       artifacts: true
   script:
-    - pnpm test:unit
+    - pnpm test:non-db
 
-integration:
+test_integration:
   stage: tests
   needs:
     - job: install_dependencies
