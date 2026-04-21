@@ -19,7 +19,6 @@ const importSzzType = ref<ImportSzzType>('BACHELOR')
 const {
   importFileFields,
   importFileStates,
-  maxImportFilesPerSelection,
   isImportSubmitDisabled,
   clearImportFieldErrors,
   handleImportFileChange,
@@ -189,10 +188,8 @@ function resolveImportFileInputId(fieldKey: string): string {
                   {{ $t('homepage.actions.create.import.filesAutoMappingHint') }}
                 </p>
 
-                <p class="text-muted text-sm">
-                  {{
-                    $t('homepage.actions.create.import.filesSelectionLimitHint', { max: maxImportFilesPerSelection })
-                  }}
+                <p class="text-primary text-sm">
+                  {{ $t('homepage.actions.create.import.filesSelectionHint') }}
                 </p>
               </div>
 
