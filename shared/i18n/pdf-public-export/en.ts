@@ -28,7 +28,7 @@ export const PDF_PUBLIC_EXPORT_EN_DICTIONARY: PdfPublicExportDictionary = {
   table: {
     preparationStart: 'Start of\nprep\u00ADa\u00ADration',
     committeeExam: 'Examination before committee',
-    studentSpecialization: 'Student\nStudy programme',
+    studentSpecialization: 'Student\nStudy plan',
     thesisTitle: 'Final thesis topic',
     supervisorReviewer: 'Supervisor\nReviewer',
     emptyRowsFallback: '—'
