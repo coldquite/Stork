@@ -557,11 +557,10 @@ describe('useEditorPage', () => {
     expect(firstStudentItem.student.specializationName).toBe('')
   })
 
-  it('updates english thesis title when committee language is english', async () => {
+  it('updates thesis title in single-column mode according to thesis language', async () => {
     const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()
 
-    page.committeeFields.updateSelectedCommitteeLanguage('ENGLISH')
     const [firstStudentRow, secondStudentRow] = page.studentTable.selectedStudents.value
     expect(firstStudentRow).toBeDefined()
     expect(secondStudentRow).toBeDefined()
@@ -572,9 +571,24 @@ describe('useEditorPage', () => {
     page.studentTable.selectedStudents.value = [
       {
         ...firstStudentRow,
-        thesisTitle: 'Edited English Thesis'
+        thesisLanguage: 'ENGLISH'
       },
       secondStudentRow
+    ]
+
+    const [updatedFirstStudentRow, updatedSecondStudentRow] = page.studentTable.selectedStudents.value
+    expect(updatedFirstStudentRow).toBeDefined()
+    expect(updatedSecondStudentRow).toBeDefined()
+    if (!updatedFirstStudentRow || !updatedSecondStudentRow) {
+      throw new Error('Expected updated student rows to exist')
+    }
+
+    page.studentTable.selectedStudents.value = [
+      {
+        ...updatedFirstStudentRow,
+        thesisTitle: 'Edited English Thesis'
+      },
+      updatedSecondStudentRow
     ]
 
     const committee = scheduleDraftStoreMock.draft?.committees.find((entry) => entry.localId === 'committee-early')
