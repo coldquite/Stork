@@ -1,4 +1,5 @@
 import Papa from 'papaparse'
+import { resolveEditorStudyProgramTypeBySpecializationCode } from '#shared/constants/editor'
 import {
   findMatchingImportSchemaKeys,
   IMPORT_CSV_OPTIONS,
@@ -153,7 +154,8 @@ export function resolveStudyLevelFromStudentsCommittees(rows: ImportCsvRow[]): I
 }
 
 export function resolveStudyLevelFromStudentsStork(rows: ImportCsvRow[]): ImportStudyLevel | null {
-  const studyScheduleName = rows[0]?.[IMPORT_COLUMN_NAMES.studentsStork.studyPlanName]?.trim().toLowerCase() ?? ''
+  const firstRow = rows[0]
+  const studyScheduleName = firstRow?.[IMPORT_COLUMN_NAMES.studentsStork.studyPlanName]?.trim().toLowerCase() ?? ''
 
   if (startsWithAnyPrefix(studyScheduleName, ['bc.', 'bachelor', 'bakalářsk'])) {
     return 'BACHELOR'
@@ -163,7 +165,8 @@ export function resolveStudyLevelFromStudentsStork(rows: ImportCsvRow[]): Import
     return 'MASTER'
   }
 
-  return null
+  const specializationCode = firstRow?.[IMPORT_COLUMN_NAMES.studentsStork.specializationCode] ?? ''
+  return resolveEditorStudyProgramTypeBySpecializationCode(specializationCode)
 }
 
 export function resolveImportTargetFieldKey(

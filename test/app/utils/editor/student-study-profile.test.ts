@@ -92,4 +92,10 @@ describe('student-study-profile', () => {
     expect(options[0]?.specializationCode).toBe('CUSTOM-001')
     expect(options[0]?.specializationName).toBe('CUSTOM-001')
   })
+
+  it('keeps ISP specialization name as raw code in study profile', () => {
+    expect(resolveSpecializationNameForStudyProfile('BACHELOR', 'Informatika', 'BI-PS-ISP-515623')).toBe(
+      'BI-PS-ISP-515623'
+    )
+  })
 })

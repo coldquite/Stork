@@ -1405,6 +1405,42 @@ describe('mapImportPayloadToDraftSource', () => {
     expect(mappedFirstItem.student.specializationCode).toBe('BIK-SI.21')
   })
 
+  it('maps ISP specialization through non-individual committee code and preserves original student code', () => {
+    const payload = createValidPayload()
+    payload.committees.rows[0] = createCommitteesRow({
+      'Název oboru/specializace': 'Počítačové sítě a Internet 2021'
+    })
+    payload.studentsCommittees.bachelor!.rows[0] = createStudentsCommitteesRow({
+      'Obor/spec - název': 'Počítačové sítě a Internet 2021',
+      'Obor/spec - kód': 'BI-PS.21'
+    })
+    payload.studentsStork.bachelor!.rows[0] = createStudentsStorkRow({
+      'Obor/spec - název': 'Počítačové sítě a Internet 2021',
+      'Studijní plán (název)': 'Počítačové sítě a Internet - ISP 515623',
+      'Kód studijního plánu': 'BI-PS-ISP-515623'
+    })
+
+    const result = mapImportPayloadToDraftSource({
+      scheduleName: 'SZZ červen 2025',
+      szzType: 'BACHELOR',
+      payload
+    })
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) {
+      throw new Error('Expected mapping success')
+    }
+
+    expect(result.draft.committees[0]?.specializationCode).toBe('BI-PS.21')
+    const mappedFirstItem = result.draft.committees[0]?.items[0]
+    if (!mappedFirstItem || mappedFirstItem.type !== 'STUDENT') {
+      throw new Error('Expected mapped student item')
+    }
+
+    expect(mappedFirstItem.student.studyProgramType).toBe('BACHELOR')
+    expect(mappedFirstItem.student.specializationCode).toBe('BI-PS-ISP-515623')
+  })
+
   it('ignores trailing dot and version digits in specializationCode comparison', () => {
     const payload = createValidPayload()
     payload.studentsStork.bachelor!.rows[0] = createStudentsStorkRow({

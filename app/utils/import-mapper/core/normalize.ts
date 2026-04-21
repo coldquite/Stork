@@ -1,3 +1,5 @@
+import { extractNonIndividualSpecializationCode } from '#shared/utils/specialization-code'
+
 export function normalizeWhitespace(value: string): string {
   return value.replace(/\s+/g, ' ').trim()
 }
@@ -16,6 +18,10 @@ export function normalizeCompareValue(value: string): string {
 // Example: BI-IB21 => BI-IB.21
 export function normalizeSpecializationCode(value: string): string {
   const normalized = normalizeWhitespace(value)
+  if (/-isp/i.test(normalized)) {
+    return normalized
+  }
+
   const matched = normalized.match(/^(.*?)(\d+)$/)
   if (!matched) {
     return normalized
@@ -38,6 +44,11 @@ export function normalizeSpecializationCode(value: string): string {
 //   - "BIE-SI.21" -> "bie-si"
 export function normalizeSpecializationCodeForComparison(value: string): string {
   const normalized = normalizeCompareValue(value).replace(/k-/g, '-')
+  const normalizedIndividualCode = extractNonIndividualSpecializationCode(normalized)
+  if (normalizedIndividualCode) {
+    return normalizeCompareValue(normalizedIndividualCode)
+  }
+
   const withoutVersionSuffix = normalized.replace(/\.\d+$/u, '').replace(/\d+$/u, '')
   return withoutVersionSuffix.replace(/[.-]+$/u, '')
 }

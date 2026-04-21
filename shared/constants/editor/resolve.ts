@@ -2,6 +2,10 @@ import type { StudyLanguageDto, StudyProgramTypeDto } from '../../types/time-sch
 import { EDITOR_STUDY_PROGRAM_NAME_OPTIONS_BY_TYPE } from './study-program-names'
 import { EDITOR_SPECIALIZATION_OPTIONS_BY_TYPE_AND_STUDY_PROGRAM_NAME } from './specialization-table'
 import type { EditorSpecializationOption } from './types'
+import {
+  normalizeSpecializationCodeForDepartmentLookup,
+  normalizeSpecializationCodeWithVersion
+} from '../../utils/specialization-code'
 
 /** Specialization options for the selected study program, or empty when the form context is incomplete. */
 export function resolveEditorSpecializationOptions(
@@ -37,22 +41,6 @@ export function resolveEditorSpecializationOptionByCode(
   return options.find((option) => option.specializationCode === specializationCode) ?? null
 }
 
-function normalizeEditorSpecializationCodeWithVersion(value: string): string {
-  const normalizedValue = value.trim().toUpperCase()
-  const matchedValue = normalizedValue.match(/^(.*?)(\d+)$/)
-  if (!matchedValue) {
-    return normalizedValue
-  }
-
-  const prefix = matchedValue[1] ?? ''
-  const digits = matchedValue[2] ?? ''
-  if (prefix.endsWith('.')) {
-    return `${prefix}${digits}`
-  }
-
-  return `${prefix}.${digits}`
-}
-
 /**
  * Normalizes specialization code for department lookup.
  * Example:
@@ -60,8 +48,7 @@ function normalizeEditorSpecializationCodeWithVersion(value: string): string {
  *   - BI-SI.2027 => BI-SI
  */
 export function normalizeEditorSpecializationCodeForDepartmentLookup(value: string): string {
-  const withNormalizedVersion = normalizeEditorSpecializationCodeWithVersion(value)
-  return withNormalizedVersion.replace(/\.\d+$/u, '')
+  return normalizeSpecializationCodeForDepartmentLookup(value)
 }
 
 const EDITOR_SPECIALIZATION_OPTIONS_BY_CODE = (() => {
@@ -81,6 +68,41 @@ const EDITOR_SPECIALIZATION_OPTIONS_BY_CODE = (() => {
   return optionsByCode
 })()
 
+const EDITOR_STUDY_PROGRAM_TYPE_BY_NORMALIZED_SPECIALIZATION_CODE = (() => {
+  const studyProgramTypeByCode = new Map<string, StudyProgramTypeDto>()
+
+  const entries = Object.entries(EDITOR_SPECIALIZATION_OPTIONS_BY_TYPE_AND_STUDY_PROGRAM_NAME) as Array<
+    [StudyProgramTypeDto, Record<string, EditorSpecializationOption[]>]
+  >
+  for (const [studyProgramType, optionsByProgramName] of entries) {
+    for (const options of Object.values(optionsByProgramName)) {
+      for (const option of options) {
+        const normalizedOptionCode = normalizeEditorSpecializationCodeForDepartmentLookup(option.specializationCode)
+        if (!studyProgramTypeByCode.has(normalizedOptionCode)) {
+          studyProgramTypeByCode.set(normalizedOptionCode, studyProgramType)
+        }
+      }
+    }
+  }
+
+  return studyProgramTypeByCode
+})()
+
+/**
+ * Resolves study-program type by specialization code.
+ * Supports both regular and ISP (individual) specialization codes.
+ */
+export function resolveEditorStudyProgramTypeBySpecializationCode(
+  specializationCode: string
+): StudyProgramTypeDto | null {
+  const normalizedSpecializationCode = normalizeEditorSpecializationCodeForDepartmentLookup(specializationCode)
+  if (normalizedSpecializationCode.length < 1) {
+    return null
+  }
+
+  return EDITOR_STUDY_PROGRAM_TYPE_BY_NORMALIZED_SPECIALIZATION_CODE.get(normalizedSpecializationCode) ?? null
+}
+
 /**
  * Resolves specialization option by code in the selected study profile context, then globally as fallback.
  */
@@ -89,7 +111,7 @@ export function resolveEditorSpecializationOptionForDepartment(
   studyProgramName: string,
   specializationCode: string
 ): EditorSpecializationOption | null {
-  const exactSpecializationCode = normalizeEditorSpecializationCodeWithVersion(specializationCode)
+  const exactSpecializationCode = normalizeSpecializationCodeWithVersion(specializationCode)
   const normalizedSpecializationCode = normalizeEditorSpecializationCodeForDepartmentLookup(specializationCode)
   if (normalizedSpecializationCode.length < 1) {
     return null

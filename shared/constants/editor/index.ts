@@ -21,5 +21,6 @@ export {
   resolveEditorStudyProgramNameOptions,
   resolveEditorSpecializationOptionByCode,
   normalizeEditorSpecializationCodeForDepartmentLookup,
+  resolveEditorStudyProgramTypeBySpecializationCode,
   resolveEditorSpecializationOptionForDepartment
 } from './resolve'

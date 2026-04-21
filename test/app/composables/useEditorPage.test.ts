@@ -774,6 +774,27 @@ describe('useEditorPage', () => {
     expect(createdCommittee?.member3Name).toBe('')
   })
 
+  it('allows creating committee with ISP specialization code and keeps raw specialization name', async () => {
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
+    const page = useEditorPage()
+
+    page.committeeList.openCreateCommitteeDialog()
+    page.committeeList.updateCreateCommitteeLanguage('CZECH')
+    page.committeeList.updateCreateCommitteeStudyProgramType('BACHELOR')
+    page.committeeList.updateCreateCommitteeStringField({ field: 'studyProgramName', value: 'Informatika' })
+    page.committeeList.updateCreateCommitteeStringField({ field: 'specializationCode', value: 'BI-PS-ISP-515623' })
+
+    expect(page.committeeList.isCreateCommitteeSubmitDisabled.value).toBe(false)
+
+    page.committeeList.createCommitteeName.value = 'Komise ISP'
+    page.committeeList.submitCreateCommittee()
+
+    const createdCommittee = scheduleDraftStoreMock.draft?.committees.find((entry) => entry.name === 'Komise ISP')
+    expect(createdCommittee).toBeDefined()
+    expect(createdCommittee?.specializationCode).toBe('BI-PS-ISP-515623')
+    expect(createdCommittee?.specializationName).toBe('BI-PS-ISP-515623')
+  })
+
   it('shows duplicate validation when renaming committee to existing name', async () => {
     const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
     const page = useEditorPage()

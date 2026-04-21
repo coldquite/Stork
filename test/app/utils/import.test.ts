@@ -132,6 +132,24 @@ describe('import utils', () => {
     expect(resolveStudyLevelFromStudentsStork(rows)).toBeNull()
   })
 
+  it('resolves students-stork study level by specialization code for ISP study plans', () => {
+    const bachelorRows: ImportCsvRow[] = [
+      {
+        'Studijní plán (název)': 'Počítačové sítě a Internet - ISP 515623',
+        'Kód studijního plánu': 'BI-PS-ISP-515623'
+      }
+    ]
+    const masterRows: ImportCsvRow[] = [
+      {
+        'Studijní plán (název)': 'Knowledge Engineering - ISP 900001',
+        'Kód studijního plánu': 'NI-SI-ISP-900001'
+      }
+    ]
+
+    expect(resolveStudyLevelFromStudentsStork(bachelorRows)).toBe('BACHELOR')
+    expect(resolveStudyLevelFromStudentsStork(masterRows)).toBe('MASTER')
+  })
+
   it('resolves target field by SZZ type and detected dataset level', () => {
     const studentsStorkRows: ImportCsvRow[] = [{ 'Studijní plán (název)': 'Mgr. Informatika' }]
     const studentsCommitteesRows: ImportCsvRow[] = [{ 'St. program - typ': 'B' }]
