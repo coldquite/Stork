@@ -5,6 +5,7 @@ import EditorCreatePauseModal from '~/components/editor/dialogs/EditorCreatePaus
 import EditorCreateStudentModal from '~/components/editor/dialogs/EditorCreateStudentModal.vue'
 import EditorExportValidationWarningModal from '~/components/editor/dialogs/EditorExportValidationWarningModal.vue'
 import EditorMoveStudentDialog from '~/components/editor/dialogs/EditorMoveStudentDialog.vue'
+import EditorSyncInvigilatorsDialog from '~/components/editor/dialogs/EditorSyncInvigilatorsDialog.vue'
 import EditorValidationSummaryModal from '~/components/editor/dialogs/EditorValidationSummaryModal.vue'
 import EditorCsvExportCommitteesModal from '~/components/export/EditorCsvExportCommitteesModal.vue'
 import EditorPdfInvigilatorsExportModal from '~/components/export/EditorPdfInvigilatorsExportModal.vue'
@@ -153,6 +154,17 @@ const addInvigilatorOpen = computed({
     inv.isAddInvigilatorDialogOpen.value = v
   }
 })
+const syncInvigilatorsOpen = computed({
+  get: () => inv.isSyncInvigilatorsDialogOpen.value,
+  set: (v: boolean) => {
+    if (v) {
+      inv.isSyncInvigilatorsDialogOpen.value = true
+      return
+    }
+
+    inv.closeSyncInvigilatorsDialog()
+  }
+})
 const newInvigilatorNameModel = computed({
   get: () => inv.newInvigilatorName.value,
   set: (v: string) => {
@@ -258,6 +270,9 @@ const pdfInvigilatorsNoQualifyingStudentsHint = computed(() =>
     : undefined
 )
 const invigilatorValidationText = computed(() => inv.invigilatorValidationError.value)
+const syncInvigilatorsCommitteeItems = computed(() => inv.syncInvigilatorsCommitteeItems.value)
+const syncInvigilatorsSelectedCommitteeIds = computed(() => inv.selectedSyncInvigilatorsCommitteeIds.value)
+const isSyncInvigilatorsSubmitDisabled = computed(() => inv.isSyncInvigilatorsSubmitDisabled.value)
 const createCommitteeValidationText = computed(() => cl.createCommitteeValidationError.value)
 const createCommitteeSubmitDisabled = computed(() => cl.isCreateCommitteeSubmitDisabled.value)
 
@@ -458,6 +473,31 @@ function openStudentFromValidationSummary(payload: { committeeId: string; studen
     :validation-error="invigilatorValidationText"
     @cancel="inv.closeAddInvigilatorDialog()"
     @submit="inv.submitAddInvigilator()"
+  />
+
+  <EditorSyncInvigilatorsDialog
+    v-model:open="syncInvigilatorsOpen"
+    :title="copy.syncInvigilators.title"
+    :description="copy.syncInvigilators.description"
+    :committees="syncInvigilatorsCommitteeItems"
+    :selected-committee-ids="syncInvigilatorsSelectedCommitteeIds"
+    :selected-count-label="copy.syncInvigilators.selectedCount"
+    :ordering-hint-label="copy.syncInvigilators.orderingHint"
+    :checklist-aria-label="copy.syncInvigilators.checklistAriaLabel"
+    :select-all-label="copy.syncInvigilators.selectAll"
+    :clear-all-label="copy.syncInvigilators.clearAll"
+    :cancel-label="copy.commonCancel"
+    :submit-label="copy.syncInvigilators.submit"
+    :submit-disabled="isSyncInvigilatorsSubmitDisabled"
+    :empty-title="copy.syncInvigilators.emptyTitle"
+    :empty-description="copy.syncInvigilators.emptyDescription"
+    :current-invigilators-label="copy.syncInvigilators.currentInvigilatorsLabel"
+    :next-invigilators-label="copy.syncInvigilators.nextInvigilatorsLabel"
+    @update-selected-committee-ids="inv.updateSelectedSyncInvigilatorsCommitteeIds($event)"
+    @select-all="inv.selectAllSyncInvigilatorsCommittees()"
+    @clear-all="inv.clearSyncInvigilatorsCommittees()"
+    @cancel="inv.closeSyncInvigilatorsDialog()"
+    @submit="inv.submitSyncInvigilatorsToMatchingCommittees()"
   />
 
   <EditorCreateCommitteeModal

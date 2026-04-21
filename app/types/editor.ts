@@ -271,6 +271,7 @@ export interface EditorStudentsPanelInvigilatorLabels {
   addAction: string
   deleteAria: string
   applyPreparationRoomToAll: string
+  syncToMatchingCommittees: string
 }
 
 /** String committee fields emitted as a single event (date/language/type use dedicated emits). */
@@ -422,6 +423,20 @@ export interface EditorScheduleDialogsCopy {
     placeholder: string
     hint: string
     submit: string
+  }
+  syncInvigilators: {
+    title: string
+    description: string
+    selectedCount: string
+    orderingHint: string
+    checklistAriaLabel: string
+    selectAll: string
+    clearAll: string
+    submit: string
+    emptyTitle: string
+    emptyDescription: string
+    currentInvigilatorsLabel: string
+    nextInvigilatorsLabel: string
   }
   csvExportCommittees: EditorCsvExportCommitteesDialogCopy
   pdfPublicExportCommittees: EditorExportCommitteesDialogCopy

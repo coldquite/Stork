@@ -250,6 +250,64 @@ function createDraftWithTwoCommittees(): ScheduleDraft {
   }
 }
 
+function createDraftForInvigilatorsSync(): ScheduleDraft {
+  return {
+    name: 'Plán',
+    type: 'MANUAL',
+    thesisTitleDisplayMode: 'AUTO',
+    committees: [
+      createCommittee({
+        localId: 'committee-source',
+        name: '1-NI-TI',
+        date: '2026-06-10T00:00:00.000Z',
+        startMinute: 510,
+        preparationRoom: 'TH:A-1510',
+        invigilators: [
+          { localId: 'inv-source-1', name: 'Dozor A' },
+          { localId: 'inv-source-2', name: 'Dozor B' }
+        ]
+      }),
+      createCommittee({
+        localId: 'committee-target-a',
+        name: '2-NI-TI',
+        date: '2026-06-10T00:00:00.000Z',
+        startMinute: 525,
+        preparationRoom: 'TH:A-1510',
+        invigilators: [
+          { localId: 'inv-target-a-keep', name: '  dozor a ' },
+          { localId: 'inv-target-a-drop', name: 'Původní dozor A' }
+        ],
+        items: [createStudentItem('sync-student-a', 1, 'Adam')]
+      }),
+      createCommittee({
+        localId: 'committee-target-b',
+        name: '3-NI-TI',
+        date: '2026-06-10T00:00:00.000Z',
+        startMinute: 540,
+        preparationRoom: 'TH:A-1510',
+        invigilators: [],
+        items: [createStudentItem('sync-student-b', 1, 'Beata')]
+      }),
+      createCommittee({
+        localId: 'committee-other-room',
+        name: '4-NI-TI',
+        date: '2026-06-10T00:00:00.000Z',
+        startMinute: 555,
+        preparationRoom: 'TH:A-1900',
+        invigilators: [{ localId: 'inv-other-room', name: 'Jiná místnost' }]
+      }),
+      createCommittee({
+        localId: 'committee-other-day',
+        name: '5-NI-TI',
+        date: '2026-06-11T00:00:00.000Z',
+        startMinute: 510,
+        preparationRoom: 'TH:A-1510',
+        invigilators: [{ localId: 'inv-other-day', name: 'Jiný den' }]
+      })
+    ]
+  }
+}
+
 describe('useEditorPage', () => {
   beforeEach(() => {
     i18nTranslateMock.mockClear()
@@ -1509,6 +1567,174 @@ describe('useEditorPage', () => {
       'TH:A-1900'
     ])
     expect(page.invigilators.isApplyPreparationRoomToAllConfirmOpen.value).toBe(false)
+  })
+
+  it('opens invigilators sync dialog, preselects matching committees, and overwrites selected targets', async () => {
+    scheduleDraftStoreMock.draft = createDraftForInvigilatorsSync()
+
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
+    const page = useEditorPage()
+
+    expect(page.committeeList.selectedCommittee.value?.localId).toBe('committee-source')
+    expect(page.invigilators.isSyncInvigilatorsActionDisabled.value).toBe(false)
+
+    page.invigilators.openSyncInvigilatorsDialog()
+
+    expect(page.invigilators.isSyncInvigilatorsDialogOpen.value).toBe(true)
+    expect(page.invigilators.syncInvigilatorsSourceCommitteeLabel.value).toBe('1-NI-TI')
+    expect(page.invigilators.syncInvigilatorsCommitteeItems.value.map((item) => item.id)).toEqual([
+      'committee-target-a',
+      'committee-target-b'
+    ])
+
+    const targetCommitteeDiff = page.invigilators.syncInvigilatorsCommitteeItems.value.find(
+      (item) => item.id === 'committee-target-a'
+    )
+    expect(targetCommitteeDiff?.currentInvigilators).toEqual([
+      {
+        id: 'inv-target-a-keep',
+        name: 'dozor a',
+        willBeRemoved: false
+      },
+      {
+        id: 'inv-target-a-drop',
+        name: 'Původní dozor A',
+        willBeRemoved: true
+      }
+    ])
+    expect(targetCommitteeDiff?.nextInvigilators).toEqual(['Dozor A', 'Dozor B'])
+
+    expect(page.invigilators.selectedSyncInvigilatorsCommitteeIds.value).toEqual([
+      'committee-target-a',
+      'committee-target-b'
+    ])
+
+    page.invigilators.updateSelectedSyncInvigilatorsCommitteeIds(['committee-target-a', 'missing-id'])
+    expect(page.invigilators.selectedSyncInvigilatorsCommitteeIds.value).toEqual(['committee-target-a'])
+
+    page.invigilators.selectAllSyncInvigilatorsCommittees()
+    expect(page.invigilators.selectedSyncInvigilatorsCommitteeIds.value).toEqual([
+      'committee-target-a',
+      'committee-target-b'
+    ])
+
+    page.invigilators.submitSyncInvigilatorsToMatchingCommittees()
+    expect(page.invigilators.isSyncInvigilatorsDialogOpen.value).toBe(false)
+    expect(toastAddMock).toHaveBeenCalledTimes(1)
+    expect(toastAddMock).toHaveBeenCalledWith({
+      title: 'editor.committee.invigilators.sync.toast.successTitle',
+      description: 'editor.committee.invigilators.sync.toast.successDescription',
+      color: 'success',
+      icon: 'i-lucide-refresh-cw',
+      duration: 10_000
+    })
+
+    const committeesById = new Map(
+      scheduleDraftStoreMock.draft?.committees.map((committee) => [committee.localId, committee])
+    )
+    expect(committeesById.get('committee-target-a')?.invigilators.map((entry) => entry.name)).toEqual([
+      'Dozor A',
+      'Dozor B'
+    ])
+    expect(committeesById.get('committee-target-b')?.invigilators.map((entry) => entry.name)).toEqual([
+      'Dozor A',
+      'Dozor B'
+    ])
+    expect(committeesById.get('committee-other-room')?.invigilators.map((entry) => entry.name)).toEqual([
+      'Jiná místnost'
+    ])
+    expect(committeesById.get('committee-other-day')?.invigilators.map((entry) => entry.name)).toEqual(['Jiný den'])
+  })
+
+  it('shows no-changes error toast when selected targets already match source invigilators by trimmed case-insensitive names', async () => {
+    const draft = createDraftForInvigilatorsSync()
+    draft.committees[1]!.invigilators = [
+      { localId: 'inv-target-a-same-1', name: ' dozor a ' },
+      { localId: 'inv-target-a-same-2', name: 'DOZOR B' }
+    ]
+    draft.committees[2]!.invigilators = [
+      { localId: 'inv-target-b-same-1', name: 'dozor a' },
+      { localId: 'inv-target-b-same-2', name: '  dozor b  ' }
+    ]
+    scheduleDraftStoreMock.draft = draft
+
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
+    const page = useEditorPage()
+
+    page.invigilators.openSyncInvigilatorsDialog()
+    expect(page.invigilators.selectedSyncInvigilatorsCommitteeIds.value).toEqual([
+      'committee-target-a',
+      'committee-target-b'
+    ])
+
+    page.invigilators.submitSyncInvigilatorsToMatchingCommittees()
+
+    expect(page.invigilators.isSyncInvigilatorsDialogOpen.value).toBe(false)
+    expect(toastAddMock).toHaveBeenCalledTimes(1)
+    expect(toastAddMock).toHaveBeenCalledWith({
+      title: 'editor.committee.invigilators.sync.toast.noChangesTitle',
+      description: 'editor.committee.invigilators.sync.toast.noChangesDescription',
+      color: 'error',
+      icon: 'i-lucide-circle-alert',
+      duration: 10_000
+    })
+
+    const committeesById = new Map(
+      scheduleDraftStoreMock.draft?.committees.map((committee) => [committee.localId, committee])
+    )
+    expect(committeesById.get('committee-target-a')?.invigilators.map((entry) => entry.name)).toEqual([
+      'Dozor A',
+      'Dozor B'
+    ])
+    expect(committeesById.get('committee-target-b')?.invigilators.map((entry) => entry.name)).toEqual([
+      'Dozor A',
+      'Dozor B'
+    ])
+  })
+
+  it('opens invigilators sync dialog with no selectable committees when no target matches day and preparation room', async () => {
+    const draft = createDraftForInvigilatorsSync()
+    draft.committees[1]!.preparationRoom = 'TH:A-1900'
+    draft.committees[2]!.date = '2026-06-11T00:00:00.000Z'
+    scheduleDraftStoreMock.draft = draft
+
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
+    const page = useEditorPage()
+
+    page.invigilators.openSyncInvigilatorsDialog()
+
+    expect(page.invigilators.isSyncInvigilatorsDialogOpen.value).toBe(true)
+    expect(page.invigilators.syncInvigilatorsCommitteeItems.value).toEqual([])
+    expect(page.invigilators.selectedSyncInvigilatorsCommitteeIds.value).toEqual([])
+    expect(page.invigilators.isSyncInvigilatorsSubmitDisabled.value).toBe(true)
+  })
+
+  it('does not open invigilators sync dialog when selected committee has no invigilators', async () => {
+    const draft = createDraftForInvigilatorsSync()
+    draft.committees[0]!.invigilators = []
+    scheduleDraftStoreMock.draft = draft
+
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
+    const page = useEditorPage()
+
+    expect(page.invigilators.isSyncInvigilatorsActionDisabled.value).toBe(true)
+
+    page.invigilators.openSyncInvigilatorsDialog()
+    expect(page.invigilators.isSyncInvigilatorsDialogOpen.value).toBe(false)
+  })
+
+  it('does not open invigilators sync dialog when selected committee has blank preparation room', async () => {
+    const draft = createDraftForInvigilatorsSync()
+    draft.committees[0]!.preparationRoom = '   '
+    scheduleDraftStoreMock.draft = draft
+
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
+    const page = useEditorPage()
+
+    expect(page.invigilators.isSyncInvigilatorsActionDisabled.value).toBe(true)
+
+    page.invigilators.openSyncInvigilatorsDialog()
+    expect(page.invigilators.isSyncInvigilatorsDialogOpen.value).toBe(false)
   })
 
   it('updates selected committee language in draft store', async () => {

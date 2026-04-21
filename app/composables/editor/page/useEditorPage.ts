@@ -610,15 +610,27 @@ export function useEditorPage() {
       deleteInvigilatorConfirmDescription: invigilators.deleteInvigilatorConfirmDescription,
       isApplyPreparationRoomToAllConfirmOpen: invigilators.isApplyPreparationRoomToAllConfirmOpen,
       applyPreparationRoomToAllConfirmDescription: invigilators.applyPreparationRoomToAllConfirmDescription,
+      isSyncInvigilatorsActionDisabled: invigilators.isSyncInvigilatorsActionDisabled,
+      isSyncInvigilatorsDialogOpen: invigilators.isSyncInvigilatorsDialogOpen,
+      syncInvigilatorsSourceCommitteeLabel: invigilators.syncInvigilatorsSourceCommitteeLabel,
+      syncInvigilatorsCommitteeItems: invigilators.syncInvigilatorsCommitteeItems,
+      selectedSyncInvigilatorsCommitteeIds: invigilators.selectedSyncInvigilatorsCommitteeIds,
+      isSyncInvigilatorsSubmitDisabled: invigilators.isSyncInvigilatorsSubmitDisabled,
       openAddInvigilatorDialog: invigilators.openAddInvigilatorDialog,
       closeAddInvigilatorDialog: invigilators.closeAddInvigilatorDialog,
       openDeleteInvigilatorConfirm: invigilators.openDeleteInvigilatorConfirm,
       closeDeleteInvigilatorConfirm: invigilators.closeDeleteInvigilatorConfirm,
       openApplyPreparationRoomToAllConfirm: invigilators.openApplyPreparationRoomToAllConfirm,
       closeApplyPreparationRoomToAllConfirm: invigilators.closeApplyPreparationRoomToAllConfirm,
+      openSyncInvigilatorsDialog: invigilators.openSyncInvigilatorsDialog,
+      closeSyncInvigilatorsDialog: invigilators.closeSyncInvigilatorsDialog,
+      updateSelectedSyncInvigilatorsCommitteeIds: invigilators.updateSelectedSyncInvigilatorsCommitteeIds,
+      selectAllSyncInvigilatorsCommittees: invigilators.selectAllSyncInvigilatorsCommittees,
+      clearSyncInvigilatorsCommittees: invigilators.clearSyncInvigilatorsCommittees,
       submitAddInvigilator: invigilators.submitAddInvigilator,
       submitDeleteInvigilator: invigilators.submitDeleteInvigilator,
-      submitApplyPreparationRoomToAll: invigilators.submitApplyPreparationRoomToAll
+      submitApplyPreparationRoomToAll: invigilators.submitApplyPreparationRoomToAll,
+      submitSyncInvigilatorsToMatchingCommittees: invigilators.submitSyncInvigilatorsToMatchingCommittees
     },
 
     studentCreation: {

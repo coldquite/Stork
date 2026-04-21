@@ -549,6 +549,29 @@
           "ariaLabel": "Smazat člena dozoru",
           "confirmAction": "Smazat člena dozoru",
           "description": "Opravdu chcete smazat člena dozoru „{name}“? Tato akce je nevratná."
+        },
+        "sync": {
+          "action": "Synchronizovat dozor napříč dnem a místností",
+          "dialog": {
+            "title": "Synchronizovat členy dozoru",
+            "description": "Vyberte komise, do kterých chcete synchronizovat členy dozoru. Zdrojová komise: „{committee}“.",
+            "selectedCount": "Vybráno komisí: {count}",
+            "orderingHint": "Komise jsou seřazeny podle data a času začátku (stejně jako v bočním panelu editoru). Potenciální kandidáti jsou pouze komise ve stejný den a ve stejné místnosti písemné přípravy jako zdrojová komise.",
+            "checklistAriaLabel": "Výběr komisí pro synchronizaci členů dozoru",
+            "selectAll": "Vybrat všechny komise",
+            "clearAll": "Zrušit výběr všech komisí",
+            "submit": "Synchronizovat členy dozoru",
+            "emptyTitle": "Nenalezena žádná komise",
+            "emptyDescription": "Ve stejný den a stejné místnosti písemné přípravy není dostupná žádná další komise.",
+            "currentInvigilatorsLabel": "Aktuální členové dozoru",
+            "nextInvigilatorsLabel": "Noví členové dozoru"
+          },
+          "toast": {
+            "successTitle": "Synchronizace dokončena",
+            "successDescription": "Členové dozoru byli synchronizováni v {updated} z {selected} vybraných komisí.",
+            "noChangesTitle": "Bez změn",
+            "noChangesDescription": "Vybrané komise už mají stejné členy dozoru jako zdrojová komise."
+          }
         }
       },
       "preparationRoomSync": {
@@ -734,7 +757,7 @@
         "submitWithOverwrite": "Přesunout studenta a přepsat studijní údaje",
         "currentCommitteeBadge": "Aktuální komise",
         "preview": {
-          "title": "Přepsaná data po přesunu",
+          "title": "Přepsaná data studenta po přesunu",
           "fields": {
             "studyProgramName": "Studijní program",
             "studyProgramType": "Typ studia",

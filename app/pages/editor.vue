@@ -101,7 +101,8 @@ const studentsEmpty = computed(() => ({
 const invigilatorLabels = computed(() => ({
   addAction: t('editor.committee.invigilators.add.action'),
   deleteAria: t('editor.committee.invigilators.delete.ariaLabel'),
-  applyPreparationRoomToAll: t('editor.committee.preparationRoomSync.tooltip')
+  applyPreparationRoomToAll: t('editor.committee.preparationRoomSync.tooltip'),
+  syncToMatchingCommittees: t('editor.committee.invigilators.sync.action')
 }))
 
 const dialogCopy = computed(() => ({
@@ -202,6 +203,24 @@ const dialogCopy = computed(() => ({
     placeholder: t('editor.committee.invigilators.add.placeholder'),
     hint: t('editor.committee.invigilators.add.hint'),
     submit: t('editor.committee.invigilators.add.submit')
+  },
+  syncInvigilators: {
+    title: t('editor.committee.invigilators.sync.dialog.title'),
+    description: t('editor.committee.invigilators.sync.dialog.description', {
+      committee: invigilators.syncInvigilatorsSourceCommitteeLabel.value
+    }),
+    selectedCount: t('editor.committee.invigilators.sync.dialog.selectedCount', {
+      count: invigilators.selectedSyncInvigilatorsCommitteeIds.value.length
+    }),
+    orderingHint: t('editor.committee.invigilators.sync.dialog.orderingHint'),
+    checklistAriaLabel: t('editor.committee.invigilators.sync.dialog.checklistAriaLabel'),
+    selectAll: t('editor.committee.invigilators.sync.dialog.selectAll'),
+    clearAll: t('editor.committee.invigilators.sync.dialog.clearAll'),
+    submit: t('editor.committee.invigilators.sync.dialog.submit'),
+    emptyTitle: t('editor.committee.invigilators.sync.dialog.emptyTitle'),
+    emptyDescription: t('editor.committee.invigilators.sync.dialog.emptyDescription'),
+    currentInvigilatorsLabel: t('editor.committee.invigilators.sync.dialog.currentInvigilatorsLabel'),
+    nextInvigilatorsLabel: t('editor.committee.invigilators.sync.dialog.nextInvigilatorsLabel')
   },
   deleteCommitteeConfirmAction: t('editor.committees.delete.confirmAction'),
   deleteInvigilatorConfirmAction: t('editor.committee.invigilators.delete.confirmAction'),
@@ -408,6 +427,7 @@ const draftNameText = computed(() => draftName.value)
             @request-move-student="requestMoveStudentToAnotherCommittee"
             @add-invigilator="invigilators.openAddInvigilatorDialog"
             @apply-preparation-room-to-all="invigilators.openApplyPreparationRoomToAllConfirm"
+            @sync-invigilators-to-matching-committees="invigilators.openSyncInvigilatorsDialog"
             @delete-invigilator="invigilators.openDeleteInvigilatorConfirm($event)"
             @rename-committee="committeeList.openRenameCommitteeDialog($event)"
             @delete-committee="committeeList.openDeleteCommitteeConfirm($event)"

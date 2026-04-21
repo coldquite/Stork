@@ -63,7 +63,8 @@ function mountPanel(selectedCommittee: unknown) {
       invigilatorLabels: {
         addAction: '',
         deleteAria: '',
-        applyPreparationRoomToAll: ''
+        applyPreparationRoomToAll: '',
+        syncToMatchingCommittees: ''
       },
       invigilators: [],
       invigilatorsCountLabel: '',
@@ -118,5 +119,17 @@ describe('EditorStudentsPanel', () => {
     await invigilatorsCard.vm.$emit('applyPreparationRoomToAll')
 
     expect(wrapper.emitted('applyPreparationRoomToAll')).toHaveLength(1)
+  })
+
+  it('forwards syncInvigilatorsToMatchingCommittees event from invigilators card', async () => {
+    const wrapper = mountPanel({
+      localId: 'committee-1',
+      language: 'CZECH'
+    })
+    const invigilatorsCard = wrapper.findComponent({ name: 'EditorCommitteeInvigilatorsCard' })
+
+    await invigilatorsCard.vm.$emit('syncInvigilatorsToMatchingCommittees')
+
+    expect(wrapper.emitted('syncInvigilatorsToMatchingCommittees')).toHaveLength(1)
   })
 })

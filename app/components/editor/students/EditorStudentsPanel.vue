@@ -74,7 +74,14 @@ const emit = defineEmits<{
   (event: 'update:tableViewMode', value: EditorStudentsTableViewMode): void
   (event: 'update:committeeLanguage', value: StudyLanguageDto): void
   (event: 'update:committeeStudyProgramType', value: StudyProgramTypeDto): void
-  (event: 'addStudent' | 'addPause' | 'addInvigilator' | 'applyPreparationRoomToAll'): void
+  (
+    event:
+      | 'addStudent'
+      | 'addPause'
+      | 'addInvigilator'
+      | 'applyPreparationRoomToAll'
+      | 'syncInvigilatorsToMatchingCommittees'
+  ): void
 }>()
 
 const labels = computed(() => props.committeeLabels)
@@ -187,6 +194,7 @@ function requestFocusValidationStudent(studentId: string): void {
               :selected-committee="props.selectedCommittee"
               :preparation-room-label="labels.preparationRoom"
               :apply-preparation-room-to-all-label="props.invigilatorLabels.applyPreparationRoomToAll"
+              :sync-invigilators-to-matching-committees-label="props.invigilatorLabels.syncToMatchingCommittees"
               :invigilators="props.invigilators"
               :invigilators-count-label="props.invigilatorsCountLabel"
               :add-action-label="props.invigilatorLabels.addAction"
@@ -195,6 +203,7 @@ function requestFocusValidationStudent(studentId: string): void {
               @committee-string-field="forwardStringField"
               @add-invigilator="emit('addInvigilator')"
               @apply-preparation-room-to-all="emit('applyPreparationRoomToAll')"
+              @sync-invigilators-to-matching-committees="emit('syncInvigilatorsToMatchingCommittees')"
               @delete-invigilator="emit('deleteInvigilator', $event)"
             />
 

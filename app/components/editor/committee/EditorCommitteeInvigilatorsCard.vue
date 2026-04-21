@@ -9,18 +9,19 @@ const props = defineProps<{
   invigilators: ScheduleDraftInvigilator[]
   invigilatorsCountLabel: string
   addActionLabel: string
+  syncInvigilatorsToMatchingCommitteesLabel: string
   deleteInvigilatorAriaLabel: string
   isInvigilatorsEmpty: boolean
 }>()
 
 const emit = defineEmits<{
-  (e: 'addInvigilator' | 'applyPreparationRoomToAll'): void
+  (e: 'addInvigilator' | 'applyPreparationRoomToAll' | 'syncInvigilatorsToMatchingCommittees'): void
   (e: 'deleteInvigilator', localId: string): void
   (e: 'committeeStringField', payload: EditorCommitteeStringFieldPayload): void
 }>()
 
 const readOnlyInputClass = 'min-w-0 flex-1 overflow-hidden rounded-md bg-accented'
-const actionButtonClass = 'shrink-0 px-2 cursor-pointer'
+const actionButtonClass = 'size-8 shrink-0 cursor-pointer justify-center rounded-md'
 const applyPreparationRoomActionButtonClass = 'size-8 shrink-0 cursor-pointer justify-center rounded-md'
 const deleteActionButtonUi = {
   base: 'text-error ring-[2px] ring-error/70 hover:text-error hover:ring-error/85 dark:text-error dark:ring-error/85 dark:hover:text-error dark:hover:ring-error'
@@ -37,6 +38,17 @@ const isPreparationRoomInvalid = computed(() => {
 })
 const isApplyPreparationRoomToAllDisabled = computed(() => {
   if (!props.selectedCommittee) {
+    return true
+  }
+
+  return (props.selectedCommittee.preparationRoom?.trim().length ?? 0) < 1
+})
+const isSyncInvigilatorsToMatchingCommitteesDisabled = computed(() => {
+  if (!props.selectedCommittee) {
+    return true
+  }
+
+  if (props.invigilators.length < 1) {
     return true
   }
 
@@ -65,6 +77,14 @@ function requestApplyPreparationRoomToAll(): void {
   }
 
   emit('applyPreparationRoomToAll')
+}
+
+function requestSyncInvigilatorsToMatchingCommittees(): void {
+  if (isSyncInvigilatorsToMatchingCommitteesDisabled.value) {
+    return
+  }
+
+  emit('syncInvigilatorsToMatchingCommittees')
 }
 
 function emitPreparationRoom(value: string | number): void {
@@ -132,18 +152,34 @@ function emitPreparationRoom(value: string | number): void {
           </li>
         </ul>
 
-        <div>
+        <div class="flex items-center gap-2">
           <UButton
             color="primary"
             variant="soft"
             size="sm"
             icon="i-lucide-plus"
-            class="ring-primary/35 hover:ring-primary/55 w-full cursor-pointer justify-center text-sm font-semibold ring-2"
+            class="ring-primary/35 hover:ring-primary/55 min-w-0 flex-1 cursor-pointer justify-center text-sm font-semibold ring-2"
             :disabled="!props.selectedCommittee"
             @click="requestAdd"
           >
             {{ props.addActionLabel }}
           </UButton>
+
+          <UTooltip :text="props.syncInvigilatorsToMatchingCommitteesLabel">
+            <span class="inline-flex">
+              <UButton
+                color="primary"
+                variant="ghost"
+                size="sm"
+                icon="i-lucide-refresh-cw"
+                :aria-label="props.syncInvigilatorsToMatchingCommitteesLabel"
+                :class="applyPreparationRoomActionButtonClass"
+                :ui="applyPreparationRoomActionButtonUi"
+                :disabled="isSyncInvigilatorsToMatchingCommitteesDisabled"
+                @click="requestSyncInvigilatorsToMatchingCommittees"
+              />
+            </span>
+          </UTooltip>
         </div>
       </div>
     </div>
