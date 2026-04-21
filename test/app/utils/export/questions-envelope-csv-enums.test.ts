@@ -12,8 +12,7 @@ const translationMap: Record<string, string> = {
   'editor.schedule.export.questionsEnvelopeCsvExport.enums.repeatType.NONE': 'Neopakuje',
   'editor.schedule.export.questionsEnvelopeCsvExport.enums.repeatType.THESIS_DEFENSE': 'Opakuje obhajobu',
   'editor.schedule.export.questionsEnvelopeCsvExport.enums.repeatType.ORAL_EXAM': 'Opakuje zkoušku',
-  'editor.schedule.export.questionsEnvelopeCsvExport.enums.repeatType.BOTH': 'Opakuje zkoušku i obhajobu',
-  'editor.schedule.export.questionsEnvelopeCsvExport.enums.repeatType.UNKNOWN': 'Neznámý stav'
+  'editor.schedule.export.questionsEnvelopeCsvExport.enums.repeatType.BOTH': 'Opakuje zkoušku i obhajobu'
 }
 
 const enumLabelResolver = createQuestionsEnvelopeCsvEnumLabelResolver((key) => {
@@ -47,7 +46,6 @@ describe('questions-envelope-csv-enums', () => {
     expect(enumLabelResolver.resolveRepeatTypeLabel('THESIS_DEFENSE')).toBe('Opakuje obhajobu')
     expect(enumLabelResolver.resolveRepeatTypeLabel('ORAL_EXAM')).toBe('Opakuje zkoušku')
     expect(enumLabelResolver.resolveRepeatTypeLabel('BOTH')).toBe('Opakuje zkoušku i obhajobu')
-    expect(enumLabelResolver.resolveRepeatTypeLabel('UNKNOWN')).toBe('Neznámý stav')
   })
 
   it('falls back to technical enum value when i18n key is missing', () => {

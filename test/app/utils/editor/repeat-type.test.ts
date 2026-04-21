@@ -10,7 +10,7 @@ describe('repeat-type', () => {
   it('exposes all known repeat type literals', () => {
     expect(VALID_REPEAT_TYPES).toContain('NONE')
     expect(VALID_REPEAT_TYPES).toContain('THESIS_DEFENSE')
-    expect(VALID_REPEAT_TYPES).toHaveLength(5)
+    expect(VALID_REPEAT_TYPES).toHaveLength(4)
   })
 
   it('isValidRepeatType narrows strings', () => {
@@ -23,7 +23,7 @@ describe('repeat-type', () => {
   })
 
   it('resolveRepeatType returns fallback when invalid', () => {
-    expect(resolveRepeatType('INVALID' as 'NONE', 'UNKNOWN')).toBe('UNKNOWN')
+    expect(resolveRepeatType('INVALID' as 'NONE', 'NONE')).toBe('NONE')
   })
 
   it('resolveRepeatTypeFromSelectValue accepts string', () => {
@@ -35,7 +35,7 @@ describe('repeat-type', () => {
   })
 
   it('resolveRepeatTypeFromSelectValue returns fallback for unknown', () => {
-    expect(resolveRepeatTypeFromSelectValue('BAD', 'UNKNOWN')).toBe('UNKNOWN')
-    expect(resolveRepeatTypeFromSelectValue({ value: 'BAD' }, 'UNKNOWN')).toBe('UNKNOWN')
+    expect(resolveRepeatTypeFromSelectValue('BAD', 'NONE')).toBe('NONE')
+    expect(resolveRepeatTypeFromSelectValue({ value: 'BAD' }, 'NONE')).toBe('NONE')
   })
 })

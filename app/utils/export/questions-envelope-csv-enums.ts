@@ -33,8 +33,7 @@ const REPEAT_TYPE_KEY_BY_VALUE: Record<RepeatTypeDto, string> = {
   NONE: 'editor.schedule.export.questionsEnvelopeCsvExport.enums.repeatType.NONE',
   THESIS_DEFENSE: 'editor.schedule.export.questionsEnvelopeCsvExport.enums.repeatType.THESIS_DEFENSE',
   ORAL_EXAM: 'editor.schedule.export.questionsEnvelopeCsvExport.enums.repeatType.ORAL_EXAM',
-  BOTH: 'editor.schedule.export.questionsEnvelopeCsvExport.enums.repeatType.BOTH',
-  UNKNOWN: 'editor.schedule.export.questionsEnvelopeCsvExport.enums.repeatType.UNKNOWN'
+  BOTH: 'editor.schedule.export.questionsEnvelopeCsvExport.enums.repeatType.BOTH'
 }
 
 function resolveI18nEnumLabel(translate: QuestionsEnvelopeCsvTranslate, key: string, fallbackValue: string): string {

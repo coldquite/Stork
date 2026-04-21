@@ -317,8 +317,6 @@ export function useEditorPage() {
           field: resolveStudentValidationFieldLabel(issue.fieldKey),
           committeeValue: resolveCommitteeValueLabelForStudentValidationIssue(issue)
         })
-      case 'REPEAT_TYPE_UNKNOWN':
-        return t('editor.student.validation.messages.repeatTypeUnknown')
       case 'PREPARE_MINUTES_NEGATIVE':
         return t('editor.student.validation.messages.prepareMinutesNegative')
       case 'EXAM_MINUTES_NOT_POSITIVE':

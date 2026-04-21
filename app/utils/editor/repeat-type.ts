@@ -4,8 +4,7 @@ export const VALID_REPEAT_TYPES = [
   'NONE',
   'THESIS_DEFENSE',
   'ORAL_EXAM',
-  'BOTH',
-  'UNKNOWN'
+  'BOTH'
 ] as const satisfies readonly RepeatTypeDto[]
 
 export function isValidRepeatType(value: string): value is RepeatTypeDto {

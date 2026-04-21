@@ -31,7 +31,6 @@ enum RepeatType {
   THESIS_DEFENSE
   ORAL_EXAM
   BOTH
-  UNKNOWN
 }
 
 enum ThesisLanguage {

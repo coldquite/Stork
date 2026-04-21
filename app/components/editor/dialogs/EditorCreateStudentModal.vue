@@ -137,10 +137,6 @@ const repeatTypeOptions = computed<LabeledOption<RepeatTypeDto>[]>(() => [
   {
     value: 'BOTH',
     label: t('editor.table.repeatTypeOptions.both')
-  },
-  {
-    value: 'UNKNOWN',
-    label: t('editor.table.repeatTypeOptions.unknown')
   }
 ])
 

@@ -65,8 +65,7 @@ const REPEAT_TYPE_COVERAGE_SEQUENCE = [
   RepeatType.NONE,
   RepeatType.THESIS_DEFENSE,
   RepeatType.ORAL_EXAM,
-  RepeatType.BOTH,
-  RepeatType.UNKNOWN
+  RepeatType.BOTH
 ] as const
 
 const TITLE_BEFORE_SEQUENCE = [null, 'Bc.', 'Ing.', 'Mgr.', 'Bc. Ing.'] as const

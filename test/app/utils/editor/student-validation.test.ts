@@ -109,7 +109,7 @@ describe('student-validation', () => {
         specializationName: '',
         specializationCode: '',
         studyLanguage: 'UNKNOWN' as never,
-        repeatType: 'UNKNOWN',
+        repeatType: 'INVALID_REPEAT' as never,
         prepareMinutes: -5,
         examMinutes: 0
       }
@@ -181,9 +181,7 @@ describe('student-validation', () => {
     expect(
       issues.some(
         (issue) =>
-          issue.studentId === 'student-invalid' &&
-          issue.fieldKey === 'repeatType' &&
-          issue.code === 'REPEAT_TYPE_UNKNOWN'
+          issue.studentId === 'student-invalid' && issue.fieldKey === 'repeatType' && issue.code === 'INVALID_VALUE'
       )
     ).toBe(true)
     expect(

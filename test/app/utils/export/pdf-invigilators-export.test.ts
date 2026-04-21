@@ -24,7 +24,7 @@ function createStudentItem(
     thesisLanguage: 'CZECH' | 'ENGLISH' | 'SLOVAK'
     thesisTitleLocal: string
     thesisTitleEn: string
-    repeatType: 'NONE' | 'THESIS_DEFENSE' | 'ORAL_EXAM' | 'BOTH' | 'UNKNOWN'
+    repeatType: 'NONE' | 'THESIS_DEFENSE' | 'ORAL_EXAM' | 'BOTH'
     prepareMinutes: number
     examMinutes: number
   }>
@@ -99,8 +99,7 @@ const repeatLabels = {
   NONE: 'Neopakuje',
   THESIS_DEFENSE: 'Opakuje obhajobu',
   ORAL_EXAM: 'Opakuje zkoušku',
-  BOTH: 'Opakuje zkoušku i obhajobu',
-  UNKNOWN: 'Neznámý stav'
+  BOTH: 'Opakuje zkoušku i obhajobu'
 } as const
 
 describe('pdf-invigilators-export', () => {

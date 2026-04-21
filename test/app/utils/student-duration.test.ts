@@ -19,10 +19,6 @@ describe('student-duration', () => {
       prepareMinutes: 45,
       examMinutes: 30
     })
-    expect(resolveStudentDurationByStudyProgramAndRepeat('BACHELOR', 'UNKNOWN')).toEqual({
-      prepareMinutes: 45,
-      examMinutes: 30
-    })
   })
 
   it('resolves master duration mapping for every repeatType', () => {
@@ -39,10 +35,6 @@ describe('student-duration', () => {
       examMinutes: 15
     })
     expect(resolveStudentDurationByStudyProgramAndRepeat('MASTER', 'BOTH')).toEqual({
-      prepareMinutes: 45,
-      examMinutes: 35
-    })
-    expect(resolveStudentDurationByStudyProgramAndRepeat('MASTER', 'UNKNOWN')).toEqual({
       prepareMinutes: 45,
       examMinutes: 35
     })

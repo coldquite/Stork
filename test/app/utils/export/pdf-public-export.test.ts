@@ -29,7 +29,7 @@ function createStudentItem(
     additionalReviewerName: string | null
     titlesBefore: string | null
     titlesAfter: string | null
-    repeatType: 'NONE' | 'THESIS_DEFENSE' | 'ORAL_EXAM' | 'BOTH' | 'UNKNOWN'
+    repeatType: 'NONE' | 'THESIS_DEFENSE' | 'ORAL_EXAM' | 'BOTH'
   }>
 ): ScheduleDraftItem {
   return {
@@ -368,8 +368,7 @@ describe('pdf-public-export', () => {
             createStudentItem({ localId: 'student-defense', position: 1, repeatType: 'THESIS_DEFENSE' }),
             createStudentItem({ localId: 'student-oral', position: 2, repeatType: 'ORAL_EXAM' }),
             createStudentItem({ localId: 'student-both', position: 3, repeatType: 'BOTH' }),
-            createStudentItem({ localId: 'student-none', position: 4, repeatType: 'NONE' }),
-            createStudentItem({ localId: 'student-unknown', position: 5, repeatType: 'UNKNOWN' })
+            createStudentItem({ localId: 'student-none', position: 4, repeatType: 'NONE' })
           ]
         })
       ],
@@ -377,13 +376,12 @@ describe('pdf-public-export', () => {
     })
 
     const rows = sections[0]?.rows.filter((row) => row.kind === 'STUDENT') ?? []
-    expect(rows).toHaveLength(5)
+    expect(rows).toHaveLength(4)
     if (
       rows[0]?.kind !== 'STUDENT' ||
       rows[1]?.kind !== 'STUDENT' ||
       rows[2]?.kind !== 'STUDENT' ||
-      rows[3]?.kind !== 'STUDENT' ||
-      rows[4]?.kind !== 'STUDENT'
+      rows[3]?.kind !== 'STUDENT'
     ) {
       throw new Error('Expected all rows to be STUDENT')
     }
@@ -392,7 +390,6 @@ describe('pdf-public-export', () => {
     expect(rows[1].repeatLabel).toBe('Opakuje zkoušku')
     expect(rows[2].repeatLabel).toBe('Opakuje zkoušku i obhajobu')
     expect(rows[3].repeatLabel).toBe('')
-    expect(rows[4].repeatLabel).toBe('')
   })
 
   it('shows english repeat label for repeating student in english committee', () => {

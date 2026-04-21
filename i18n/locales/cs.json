@@ -366,8 +366,7 @@
               "NONE": "Neopakuje",
               "THESIS_DEFENSE": "Opakuje obhajobu",
               "ORAL_EXAM": "Opakuje zkoušku",
-              "BOTH": "Opakuje zkoušku i obhajobu",
-              "UNKNOWN": "Neznámý stav"
+              "BOTH": "Opakuje zkoušku i obhajobu"
             }
           },
           "errors": {
@@ -632,7 +631,6 @@
           "invalidValue": "{field}: neplatná hodnota.",
           "unresolvedDepartment": "Katedru se nepodařilo určit podle zvoleného programu a specializace.",
           "committeeProfileMismatch": "{field}: musí odpovídat komisi: {committeeValue}.",
-          "repeatTypeUnknown": "Opakuje: hodnota „Neznámý stav“ není povolena.",
           "prepareMinutesNegative": "Příprava v min: hodnota musí být 0 nebo více.",
           "examMinutesNotPositive": "Zkouška v min: hodnota musí být větší než 0.",
           "thesisTitleUnresolvedMarker": "{field}: obsahuje marker „[?]“ (nevyřešený znak z KOS)."
@@ -800,8 +798,7 @@
         "none": "Neopakuje",
         "thesisDefense": "Opakuje obhajobu",
         "oralExam": "Opakuje zkoušku",
-        "both": "Opakuje zkoušku i obhajobu",
-        "unknown": "Neznámý stav"
+        "both": "Opakuje zkoušku i obhajobu"
       }
     }
   },

@@ -37,8 +37,7 @@ export const PDF_PUBLIC_EXPORT_CS_DICTIONARY: PdfPublicExportDictionary = {
     NONE: '',
     THESIS_DEFENSE: 'Opakuje obhajobu',
     ORAL_EXAM: 'Opakuje zkoušku',
-    BOTH: 'Opakuje zkoušku i obhajobu',
-    UNKNOWN: ''
+    BOTH: 'Opakuje zkoušku i obhajobu'
   },
   pause: {
     defaultBreakLabel: 'PŘESTÁVKA',

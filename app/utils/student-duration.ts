@@ -19,10 +19,7 @@ const MASTER_THESIS_ONLY_EXAM_MINUTES = 20
 const MASTER_ORAL_ONLY_PREPARE_MINUTES = 45
 const MASTER_ORAL_ONLY_EXAM_MINUTES = 15
 
-/**
- * Shared source of truth for student slot duration mapping across import and editor flows.
- * UNKNOWN keeps first/both duration to avoid underestimating the total exam timeline.
- */
+/** Shared source of truth for student slot duration mapping across import and editor flows. */
 export const STUDENT_DURATION_MINUTES_BY_STUDY_PROGRAM_AND_REPEAT: Readonly<
   Record<StudyProgramTypeDto, Readonly<Record<RepeatTypeDto, StudentDurationMinutes>>>
 > = {
@@ -42,10 +39,6 @@ export const STUDENT_DURATION_MINUTES_BY_STUDY_PROGRAM_AND_REPEAT: Readonly<
     BOTH: {
       prepareMinutes: BACHELOR_FIRST_OR_BOTH_PREPARE_MINUTES,
       examMinutes: BACHELOR_FIRST_OR_BOTH_EXAM_MINUTES
-    },
-    UNKNOWN: {
-      prepareMinutes: BACHELOR_FIRST_OR_BOTH_PREPARE_MINUTES,
-      examMinutes: BACHELOR_FIRST_OR_BOTH_EXAM_MINUTES
     }
   },
   MASTER: {
@@ -62,10 +55,6 @@ export const STUDENT_DURATION_MINUTES_BY_STUDY_PROGRAM_AND_REPEAT: Readonly<
       examMinutes: MASTER_ORAL_ONLY_EXAM_MINUTES
     },
     BOTH: {
-      prepareMinutes: MASTER_FIRST_OR_BOTH_PREPARE_MINUTES,
-      examMinutes: MASTER_FIRST_OR_BOTH_EXAM_MINUTES
-    },
-    UNKNOWN: {
       prepareMinutes: MASTER_FIRST_OR_BOTH_PREPARE_MINUTES,
       examMinutes: MASTER_FIRST_OR_BOTH_EXAM_MINUTES
     }

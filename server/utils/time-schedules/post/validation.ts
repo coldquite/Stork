@@ -7,7 +7,7 @@ const studyLanguageSchema = z.enum(['CZECH', 'ENGLISH'])
 const studyProgramTypeSchema = z.enum(['BACHELOR', 'MASTER'])
 const thesisLanguageSchema = z.enum(['CZECH', 'ENGLISH', 'SLOVAK'])
 const pauseTypeSchema = z.enum(['BREAK', 'LUNCH'])
-const repeatTypeSchema = z.enum(['NONE', 'THESIS_DEFENSE', 'ORAL_EXAM', 'BOTH', 'UNKNOWN'])
+const repeatTypeSchema = z.enum(['NONE', 'THESIS_DEFENSE', 'ORAL_EXAM', 'BOTH'])
 const timeScheduleTypeSchema = z.enum(['MANUAL', 'AUTO'])
 
 const trimmedStringSchema = z.string().trim()

@@ -272,8 +272,6 @@ function validateStudentRepeatAndDurationIssues(
   const repeatTypeAsString = String(repeatType)
   if (!isValidRepeatType(repeatTypeAsString)) {
     appendInvalidValueIssue(issues, committeeId, studentId, studentOrder, 'repeatType')
-  } else if (repeatTypeAsString === 'UNKNOWN') {
-    issues.push(createIssue(committeeId, studentId, studentOrder, 'repeatType', 'REPEAT_TYPE_UNKNOWN'))
   }
 
   if (!Number.isFinite(prepareMinutes) || Number(prepareMinutes) < 0) {
