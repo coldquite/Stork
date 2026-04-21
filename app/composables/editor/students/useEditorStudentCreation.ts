@@ -120,7 +120,16 @@ function createInitialStudentDraft(committee: ScheduleDraftCommittee): EditorCre
 /**
  * Create-student dialog state and mutations for the selected committee.
  */
-export function useEditorStudentCreation(selectedCommittee: ComputedRef<ScheduleDraftCommittee | null>) {
+export function useEditorStudentCreation(
+  selectedCommittee: ComputedRef<ScheduleDraftCommittee | null>,
+  focusRowInCommittee?: (
+    committeeId: string,
+    rowId: string,
+    options?: {
+      scrollBlock?: 'center' | 'end'
+    }
+  ) => void
+) {
   const { t } = useI18n()
 
   const isCreateStudentDialogOpen = ref(false)
@@ -508,8 +517,10 @@ export function useEditorStudentCreation(selectedCommittee: ComputedRef<Schedule
       pause: null
     }
 
+    const createdRowId = nextStudentItem.localId
     committee.items.push(nextStudentItem)
     closeCreateStudentDialog()
+    focusRowInCommittee?.(committee.localId, createdRowId, { scrollBlock: 'end' })
   }
 
   return {

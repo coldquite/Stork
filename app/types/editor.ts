@@ -61,7 +61,8 @@ export interface EditorStudentSearchResult {
 export interface EditorStudentHighlightRequest {
   requestId: number
   committeeId: string
-  studentId: string
+  rowId: string
+  scrollBlock?: 'center' | 'end'
 }
 
 export interface CommitteeSidebarDayBookmarkItem {

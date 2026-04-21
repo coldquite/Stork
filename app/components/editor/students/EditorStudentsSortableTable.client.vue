@@ -101,8 +101,8 @@ const localStudents = ref<EditorTableRow[]>([])
 const editingRowId = ref<string | null>(null)
 const openStudyProgramTypeSelectRowId = ref<string | null>(null)
 const openRepeatTypeSelectRowId = ref<string | null>(null)
-const highlightedStudentId = ref<string | null>(null)
-const fadingHighlightedStudentId = ref<string | null>(null)
+const highlightedRowId = ref<string | null>(null)
+const fadingHighlightedRowId = ref<string | null>(null)
 const isDragging = ref(false)
 const isHoverSuppressedAfterDrag = ref(false)
 const activeDragCommitteeId = ref<string | null>(null)
@@ -226,8 +226,8 @@ function clearRowHighlightFadeTimer(): void {
 function clearRowHighlight(): void {
   clearRowHighlightTimer()
   clearRowHighlightFadeTimer()
-  highlightedStudentId.value = null
-  fadingHighlightedStudentId.value = null
+  highlightedRowId.value = null
+  fadingHighlightedRowId.value = null
 }
 
 watch(
@@ -250,36 +250,36 @@ watch(
   { flush: 'post' }
 )
 
-function resolveStudentRowElementById(studentId: string): HTMLTableRowElement | null {
+function resolveRowElementById(rowId: string): HTMLTableRowElement | null {
   const tableBody = tableWrapper.value?.querySelector('tbody')
   if (!(tableBody instanceof HTMLTableSectionElement)) {
     return null
   }
 
-  const studentIndex = localStudents.value.findIndex((student) => student.id === studentId)
-  if (studentIndex < 0) {
+  const rowIndex = localStudents.value.findIndex((row) => row.id === rowId)
+  if (rowIndex < 0) {
     return null
   }
 
   const rowElements = Array.from(tableBody.querySelectorAll(':scope > tr'))
-  const rowElement = rowElements[studentIndex]
+  const rowElement = rowElements[rowIndex]
   return rowElement instanceof HTMLTableRowElement ? rowElement : null
 }
 
-function highlightStudentRow(studentId: string): void {
+function highlightRow(rowId: string): void {
   clearRowHighlightTimer()
   clearRowHighlightFadeTimer()
-  fadingHighlightedStudentId.value = null
-  highlightedStudentId.value = studentId
+  fadingHighlightedRowId.value = null
+  highlightedRowId.value = rowId
 
   clearHighlightedRowTimer = setTimeout(() => {
-    highlightedStudentId.value = null
-    fadingHighlightedStudentId.value = studentId
+    highlightedRowId.value = null
+    fadingHighlightedRowId.value = rowId
     clearHighlightedRowTimer = null
 
     clearHighlightFadeTimer = setTimeout(() => {
-      if (fadingHighlightedStudentId.value === studentId) {
-        fadingHighlightedStudentId.value = null
+      if (fadingHighlightedRowId.value === rowId) {
+        fadingHighlightedRowId.value = null
       }
 
       clearHighlightFadeTimer = null
@@ -287,14 +287,14 @@ function highlightStudentRow(studentId: string): void {
   }, 2100)
 }
 
-function focusStudentById(studentId: string): void {
-  const rowElement = resolveStudentRowElementById(studentId)
+function focusRowById(rowId: string, scrollBlock: 'center' | 'end' = 'center'): void {
+  const rowElement = resolveRowElementById(rowId)
   if (!rowElement) {
     return
   }
 
-  rowElement.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' })
-  highlightStudentRow(studentId)
+  rowElement.scrollIntoView({ behavior: 'smooth', block: scrollBlock, inline: 'nearest' })
+  highlightRow(rowId)
 }
 
 watch(
@@ -305,7 +305,7 @@ watch(
     }
 
     await nextTick()
-    focusStudentById(nextHighlightRequest.studentId)
+    focusRowById(nextHighlightRequest.rowId, nextHighlightRequest.scrollBlock)
   }
 )
 
@@ -464,11 +464,11 @@ const tableMeta = computed(() => ({
         rowClasses.push('editor-students-row-pause')
       }
 
-      if (row.original.id === highlightedStudentId.value) {
+      if (row.original.id === highlightedRowId.value) {
         rowClasses.push('editor-students-row-highlight')
       }
 
-      if (row.original.id === fadingHighlightedStudentId.value) {
+      if (row.original.id === fadingHighlightedRowId.value) {
         rowClasses.push('editor-students-row-highlight-fade')
       }
 

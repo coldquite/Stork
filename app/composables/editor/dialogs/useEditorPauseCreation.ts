@@ -41,7 +41,16 @@ function resolveIntegerFromInput(value: unknown, fallback: number): number {
 /**
  * Create/edit pause dialog state and mutations for the selected committee.
  */
-export function useEditorPauseCreation(selectedCommittee: ComputedRef<ScheduleDraftCommittee | null>) {
+export function useEditorPauseCreation(
+  selectedCommittee: ComputedRef<ScheduleDraftCommittee | null>,
+  focusRowInCommittee?: (
+    committeeId: string,
+    rowId: string,
+    options?: {
+      scrollBlock?: 'center' | 'end'
+    }
+  ) => void
+) {
   const { t } = useI18n()
 
   const isPauseDialogOpen = ref(false)
@@ -196,8 +205,10 @@ export function useEditorPauseCreation(selectedCommittee: ComputedRef<ScheduleDr
         }
       }
 
+      const createdRowId = nextPauseItem.localId
       committee.items.push(nextPauseItem)
       closePauseDialog()
+      focusRowInCommittee?.(committee.localId, createdRowId, { scrollBlock: 'end' })
       return
     }
 

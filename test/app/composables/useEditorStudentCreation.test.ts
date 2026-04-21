@@ -163,7 +163,11 @@ describe('useEditorStudentCreation', () => {
   it('creates new student at the end of committee students sequence', async () => {
     const selectedCommittee = ref<ScheduleDraftCommittee | null>(createCommittee())
     const { useEditorStudentCreation } = await import('~/composables/editor/students/useEditorStudentCreation')
-    const creation = useEditorStudentCreation(computed(() => selectedCommittee.value))
+    const focusRowInCommitteeMock = vi.fn()
+    const creation = useEditorStudentCreation(
+      computed(() => selectedCommittee.value),
+      focusRowInCommitteeMock
+    )
 
     creation.openCreateStudentDialog()
     fillMinimalRequiredFields(creation.updateCreateStudentTextField)
@@ -197,6 +201,10 @@ describe('useEditorStudentCreation', () => {
     expect(createdItem.student.prepareMinutes).toBe(50)
     expect(createdItem.student.examMinutes).toBe(35)
     expect(creation.isCreateStudentDialogOpen.value).toBe(false)
+    expect(focusRowInCommitteeMock).toHaveBeenCalledTimes(1)
+    expect(focusRowInCommitteeMock).toHaveBeenCalledWith('committee-1', createdItem.localId, {
+      scrollBlock: 'end'
+    })
   })
 
   it('overwrites minutes when repeatType changes but keeps values for the same repeatType', async () => {

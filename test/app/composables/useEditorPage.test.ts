@@ -971,7 +971,7 @@ describe('useEditorPage', () => {
     expect(page.studentSearch.highlightRequest.value).toEqual({
       requestId: 1,
       committeeId: 'committee-late',
-      studentId: 'student-a'
+      rowId: 'student-a'
     })
   })
 

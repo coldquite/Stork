@@ -239,7 +239,7 @@ describe('useEditorStudentSearch', () => {
     expect(search.highlightRequest.value).toEqual({
       requestId: 1,
       committeeId: 'committee-b',
-      studentId: 'student-b1'
+      rowId: 'student-b1'
     })
     expect(search.isStudentSearchDialogOpen.value).toBe(false)
     expect(search.studentSearchQuery.value).toBe('')
@@ -257,7 +257,7 @@ describe('useEditorStudentSearch', () => {
     expect(search.highlightRequest.value).toEqual({
       requestId: 1,
       committeeId: 'committee-b',
-      studentId: 'student-b1'
+      rowId: 'student-b1'
     })
   })
 })

@@ -63,12 +63,12 @@ export function useEditorPage() {
   const studentSearch = useEditorStudentSearch(committeeList.selectedCommitteeId)
   const committeeItemsActions = useEditorCommitteeItemsActions(
     committeeList.selectedCommittee,
-    studentSearch.focusStudentInCommittee
+    studentSearch.focusRowInCommittee
   )
   const committeeFields = useEditorCommitteeFields(committeeList.selectedCommittee)
   const invigilators = useEditorInvigilators(committeeList.selectedCommittee)
-  const studentCreation = useEditorStudentCreation(committeeList.selectedCommittee)
-  const pauseCreation = useEditorPauseCreation(committeeList.selectedCommittee)
+  const studentCreation = useEditorStudentCreation(committeeList.selectedCommittee, studentSearch.focusRowInCommittee)
+  const pauseCreation = useEditorPauseCreation(committeeList.selectedCommittee, studentSearch.focusRowInCommittee)
   const scheduleDialogs = useEditorScheduleDialogs()
   const draftCommittees = computed(() => scheduleDraftStore.draft?.committees ?? [])
   const debouncedDraftCommittees = shallowRef<ScheduleDraftCommittee[]>(draftCommittees.value)

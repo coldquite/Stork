@@ -120,7 +120,11 @@ describe('useEditorPauseCreation', () => {
   it('creates pause at end, enforces validation rules and persists empty label when custom name is disabled', async () => {
     const selectedCommittee = ref<ScheduleDraftCommittee | null>(createCommittee())
     const { useEditorPauseCreation } = await import('~/composables/editor/dialogs/useEditorPauseCreation')
-    const pauseCreation = useEditorPauseCreation(computed(() => selectedCommittee.value))
+    const focusRowInCommitteeMock = vi.fn()
+    const pauseCreation = useEditorPauseCreation(
+      computed(() => selectedCommittee.value),
+      focusRowInCommitteeMock
+    )
 
     pauseCreation.openCreatePauseDialog()
     pauseCreation.updatePauseDurationMinutes(0)
@@ -160,6 +164,10 @@ describe('useEditorPauseCreation', () => {
     expect(createdItem.pause.pauseType).toBe('LUNCH')
     expect(createdItem.pause.durationMinutes).toBe(60)
     expect(pauseCreation.isPauseDialogOpen.value).toBe(false)
+    expect(focusRowInCommitteeMock).toHaveBeenCalledTimes(1)
+    expect(focusRowInCommitteeMock).toHaveBeenCalledWith('committee-1', createdItem.localId, {
+      scrollBlock: 'end'
+    })
   })
 
   it('opens edit mode from existing pause and clears label when custom name is disabled', async () => {
