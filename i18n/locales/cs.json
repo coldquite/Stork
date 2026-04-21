@@ -76,7 +76,7 @@
           "filesAutoMappingHint": "IS ČÁP automaticky rozpozná typ nahraného souboru a přiřadí jej do správného pole.",
           "filesSelectionHint": "Všechny potřebné soubory lze nahrát najednou přes líbovolné z tlačítek „Vybrat soubory“, nebo je můžete nahrát i jednotlivě.",
           "clearFilesAction": "Vyčistit soubory",
-          "submitAction": "Nahrát soubory",
+          "submitAction": "Zpracovat soubory",
           "validation": {
             "validating": "Kontroluji soubor...",
             "invalidExtension": "Povolen je pouze soubor s příponou .csv.",
