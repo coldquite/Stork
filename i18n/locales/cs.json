@@ -596,6 +596,7 @@
           "studentStartBeforeAllowedTime": "Čas začátku studenta před komisí je nižší než {minTime}.",
           "studentEndAfterAllowedTime": "Čas konce studenta před komisí je vyšší než {maxTime}.",
           "consecutiveStudentsWithoutPause": "V komisi je {count} nebo více studentů po sobě bez přestávky.",
+          "roomTimeOverlap": "V místnosti {room} se komise časově překrývá s komisí {conflicts}.",
           "invalidValue": "{field}: neplatná hodnota.",
           "minInvigilators": "Počet členů dozoru musí být alespoň 1.",
           "invigilatorNameRequired": "Dozor {index}: jméno je povinné.",

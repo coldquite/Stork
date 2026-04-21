@@ -274,6 +274,133 @@ describe('committee-validation', () => {
     })
   })
 
+  it('collects room-time overlap issues for committees in the same room and date', () => {
+    const committeeA = createCommittee({
+      localId: 'committee-overlap-a',
+      room: ' TH:A-1435 ',
+      date: createIsoDateFromToday(20),
+      startMinute: 540,
+      items: [createStudentItem('student-a', 1)]
+    })
+    const committeeB = createCommittee({
+      localId: 'committee-overlap-b',
+      room: 'th:a-1435',
+      date: createIsoDateFromToday(20),
+      startMinute: 560,
+      items: [createStudentItem('student-b', 1)]
+    })
+
+    const issues = collectCommitteeValidationIssues([committeeA, committeeB])
+    const overlapIssues = issues.filter((issue) => issue.code === 'ROOM_TIME_OVERLAP')
+
+    expect(overlapIssues).toHaveLength(2)
+    expect(overlapIssues).toContainEqual(
+      expect.objectContaining({
+        committeeId: 'committee-overlap-a',
+        section: 'BASICS',
+        fieldKey: 'timeline',
+        code: 'ROOM_TIME_OVERLAP',
+        overlapRoom: 'TH:A-1435',
+        overlapConflicts: [
+          {
+            committeeId: 'committee-overlap-b',
+            overlapStartMinute: 560,
+            overlapEndMinute: 570
+          }
+        ]
+      })
+    )
+    expect(overlapIssues).toContainEqual(
+      expect.objectContaining({
+        committeeId: 'committee-overlap-b',
+        section: 'BASICS',
+        fieldKey: 'timeline',
+        code: 'ROOM_TIME_OVERLAP',
+        overlapRoom: 'th:a-1435',
+        overlapConflicts: [
+          {
+            committeeId: 'committee-overlap-a',
+            overlapStartMinute: 560,
+            overlapEndMinute: 570
+          }
+        ]
+      })
+    )
+  })
+
+  it('does not collect room-time overlap issue when one committee ends exactly when another starts', () => {
+    const committeeA = createCommittee({
+      localId: 'committee-overlap-touching-a',
+      date: createIsoDateFromToday(21),
+      startMinute: 540,
+      items: [createStudentItem('student-a', 1)]
+    })
+    const committeeB = createCommittee({
+      localId: 'committee-overlap-touching-b',
+      date: createIsoDateFromToday(21),
+      startMinute: 570,
+      items: [createStudentItem('student-b', 1)]
+    })
+
+    const issues = collectCommitteeValidationIssues([committeeA, committeeB])
+    const overlapIssues = issues.filter((issue) => issue.code === 'ROOM_TIME_OVERLAP')
+
+    expect(overlapIssues).toHaveLength(0)
+  })
+
+  it('collects one room-time overlap issue per conflict pair and committee', () => {
+    const committeeA = createCommittee({
+      localId: 'committee-overlap-main',
+      date: createIsoDateFromToday(22),
+      startMinute: 540,
+      items: [createStudentItem('student-a', 1), createPauseItem('pause-a', 2, 40), createStudentItem('student-a-2', 3)]
+    })
+    const committeeB = createCommittee({
+      localId: 'committee-overlap-left',
+      date: createIsoDateFromToday(22),
+      startMinute: 560,
+      items: [createStudentItem('student-b', 1)]
+    })
+    const committeeC = createCommittee({
+      localId: 'committee-overlap-right',
+      date: createIsoDateFromToday(22),
+      startMinute: 620,
+      items: [createStudentItem('student-c', 1)]
+    })
+
+    const issues = collectCommitteeValidationIssues([committeeA, committeeB, committeeC])
+    const overlapIssues = issues.filter((issue) => issue.code === 'ROOM_TIME_OVERLAP')
+
+    expect(overlapIssues).toHaveLength(4)
+    expect(overlapIssues.map((issue) => issue.issueId).sort()).toEqual([
+      'committee-overlap-left:timeline:ROOM_TIME_OVERLAP:committee-overlap-main-560-590',
+      'committee-overlap-main:timeline:ROOM_TIME_OVERLAP:committee-overlap-left-560-590',
+      'committee-overlap-main:timeline:ROOM_TIME_OVERLAP:committee-overlap-right-620-640',
+      'committee-overlap-right:timeline:ROOM_TIME_OVERLAP:committee-overlap-main-620-640'
+    ])
+    expect(
+      overlapIssues
+        .filter((issue) => issue.committeeId === 'committee-overlap-main')
+        .sort((left, right) => left.issueId.localeCompare(right.issueId))
+        .map((issue) => issue.overlapConflicts)
+    ).toEqual([
+      [
+        {
+          committeeId: 'committee-overlap-left',
+          overlapStartMinute: 560,
+          overlapEndMinute: 590
+        }
+      ],
+      [
+        {
+          committeeId: 'committee-overlap-right',
+          overlapStartMinute: 620,
+          overlapEndMinute: 640
+        }
+      ]
+    ])
+  })
+
   it('collects issue when 6 students are consecutive without pause', () => {
     const committee = createCommittee({
       localId: 'committee-consecutive-students-without-pause',

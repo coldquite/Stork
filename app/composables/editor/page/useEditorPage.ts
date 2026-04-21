@@ -146,12 +146,12 @@ export function useEditorPage() {
     })
   })
   const selectedCommitteeValidationIssues = computed<EditorCommitteeValidationIssue[]>(() => {
-    const selectedCommittee = committeeList.selectedCommittee.value
-    if (!selectedCommittee) {
+    const selectedCommitteeId = committeeList.selectedCommitteeId.value
+    if (selectedCommitteeId.length < 1) {
       return []
     }
 
-    return collectCommitteeValidationIssues([selectedCommittee])
+    return committeeValidationIssuesByCommitteeId.value[selectedCommitteeId] ?? []
   })
   const selectedCommitteeStudentValidationIssues = computed<EditorStudentValidationIssue[]>(() => {
     const selectedCommittee = committeeList.selectedCommittee.value
@@ -196,6 +196,9 @@ export function useEditorPage() {
 
     return buildStudentInfoById(selectedCommittee)
   })
+  const committeeLabelById = computed(() => {
+    return new Map(committeeList.committees.value.map((entry) => [entry.committee.localId, entry.label]))
+  })
 
   function resolveValidationSectionLabel(section: EditorCommitteeValidationSection): string {
     switch (section) {
@@ -214,6 +217,27 @@ export function useEditorPage() {
 
   function resolveValidationFieldLabel(fieldKey: EditorCommitteeValidationIssue['fieldKey']): string {
     return t(`editor.committee.validation.fields.${fieldKey}`)
+  }
+
+  function resolveCommitteeLabelById(committeeId: string): string {
+    const committeeLabel = committeeLabelById.value.get(committeeId)?.trim() ?? ''
+    if (committeeLabel.length > 0) {
+      return committeeLabel
+    }
+
+    return t('editor.untitled')
+  }
+
+  function resolveRoomTimeOverlapConflictsLabel(issue: EditorCommitteeValidationIssue): string {
+    const overlapConflicts = issue.overlapConflicts ?? []
+    return overlapConflicts
+      .map((conflict) => {
+        const committeeLabel = resolveCommitteeLabelById(conflict.committeeId)
+        const overlapStartLabel = formatEditorMinuteLabel(conflict.overlapStartMinute)
+        const overlapEndLabel = formatEditorMinuteLabel(conflict.overlapEndMinute)
+        return `${committeeLabel} (${overlapStartLabel}–${overlapEndLabel})`
+      })
+      .join(', ')
   }
 
   function resolveCommitteeValidationMessage(issue: EditorCommitteeValidationIssue): string {
@@ -250,6 +274,19 @@ export function useEditorPage() {
         return t('editor.committee.validation.messages.consecutiveStudentsWithoutPause', {
           count: EDITOR_CONSECUTIVE_STUDENTS_WITHOUT_PAUSE_ERROR_THRESHOLD
         })
+      case 'ROOM_TIME_OVERLAP': {
+        const overlapConflictsLabel = resolveRoomTimeOverlapConflictsLabel(issue)
+        if (overlapConflictsLabel.length < 1) {
+          return t('editor.committee.validation.messages.invalidValue', {
+            field: resolveValidationFieldLabel(issue.fieldKey)
+          })
+        }
+
+        return t('editor.committee.validation.messages.roomTimeOverlap', {
+          room: issue.overlapRoom?.trim() || '—',
+          conflicts: overlapConflictsLabel
+        })
+      }
       case 'UNRESOLVED_DEPARTMENT':
         return t('editor.committee.validation.messages.unresolvedDepartment')
       case 'MIN_INVIGILATORS':

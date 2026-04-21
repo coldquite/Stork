@@ -821,6 +821,89 @@ describe('useEditorPage', () => {
     ])
   })
 
+  it('shows room-time overlap validation on selected committee from aggregated validation state', async () => {
+    scheduleDraftStoreMock.draft = {
+      name: 'Plán překryvů',
+      type: 'MANUAL',
+      thesisTitleDisplayMode: 'AUTO',
+      committees: [
+        createCommittee({
+          localId: 'committee-overlap-a',
+          name: 'Komise A',
+          date: '2026-06-12T00:00:00.000Z',
+          startMinute: 540,
+          preparationRoom: 'TH:A-1510',
+          items: [
+            createStudentItem('student-overlap-a-1', 1, 'Anna'),
+            createStudentItem('student-overlap-a-2', 2, 'Adam')
+          ]
+        }),
+        createCommittee({
+          localId: 'committee-overlap-b',
+          name: 'Komise B',
+          date: '2026-06-12T00:00:00.000Z',
+          startMinute: 555,
+          preparationRoom: 'TH:A-1510',
+          items: [createStudentItem('student-overlap-b', 1, 'Boris')]
+        }),
+        createCommittee({
+          localId: 'committee-overlap-c',
+          name: 'Komise C',
+          date: '2026-06-12T00:00:00.000Z',
+          startMinute: 600,
+          preparationRoom: 'TH:A-1510',
+          items: [createStudentItem('student-overlap-c', 1, 'Cyril')]
+        })
+      ]
+    }
+
+    const { useEditorPage } = await import('~/composables/editor/page/useEditorPage')
+    const page = useEditorPage()
+
+    expect(page.committeeValidation.countByCommitteeId.value).toEqual({
+      'committee-overlap-a': 2,
+      'committee-overlap-b': 1,
+      'committee-overlap-c': 1
+    })
+    expect(page.committeeValidation.selectedCommitteeCount.value).toBe(2)
+    expect(page.committeeValidation.selectedCommitteeSections.value).toEqual([
+      {
+        section: 'BASICS',
+        label: 'editor.committee.validation.sections.basics',
+        issues: [
+          {
+            issueId: 'committee-overlap-a:timeline:ROOM_TIME_OVERLAP:committee-overlap-b-555-585',
+            fieldKey: 'timeline',
+            message: 'editor.committee.validation.messages.roomTimeOverlap'
+          },
+          {
+            issueId: 'committee-overlap-a:timeline:ROOM_TIME_OVERLAP:committee-overlap-c-600-610',
+            fieldKey: 'timeline',
+            message: 'editor.committee.validation.messages.roomTimeOverlap'
+          }
+        ]
+      }
+    ])
+
+    page.committeeList.selectedCommitteeId.value = 'committee-overlap-b'
+    await nextTick()
+
+    expect(page.committeeValidation.selectedCommitteeCount.value).toBe(1)
+    expect(page.committeeValidation.selectedCommitteeSections.value).toEqual([
+      {
+        section: 'BASICS',
+        label: 'editor.committee.validation.sections.basics',
+        issues: [
+          {
+            issueId: 'committee-overlap-b:timeline:ROOM_TIME_OVERLAP:committee-overlap-a-555-585',
+            fieldKey: 'timeline',
+            message: 'editor.committee.validation.messages.roomTimeOverlap'
+          }
+        ]
+      }
+    ])
+  })
+
   it('combines committee and student validation counts and exposes grouped student issues for selected committee', async () => {
     const committeeEarly = scheduleDraftStoreMock.draft?.committees.find((entry) => entry.localId === 'committee-early')
     const studentA = committeeEarly?.items.find((item) => item.localId === 'student-a')

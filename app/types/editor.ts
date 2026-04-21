@@ -109,6 +109,12 @@ export type EditorCommitteeValidationFieldKey =
   | 'invigilators'
   | 'invigilatorName'
 
+export interface EditorCommitteeValidationRoomTimeOverlapConflict {
+  committeeId: string
+  overlapStartMinute: number
+  overlapEndMinute: number
+}
+
 export type EditorCommitteeValidationIssueCode =
   | 'REQUIRED'
   | 'INVALID_DATE'
@@ -117,6 +123,7 @@ export type EditorCommitteeValidationIssueCode =
   | 'STUDENT_START_BEFORE_ALLOWED_TIME'
   | 'STUDENT_END_AFTER_ALLOWED_TIME'
   | 'CONSECUTIVE_STUDENTS_WITHOUT_PAUSE'
+  | 'ROOM_TIME_OVERLAP'
   | 'UNRESOLVED_DEPARTMENT'
   | 'MIN_INVIGILATORS'
   | 'INVALID_VALUE'
@@ -130,6 +137,8 @@ export interface EditorCommitteeValidationIssue {
   severity: EditorCommitteeValidationSeverity
   invigilatorIndex?: number
   invigilatorLocalId?: string
+  overlapRoom?: string
+  overlapConflicts?: EditorCommitteeValidationRoomTimeOverlapConflict[]
 }
 
 export interface EditorCommitteeValidationSectionGroup {
