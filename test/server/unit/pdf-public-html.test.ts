@@ -39,7 +39,7 @@ function createSection(overrides: Partial<PdfPublicSectionDto> = {}): PdfPublicS
     membersLines: ['Predseda', 'Mistopredseda', 'Clen 1', 'Clen 2', 'Clen 3'],
     tablePreparationStartHeader: 'Zacatek pripravy',
     tableCommitteeExamHeader: 'Zkouska pred komisi',
-    tableStudentSpecializationHeader: 'Student\\nSpecializace',
+    tableStudentSpecializationHeader: 'Student\\nStudijní plán',
     tableThesisTitleHeader: 'Tema zaverecne prace',
     tableSupervisorReviewerHeader: 'Vedouci\\nOponent',
     rowsEmptyFallback: '—',

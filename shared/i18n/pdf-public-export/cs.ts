@@ -28,7 +28,7 @@ export const PDF_PUBLIC_EXPORT_CS_DICTIONARY: PdfPublicExportDictionary = {
   table: {
     preparationStart: 'Začátek přípravy',
     committeeExam: 'Zkouška před komisí',
-    studentSpecialization: 'Student\nSpecializace',
+    studentSpecialization: 'Student\nStudijní plán',
     thesisTitle: 'Téma závěrečné práce',
     supervisorReviewer: 'Vedoucí\nOponent',
     emptyRowsFallback: '—'
