@@ -17,6 +17,7 @@ import { CZECH_TIME_ZONE } from '~/utils/export/file-name'
 import {
   buildPdfExportFileName,
   collectUniquePdfExportValues,
+  normalizePdfExportText,
   normalizePdfExportTextOrFallback,
   PDF_EXPORT_EMPTY_VALUE,
   resolvePdfStudentFullName,
@@ -101,6 +102,17 @@ function collectUniqueInvigilatorNames(committees: ScheduleDraftCommittee[]): st
   )
 }
 
+function resolveStudentRepeatLabel(
+  repeatType: RepeatTypeDto,
+  repeatTypeLabelResolver: (repeatType: RepeatTypeDto) => string
+): string {
+  if (repeatType === 'NONE') {
+    return ''
+  }
+
+  return normalizePdfExportText(repeatTypeLabelResolver(repeatType))
+}
+
 function buildStudentAccumulator(
   timelineEntry: Extract<CommitteeTimelineEntry, { kind: 'STUDENT' }>,
   committeeSortIndex: number,
@@ -127,7 +139,7 @@ function buildStudentAccumulator(
       titlesBefore: student.titlesBefore,
       titlesAfter: student.titlesAfter
     }),
-    repeatLabel: normalizePdfExportTextOrFallback(repeatTypeLabelResolver(student.repeatType)),
+    repeatLabel: resolveStudentRepeatLabel(student.repeatType, repeatTypeLabelResolver),
     committeeLabel,
     roomLabel,
     secretaryLabel,

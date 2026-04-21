@@ -204,6 +204,7 @@ describe('pdf-invigilators-export', () => {
     expect(sections[0]?.students[0]?.roomLabel).toBe('TH:A-1600')
     expect(sections[0]?.students[0]?.secretaryLabel).toBe('—')
     expect(sections[0]?.students[1]?.roomLabel).toBe('TH:A-1500')
+    expect(sections[0]?.students[1]?.repeatLabel).toBe('')
     expect(sections[0]?.students[1]?.studentName).toBe('Ing. Adam Procházka, Ph.D.')
     expect(sections[0]?.students[1]?.secretaryLabel).toBe('doc. Ing. Karel Novotný')
     expect(sections[0]?.students[2]?.repeatLabel).toBe('Opakuje obhajobu')

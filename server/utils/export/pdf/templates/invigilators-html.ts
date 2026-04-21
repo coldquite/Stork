@@ -42,13 +42,16 @@ function renderStudentsTableRows(section: PostPdfInvigilatorsExportRequestDto['s
       }
 
       const rowClass = groupIndex % 2 === 1 ? ' class="time-group-tinted"' : ''
+      const repeatLabel = student.repeatLabel.trim()
+      const repeatLabelHtml =
+        repeatLabel.length > 0 ? `<span class="student-repeat">${escapeHtml(repeatLabel)}</span>` : ''
 
       return `<tr${rowClass}>
         <td>${escapeHtml(student.prepareStartTime)}</td>
         <td>${escapeHtml(student.committeeExamRangeTime)}</td>
         <td>
           <span class="student-name">${escapeHtml(student.studentName)}</span>
-          <span class="student-repeat">${escapeHtml(student.repeatLabel)}</span>
+          ${repeatLabelHtml}
         </td>
         <td>
           <span class="committee-cell-name">${escapeHtml(student.committeeLabel)}</span>

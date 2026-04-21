@@ -17,7 +17,7 @@ const studentRowSchema = z
     prepareStartTime: nonEmptyTrimmedStringSchema,
     committeeExamRangeTime: nonEmptyTrimmedStringSchema,
     studentName: nonEmptyTrimmedStringSchema,
-    repeatLabel: nonEmptyTrimmedStringSchema,
+    repeatLabel: z.string().trim(),
     committeeLabel: nonEmptyTrimmedStringSchema,
     roomLabel: nonEmptyTrimmedStringSchema,
     secretaryLabel: nonEmptyTrimmedStringSchema
