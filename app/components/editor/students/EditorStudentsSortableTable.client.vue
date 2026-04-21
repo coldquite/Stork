@@ -96,7 +96,10 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const runtimeConfig = useRuntimeConfig()
+const topHorizontalScroll = ref<HTMLElement | null>(null)
+const topHorizontalScrollContent = ref<HTMLElement | null>(null)
 const tableWrapper = ref<HTMLElement | null>(null)
+const bottomHorizontalScroll = ref<HTMLElement | null>(null)
 const localStudents = ref<EditorTableRow[]>([])
 const editingRowId = ref<string | null>(null)
 const openStudyProgramTypeSelectRowId = ref<string | null>(null)
@@ -104,10 +107,13 @@ const openRepeatTypeSelectRowId = ref<string | null>(null)
 const highlightedRowId = ref<string | null>(null)
 const fadingHighlightedRowId = ref<string | null>(null)
 const isDragging = ref(false)
+const isTopHorizontalScrollVisible = ref(false)
 const isHoverSuppressedAfterDrag = ref(false)
 const activeDragCommitteeId = ref<string | null>(null)
 const hasPendingInlineEdits = ref(false)
 const useBlurCommitPipeline = computed(() => runtimeConfig.public.editorPerfPipelineV2 !== false)
+let horizontalScrollResizeObserver: ResizeObserver | null = null
+let isHorizontalScrollSyncing = false
 let clearHighlightedRowTimer: ReturnType<typeof setTimeout> | null = null
 let clearHighlightFadeTimer: ReturnType<typeof setTimeout> | null = null
 const inlineEditInputClass = 'w-full [&_input]:text-sm'
@@ -899,561 +905,719 @@ function getEditorRowId(row: EditorTableRow): string {
   return row.id
 }
 
+function resolveBottomHorizontalScrollContainer(): HTMLElement | null {
+  const wrapperElement = tableWrapper.value
+  if (!wrapperElement) {
+    return null
+  }
+
+  const tableRootElement = wrapperElement.querySelector(':scope > [data-slot="root"]')
+  const candidates = [wrapperElement, tableRootElement].filter(
+    (candidate): candidate is HTMLElement => candidate instanceof HTMLElement
+  )
+
+  if (candidates.length < 1) {
+    return null
+  }
+
+  let resolvedCandidate = candidates[0] ?? null
+  let maxHorizontalOverflow = resolvedCandidate ? resolvedCandidate.scrollWidth - resolvedCandidate.clientWidth : -1
+
+  for (const candidate of candidates) {
+    const overflow = candidate.scrollWidth - candidate.clientWidth
+    if (overflow > maxHorizontalOverflow) {
+      maxHorizontalOverflow = overflow
+      resolvedCandidate = candidate
+    }
+  }
+
+  return resolvedCandidate
+}
+
+function updateTopHorizontalScrollMetrics(): void {
+  const topScrollElement = topHorizontalScroll.value
+  const topScrollContentElement = topHorizontalScrollContent.value
+  const bottomScrollElement = bottomHorizontalScroll.value
+  if (!topScrollElement || !topScrollContentElement || !bottomScrollElement) {
+    isTopHorizontalScrollVisible.value = false
+    return
+  }
+
+  const hasHorizontalOverflow = bottomScrollElement.scrollWidth > bottomScrollElement.clientWidth
+  isTopHorizontalScrollVisible.value = hasHorizontalOverflow
+  topScrollContentElement.style.width = `${bottomScrollElement.scrollWidth}px`
+
+  if (!isHorizontalScrollSyncing && Math.abs(topScrollElement.scrollLeft - bottomScrollElement.scrollLeft) > 0.5) {
+    isHorizontalScrollSyncing = true
+    topScrollElement.scrollLeft = bottomScrollElement.scrollLeft
+    isHorizontalScrollSyncing = false
+  }
+}
+
+function syncHorizontalScroll(sourceElement: HTMLElement, targetElement: HTMLElement): void {
+  if (isHorizontalScrollSyncing) {
+    return
+  }
+
+  isHorizontalScrollSyncing = true
+  targetElement.scrollLeft = sourceElement.scrollLeft
+  isHorizontalScrollSyncing = false
+}
+
+function handleTopHorizontalScroll(): void {
+  const topScrollElement = topHorizontalScroll.value
+  const bottomScrollElement = bottomHorizontalScroll.value
+  if (!topScrollElement || !bottomScrollElement) {
+    return
+  }
+
+  syncHorizontalScroll(topScrollElement, bottomScrollElement)
+}
+
+function handleBottomHorizontalScroll(): void {
+  const topScrollElement = topHorizontalScroll.value
+  const bottomScrollElement = bottomHorizontalScroll.value
+  if (!topScrollElement || !bottomScrollElement) {
+    return
+  }
+
+  syncHorizontalScroll(bottomScrollElement, topScrollElement)
+}
+
+function stopHorizontalScrollSync(): void {
+  const topScrollElement = topHorizontalScroll.value
+  const bottomScrollElement = bottomHorizontalScroll.value
+
+  if (topScrollElement) {
+    topScrollElement.removeEventListener('scroll', handleTopHorizontalScroll)
+  }
+
+  if (bottomScrollElement) {
+    bottomScrollElement.removeEventListener('scroll', handleBottomHorizontalScroll)
+  }
+
+  if (horizontalScrollResizeObserver) {
+    horizontalScrollResizeObserver.disconnect()
+    horizontalScrollResizeObserver = null
+  }
+
+  bottomHorizontalScroll.value = null
+}
+
+function setupHorizontalScrollSync(): void {
+  stopHorizontalScrollSync()
+
+  const topScrollElement = topHorizontalScroll.value
+  const bottomScrollElement = resolveBottomHorizontalScrollContainer()
+  if (!topScrollElement || !bottomScrollElement) {
+    isTopHorizontalScrollVisible.value = false
+    return
+  }
+
+  bottomHorizontalScroll.value = bottomScrollElement
+  topScrollElement.addEventListener('scroll', handleTopHorizontalScroll, { passive: true })
+  bottomScrollElement.addEventListener('scroll', handleBottomHorizontalScroll, { passive: true })
+
+  horizontalScrollResizeObserver = new ResizeObserver(() => {
+    updateTopHorizontalScrollMetrics()
+  })
+  horizontalScrollResizeObserver.observe(bottomScrollElement)
+
+  const tableElement = bottomScrollElement.querySelector('table')
+  if (tableElement instanceof HTMLTableElement) {
+    horizontalScrollResizeObserver.observe(tableElement)
+  }
+
+  updateTopHorizontalScrollMetrics()
+}
+
+watch(
+  tableRenderKey,
+  async () => {
+    await nextTick()
+    setupHorizontalScrollSync()
+  },
+  { flush: 'post' }
+)
+
 onMounted(() => {
   window.addEventListener('click', handleDocumentClick)
+  void nextTick(() => {
+    setupHorizontalScrollSync()
+  })
 })
 
 onBeforeUnmount(() => {
   commitPendingInlineEdits()
   clearRowHighlight()
+  stopHorizontalScrollSync()
   stopSuppressingHoverAfterDrag()
   window.removeEventListener('click', handleDocumentClick)
 })
 </script>
 
 <template>
-  <div ref="tableWrapper" class="relative overflow-x-auto" @click="handleTableClick">
-    <UTable
-      :key="tableRenderKey"
-      :data="localStudents"
-      :columns="props.columns"
-      :meta="tableMeta"
-      :get-row-id="getEditorRowId"
-      :ui="{
-        base: 'min-w-full table-fixed',
-        tbody: tbodyUiClass,
-        separator: 'bg-default'
-      }"
-    >
-      <template #drag-cell>
-        <UButton
-          icon="i-lucide-grip-vertical"
-          variant="ghost"
-          color="neutral"
-          size="xs"
-          class="drag-handle text-muted cursor-grab active:cursor-grabbing"
-        />
-      </template>
-
-      <template #order-cell="{ row }">
-        <div class="relative flex h-full min-h-10 w-full items-center justify-center">
-          <span class="text-muted text-md font-semibold transition-opacity duration-150 group-hover:opacity-0">
-            {{ isStudentRow(row.original) ? row.original.studentOrder : '' }}
-          </span>
-
-          <div
-            class="pointer-events-none absolute inset-0 flex items-center justify-center gap-1 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100"
-          >
-            <UTooltip v-if="isStudentRow(row.original)" :text="t('editor.table.moveStudentAriaLabel')">
-              <UButton
-                color="primary"
-                variant="ghost"
-                size="sm"
-                icon="i-lucide-git-pull-request-arrow"
-                :class="orderCellActionButtonClass"
-                :aria-label="t('editor.table.moveStudentAriaLabel')"
-                :ui="orderCellMoveActionButtonUi"
-                @click.stop="requestMoveStudent(row.original.id)"
-              />
-            </UTooltip>
-
-            <UTooltip :text="t('editor.table.deleteItemAriaLabel')">
-              <UButton
-                color="error"
-                variant="ghost"
-                size="sm"
-                icon="i-lucide-trash-2"
-                :class="orderCellActionButtonClass"
-                :aria-label="t('editor.table.deleteItemAriaLabel')"
-                :ui="orderCellDeleteActionButtonUi"
-                @click.stop="requestDeleteItem(row.original.id)"
-              />
-            </UTooltip>
-          </div>
-        </div>
-      </template>
-
-      <template #prepareTime-cell="{ row }">
-        <div v-if="isPauseRow(row.original)" class="flex flex-wrap items-center gap-x-6 gap-y-1 py-1 text-base">
-          <span class="inline-flex items-center gap-2 font-medium">
-            <UIcon :name="resolvePauseTypeIcon(row.original.pauseType)" class="size-4" />
-            {{ resolvePauseDisplayLabel(row.original) }}
-          </span>
-          <span class="whitespace-nowrap">
-            <span class="font-medium">{{ t('editor.pause.row.duration') }}:</span>
-            {{ row.original.durationMinutes }} min
-          </span>
-          <span class="whitespace-nowrap">
-            <span class="font-medium">{{ t('editor.pause.row.range') }}:</span> {{ row.original.rangeLabel }}
-          </span>
-        </div>
-        <span v-else class="text-sm whitespace-nowrap" @click="activateRow(row.original.id)">
-          {{ row.original.prepareTime }}
-        </span>
-      </template>
-
-      <template #examTime-cell="{ row }">
-        <span v-if="isStudentRow(row.original)" class="text-sm whitespace-nowrap" @click="activateRow(row.original.id)">
-          {{ row.original.examTime }}
-        </span>
-      </template>
-
-      <template #titlesBefore-cell="{ row }">
-        <EditorStudentTableInlineCell
-          v-if="isStudentRow(row.original)"
-          :is-editing="isEditingRow(row.original.id)"
-          :model-value="row.original.titlesBefore"
-          cell-wrapper-class="min-w-[3rem] cursor-pointer"
-          :input-class="inlineEditInputClass"
-          mode="text"
-          @activate="activateRow(row.original.id)"
-          @update:model-value="updateTextField(row.original.id, 'titlesBefore', $event)"
-          @commit="commitPendingInlineEdits"
-        />
-      </template>
-
-      <template #lastName-cell="{ row }">
-        <EditorStudentTableInlineCell
-          v-if="isStudentRow(row.original)"
-          :is-editing="isEditingRow(row.original.id)"
-          :model-value="row.original.lastName"
-          cell-wrapper-class="min-w-[5rem] cursor-pointer"
-          :input-class="inlineEditInputClass"
-          :invalid="isStudentFieldInvalid(row.original, 'lastName')"
-          mode="text"
-          @activate="activateRow(row.original.id)"
-          @update:model-value="updateTextField(row.original.id, 'lastName', $event)"
-          @commit="commitPendingInlineEdits"
-        />
-      </template>
-
-      <template #firstName-cell="{ row }">
-        <EditorStudentTableInlineCell
-          v-if="isStudentRow(row.original)"
-          :is-editing="isEditingRow(row.original.id)"
-          :model-value="row.original.firstName"
-          cell-wrapper-class="min-w-[5rem] cursor-pointer"
-          :input-class="inlineEditInputClass"
-          :invalid="isStudentFieldInvalid(row.original, 'firstName')"
-          mode="text"
-          @activate="activateRow(row.original.id)"
-          @update:model-value="updateTextField(row.original.id, 'firstName', $event)"
-          @commit="commitPendingInlineEdits"
-        />
-      </template>
-
-      <template #email-cell="{ row }">
-        <EditorStudentTableInlineCell
-          v-if="isStudentRow(row.original)"
-          :is-editing="isEditingRow(row.original.id)"
-          :model-value="row.original.email"
-          cell-wrapper-class="min-w-[10rem] cursor-pointer"
-          :input-class="inlineEditInputClass"
-          mode="text"
-          @activate="activateRow(row.original.id)"
-          @update:model-value="updateTextField(row.original.id, 'email', $event)"
-          @commit="commitPendingInlineEdits"
-        />
-      </template>
-
-      <template #titlesAfter-cell="{ row }">
-        <EditorStudentTableInlineCell
-          v-if="isStudentRow(row.original)"
-          :is-editing="isEditingRow(row.original.id)"
-          :model-value="row.original.titlesAfter"
-          cell-wrapper-class="min-w-[4rem] cursor-pointer"
-          :input-class="inlineEditInputClass"
-          mode="text"
-          @activate="activateRow(row.original.id)"
-          @update:model-value="updateTextField(row.original.id, 'titlesAfter', $event)"
-          @commit="commitPendingInlineEdits"
-        />
-      </template>
-
-      <template #studyLanguage-cell="{ row }">
-        <EditorStudentTableInlineCell
-          v-if="isStudentRow(row.original)"
-          :is-editing="isEditingRow(row.original.id)"
-          :model-value="resolveStudyLanguageLabel(row.original.studyLanguage)"
-          cell-wrapper-class="min-w-[8.5rem] cursor-pointer"
-          :input-class="resolveSelectClass(row.original, 'studyLanguage')"
-          :display-frame-class="inlineReadonlySelectFrameClass"
-          mode="text"
-          @activate="activateRow(row.original.id)"
-        >
-          <template #edit>
-            <USelectMenu
-              :model-value="row.original.studyLanguage"
-              :items="studyLanguageOptions"
-              value-key="value"
-              label-key="label"
-              placeholder="—"
-              :search-input="false"
-              size="md"
-              :class="resolveSelectClass(row.original, 'studyLanguage')"
-              :ui="resolveSelectUi(row.original, 'studyLanguage')"
-              @update:model-value="updateStudyLanguage(row.original.id, $event)"
-            />
-          </template>
-          <template #display>
-            <span
-              :class="[
-                inlineReadonlyTextClass,
-                resolveInvalidTextClass(isStudentFieldInvalid(row.original, 'studyLanguage'))
-              ]"
-            >
-              {{ resolveStudyLanguageLabel(row.original.studyLanguage) }}
-            </span>
-          </template>
-        </EditorStudentTableInlineCell>
-      </template>
-
-      <template #studyProgramType-cell="{ row }">
-        <EditorStudentTableInlineCell
-          v-if="isStudentRow(row.original)"
-          :is-editing="isEditingRow(row.original.id)"
-          :model-value="resolveStudyProgramTypeLabel(row.original.studyProgramType)"
-          cell-wrapper-class="min-w-[8.5rem] cursor-pointer"
-          :input-class="resolveSelectClass(row.original, 'studyProgramType')"
-          :display-frame-class="inlineReadonlySelectFrameClass"
-          mode="text"
-          @activate="activateRow(row.original.id)"
-        >
-          <template #edit>
-            <div class="relative w-full">
-              <USelectMenu
-                :model-value="row.original.studyProgramType"
-                :items="studyProgramTypeOptions"
-                value-key="value"
-                label-key="label"
-                placeholder="—"
-                :search-input="false"
-                size="md"
-                :class="resolveSelectClass(row.original, 'studyProgramType')"
-                :ui="resolveSelectUi(row.original, 'studyProgramType')"
-                @update:model-value="updateStudyProgramType(row.original.id, $event)"
-                @update:open="updateStudyProgramTypeSelectOpen(row.original.id, $event)"
-              />
-
-              <EditorRepeatTypeDurationWarningPopover :open="isStudyProgramTypeSelectOpen(row.original.id)" />
-            </div>
-          </template>
-          <template #display>
-            <span
-              :class="[
-                inlineReadonlyTextClass,
-                resolveInvalidTextClass(isStudentFieldInvalid(row.original, 'studyProgramType'))
-              ]"
-            >
-              {{ resolveStudyProgramTypeLabel(row.original.studyProgramType) }}
-            </span>
-          </template>
-        </EditorStudentTableInlineCell>
-      </template>
-
-      <template #studyProgramName-cell="{ row }">
-        <EditorStudentTableInlineCell
-          v-if="isStudentRow(row.original)"
-          :is-editing="isEditingRow(row.original.id)"
-          :model-value="row.original.studyProgramName"
-          cell-wrapper-class="min-w-[9.5rem] cursor-pointer"
-          :input-class="resolveSelectClass(row.original, 'studyProgramName')"
-          :display-frame-class="inlineReadonlySelectFrameClass"
-          mode="text"
-          @activate="activateRow(row.original.id)"
-        >
-          <template #edit>
-            <USelectMenu
-              :model-value="row.original.studyProgramName"
-              :items="studyProgramNameOptionsForRow(row.original)"
-              placeholder="—"
-              :search-input="false"
-              size="md"
-              :class="resolveSelectClass(row.original, 'studyProgramName')"
-              :ui="resolveSelectUi(row.original, 'studyProgramName')"
-              @update:model-value="updateStudyProgramName(row.original.id, $event)"
-            />
-          </template>
-          <template #display>
-            <span
-              :class="[
-                inlineReadonlyTextClass,
-                resolveInvalidTextClass(isStudentFieldInvalid(row.original, 'studyProgramName'))
-              ]"
-            >
-              {{ displayText(row.original.studyProgramName) }}
-            </span>
-          </template>
-        </EditorStudentTableInlineCell>
-      </template>
-
-      <template #specializationCode-cell="{ row }">
-        <EditorStudentTableInlineCell
-          v-if="isStudentRow(row.original)"
-          :is-editing="isEditingRow(row.original.id)"
-          :model-value="row.original.specializationCode"
-          cell-wrapper-class="min-w-32 cursor-pointer"
-          :input-class="resolveSelectClass(row.original, 'specializationCode')"
-          :display-frame-class="inlineReadonlySelectFrameClass"
-          mode="text"
-          @activate="activateRow(row.original.id)"
-        >
-          <template #edit>
-            <USelectMenu
-              :model-value="row.original.specializationCode"
-              :items="specializationOptionsForRow(row.original)"
-              value-key="specializationCode"
-              label-key="specializationCode"
-              placeholder="—"
-              :search-input="false"
-              size="md"
-              :class="resolveSelectClass(row.original, 'specializationCode')"
-              @update:model-value="updateSpecializationCode(row.original.id, $event)"
-            />
-          </template>
-          <template #display>
-            <span
-              :class="[inlineReadonlyTextClass, resolveInvalidTextClass(resolveSpecializationIsInvalid(row.original))]"
-            >
-              {{ displayText(row.original.specializationCode) }}
-            </span>
-          </template>
-        </EditorStudentTableInlineCell>
-      </template>
-
-      <template #thesisTitle-cell="{ row }">
-        <EditorStudentTableInlineCell
-          v-if="isStudentRow(row.original)"
-          :is-editing="isEditingRow(row.original.id)"
-          :model-value="row.original.thesisTitle"
-          :cell-wrapper-class="thesisCellWrapperClass"
-          :input-class="inlineEditInputClass"
-          :invalid="isStudentFieldInvalid(row.original, 'thesisTitle')"
-          :warning-marker="thesisTitleWarningMarker"
-          mode="text"
-          multiline
-          @activate="activateRow(row.original.id)"
-          @update:model-value="updateTextField(row.original.id, 'thesisTitle', $event)"
-          @commit="commitPendingInlineEdits"
-        />
-      </template>
-
-      <template #thesisTitleLocal-cell="{ row }">
-        <EditorStudentTableInlineCell
-          v-if="isStudentRow(row.original)"
-          :is-editing="isEditingRow(row.original.id)"
-          :model-value="row.original.thesisTitleLocal"
-          :cell-wrapper-class="thesisCellWrapperClass"
-          :input-class="inlineEditInputClass"
-          :invalid="isStudentFieldInvalid(row.original, 'thesisTitleLocal')"
-          :warning-marker="thesisTitleWarningMarker"
-          mode="text"
-          multiline
-          @activate="activateRow(row.original.id)"
-          @update:model-value="updateTextField(row.original.id, 'thesisTitleLocal', $event)"
-          @commit="commitPendingInlineEdits"
-        />
-      </template>
-
-      <template #thesisTitleEn-cell="{ row }">
-        <EditorStudentTableInlineCell
-          v-if="isStudentRow(row.original)"
-          :is-editing="isEditingRow(row.original.id)"
-          :model-value="row.original.thesisTitleEn"
-          :cell-wrapper-class="thesisCellWrapperClass"
-          :input-class="inlineEditInputClass"
-          :invalid="isStudentFieldInvalid(row.original, 'thesisTitleEn')"
-          :warning-marker="thesisTitleWarningMarker"
-          mode="text"
-          multiline
-          @activate="activateRow(row.original.id)"
-          @update:model-value="updateTextField(row.original.id, 'thesisTitleEn', $event)"
-          @commit="commitPendingInlineEdits"
-        />
-      </template>
-
-      <template #thesisLanguage-cell="{ row }">
-        <EditorStudentTableInlineCell
-          v-if="isStudentRow(row.original)"
-          :is-editing="isEditingRow(row.original.id)"
-          :model-value="resolveThesisLanguageLabel(row.original.thesisLanguage)"
-          cell-wrapper-class="min-w-[9rem] cursor-pointer"
-          :input-class="resolveSelectClass(row.original, 'thesisLanguage')"
-          :display-frame-class="inlineReadonlySelectFrameClass"
-          mode="text"
-          @activate="activateRow(row.original.id)"
-        >
-          <template #edit>
-            <USelectMenu
-              :model-value="row.original.thesisLanguage"
-              :items="thesisLanguageOptions"
-              value-key="value"
-              label-key="label"
-              placeholder="—"
-              :search-input="false"
-              size="md"
-              :class="resolveSelectClass(row.original, 'thesisLanguage')"
-              :ui="resolveSelectUi(row.original, 'thesisLanguage')"
-              @update:model-value="updateThesisLanguage(row.original.id, $event)"
-            />
-          </template>
-          <template #display>
-            <span
-              :class="[
-                inlineReadonlyTextClass,
-                resolveInvalidTextClass(isStudentFieldInvalid(row.original, 'thesisLanguage'))
-              ]"
-            >
-              {{ resolveThesisLanguageLabel(row.original.thesisLanguage) }}
-            </span>
-          </template>
-        </EditorStudentTableInlineCell>
-      </template>
-
-      <template #supervisorName-cell="{ row }">
-        <EditorStudentTableInlineCell
-          v-if="isStudentRow(row.original)"
-          :is-editing="isEditingRow(row.original.id)"
-          :model-value="row.original.supervisorName"
-          cell-wrapper-class="min-w-[11rem] cursor-pointer"
-          :input-class="inlineEditInputClass"
-          :invalid="isStudentFieldInvalid(row.original, 'supervisorName')"
-          mode="text"
-          @activate="activateRow(row.original.id)"
-          @update:model-value="updateTextField(row.original.id, 'supervisorName', $event)"
-          @commit="commitPendingInlineEdits"
-        />
-      </template>
-
-      <template #additionalSupervisorName-cell="{ row }">
-        <EditorStudentTableInlineCell
-          v-if="isStudentRow(row.original)"
-          :is-editing="isEditingRow(row.original.id)"
-          :model-value="row.original.additionalSupervisorName"
-          cell-wrapper-class="min-w-[6.5rem] cursor-pointer"
-          :input-class="inlineEditInputClass"
-          mode="text"
-          @activate="activateRow(row.original.id)"
-          @update:model-value="updateTextField(row.original.id, 'additionalSupervisorName', $event)"
-          @commit="commitPendingInlineEdits"
-        />
-      </template>
-
-      <template #reviewerName-cell="{ row }">
-        <EditorStudentTableInlineCell
-          v-if="isStudentRow(row.original)"
-          :is-editing="isEditingRow(row.original.id)"
-          :model-value="row.original.reviewerName"
-          cell-wrapper-class="min-w-[11rem] cursor-pointer"
-          :input-class="inlineEditInputClass"
-          :invalid="isStudentFieldInvalid(row.original, 'reviewerName')"
-          mode="text"
-          @activate="activateRow(row.original.id)"
-          @update:model-value="updateTextField(row.original.id, 'reviewerName', $event)"
-          @commit="commitPendingInlineEdits"
-        />
-      </template>
-
-      <template #additionalReviewerName-cell="{ row }">
-        <EditorStudentTableInlineCell
-          v-if="isStudentRow(row.original)"
-          :is-editing="isEditingRow(row.original.id)"
-          :model-value="row.original.additionalReviewerName"
-          cell-wrapper-class="min-w-[6.5rem] cursor-pointer"
-          :input-class="inlineEditInputClass"
-          mode="text"
-          @activate="activateRow(row.original.id)"
-          @update:model-value="updateTextField(row.original.id, 'additionalReviewerName', $event)"
-          @commit="commitPendingInlineEdits"
-        />
-      </template>
-
-      <template #repeatType-cell="{ row }">
-        <EditorStudentTableInlineCell
-          v-if="isStudentRow(row.original)"
-          :is-editing="isEditingRow(row.original.id)"
-          :model-value="resolveRepeatTypeLabel(row.original.repeatType)"
-          cell-wrapper-class="min-w-[11rem] cursor-pointer"
-          :input-class="resolveSelectClass(row.original, 'repeatType')"
-          :display-frame-class="inlineReadonlySelectFrameClass"
-          mode="text"
-          @activate="activateRow(row.original.id)"
-        >
-          <template #edit>
-            <div class="relative w-full">
-              <USelectMenu
-                :model-value="row.original.repeatType"
-                :items="repeatTypeOptions"
-                value-key="value"
-                label-key="label"
-                placeholder="—"
-                :search-input="false"
-                size="md"
-                :class="resolveSelectClass(row.original, 'repeatType')"
-                :ui="resolveSelectUi(row.original, 'repeatType')"
-                @update:model-value="updateRepeatType(row.original.id, $event)"
-                @update:open="updateRepeatTypeSelectOpen(row.original.id, $event)"
-              />
-
-              <EditorRepeatTypeDurationWarningPopover :open="isRepeatTypeSelectOpen(row.original.id)" />
-            </div>
-          </template>
-          <template #display>
-            <span
-              :class="[
-                inlineReadonlyTextClass,
-                resolveInvalidTextClass(isStudentFieldInvalid(row.original, 'repeatType'))
-              ]"
-            >
-              {{ resolveRepeatTypeLabel(row.original.repeatType) }}
-            </span>
-          </template>
-        </EditorStudentTableInlineCell>
-      </template>
-
-      <template #prepareMinutes-cell="{ row }">
-        <EditorStudentTableInlineCell
-          v-if="isStudentRow(row.original)"
-          :is-editing="isEditingRow(row.original.id)"
-          :model-value="row.original.prepareMinutes"
-          cell-wrapper-class="min-w-[6.5rem] cursor-pointer"
-          :input-class="inlineEditInputClass"
-          :invalid="isStudentFieldInvalid(row.original, 'prepareMinutes')"
-          mode="number"
-          @activate="activateRow(row.original.id)"
-          @update:model-value="updateMinuteField(row.original.id, 'prepareMinutes', $event)"
-          @commit="commitPendingInlineEdits"
-        />
-      </template>
-
-      <template #examMinutes-cell="{ row }">
-        <EditorStudentTableInlineCell
-          v-if="isStudentRow(row.original)"
-          :is-editing="isEditingRow(row.original.id)"
-          :model-value="row.original.examMinutes"
-          cell-wrapper-class="min-w-[6.5rem] cursor-pointer"
-          :input-class="inlineEditInputClass"
-          :invalid="isStudentFieldInvalid(row.original, 'examMinutes')"
-          mode="number"
-          @activate="activateRow(row.original.id)"
-          @update:model-value="updateMinuteField(row.original.id, 'examMinutes', $event)"
-          @commit="commitPendingInlineEdits"
-        />
-      </template>
-
-      <template #empty>
-        <UEmpty
-          icon="i-lucide-users"
-          :title="props.emptyLabels.emptyTitle"
-          :description="props.emptyLabels.emptyDescription"
-        />
-      </template>
-    </UTable>
-
+  <div class="w-full min-w-0">
     <div
+      v-show="isTopHorizontalScrollVisible"
+      ref="topHorizontalScroll"
       aria-hidden="true"
-      class="editor-students-table-drag-overlay pointer-events-none absolute inset-0 z-10"
-      :class="{ 'editor-students-table-drag-overlay--visible': isDragging }"
-    />
+      class="border-default bg-default/80 mb-1 h-4 overflow-x-auto overflow-y-hidden rounded-md border"
+    >
+      <!-- Width mirror for a native top scrollbar synchronized with the table container. -->
+      <div ref="topHorizontalScrollContent" class="h-px" />
+    </div>
+
+    <div ref="tableWrapper" class="relative overflow-x-auto" @click="handleTableClick">
+      <UTable
+        :key="tableRenderKey"
+        :data="localStudents"
+        :columns="props.columns"
+        :meta="tableMeta"
+        :get-row-id="getEditorRowId"
+        :ui="{
+          base: 'min-w-full table-fixed',
+          tbody: tbodyUiClass,
+          separator: 'bg-default'
+        }"
+      >
+        <template #drag-cell>
+          <UButton
+            icon="i-lucide-grip-vertical"
+            variant="ghost"
+            color="neutral"
+            size="xs"
+            class="drag-handle text-muted cursor-grab active:cursor-grabbing"
+          />
+        </template>
+
+        <template #order-cell="{ row }">
+          <div class="relative flex h-full min-h-10 w-full items-center justify-center">
+            <span class="text-muted text-md font-semibold transition-opacity duration-150 group-hover:opacity-0">
+              {{ isStudentRow(row.original) ? row.original.studentOrder : '' }}
+            </span>
+
+            <div
+              class="pointer-events-none absolute inset-0 flex items-center justify-center gap-1 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100"
+            >
+              <UTooltip v-if="isStudentRow(row.original)" :text="t('editor.table.moveStudentAriaLabel')">
+                <UButton
+                  color="primary"
+                  variant="ghost"
+                  size="sm"
+                  icon="i-lucide-git-pull-request-arrow"
+                  :class="orderCellActionButtonClass"
+                  :aria-label="t('editor.table.moveStudentAriaLabel')"
+                  :ui="orderCellMoveActionButtonUi"
+                  @click.stop="requestMoveStudent(row.original.id)"
+                />
+              </UTooltip>
+
+              <UTooltip :text="t('editor.table.deleteItemAriaLabel')">
+                <UButton
+                  color="error"
+                  variant="ghost"
+                  size="sm"
+                  icon="i-lucide-trash-2"
+                  :class="orderCellActionButtonClass"
+                  :aria-label="t('editor.table.deleteItemAriaLabel')"
+                  :ui="orderCellDeleteActionButtonUi"
+                  @click.stop="requestDeleteItem(row.original.id)"
+                />
+              </UTooltip>
+            </div>
+          </div>
+        </template>
+
+        <template #prepareTime-cell="{ row }">
+          <div v-if="isPauseRow(row.original)" class="flex flex-wrap items-center gap-x-6 gap-y-1 py-1 text-base">
+            <span class="inline-flex items-center gap-2 font-medium">
+              <UIcon :name="resolvePauseTypeIcon(row.original.pauseType)" class="size-4" />
+              {{ resolvePauseDisplayLabel(row.original) }}
+            </span>
+            <span class="whitespace-nowrap">
+              <span class="font-medium">{{ t('editor.pause.row.duration') }}:</span>
+              {{ row.original.durationMinutes }} min
+            </span>
+            <span class="whitespace-nowrap">
+              <span class="font-medium">{{ t('editor.pause.row.range') }}:</span> {{ row.original.rangeLabel }}
+            </span>
+          </div>
+          <span v-else class="text-sm whitespace-nowrap" @click="activateRow(row.original.id)">
+            {{ row.original.prepareTime }}
+          </span>
+        </template>
+
+        <template #examTime-cell="{ row }">
+          <span
+            v-if="isStudentRow(row.original)"
+            class="text-sm whitespace-nowrap"
+            @click="activateRow(row.original.id)"
+          >
+            {{ row.original.examTime }}
+          </span>
+        </template>
+
+        <template #titlesBefore-cell="{ row }">
+          <EditorStudentTableInlineCell
+            v-if="isStudentRow(row.original)"
+            :is-editing="isEditingRow(row.original.id)"
+            :model-value="row.original.titlesBefore"
+            cell-wrapper-class="min-w-[3rem] cursor-pointer"
+            :input-class="inlineEditInputClass"
+            mode="text"
+            @activate="activateRow(row.original.id)"
+            @update:model-value="updateTextField(row.original.id, 'titlesBefore', $event)"
+            @commit="commitPendingInlineEdits"
+          />
+        </template>
+
+        <template #lastName-cell="{ row }">
+          <EditorStudentTableInlineCell
+            v-if="isStudentRow(row.original)"
+            :is-editing="isEditingRow(row.original.id)"
+            :model-value="row.original.lastName"
+            cell-wrapper-class="min-w-[5rem] cursor-pointer"
+            :input-class="inlineEditInputClass"
+            :invalid="isStudentFieldInvalid(row.original, 'lastName')"
+            mode="text"
+            @activate="activateRow(row.original.id)"
+            @update:model-value="updateTextField(row.original.id, 'lastName', $event)"
+            @commit="commitPendingInlineEdits"
+          />
+        </template>
+
+        <template #firstName-cell="{ row }">
+          <EditorStudentTableInlineCell
+            v-if="isStudentRow(row.original)"
+            :is-editing="isEditingRow(row.original.id)"
+            :model-value="row.original.firstName"
+            cell-wrapper-class="min-w-[5rem] cursor-pointer"
+            :input-class="inlineEditInputClass"
+            :invalid="isStudentFieldInvalid(row.original, 'firstName')"
+            mode="text"
+            @activate="activateRow(row.original.id)"
+            @update:model-value="updateTextField(row.original.id, 'firstName', $event)"
+            @commit="commitPendingInlineEdits"
+          />
+        </template>
+
+        <template #email-cell="{ row }">
+          <EditorStudentTableInlineCell
+            v-if="isStudentRow(row.original)"
+            :is-editing="isEditingRow(row.original.id)"
+            :model-value="row.original.email"
+            cell-wrapper-class="min-w-[10rem] cursor-pointer"
+            :input-class="inlineEditInputClass"
+            mode="text"
+            @activate="activateRow(row.original.id)"
+            @update:model-value="updateTextField(row.original.id, 'email', $event)"
+            @commit="commitPendingInlineEdits"
+          />
+        </template>
+
+        <template #titlesAfter-cell="{ row }">
+          <EditorStudentTableInlineCell
+            v-if="isStudentRow(row.original)"
+            :is-editing="isEditingRow(row.original.id)"
+            :model-value="row.original.titlesAfter"
+            cell-wrapper-class="min-w-[4rem] cursor-pointer"
+            :input-class="inlineEditInputClass"
+            mode="text"
+            @activate="activateRow(row.original.id)"
+            @update:model-value="updateTextField(row.original.id, 'titlesAfter', $event)"
+            @commit="commitPendingInlineEdits"
+          />
+        </template>
+
+        <template #studyLanguage-cell="{ row }">
+          <EditorStudentTableInlineCell
+            v-if="isStudentRow(row.original)"
+            :is-editing="isEditingRow(row.original.id)"
+            :model-value="resolveStudyLanguageLabel(row.original.studyLanguage)"
+            cell-wrapper-class="min-w-[8.5rem] cursor-pointer"
+            :input-class="resolveSelectClass(row.original, 'studyLanguage')"
+            :display-frame-class="inlineReadonlySelectFrameClass"
+            mode="text"
+            @activate="activateRow(row.original.id)"
+          >
+            <template #edit>
+              <USelectMenu
+                :model-value="row.original.studyLanguage"
+                :items="studyLanguageOptions"
+                value-key="value"
+                label-key="label"
+                placeholder="—"
+                :search-input="false"
+                size="md"
+                :class="resolveSelectClass(row.original, 'studyLanguage')"
+                :ui="resolveSelectUi(row.original, 'studyLanguage')"
+                @update:model-value="updateStudyLanguage(row.original.id, $event)"
+              />
+            </template>
+            <template #display>
+              <span
+                :class="[
+                  inlineReadonlyTextClass,
+                  resolveInvalidTextClass(isStudentFieldInvalid(row.original, 'studyLanguage'))
+                ]"
+              >
+                {{ resolveStudyLanguageLabel(row.original.studyLanguage) }}
+              </span>
+            </template>
+          </EditorStudentTableInlineCell>
+        </template>
+
+        <template #studyProgramType-cell="{ row }">
+          <EditorStudentTableInlineCell
+            v-if="isStudentRow(row.original)"
+            :is-editing="isEditingRow(row.original.id)"
+            :model-value="resolveStudyProgramTypeLabel(row.original.studyProgramType)"
+            cell-wrapper-class="min-w-[8.5rem] cursor-pointer"
+            :input-class="resolveSelectClass(row.original, 'studyProgramType')"
+            :display-frame-class="inlineReadonlySelectFrameClass"
+            mode="text"
+            @activate="activateRow(row.original.id)"
+          >
+            <template #edit>
+              <div class="relative w-full">
+                <USelectMenu
+                  :model-value="row.original.studyProgramType"
+                  :items="studyProgramTypeOptions"
+                  value-key="value"
+                  label-key="label"
+                  placeholder="—"
+                  :search-input="false"
+                  size="md"
+                  :class="resolveSelectClass(row.original, 'studyProgramType')"
+                  :ui="resolveSelectUi(row.original, 'studyProgramType')"
+                  @update:model-value="updateStudyProgramType(row.original.id, $event)"
+                  @update:open="updateStudyProgramTypeSelectOpen(row.original.id, $event)"
+                />
+
+                <EditorRepeatTypeDurationWarningPopover :open="isStudyProgramTypeSelectOpen(row.original.id)" />
+              </div>
+            </template>
+            <template #display>
+              <span
+                :class="[
+                  inlineReadonlyTextClass,
+                  resolveInvalidTextClass(isStudentFieldInvalid(row.original, 'studyProgramType'))
+                ]"
+              >
+                {{ resolveStudyProgramTypeLabel(row.original.studyProgramType) }}
+              </span>
+            </template>
+          </EditorStudentTableInlineCell>
+        </template>
+
+        <template #studyProgramName-cell="{ row }">
+          <EditorStudentTableInlineCell
+            v-if="isStudentRow(row.original)"
+            :is-editing="isEditingRow(row.original.id)"
+            :model-value="row.original.studyProgramName"
+            cell-wrapper-class="min-w-[9.5rem] cursor-pointer"
+            :input-class="resolveSelectClass(row.original, 'studyProgramName')"
+            :display-frame-class="inlineReadonlySelectFrameClass"
+            mode="text"
+            @activate="activateRow(row.original.id)"
+          >
+            <template #edit>
+              <USelectMenu
+                :model-value="row.original.studyProgramName"
+                :items="studyProgramNameOptionsForRow(row.original)"
+                placeholder="—"
+                :search-input="false"
+                size="md"
+                :class="resolveSelectClass(row.original, 'studyProgramName')"
+                :ui="resolveSelectUi(row.original, 'studyProgramName')"
+                @update:model-value="updateStudyProgramName(row.original.id, $event)"
+              />
+            </template>
+            <template #display>
+              <span
+                :class="[
+                  inlineReadonlyTextClass,
+                  resolveInvalidTextClass(isStudentFieldInvalid(row.original, 'studyProgramName'))
+                ]"
+              >
+                {{ displayText(row.original.studyProgramName) }}
+              </span>
+            </template>
+          </EditorStudentTableInlineCell>
+        </template>
+
+        <template #specializationCode-cell="{ row }">
+          <EditorStudentTableInlineCell
+            v-if="isStudentRow(row.original)"
+            :is-editing="isEditingRow(row.original.id)"
+            :model-value="row.original.specializationCode"
+            cell-wrapper-class="min-w-32 cursor-pointer"
+            :input-class="resolveSelectClass(row.original, 'specializationCode')"
+            :display-frame-class="inlineReadonlySelectFrameClass"
+            mode="text"
+            @activate="activateRow(row.original.id)"
+          >
+            <template #edit>
+              <USelectMenu
+                :model-value="row.original.specializationCode"
+                :items="specializationOptionsForRow(row.original)"
+                value-key="specializationCode"
+                label-key="specializationCode"
+                placeholder="—"
+                :search-input="false"
+                size="md"
+                :class="resolveSelectClass(row.original, 'specializationCode')"
+                @update:model-value="updateSpecializationCode(row.original.id, $event)"
+              />
+            </template>
+            <template #display>
+              <span
+                :class="[
+                  inlineReadonlyTextClass,
+                  resolveInvalidTextClass(resolveSpecializationIsInvalid(row.original))
+                ]"
+              >
+                {{ displayText(row.original.specializationCode) }}
+              </span>
+            </template>
+          </EditorStudentTableInlineCell>
+        </template>
+
+        <template #thesisTitle-cell="{ row }">
+          <EditorStudentTableInlineCell
+            v-if="isStudentRow(row.original)"
+            :is-editing="isEditingRow(row.original.id)"
+            :model-value="row.original.thesisTitle"
+            :cell-wrapper-class="thesisCellWrapperClass"
+            :input-class="inlineEditInputClass"
+            :invalid="isStudentFieldInvalid(row.original, 'thesisTitle')"
+            :warning-marker="thesisTitleWarningMarker"
+            mode="text"
+            multiline
+            @activate="activateRow(row.original.id)"
+            @update:model-value="updateTextField(row.original.id, 'thesisTitle', $event)"
+            @commit="commitPendingInlineEdits"
+          />
+        </template>
+
+        <template #thesisTitleLocal-cell="{ row }">
+          <EditorStudentTableInlineCell
+            v-if="isStudentRow(row.original)"
+            :is-editing="isEditingRow(row.original.id)"
+            :model-value="row.original.thesisTitleLocal"
+            :cell-wrapper-class="thesisCellWrapperClass"
+            :input-class="inlineEditInputClass"
+            :invalid="isStudentFieldInvalid(row.original, 'thesisTitleLocal')"
+            :warning-marker="thesisTitleWarningMarker"
+            mode="text"
+            multiline
+            @activate="activateRow(row.original.id)"
+            @update:model-value="updateTextField(row.original.id, 'thesisTitleLocal', $event)"
+            @commit="commitPendingInlineEdits"
+          />
+        </template>
+
+        <template #thesisTitleEn-cell="{ row }">
+          <EditorStudentTableInlineCell
+            v-if="isStudentRow(row.original)"
+            :is-editing="isEditingRow(row.original.id)"
+            :model-value="row.original.thesisTitleEn"
+            :cell-wrapper-class="thesisCellWrapperClass"
+            :input-class="inlineEditInputClass"
+            :invalid="isStudentFieldInvalid(row.original, 'thesisTitleEn')"
+            :warning-marker="thesisTitleWarningMarker"
+            mode="text"
+            multiline
+            @activate="activateRow(row.original.id)"
+            @update:model-value="updateTextField(row.original.id, 'thesisTitleEn', $event)"
+            @commit="commitPendingInlineEdits"
+          />
+        </template>
+
+        <template #thesisLanguage-cell="{ row }">
+          <EditorStudentTableInlineCell
+            v-if="isStudentRow(row.original)"
+            :is-editing="isEditingRow(row.original.id)"
+            :model-value="resolveThesisLanguageLabel(row.original.thesisLanguage)"
+            cell-wrapper-class="min-w-[9rem] cursor-pointer"
+            :input-class="resolveSelectClass(row.original, 'thesisLanguage')"
+            :display-frame-class="inlineReadonlySelectFrameClass"
+            mode="text"
+            @activate="activateRow(row.original.id)"
+          >
+            <template #edit>
+              <USelectMenu
+                :model-value="row.original.thesisLanguage"
+                :items="thesisLanguageOptions"
+                value-key="value"
+                label-key="label"
+                placeholder="—"
+                :search-input="false"
+                size="md"
+                :class="resolveSelectClass(row.original, 'thesisLanguage')"
+                :ui="resolveSelectUi(row.original, 'thesisLanguage')"
+                @update:model-value="updateThesisLanguage(row.original.id, $event)"
+              />
+            </template>
+            <template #display>
+              <span
+                :class="[
+                  inlineReadonlyTextClass,
+                  resolveInvalidTextClass(isStudentFieldInvalid(row.original, 'thesisLanguage'))
+                ]"
+              >
+                {{ resolveThesisLanguageLabel(row.original.thesisLanguage) }}
+              </span>
+            </template>
+          </EditorStudentTableInlineCell>
+        </template>
+
+        <template #supervisorName-cell="{ row }">
+          <EditorStudentTableInlineCell
+            v-if="isStudentRow(row.original)"
+            :is-editing="isEditingRow(row.original.id)"
+            :model-value="row.original.supervisorName"
+            cell-wrapper-class="min-w-[11rem] cursor-pointer"
+            :input-class="inlineEditInputClass"
+            :invalid="isStudentFieldInvalid(row.original, 'supervisorName')"
+            mode="text"
+            @activate="activateRow(row.original.id)"
+            @update:model-value="updateTextField(row.original.id, 'supervisorName', $event)"
+            @commit="commitPendingInlineEdits"
+          />
+        </template>
+
+        <template #additionalSupervisorName-cell="{ row }">
+          <EditorStudentTableInlineCell
+            v-if="isStudentRow(row.original)"
+            :is-editing="isEditingRow(row.original.id)"
+            :model-value="row.original.additionalSupervisorName"
+            cell-wrapper-class="min-w-[6.5rem] cursor-pointer"
+            :input-class="inlineEditInputClass"
+            mode="text"
+            @activate="activateRow(row.original.id)"
+            @update:model-value="updateTextField(row.original.id, 'additionalSupervisorName', $event)"
+            @commit="commitPendingInlineEdits"
+          />
+        </template>
+
+        <template #reviewerName-cell="{ row }">
+          <EditorStudentTableInlineCell
+            v-if="isStudentRow(row.original)"
+            :is-editing="isEditingRow(row.original.id)"
+            :model-value="row.original.reviewerName"
+            cell-wrapper-class="min-w-[11rem] cursor-pointer"
+            :input-class="inlineEditInputClass"
+            :invalid="isStudentFieldInvalid(row.original, 'reviewerName')"
+            mode="text"
+            @activate="activateRow(row.original.id)"
+            @update:model-value="updateTextField(row.original.id, 'reviewerName', $event)"
+            @commit="commitPendingInlineEdits"
+          />
+        </template>
+
+        <template #additionalReviewerName-cell="{ row }">
+          <EditorStudentTableInlineCell
+            v-if="isStudentRow(row.original)"
+            :is-editing="isEditingRow(row.original.id)"
+            :model-value="row.original.additionalReviewerName"
+            cell-wrapper-class="min-w-[6.5rem] cursor-pointer"
+            :input-class="inlineEditInputClass"
+            mode="text"
+            @activate="activateRow(row.original.id)"
+            @update:model-value="updateTextField(row.original.id, 'additionalReviewerName', $event)"
+            @commit="commitPendingInlineEdits"
+          />
+        </template>
+
+        <template #repeatType-cell="{ row }">
+          <EditorStudentTableInlineCell
+            v-if="isStudentRow(row.original)"
+            :is-editing="isEditingRow(row.original.id)"
+            :model-value="resolveRepeatTypeLabel(row.original.repeatType)"
+            cell-wrapper-class="min-w-[11rem] cursor-pointer"
+            :input-class="resolveSelectClass(row.original, 'repeatType')"
+            :display-frame-class="inlineReadonlySelectFrameClass"
+            mode="text"
+            @activate="activateRow(row.original.id)"
+          >
+            <template #edit>
+              <div class="relative w-full">
+                <USelectMenu
+                  :model-value="row.original.repeatType"
+                  :items="repeatTypeOptions"
+                  value-key="value"
+                  label-key="label"
+                  placeholder="—"
+                  :search-input="false"
+                  size="md"
+                  :class="resolveSelectClass(row.original, 'repeatType')"
+                  :ui="resolveSelectUi(row.original, 'repeatType')"
+                  @update:model-value="updateRepeatType(row.original.id, $event)"
+                  @update:open="updateRepeatTypeSelectOpen(row.original.id, $event)"
+                />
+
+                <EditorRepeatTypeDurationWarningPopover :open="isRepeatTypeSelectOpen(row.original.id)" />
+              </div>
+            </template>
+            <template #display>
+              <span
+                :class="[
+                  inlineReadonlyTextClass,
+                  resolveInvalidTextClass(isStudentFieldInvalid(row.original, 'repeatType'))
+                ]"
+              >
+                {{ resolveRepeatTypeLabel(row.original.repeatType) }}
+              </span>
+            </template>
+          </EditorStudentTableInlineCell>
+        </template>
+
+        <template #prepareMinutes-cell="{ row }">
+          <EditorStudentTableInlineCell
+            v-if="isStudentRow(row.original)"
+            :is-editing="isEditingRow(row.original.id)"
+            :model-value="row.original.prepareMinutes"
+            cell-wrapper-class="min-w-[6.5rem] cursor-pointer"
+            :input-class="inlineEditInputClass"
+            :invalid="isStudentFieldInvalid(row.original, 'prepareMinutes')"
+            mode="number"
+            @activate="activateRow(row.original.id)"
+            @update:model-value="updateMinuteField(row.original.id, 'prepareMinutes', $event)"
+            @commit="commitPendingInlineEdits"
+          />
+        </template>
+
+        <template #examMinutes-cell="{ row }">
+          <EditorStudentTableInlineCell
+            v-if="isStudentRow(row.original)"
+            :is-editing="isEditingRow(row.original.id)"
+            :model-value="row.original.examMinutes"
+            cell-wrapper-class="min-w-[6.5rem] cursor-pointer"
+            :input-class="inlineEditInputClass"
+            :invalid="isStudentFieldInvalid(row.original, 'examMinutes')"
+            mode="number"
+            @activate="activateRow(row.original.id)"
+            @update:model-value="updateMinuteField(row.original.id, 'examMinutes', $event)"
+            @commit="commitPendingInlineEdits"
+          />
+        </template>
+
+        <template #empty>
+          <UEmpty
+            icon="i-lucide-users"
+            :title="props.emptyLabels.emptyTitle"
+            :description="props.emptyLabels.emptyDescription"
+          />
+        </template>
+      </UTable>
+
+      <div
+        aria-hidden="true"
+        class="editor-students-table-drag-overlay pointer-events-none absolute inset-0 z-10"
+        :class="{ 'editor-students-table-drag-overlay--visible': isDragging }"
+      />
+    </div>
   </div>
 </template>
